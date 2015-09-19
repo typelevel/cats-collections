@@ -17,5 +17,13 @@ object BedazzleSpec extends Properties("Bedazzle") {
     import bedazzle.list._
     List(1,2,3).foldRight(nil[Int])(_ :: _).sum == 6
   }
+
+  property("left, left, left right left") = secure {
+    import bedazzle.either._
+    val x: Either[Int, String] = 1.left
+    val y: Either[String, Int] = 1.right
+
+    x.swap == y
+  }
 }
 
