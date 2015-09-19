@@ -3,10 +3,12 @@ name := "dogs"
 scalaVersion := "2.11.2"
 
 scalacOptions := Seq(
+  "-feature",
   "-deprecation",
   "-encoding", "utf8",
   "-language:postfixOps",
   "-language:higherKinds",
+  "-language:implicitConversions",
   "-target:jvm-1.7",
   "-unchecked",
   "-Xcheckinit",
