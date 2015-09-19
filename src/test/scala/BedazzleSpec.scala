@@ -25,5 +25,26 @@ object BedazzleSpec extends Properties("Bedazzle") {
 
     x.swap == y
   }
+
+  property("kestrel aka unsafeTap") = secure {
+    import bedazzle.birds._
+    
+    var called = false
+    val call: String => Unit = Function.const(called = true)
+    val a = "xyzzy"
+    val b = a <| call
+
+    a == b && called
+  }
+
+  property("thrush") = secure {
+    import bedazzle.all._
+
+    val a = 1
+    val f: Int => String = _.toString
+    val b = a |> f
+
+    b == "1"
+  }
 }
 
