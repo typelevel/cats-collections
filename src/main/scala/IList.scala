@@ -106,10 +106,10 @@ sealed abstract class IList[A] extends Product with Serializable {
     filter(a => !f(a))
 
   def find(f: A => Boolean): Option[A] = {
-    @tailrec def find0[A](as: IList[A])(f: A => Boolean): Option[A] =
+    @tailrec def find0(as: IList[A])(f: A => Boolean): Option[A] =
       as match {
         case INil() => None
-        case ICons(a, as) => if (f(a)) Some(a) else find0[A](as)(f)
+        case ICons(a, as) => if (f(a)) Some(a) else find0(as)(f)
       }
     find0(this)(f)
   }
@@ -118,10 +118,10 @@ sealed abstract class IList[A] extends Product with Serializable {
     foldRight(IList.empty[B])(f(_) ++ _)
 
   def foldLeft[B](b: B)(f: (B, A) => B): B = {
-    @tailrec def foldLeft0[A,B](as: IList[A])(b: B)(f: (B, A) => B): B =
+    @tailrec def foldLeft0(as: IList[A])(b: B)(f: (B, A) => B): B =
       as match {
         case INil() => b
-        case ICons(a, as) => foldLeft0[A,B](as)(f(b, a))(f)
+        case ICons(a, as) => foldLeft0(as)(f(b, a))(f)
       }
     foldLeft0(this)(b)(f)
   }
