@@ -17,4 +17,6 @@ class BirdOps[A](val a: A) extends AnyVal {
     f(a)
     a
   }
+
+  def $[B](f: A => B): B = f(a)
 }

@@ -46,5 +46,15 @@ object BedazzleSpec extends Properties("Bedazzle") {
 
     b == "1"
   }
+
+  property("$") = secure {
+    import bedazzle.all._
+
+    val a = 1
+    val f: Int => String = _.toString
+    val b = a $ f
+
+    b == "1"
+  }
 }
 
