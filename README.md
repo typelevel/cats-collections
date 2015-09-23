@@ -3,7 +3,7 @@
 This project is intended to be a companion to the
 [Cats project](https://github.com/non/cats).
 
-It intents to be a library containing data structures which facilitate
+It intends to be a library containing data structures which facilitate
 pure functional programming in the Scala programming language. Some of
 these are replacements for structures already present in the Scala
 standard library, but with improvements in safety, some are data
