@@ -1,7 +1,5 @@
 ## Dogs
 
-https://travis-ci.org/stew/dogs.svg?branch=master
-
 [![Build Status](https://api.travis-ci.org/stew/dogs.png)](https://travis-ci.org/stew/dogs)
 
 This project is intended to be a companion to the
