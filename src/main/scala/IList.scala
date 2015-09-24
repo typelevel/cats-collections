@@ -5,6 +5,7 @@ import scala.annotation.unchecked.uncheckedVariance
 import IList.{empty, single}
 import cats._
 import cats.data._
+import bedazzle.list._
 
 /**
  * Safe, invariant alternative to stdlib `List`. Most methods on `List` have a sensible equivalent
@@ -38,7 +39,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     ++:(as)
 
   /* alias for `foldRight` */
-  def :\[B](b: B)(f: (A, B) => B): B =
+  def :\[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     foldRight(b)(f)
 
   /** Returns `f` applied to contents if non-empty, otherwise the zero of `B`. */
@@ -60,7 +61,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     find(pf.isDefinedAt).map(pf)
 
   def concat(as: IList[A]): IList[A] =
-    foldRight(as)(_ :: _)
+    foldRight(Eval.now(as))((x, xs) => xs.map(_.::(x))).value
 
   // no contains; use Foldable#element
 
@@ -100,7 +101,7 @@ sealed abstract class IList[A] extends Product with Serializable {
   // no exists; use Foldable#any
 
   def filter(f: A => Boolean): IList[A] =
-    foldRight(IList.empty[A])((a, as) => if (f(a)) a :: as else as)
+    foldRight(Eval.now(IList.empty[A]))((a, as) => if (f(a)) as.map(_.::(a)) else as).value
 
   def filterNot(f: A => Boolean): IList[A] =
     filter(a => !f(a))
@@ -115,7 +116,7 @@ sealed abstract class IList[A] extends Product with Serializable {
   }
 
   def flatMap[B](f: A => IList[B]): IList[B] =
-    foldRight(IList.empty[B])(f(_) ++ _)
+    foldRight(Eval.now(IList.empty[B]))((x,xs) => xs.map(xs => f(x) ++ xs)).value
 
   def foldLeft[B](b: B)(f: (B, A) => B): B = {
     @tailrec def foldLeft0(as: IList[A])(b: B)(f: (B, A) => B): B =
@@ -126,7 +127,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     foldLeft0(this)(b)(f)
   }
 
-  def foldRight[B](b: B)(f: (A, B) => B): B =
+  def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     reverse.foldLeft(b)((b, a) => f(a, b))
 
   // no forall; use Foldable#all
@@ -197,7 +198,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     foldLeft(0)((n, _) => n + 1)
 
   def map[B](f: A => B): IList[B] =
-    foldRight(IList.empty[B])(f(_) :: _)
+    foldRight(Eval.now(IList.empty[B]))((x,xs) => xs.map(_.::(f(x)))).value
 
   // private helper for mapAccumLeft/Right below
   private[this] def mapAccum[B, C](as: IList[A])(c: C, f: (C, A) => (C, B)): (C, IList[B]) =
@@ -375,7 +376,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     uncons(Streaming.empty, (h, t) => Streaming.cons(h, t.toStreaming))
 
   def toList: List[A] =
-    foldRight(Nil : List[A])(_ :: _)
+    foldRight(Eval.now(nil[A]))((x,xs) => xs.map(_.::(x))).value
 
   def toNel: Option[NonEmptyList[A]] =
     uncons(None, (h, t) => Some(NonEmptyList(h, t.toList)))
@@ -390,7 +391,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     IList.show(Show.fromToString).show(this)
 
   def toVector: Vector[A] =
-    foldRight(Vector[A]())(_ +: _)
+    foldRight(Eval.now(Vector[A]()))((x,xs) => xs.map(_.+:(x))).value
 
   def uncons[B](n: => B, c: (A, IList[A]) => B): B =
     this match {
@@ -509,7 +510,7 @@ sealed abstract class IListInstances extends IListInstance0 {
         a.uncons(empty, (_, t) => a :: coflatten(t))
 
       override def traverse[F[_], A, B](fa: IList[A])(f: A => F[B])(implicit F: Applicative[F]): F[IList[B]] =
-        fa.foldRight(F.pure(IList.empty[B]))((a, fbs) => F.map2(f(a), fbs)(_ :: _))
+        fa.foldRight(Eval.now(F.pure(IList.empty[B])))((a, fbs) => fbs.map(fbs => F.map2(f(a), fbs)(_ :: _))).value
 
       override def foldLeft[A, B](fa: IList[A], z: B)(f: (B, A) => B) =
         fa.foldLeft(z)(f)

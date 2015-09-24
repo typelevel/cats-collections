@@ -42,6 +42,8 @@ object DequeueSpec extends Properties("Dequeue") {
   }
 
   property("cons and then uncons") = forAll { (xs: List[Int]) =>
+
+
     val q = consL(xs, empty)
     val l = unconsL(q, Nil)
 
@@ -96,9 +98,9 @@ object DequeueSpec extends Properties("Dequeue") {
     } yield consL(l, snocL(r, empty)))
 
   property("foldLeft") = forAll { (q: Dequeue[Int]) =>
-    q.foldLeft[IList[Int]](INil())((xs,x) => ICons(x, xs)) == q.toBackIList
+    q.foldLeft[IList[Int]](INil())((xs,x) => ICons(x, xs)) === q.toBackIList
   }
   property("foldRIght") = forAll { (q: Dequeue[Int]) =>
-    q.foldRight[IList[Int]](INil())(ICons.apply) == q.toIList
+    q.foldRight[IList[Int]](Eval.now(INil()))((x,xs) => xs.map(xs => ICons(x,xs))).value === q.toIList
   }
 }

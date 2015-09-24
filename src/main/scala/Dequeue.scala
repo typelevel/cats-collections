@@ -138,12 +138,12 @@ sealed abstract class Dequeue[A] {
     case SingletonDequeue(a) => f(b, a)
     case FullDequeue(front,_,back,_) => {
       val frontb = front.tail.foldLeft(f(b,front.head))(f)
-      val backb = back.tail.foldRight(frontb)((a, b) => f(b,a))
+      val backb = back.tail.foldRight(Eval.now(frontb))((a, b) => b.map(f(_,a))).value
       f(backb,back.head)
     }
   }
 
-  def foldRight[B](b: B)(f: (A,B) => B): B = this match {
+  def foldRight[B](b: Eval[B])(f: (A,Eval[B]) => Eval[B]): Eval[B] = this match {
     case EmptyDequeue() => b
     case SingletonDequeue(a) => f(a, b)
     case FullDequeue(front,_,back,_) => {
