@@ -209,13 +209,13 @@ sealed abstract class IList[A] extends Product with Serializable {
       }
 
   /** All of the `B`s, in order, and the final `C` acquired by a stateful left fold over `as`. */
-  def mapAccumLeft[B, C](c: C, f: (C, A) => (C, B)): (C, IList[B]) = {
+  def mapAccumLeft[B, C](c: C)(f: (C, A) => (C, B)): (C, IList[B]) = {
     val (cc,bs) = mapAccum(this)(c, f)
     (cc, bs.reverse)
   }
 
   /** All of the `B`s, in order `as`-wise, and the final `C` acquired by a stateful right fold over `as`. */
-  final def mapAccumRight[B, C](c: C, f: (C, A) => (C, B)): (C, IList[B]) =
+  final def mapAccumRight[B, C](c: C)(f: (C, A) => (C, B)): (C, IList[B]) =
     mapAccum(reverse)(c, f)
 
   // no min/max; use Foldable#minimum, maximum, etc.
