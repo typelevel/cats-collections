@@ -1,6 +1,7 @@
 ## Dogs
 
 [![Build Status](https://api.travis-ci.org/stew/dogs.png)](https://travis-ci.org/stew/dogs)
+[![codecov.io](http://codecov.io/github/stew/dogs/coverage.svg?branch=master)](http://codecov.io/github/stew/dogs?branch=master)
 
 This project is intended to be a companion to the
 [Cats project](https://github.com/non/cats).
