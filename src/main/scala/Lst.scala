@@ -42,7 +42,7 @@ sealed abstract class Lst[A] {
       case El() => b
     }
 
-  final def getNonEmpty: Option[Nel[A]] =
+  final def toNel: Option[Nel[A]] =
     this match {
       case nel: Nel[_] => Some(nel)
       case El() => None
@@ -103,6 +103,11 @@ sealed abstract class Lst[A] {
       case El() => this
     }
 
+  def traverse[F[_], B](f: A => F[B])(implicit F: Applicative[F]): F[Lst[B]] =
+    foldRight(Eval.now(F.pure(Lst.empty[B]))) { (a, lfbs) =>
+      lfbs.map(fbs => F.map2(f(a), fbs)(_ :: _))
+    }.value
+
   override def toString: String = {
     def loop(sb: StringBuilder, h: A, t: Lst[A]): String =
       t match {
@@ -122,6 +127,9 @@ final case class Nel[A](head: A, tail: Lst[A]) extends Lst[A] {
 
   final def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     f(head, Eval.defer(tail.foldRight(lb)(f)))
+
+  final def reduceLeft(f: (A, A) => A): A =
+    tail.foldLeft(head)(f)
 
   final def :::(as: Lst[A]): Nel[A] =
     as.foldRight(Now(this))((a, lbs) => lbs.map(a :: _)).value
@@ -208,6 +216,21 @@ trait LstInstances extends LstInstances1 {
         x ::: y
       def coflatMap[A, B](fa: Lst[A])(f: Lst[A] => B): Lst[B] =
         fa.coflatMap(f)
+    }
+
+  implicit val lstHasTraverse: Traverse[Lst] =
+    new Traverse[Lst] {
+      def traverse[F[_], A, B](fa: Lst[A])(f: A => F[B])(implicit F: Applicative[F]): F[Lst[B]] =
+        fa.traverse(f)
+
+      def foldLeft[A, B](fa: Lst[A], z: B)(f: (B, A) => B) =
+        fa.foldLeft(z)(f)
+
+      def foldRight[A, B](fa: Lst[A], z: Eval[B])(f: (A, Eval[B]) => Eval[B]) =
+        fa.foldRight(z)(f)
+
+      override def foldMap[A, B](fa: Lst[A])(f: A => B)(implicit M: Monoid[B]): B =
+        fa.foldLeft(M.empty)((b, a) => b |+| f(a))
     }
 
   implicit def lstOrder[A: Order]: Order[Lst[A]] =
