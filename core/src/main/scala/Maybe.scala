@@ -2,9 +2,12 @@ package dogs
 
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
-import Ordering._
+import scala.Predef.identity
+import scala.Boolean
 import cats._
 import cats.data._
+import scala.{None, Option, Some, StringContext}
+import scala.Predef.implicitly
 
 /** An optional value
  *

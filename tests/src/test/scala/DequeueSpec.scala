@@ -3,11 +3,15 @@ package dogs
 import cats._
 import cats.syntax.all._
 import cats.std.all._
-import cats.state._
 
 import org.scalacheck._
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Prop._
+import scala.annotation.Annotation
+import scala.collection.immutable.{Nil,List,::}
+import scala.{annotation,Int,Option,None,Some}
+import scala.Predef._
+import java.lang.String
 
 object DequeueSpec extends Properties("Dequeue") {
   import Dequeue._
@@ -42,8 +46,6 @@ object DequeueSpec extends Properties("Dequeue") {
   }
 
   property("cons and then uncons") = forAll { (xs: List[Int]) =>
-
-
     val q = consL(xs, empty)
     val l = unconsL(q, Nil)
 
