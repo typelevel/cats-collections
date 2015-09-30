@@ -1,8 +1,14 @@
 name := "dogs"
 
-scalaVersion := "2.11.7"
+organization := "org.typelevel"
 
-scalacOptions := Seq(
+scalaVersion in Global := "2.11.7"
+
+crossScalaVersions in Global := Seq("2.10.5", "2.11.7")
+
+resolvers in Global += Resolver.sonatypeRepo("snapshots")
+
+scalacOptions in Global := Seq(
   "-feature",
   "-deprecation",
   "-encoding", "utf8",
@@ -17,15 +23,17 @@ scalacOptions := Seq(
   "-Xfatal-warnings",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
-  "-Ywarn-value-discard")
+  "-Ywarn-value-discard",
+  "-Ywarn-unused-import",
+  "-Xfuture",
+  "-Yno-predef",
+  "-Yno-imports")
 
-resolvers += 
-  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+lazy val dogs = project.in(file(".")).aggregate(core, docs, tests).settings(publish := {})
 
-libraryDependencies ++= Seq(
-  "org.spire-math" %%% "cats"       % "0.3.0-SNAPSHOT",
-  "org.scalatest"  %%% "scalatest"  % "3.0.0-M7" % "test",
-  "org.scalacheck" %%% "scalacheck" % "1.12.4"   % "test",
-  "org.typelevel"  %%% "discipline" % "0.4",
-  compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
-)
+lazy val core = project
+
+lazy val tests = project dependsOn core
+
+lazy val docs = project dependsOn core
+

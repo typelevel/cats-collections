@@ -1,5 +1,7 @@
 package dogs.bedazzle
 
+import scala.{AnyVal,Unit}
+
 trait BedazzleBirds {
   implicit def toBirdOps[A](a: A) = new BirdOps(a)
 }

@@ -3,6 +3,8 @@ package dogs
 import cats._
 import cats.data._
 
+import scala.Boolean
+
 /**
   * monad transformer for Maybe
   */

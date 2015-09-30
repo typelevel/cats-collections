@@ -11,7 +11,9 @@ import cats.syntax.all._
 import cats.std.all._
 import cats.data._
 import IList._
-
+import scala.{Boolean,Byte,Int,List,None,Option,PartialFunction,Some,Vector}
+import scala.Predef._
+import java.lang.{Exception,String}
 
 object IListTest extends Properties("IListTest") {
   // we need to provid our own tuple instance until

@@ -1,5 +1,7 @@
 package dogs.bedazzle
 
+import scala.{AnyVal, None, Option, Some}
+
 trait OptionBedazzle {
   def none[A]: Option[A] = None
 
