@@ -2,6 +2,8 @@ package dogs
 
 import cats._
 import cats.data._
+import scala.{annotation,Boolean,Int,Nothing,unchecked}
+import scala.Predef.identity
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
@@ -254,7 +256,6 @@ sealed abstract class DequeueInstances {
 
 private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
   implicit def A: Eq[A]
-  import std.stream._
 
   final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
     Eq[Streaming[A]].eqv(a.toStreaming, b.toStreaming)

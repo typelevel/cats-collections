@@ -1,5 +1,7 @@
 package dogs
 
+import scala.{Boolean,Double,Int,Iterable,None,Option,Some}
+import java.lang.{String,StringBuilder}
 import cats._
 import cats.implicits._
 import scala.annotation.tailrec

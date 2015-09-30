@@ -1,5 +1,10 @@
 package dogs
 
+import scala.Int
+import scala.collection.Iterable
+import scala.collection.immutable.{Nil,List,::}
+import scala.Predef._
+
 import org.typelevel.discipline.scalatest.Discipline
 import org.scalacheck._
 import org.scalacheck.Prop.forAll
@@ -8,7 +13,6 @@ import org.scalacheck.Arbitrary._
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 
 import cats._
-import cats.data._
 import cats.implicits._
 
 //import Lst._

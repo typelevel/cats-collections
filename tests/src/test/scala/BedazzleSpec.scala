@@ -1,5 +1,8 @@
 package dogs
 
+import java.lang.String
+import scala.{Either,Function,Int,Left,None,Option,Right,Some,Unit}
+import scala.collection.immutable.List
 import org.scalacheck._
 import org.scalacheck.Prop._
 

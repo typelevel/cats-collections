@@ -1,5 +1,7 @@
 package dogs.bedazzle
 
+import scala.{AnyVal, Either, Left, Nothing, Right}
+
 trait EitherBedazzle {
   implicit def eitherBedazzled[A](a: A): EitherBedazzled[A] = new EitherBedazzled(a)
 }

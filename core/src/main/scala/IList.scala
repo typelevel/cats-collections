@@ -6,6 +6,11 @@ import IList.{empty, single}
 import cats._
 import cats.data._
 import bedazzle.list._
+import scala.{Boolean, Int, None, Option, Ordering, Product, Nothing, PartialFunction, Serializable, Some, Stream, Vector}
+import scala.collection.immutable.{List,Map}
+import scala.Predef.{augmentString,identity,intWrapper,=:=}
+import java.lang.String
+
 
 /**
  * Safe, invariant alternative to stdlib `List`. Most methods on `List` have a sensible equivalent
@@ -127,8 +132,14 @@ sealed abstract class IList[A] extends Product with Serializable {
     foldLeft0(this)(b)(f)
   }
 
-  def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-    reverse.foldLeft(b)((b, a) => f(a, b))
+  def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
+    def go(xs: IList[A]): Eval[B] =
+      xs match {
+        case INil() => b
+        case h ICons t => f(h, Eval.defer(go(t)))
+      }
+    Eval.defer(go(this))
+  }
 
   // no forall; use Foldable#all
 
@@ -540,7 +551,7 @@ sealed abstract class IListInstances extends IListInstance0 {
         @tailrec def commaSep(rest: IList[A], acc: String): String =
           rest match {
             case INil() => acc
-            case ICons(x, xs) => commaSep(xs, (acc :+ ",") + A.show(x))
+            case ICons(x, xs) => commaSep(xs, (acc + ",") + A.show(x))
           }
         "[" + (as match {
           case INil() => ""
@@ -566,8 +577,6 @@ private trait IListEq[A] extends Eq[IList[A]] {
 
 private trait IListOrder[A] extends Order[IList[A]] with IListEq[A] {
   implicit def A: Order[A]
-
-  import Ordering._
 
   @tailrec final def compare(a1: IList[A], a2: IList[A]) =
     (a1, a2) match {
