@@ -13,7 +13,8 @@ import org.scalacheck.Arbitrary._
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 
 import cats._
-import cats.implicits._
+import cats.std.all._
+import cats.syntax.all._
 
 //import Lst._
 

@@ -42,12 +42,12 @@ sealed abstract class Maybe[A] {
 
   /** Turn the underlying value into a failure validation if present, otherwise
    * return a success validation with the provided fallback value */
-  final def toFailure[B](b: => B): Validated[A, B] =
+  final def toInvalid[B](b: => B): Validated[A, B] =
     cata(Validated.Invalid(_), Validated.Valid(b))
 
   /** Turn the underlying value into a success validation if present, otherwise
    * return a failure validation with the provided fallback value */
-  final def toSuccess[B](b: => B): Validated[B, A] =
+  final def toValid[B](b: => B): Validated[B, A] =
     cata(Validated.Valid(_), Validated.Invalid(b))
 
   /** Turn the underlying value into a left disjunction if present, otherwise
