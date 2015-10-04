@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import scala.Int
 import scala.collection.Iterable
@@ -18,27 +19,12 @@ import cats.syntax.all._
 
 //import Lst._
 
-object LstTest extends Properties("LstTest") {
+object LstTest extends Properties("LstTest") with ArbitraryLst {
 
   // we need to provid our own tuple instance until
   // https://github.com/non/algebra/pull/82 is merged
   implicit def eqTuple2[A: Eq, B: Eq]: Eq[(A,B)] =
     Eq.instance((l,r) => l._1 === r._1 && l._2 === r._2)
-
-  implicit def arbitraryLst[A: Arbitrary]: Arbitrary[Lst[A]] =
-    Arbitrary(arbitrary[List[A]].map(Lst.fromIterable _))
-
-  // implicit val intBooleanArb: Arbitrary[Int => Boolean] = {
-  //   val intGen = implicitly[Arbitrary[Int]].arbitrary
-  //   Arbitrary(Gen.oneOf(
-  //     Gen.const((_: Int) => true),
-  //     Gen.const((_: Int) => false),
-  //     Gen.choose(2, 5).map(n => (a: Int) => a % n == 0),
-  //     Gen.choose(2, 5).map(n => (a: Int) => a % n != 0),
-  //     intGen.map(n => (_: Int) > n),
-  //     intGen.map(n => (_: Int) < n)
-  //   ))
-  // }
 
   implicit class IterableOps[A](as: Iterable[A]) {
     def toLst: Lst[A] = Lst.fromIterable(as)

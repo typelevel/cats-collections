@@ -1,9 +1,8 @@
 ## TODO ##
 
-* check laws for typeclass instances
-* setup coverage
-* notice that we have no coverage of Maybe, IList
+* be more complete about checking laws for typeclass instances
 * set up tut and friends
+* move arbitrary intances somewhere that one can import into other projects
 
 ## Missing Data Structures ##
 

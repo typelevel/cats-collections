@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import java.lang.String
 import scala.{Either,Function,Int,Left,None,Option,Right,Some,Unit}

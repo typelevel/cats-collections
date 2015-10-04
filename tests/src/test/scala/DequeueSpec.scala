@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import cats._
 import cats.syntax.all._

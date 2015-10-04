@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import cats._
 import cats.implicits._
@@ -7,6 +8,7 @@ import org.typelevel.discipline.scalatest.Discipline
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 import org.scalacheck.Gen._
+import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 
@@ -14,19 +16,7 @@ import scala.Boolean
 import scala.Int
 import java.lang.String
 
-object MaybeTest extends Properties("LstTest") {
-  import Maybe._
-
-  import org.scalacheck.Arbitrary
-
-  implicit val genMonad: Monad[Gen] = new Monad[Gen] {
-    override def pure[A](a: A): Gen[A] = Gen.const(a)
-    override def flatMap[A,B](fa: Gen[A])(f: A => Gen[B]) = fa flatMap f
-  }
-
-  implicit def arbMaybe[A: Arbitrary]: Arbitrary[Maybe[A]] =
-    Arbitrary(arbitrary[Boolean].ifM(Gen.const(NotThere()), arbitrary[A].map(There.apply)))
-
+object MaybeTest extends Properties("LstTest") with ArbitraryMaybe {
   import Maybe._
 
   property("Empty is less than anything else") = forAll { (x: Maybe[Int]) =>

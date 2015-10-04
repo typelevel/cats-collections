@@ -9,25 +9,10 @@ import org.typelevel.discipline.scalatest.Discipline
 import scala.{Int,Option}
 import scala.Predef._
 import scala.collection.immutable.List
-import org.scalacheck._
-import org.scalacheck.Arbitrary._
 import cats.laws.discipline.EqK
 
-class LstLaws extends FunSuite with Discipline {
+class LstLaws extends FunSuite with Discipline with ArbitraryLst {
   import Lst._
-
-  implicit def arbitrayLst[A : Arbitrary]: Arbitrary[Lst[A]] = Arbitrary(arbitrary[List[A]].map(Lst.fromIterable))
-
-  implicit val lstArbitraryK: ArbitraryK[Lst] = new ArbitraryK[Lst] {
-      def synthesize[A: Arbitrary]: Arbitrary[Lst[A]] = arbitrayLst
-  }
-  implicit val NelArbitraryK: ArbitraryK[Nel] = new ArbitraryK[Nel] {
-    def synthesize[A: Arbitrary]: Arbitrary[Nel[A]] = Arbitrary(for {
-      a <- arbitrary[A]
-      as <- arbitrary[Lst[A]]
-    } yield(Nel(a, as)))
-  }
-
 
   implicit val nelEQ: EqK[Nel] =
     new EqK[Nel] {

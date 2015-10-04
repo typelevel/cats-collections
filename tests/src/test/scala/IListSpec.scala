@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import org.typelevel.discipline.scalatest.Discipline
 import org.scalacheck._
