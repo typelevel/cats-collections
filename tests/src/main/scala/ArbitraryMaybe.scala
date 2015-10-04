@@ -22,4 +22,14 @@ trait ArbitraryMaybe {
   implicit val maybeArbitraryK: ArbitraryK[Maybe] = new ArbitraryK[Maybe] {
     def synthesize[A: Arbitrary]: Arbitrary[Maybe[A]] = arbitraryMaybe
   }
+
+  implicit def arbitraryMaybeT[F[_], A](implicit F: ArbitraryK[F],
+                                        A: Arbitrary[A]): Arbitrary[MaybeT[F, A]] =
+    Arbitrary(arbitrary(F.synthesize[Maybe[A]]).map(MaybeT.apply))
+
+  implicit def maybeTArbitraryK[F[_]](implicit F: ArbitraryK[F]): ArbitraryK[MaybeT[F,?]] =
+    new ArbitraryK[MaybeT[F,?]] {
+      def synthesize[A: Arbitrary]: Arbitrary[MaybeT[F,A]] =
+        Arbitrary(arbitrary(F.synthesize[Maybe[A]]).map(MaybeT.apply))
+  }
 }
