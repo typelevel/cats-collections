@@ -1,88 +1,56 @@
 package dogs
 
-import Predef._
-import List._
-import Option._
-import Eval._
+import cats._
+import cats.Eval._
+import Lst._
+import Maybe._
 
-/**
- * A "difference list" - A List like structure with O(1) appends.
- * Based on `Data.DList`, a Haskell library by Don Stewart.
- */
-final class DList[A](val run: List[A] => Eval[List[A]]) {
+import scala.Boolean
 
-  /**
-   * Prepend the contents of this dlist to the given tail.
-   */
-  def apply(tail: List[A]): Eval[List[A]] = run(tail)
+case class DList[A](run: Lst[A] => Eval[Lst[A]]) extends DListMethods[A] {
 
-  /**
-   * Prepend a single element to this DList
-   * O(1)
-   */
-  def +:(a: A): DList[A] = new DList(t => defer(apply(t)) map (a :: _))
+  def apply(tail: Lst[A]): Eval[Lst[A]] = run(tail)
 
-  /**
-   * append a single element to this DList
-   * O(1)
-   */
-  def :+(a: A): DList[A] = this ++ DList(List(a))
+  def +:(a: A): DList[A] = DList(as => defer(apply(as) map (a :: _)))
 
-  /**
-   * Append a list to this DList
-   * O(1)
-   */
-  def ++(as: DList[A]): DList[A] =
-    new DList(tail => as(tail) flatMap apply)
+  def :+(a: A): DList[A] = DList(as => defer(apply(a :: as)))
 
-  /**
-   * Destructure the DList into a head and a tail, and pass both to a
-   * function
-   * O(n) where n is the number of append operations in this DList
-   */
-  def uncons[B](z: Eval[B], f: (A, DList[A]) => Eval[B]): Eval[B] =
-    run(List.empty) flatMap {
-      case El() => z
-      case h Nel t => f(h, DList(t))
-    }
-
-  /**
-   * O(n)
-   */
-  def toList: List[A] = run(empty).value
-
-  /** 
-   * Get the first element of the list, if any. 
-   * O(n) where n is the number of append operations in this DList
-   */
-  def headOption: Option[A] = uncons[Option[A]](now(none),(x, _) => now(Some(x))).value
-
-  /** 
-   * Get the tail of the list, if any. 
-   * O(n) where n is the number of append operations in this DList
-   */
-  def tailOption: Option[DList[A]] =
-    uncons[Option[DList[A]]](now(none), (_, y) => now(Some(y))).value
-
-  /** 
-   * Tests whether list is empty.
-   * O(n) where n is the number of append operations in this DList
-   * which is a bit weirdly expensive
-   */
-  def isEmpty: Boolean = headOption.isNone
-
-  def foldr[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-    run(empty).flatMap( _.foldRight(b)(f))
-
-  def map[B](f: A => B): DList[B] =
-    new DList(t => run(empty).map(x => (x map f) ::: t))
-
-  def flatMap[B](f: A => DList[B]): DList[B] =
-   foldr(now(DList.empty[B]))((a,bs) => bs.map(bs => f(a) ++ bs)).value
+  def ++(as: => DList[A]): DList[A] =
+    DList(tail => defer(as(tail) flatMap apply))
+  
 }
 
 object DList {
-  def empty[A]: DList[A] = new DList(t => defer(now(t)))
-  def apply[A](as: List[A]): DList[A] = new DList(tail => defer(now(as ::: tail)))
+  def empty[A]: DList[A] = DList(now[Lst[A]] _)
+  def apply[A](as: Lst[A]): DList[A] = DList(tail => now(as ::: tail))
+}
+
+trait DListMethods[A] { self: DList[A] =>
+
+  def no[AA]: Eval[Maybe[AA]] = now(notThere)
+
+  def uncons[B](z: Eval[B], f: (A, DList[A]) => B): B =
+    run(empty).flatMap(_.cata(z, (x,l) => now(f(x,DList(l))))).value
+
+  def toLst: Lst[A] = run(empty).value
+
+  /** Get the first element of the list, if any. */
+  def headMaybe: Maybe[A] = uncons[Maybe[A]](no,(x, _) => There(x))
+
+  /** Tests whether list is empty. */
+  def isEmpty: Boolean = uncons(now(true), (_, _) => false)
+
+  /** Get the tail of the list, if any. */
+  def tailMaybe: Maybe[DList[A]] =
+    uncons[Maybe[DList[A]]](no, (_, y) => There(y))
+
+  def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+    run(empty).flatMap( _.foldRight(b)(f))
+
+  def map[B](f: A => B): DList[B] =
+    DList(t => run(empty).map(x => (x map f) ::: t))
+
+  def flatMap[B](f: A => DList[B]): DList[B] =
+   foldRight(now(DList.empty[B]))((a,bs) => bs.map(bs => f(a) ++ bs)).value
 }
 
