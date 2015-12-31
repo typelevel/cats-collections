@@ -1,10 +1,18 @@
 package dogs
 
 package object bedazzle {
-  object option extends OptionBedazzle
+  object option extends OptionSyntax
   object list extends ListBedazzle
-  object either extends EitherBedazzle
   object birds extends BedazzleBirds
+  object streaming extends StreamingSyntax
+  object validated extends ValidatedSyntax
+  object xor extends XorSyntax
 
-  object all extends OptionBedazzle with ListBedazzle with BedazzleBirds
+  object all extends
+      OptionSyntax with
+      ListBedazzle with
+      BedazzleBirds with
+      StreamingSyntax with
+      XorSyntax with
+      ValidatedSyntax 
 }
