@@ -9,8 +9,6 @@ import dogs.Order.Ordering
 import dogs.Predef._
 import org.scalatest._
 
-import dogs.bedazzle._
-
 
 
 class BinaryTreeTestAdd extends FlatSpec with Matchers {
@@ -70,6 +68,26 @@ class BinaryTreeTestAdd extends FlatSpec with Matchers {
   }
 }
 
+class BinaryTreeTestJoins extends FlatSpec with Matchers {
+  implicit val cmp =  new Order[Int] {
+    override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
+      case 0  => Order.EQ
+      case -1 => Order.LT
+      case 1  => Order.GT
+    }
+  }
+
+  "a tree" should "be the same after joined with an empty tree" in {
+    val tree = BinaryTree(5) + 3 + 2 + 7 + 9
+
+    val empty = BinaryTree.empty[Int]
+
+    val joined = tree ++ empty
+
+    tree.toLst should contain inOrderOnly(2, 3, 5, 7, 9)
+  }
+}
+
 class BinaryTreeTestWalk extends FlatSpec with Matchers {
   implicit val cmp =  new Order[Int] {
     override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
@@ -84,8 +102,26 @@ class BinaryTreeTestWalk extends FlatSpec with Matchers {
 
     val sorted = tree.toLst
 
-
     sorted should contain inOrder(1, 2, 3, 5)
+  }
+
+  "min" should "return most left item" in {
+    val tree = BinaryTree(5).add(6).add(7).add(2).add(3).add(1)
+
+    tree.min() should be(Some(1))
+  }
+
+  "max" should "return most right item" in {
+    val tree = BinaryTree(5).add(6).add(7).add(2).add(3).add(1)
+
+    tree.max() should be(Some(7))
+  }
+
+  "min and max" should "return some" in {
+    val empty = BinaryTree.empty[Int]
+
+    empty.min() should be(None())
+    empty.max() should be(None())
   }
 }
 
@@ -133,7 +169,5 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
 
     sorted should contain inOrder(1, 2, 3, 5, 8)
   }
-
-
 }
 

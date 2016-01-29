@@ -28,13 +28,25 @@ abstract class BinaryTree[A] {
 
   def min(): Option[A] =  {
     @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil() => x
-      case Branch(a, l, r) => loop(l, a)
+      case BTNil()          =>  x
+      case Branch(a, l, _)  =>  loop(l, a)
     }
 
     this match {
       case BTNil()  => None()
       case Branch(a, l, _)  =>  loop(l, a)
+    }
+  }
+
+  def max(): Option[A] = {
+    @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
+      case BTNil()          =>  x
+      case Branch(a, _, r)  =>  loop(r, a)
+    }
+
+    this match {
+      case BTNil()          =>  None()
+      case Branch(a, _, r)  =>  loop(r, a)
     }
   }
 
@@ -46,6 +58,8 @@ abstract class BinaryTree[A] {
       case GT =>  Branch(Some(a), l, r.add(x))
     }
   }
+
+  def +(x: A)(implicit order: Order[A]): Branch[A] = add(x)
 
   def remove(x: A)(implicit order: Order[A]): BinaryTree[A] = this match {
     case BTNil()                  =>  BinaryTree.empty
@@ -61,12 +75,19 @@ abstract class BinaryTree[A] {
 
           min match {
             case Some(a)  =>  Branch(min, x, y.remove(a))
-            case None()     =>  x
+            case None()   =>  x //<- this should never happen
           }
         }
       }
     }
   }
+
+
+  def join(another: BinaryTree[A]) = another match {
+    case BTNil()        =>  this
+  }
+
+  def ++(another: BinaryTree[A]) = join(another)
 }
 
 object BinaryTree {
@@ -78,7 +99,6 @@ object BinaryTree {
 case class Branch[A](value: Option[A],
                       left: BinaryTree[A],
                       right: BinaryTree[A]) extends BinaryTree[A] {
-
 
 
   override def isEmpty: Boolean = false
