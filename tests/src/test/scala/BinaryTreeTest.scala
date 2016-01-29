@@ -133,5 +133,7 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
 
     sorted should contain inOrder(1, 2, 3, 5, 8)
   }
+
+
 }
 
