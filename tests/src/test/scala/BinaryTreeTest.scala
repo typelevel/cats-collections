@@ -7,12 +7,13 @@ package tests
 
 import dogs.Order.Ordering
 import dogs.Predef._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest._
+
 import dogs.bedazzle._
 
 
 
-class BinaryTreeTest extends FlatSpec with Matchers {
+class BinaryTreeTestAdd extends FlatSpec with Matchers {
 
    implicit val cmp =  new Order[Int] {
     override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
@@ -66,6 +67,71 @@ class BinaryTreeTest extends FlatSpec with Matchers {
     result.value should be(Some(5))
     result.right.value should be(Some(7))
     result.right.left.value should be(Some(6))
+  }
+}
+
+class BinaryTreeTestWalk extends FlatSpec with Matchers {
+  implicit val cmp =  new Order[Int] {
+    override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
+      case 0  => Order.EQ
+      case -1 => Order.LT
+      case 1  => Order.GT
+    }
+  }
+
+  "walk in order" should "return sorted seq" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3)
+
+    val sorted = tree.toLst
+
+
+    sorted should contain inOrder(1, 2, 3, 5)
+  }
+}
+
+class BinaryTreeTestRemove extends FlatSpec with Matchers {
+  implicit val cmp = new Order[Int] {
+    override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
+      case 0 => Order.EQ
+      case -1 => Order.LT
+      case 1 => Order.GT
+    }
+  }
+
+  "remove" should "return DBNil when empty" in {
+    val empty = BinaryTree.empty[Int]
+
+    empty should be(empty.remove(5))
+  }
+
+  "remove leaft" should "keep same tree structure - leaft" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3)
+
+    val result = tree.remove(1)
+
+    val sorted = result.toLst
+
+    sorted should contain inOrder(2, 3, 5)
+  }
+
+  "remove to the left" should "point parent to child of the one removed (left)" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3)
+
+    val result = tree.remove(2)
+
+    val sorted = result.toLst
+
+    sorted should contain inOrder(1, 3, 5)
+  }
+
+  "remove to right" should "point parent to child of of the one removed (right)" in {
+    val tree = BinaryTree(5).add(7).add(8).add(2).add(1).add(3)
+
+    val result = tree.remove(7)
+
+    val sorted = result.toLst
+
+    sorted should contain inOrder(1, 2, 3, 5, 8)
   }
 }
 
