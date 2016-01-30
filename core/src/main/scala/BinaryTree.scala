@@ -9,6 +9,7 @@ import Predef._
 import dogs.Order.{GT, EQ, LT}
 
 import scala.annotation.tailrec
+import scala.List._
 
 
 abstract class BinaryTree[A] {
@@ -21,8 +22,8 @@ abstract class BinaryTree[A] {
 
   def isEmpty: Boolean
 
-  def toLst(): scala.List[A] = this match {
-    case BTNil()  => scala.List()
+  def toLst(): List[A] = this match {
+    case BTNil()  => El[A]
     case Branch(Some(a), l, r)  =>  l.toLst ::: (a :: r.toLst)
   }
 
@@ -83,11 +84,20 @@ abstract class BinaryTree[A] {
   }
 
 
-  def join(another: BinaryTree[A]) = another match {
-    case BTNil()        =>  this
+  def join(another: BinaryTree[A])(implicit order: Order[A]) = {
+
+    @tailrec def build(sub: BinaryTree[A], xs: List[A]): BinaryTree[A] = xs match {
+      case El()          =>  sub
+      case Nel(h, t)     =>  build(sub + h, t)
+    }
+
+    another match {
+      case BTNil()        =>  this
+      case _           =>  build(this, another.toLst())
+    }
   }
 
-  def ++(another: BinaryTree[A]) = join(another)
+  def ++(another: BinaryTree[A])(implicit order: Order[A]) = join(another)
 }
 
 object BinaryTree {

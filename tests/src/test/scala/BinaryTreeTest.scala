@@ -8,6 +8,7 @@ package tests
 import dogs.Order.Ordering
 import dogs.Predef._
 import org.scalatest._
+import tests.utils._
 
 
 
@@ -84,7 +85,16 @@ class BinaryTreeTestJoins extends FlatSpec with Matchers {
 
     val joined = tree ++ empty
 
-    tree.toLst should contain inOrderOnly(2, 3, 5, 7, 9)
+    ScalaListConverter.toScalaList(tree.toLst) should contain inOrderOnly(2, 3, 5, 7, 9)
+  }
+
+  it should "the same plus items from the other tree" in {
+    val tree = BinaryTree(5) + 3 + 2 + 7 + 9
+    val another = BinaryTree(1) + 4 + 8
+
+    val joined = tree ++ another
+
+    ScalaListConverter.toScalaList(joined.toLst) should contain inOrder(1, 2, 3, 4, 5, 7, 8, 9)
   }
 }
 
@@ -102,7 +112,7 @@ class BinaryTreeTestWalk extends FlatSpec with Matchers {
 
     val sorted = tree.toLst
 
-    sorted should contain inOrder(1, 2, 3, 5)
+    ScalaListConverter.toScalaList(sorted) should contain inOrder(1, 2, 3, 5)
   }
 
   "min" should "return most left item" in {
@@ -147,7 +157,7 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
 
     val sorted = result.toLst
 
-    sorted should contain inOrder(2, 3, 5)
+    ScalaListConverter.toScalaList(sorted) should contain inOrder(2, 3, 5)
   }
 
   "remove to the left" should "point parent to child of the one removed (left)" in {
@@ -157,7 +167,7 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
 
     val sorted = result.toLst
 
-    sorted should contain inOrder(1, 3, 5)
+    ScalaListConverter.toScalaList(sorted) should contain inOrder(1, 3, 5)
   }
 
   "remove to right" should "point parent to child of of the one removed (right)" in {
@@ -167,7 +177,7 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
 
     val sorted = result.toLst
 
-    sorted should contain inOrder(1, 2, 3, 5, 8)
+    ScalaListConverter.toScalaList(sorted) should contain inOrder(1, 2, 3, 5, 8)
   }
 }
 
