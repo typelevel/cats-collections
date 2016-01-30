@@ -107,12 +107,36 @@ class BinaryTreeTestWalk extends FlatSpec with Matchers {
     }
   }
 
-  "walk in order" should "return sorted seq" in {
+  "toLst" should "return sorted seq" in {
     val tree = BinaryTree(5).add(2).add(1).add(3)
 
     val sorted = tree.toLst
 
     ScalaListConverter.toScalaList(sorted) should contain inOrder(1, 2, 3, 5)
+  }
+
+  "walk in in-order" should "return sorted seq" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3)
+
+    val sorted = tree.inorder
+
+    sorted should be (tree.toLst)
+  }
+
+  "walk in pre-order" should "return node-left-right for each node" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3)
+
+    val preorder = tree.preorder
+
+    ScalaListConverter.toScalaList(preorder) should contain inOrder(5, 2, 1, 3)
+  }
+
+  "walk in pos-order" should "return left-right-node for each node" in {
+    val tree = BinaryTree(5).add(2).add(1).add(3) + 6
+
+    val preorder = tree.posorder
+
+    ScalaListConverter.toScalaList(preorder) should contain inOrder(1, 3, 2, 6, 5)
   }
 
   "min" should "return most left item" in {

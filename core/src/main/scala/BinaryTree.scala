@@ -23,8 +23,20 @@ abstract class BinaryTree[A] {
   def isEmpty: Boolean
 
   def toLst(): List[A] = this match {
-    case BTNil()  => El[A]
+    case BTNil()                =>  El[A]
     case Branch(Some(a), l, r)  =>  l.toLst ::: (a :: r.toLst)
+  }
+
+  def inorder() = toLst()
+
+  def preorder(): List[A] = this match {
+    case BTNil()                =>  El[A]
+    case Branch(Some(a), l, r)  =>  a :: l.preorder ::: r.preorder
+  }
+
+  def posorder(): List[A] = this match {
+    case BTNil()                =>  El[A]
+    case Branch(Some(a), l, r)  =>  l.posorder() ::: r.posorder() ::: Nel(a, El[A])
   }
 
   def min(): Option[A] =  {
@@ -109,6 +121,7 @@ object BinaryTree {
 case class Branch[A](value: Option[A],
                       left: BinaryTree[A],
                       right: BinaryTree[A]) extends BinaryTree[A] {
+
 
 
   override def isEmpty: Boolean = false
