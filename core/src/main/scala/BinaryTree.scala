@@ -41,54 +41,54 @@ abstract class BinaryTree[A] {
 
   def min(): Option[A] =  {
     @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil()          =>  x
-      case Branch(a, l, _)  =>  loop(l, a)
+      case BTNil()              =>  x
+      case Branch(a, l, _)      =>  loop(l, a)
     }
 
     this match {
-      case BTNil()  => None()
-      case Branch(a, l, _)  =>  loop(l, a)
+      case BTNil()              => None()
+      case Branch(a, l, _)      =>  loop(l, a)
     }
   }
 
   def max(): Option[A] = {
     @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil()          =>  x
-      case Branch(a, _, r)  =>  loop(r, a)
+      case BTNil()              =>  x
+      case Branch(a, _, r)      =>  loop(r, a)
     }
 
     this match {
-      case BTNil()          =>  None()
-      case Branch(a, _, r)  =>  loop(r, a)
+      case BTNil()              =>  None()
+      case Branch(a, _, r)      =>  loop(r, a)
     }
   }
 
   def add(x: A)(implicit order: Order[A]): Branch[A] = this match {
-    case BTNil()                  =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
-    case Branch(Some(a), l, r)    =>  order.compare(x, a) match {
-      case LT =>  Branch(Some(a), l.add(x), r)
-      case EQ =>  this.asInstanceOf[Branch[A]]
-      case GT =>  Branch(Some(a), l, r.add(x))
+    case BTNil()                =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
+    case Branch(Some(a), l, r)  =>  order.compare(x, a) match {
+      case LT                     =>  Branch(Some(a), l.add(x), r)
+      case EQ                     =>  this.asInstanceOf[Branch[A]]
+      case GT                     =>  Branch(Some(a), l, r.add(x))
     }
   }
 
   def +(x: A)(implicit order: Order[A]): Branch[A] = add(x)
 
   def remove(x: A)(implicit order: Order[A]): BinaryTree[A] = this match {
-    case BTNil()                  =>  BinaryTree.empty
-    case Branch(Some(a), l, r)    =>  order.compare(x, a) match {
+    case BTNil()                =>  BinaryTree.empty
+    case Branch(Some(a), l, r)  =>  order.compare(x, a) match {
       case LT =>  Branch(Some(a), l.remove(x), r)
       case GT =>  Branch(Some(a), l, r.remove(x))
       case EQ => (l, r) match {
-        case (BTNil(), BTNil()) => BinaryTree.empty
-        case (BTNil(), x)       => x
-        case (x, BTNil())       => x
-        case (x, y)             => {
+        case (BTNil(), BTNil())   => BinaryTree.empty
+        case (BTNil(), x)         => x
+        case (x, BTNil())         => x
+        case (x, y)               => {
           val min = y.min
 
           min match {
-            case Some(a)  =>  Branch(min, x, y.remove(a))
-            case None()   =>  x //<- this should never happen
+            case Some(a)            =>  Branch(min, x, y.remove(a))
+            case None()             =>  x //<- this should never happen
           }
         }
       }
@@ -99,13 +99,13 @@ abstract class BinaryTree[A] {
   def join(another: BinaryTree[A])(implicit order: Order[A]) = {
 
     @tailrec def build(sub: BinaryTree[A], xs: List[A]): BinaryTree[A] = xs match {
-      case El()          =>  sub
-      case Nel(h, t)     =>  build(sub + h, t)
+      case El()                 =>  sub
+      case Nel(h, t)            =>  build(sub + h, t)
     }
 
     another match {
-      case BTNil()        =>  this
-      case _           =>  build(this, another.toLst())
+      case BTNil()              =>  this
+      case _                    =>  build(this, another.toLst())
     }
   }
 
