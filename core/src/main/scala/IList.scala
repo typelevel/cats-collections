@@ -48,7 +48,7 @@ sealed abstract class IList[A] extends Product with Serializable {
     foldRight(b)(f)
 
   /** Returns `f` applied to contents if non-empty, otherwise the zero of `B`. */
-  final def <^>[B](f: OneAnd[A, IList] => B)(implicit B: Monoid[B]): B =
+  final def <^>[B](f: OneAnd[IList, A] => B)(implicit B: Monoid[B]): B =
     uncons(B.empty, (h, t) => f(OneAnd(h, t)))
 
   def collect[B](pf: PartialFunction[A,B]): IList[B] = {

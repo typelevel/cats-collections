@@ -180,7 +180,7 @@ sealed abstract class Dequeue[A] {
 }
 
 object Dequeue extends DequeueInstances {
-  type NEL[A] = OneAnd[A, IList]
+  type NEL[A] = OneAnd[IList, A]
 
   def apply[A](as: A*) = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
 
@@ -216,7 +216,7 @@ private[dogs] final case class SingletonDequeue[A](single: A) extends Dequeue[A]
   * a queue which has at least two elements, it is guaranteed that the
   * front list and back lists cannot be empty
   */
-private[dogs] final case class FullDequeue[A](front: OneAnd[A, IList], fsize: Int, back: OneAnd[A, IList], backSize: Int) extends Dequeue[A]  {
+private[dogs] final case class FullDequeue[A](front: OneAnd[IList, A], fsize: Int, back: OneAnd[IList, A], backSize: Int) extends Dequeue[A]  {
   override def isEmpty = false
   override def frontMaybe = Maybe.there(front.head)
   override def backMaybe = Maybe.there(back.head)

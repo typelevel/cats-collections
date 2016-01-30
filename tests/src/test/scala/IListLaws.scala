@@ -3,7 +3,7 @@ package tests
 
 import cats._
 import cats.std.all._
-import cats.laws.discipline.{ArbitraryK,SerializableTests,TraverseTests}
+import cats.laws.discipline.{SerializableTests,TraverseTests}
 import org.scalatest.FunSuite
 import org.typelevel.discipline.scalatest.Discipline
 import scala.{Int,Option}
@@ -15,10 +15,11 @@ import org.scalacheck.Arbitrary._
 class IListLaws extends FunSuite with Discipline {
   import IList._
 
+/*
   implicit val ilistArbitraryK: ArbitraryK[IList] = new ArbitraryK[IList] {
       def synthesize[A: Arbitrary]: Arbitrary[IList[A]] = arbitrayIList
   }
-
+*/
   implicit def arbitrayIList[A : Arbitrary]: Arbitrary[IList[A]] = Arbitrary(arbitrary[List[A]].map(IList.fromList))
 
   implicit def monoid[A]: Monoid[IList[A]] = new Monoid[IList[A]] {

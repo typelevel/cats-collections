@@ -304,4 +304,18 @@ trait NelInstances {
     new SemigroupK[Nel] {
       def combine[A](x: Nel[A], y: Nel[A]): Nel[A] = x ::: y
     }
+
+  implicit def nelEq[A](implicit A: Eq[A]): Eq[Nel[A]] = new Eq[Nel[A]] {
+    override def eqv(left: Nel[A], right: Nel[A]): Boolean =
+      return A.eqv(left.head, right.head) && lstEq[A].eqv(left.tail, right.tail)
+  }
+
+  implicit def lstEq[A](implicit A: Eq[A]): Eq[Lst[A]] = new Eq[Lst[A]] {
+    override def eqv(left: Lst[A], right: Lst[A]): Boolean =
+      (left, right) match {
+        case (El(), El()) => true
+        case (Nel(l, ll), Nel(r, rr)) => A.eqv(l,r) && eqv(ll,rr)
+        case _ => false
+      }
+  }
 }

@@ -3,10 +3,9 @@ package dogs
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 import scala.Predef.identity
-import scala.Boolean
+import scala.{Boolean,None, Option, Some, StringContext}
 import cats._
 import cats.data._
-import scala.{None, Option, Some, StringContext}
 import scala.Predef.implicitly
 
 /** An optional value

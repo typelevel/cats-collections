@@ -350,7 +350,7 @@ object IListTest extends Properties("IListTest") {
   }
 
   property("toNel") = forAll { ns: List[Int] =>
-    IList(ns: _*).toNel === ns.headOption.map(h => OneAnd[Int,List](h, ns.tail))
+    IList(ns: _*).toNel === ns.headOption.map(h => OneAnd[List,Int](h, ns.tail))
   }
 
   property("toStream") = forAll { ns: List[Int] =>
