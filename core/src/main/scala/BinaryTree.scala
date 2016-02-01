@@ -4,15 +4,11 @@
 
 package dogs
 
-import javafx.scene.transform.Rotate
-
 import Predef._
-
 import dogs.Order.{GT, EQ, LT}
-
 import scala.annotation.tailrec
 import scala.math
-import scala.List._
+
 
 
 abstract class BinaryTree[A] {
@@ -22,8 +18,9 @@ abstract class BinaryTree[A] {
   val left: BinaryTree[A]
   val right: BinaryTree[A]
 
-  def balanceFactor: Int
-
+  private [dogs] val size: Int
+  private[dogs] val height: Int
+  private [dogs] def balanceFactor: Int
   private[dogs] def update(): BinaryTree[A]
 
   def isEmpty: Boolean
@@ -59,13 +56,23 @@ abstract class BinaryTree[A] {
 
   def max(): Option[A] = {
     @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil()              =>  x
+      case BTNil()                    =>  x
       case Branch(a, _, r, _, _)      =>  loop(r, a)
     }
 
     this match {
-      case BTNil()              =>  None()
+      case BTNil()                    =>  None()
       case Branch(a, _, r, _, _)      =>  loop(r, a)
+    }
+  }
+
+  def contains(x: A)(implicit order: Order[A]): Boolean = this match {
+    case BTNil()                      =>  false
+
+    case Branch(Some(a), l, r, _, _)  => order.compare(x, a) match {
+      case LT                             =>  l.contains(x)
+      case EQ                             =>  true
+      case GT                             =>  r.contains(x)
     }
   }
 
@@ -154,8 +161,6 @@ abstract class BinaryTree[A] {
     balance(del(x))
   }
 
-
-
   def join(another: BinaryTree[A])(implicit order: Order[A]) = {
 
     @tailrec def build(sub: BinaryTree[A], xs: List[A]): BinaryTree[A] = xs match {
@@ -172,9 +177,6 @@ abstract class BinaryTree[A] {
   def ++(another: BinaryTree[A])(implicit order: Order[A]) = join(another)
 
 
-  val size: Int
-
-  val height: Int
 
 }
 
@@ -183,17 +185,17 @@ abstract class BinaryTree[A] {
 case class Branch[A](value: Option[A],
                      left: BinaryTree[A],
                      right: BinaryTree[A],
-                     val size: Int = 0,
-                     val height: Int = 0) extends BinaryTree[A] {
+                     private [dogs] val size: Int = 0,
+                     private[dogs] val height: Int = 0) extends BinaryTree[A] {
 
-  override def balanceFactor: Int = this match {
+  private [dogs] override def balanceFactor: Int = this match {
     case Branch(_, BTNil(), BTNil(), _, _)    =>  0
     case Branch(_, BTNil(), r, _, _)          =>  r.asInstanceOf[Branch[A]].height
     case Branch(_, l, BTNil(), _, _)          =>  -1 * l.asInstanceOf[Branch[A]].height
     case Branch(_, l, r, _, _)                =>  r.asInstanceOf[Branch[A]].height - l.asInstanceOf[Branch[A]].height
   }
 
-  override private [dogs] def update(): BinaryTree[A] = this match {
+  private [dogs] override def update(): BinaryTree[A] = this match {
     case Branch(a, BTNil(), BTNil(), _, _)  =>  Branch(a, BTNil(), BTNil(), 1, 1)
     case Branch(a, BTNil(), r, _, _)        =>  {
       val s = 1 + r.asInstanceOf[Branch[A]].size
@@ -237,12 +239,10 @@ case object BTNil extends BinaryTree[Nothing] {
   override val left: BinaryTree[Nothing] = this
   override val right: BinaryTree[Nothing] = this
 
-  override private[dogs] def update(): BinaryTree[Nothing] = this
-
-  override def balanceFactor: Int = 0
-
-  override val size: Int = 0
-  override val height: Int = 0
+  private [dogs] override def update(): BinaryTree[Nothing] = this
+  private [dogs] override def balanceFactor: Int = 0
+  private [dogs] override val size: Int = 0
+  private [dogs] override val height: Int = 0
 }
 
 object BinaryTree {

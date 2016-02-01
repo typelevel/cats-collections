@@ -213,3 +213,25 @@ class BinaryTreeTestRemove extends FlatSpec with Matchers {
   }
 }
 
+class BinaryTreeTest extends FlatSpec with Matchers{
+  implicit val cmp =  new Order[Int] {
+    override def apply(l: Int, r: Int): Ordering = l.compareTo(r) match {
+      case 0  => Order.EQ
+      case -1 => Order.LT
+      case 1  => Order.GT
+    }
+  }
+
+  "Binary" should "return false when asking for non-existence item" in {
+    val tree = BinaryTree(5) + 4 + 1
+
+    tree.contains(2) should be(false)
+  }
+
+  it should "return true when asking for item in the tree" in {
+    val tree = BinaryTree(5) + 4 + 1 + 2
+
+    tree.contains(2) should be(true)
+  }
+}
+
