@@ -57,16 +57,25 @@ class BinaryTreeTestAdd extends FlatSpec with Matchers {
     result.right.value should be(Some(7))
   }
 
-  "add" should "insert value recuersiverly" in {
+  "add" should "balance the tree after item added" in {
+    val tree = BinaryTree(3) + 2 + 1
 
-    val branch = BinaryTree(5)
-    
-    val result = branch.add(7).add(6)
+    tree.value should be(Some(2))
+    tree.left.value should be(Some(1))
+    tree.right.value should be (Some(3))
 
-    result.value should be(Some(5))
-    result.right.value should be(Some(7))
-    result.right.left.value should be(Some(6))
+    val second = tree + 4
+
+    second.right.right.value should be(Some(4))
+
+    val third = second + 5
+    third.right.value should be(Some(4))
+    third.right.left.value should be(Some(3))
+    third.right.right.value should be(Some(5))
   }
+
+
+
 }
 
 class BinaryTreeTestJoins extends FlatSpec with Matchers {
