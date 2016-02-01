@@ -69,7 +69,7 @@ abstract class BinaryTree[A] {
     }
   }
 
-  def balance(tree: BinaryTree[A]): BinaryTree[A] = {
+  private def balance(tree: BinaryTree[A]): BinaryTree[A] = {
     var t = tree.update
 
     if (t.balanceFactor > 1) {
@@ -90,13 +90,13 @@ abstract class BinaryTree[A] {
     return t
   }
 
-  def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
+  private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
     if (direction < 0) {  // left
 
       if (x == BTNil() || x.right == BTNil()) return x
 
       val y = x.right
-      val a = Branch(x.value, x.left, y.left, x.size, x.height).update()
+      val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
 
       val b = Branch(y.value, a, y.right, y.size, y.height).update()
 
@@ -106,9 +106,9 @@ abstract class BinaryTree[A] {
       if (x == BTNil() || x.left == BTNil()) return x
 
       val y = x.left
-      val a = Branch(x.value, BTNil(), y.right, x.size, x.height).update()
+      val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
 
-      val b = Branch(y.value, y.left, a).update()
+      val b = Branch(y.value, y.left, a, y.size, y.height).update()
 
       return b
     }
@@ -129,26 +129,32 @@ abstract class BinaryTree[A] {
 
   def +(x: A)(implicit order: Order[A]): BinaryTree[A] = add(x)
 
-  def remove(x: A)(implicit order: Order[A]): BinaryTree[A] = this match {
-    case BTNil()                =>  BinaryTree.empty
-    case Branch(Some(a), l, r, _, _)  =>  order.compare(x, a) match {
-      case LT =>  Branch(Some(a), l.remove(x), r)
-      case GT =>  Branch(Some(a), l, r.remove(x))
-      case EQ => (l, r) match {
-        case (BTNil(), BTNil())   => BinaryTree.empty
-        case (BTNil(), x)         => x
-        case (x, BTNil())         => x
-        case (x, y)               => {
-          val min = y.min
+  def remove(x: A)(implicit order: Order[A]): BinaryTree[A] = {
+    def del(x:A)(implicit order: Order[A]): BinaryTree[A] = this match {
+      case BTNil() => BinaryTree.empty
+      case Branch(Some(a), l, r, _, _) => order.compare(x, a) match {
+        case LT => Branch(Some(a), l.remove(x), r)
+        case GT => Branch(Some(a), l, r.remove(x))
+        case EQ => (l, r) match {
+          case (BTNil(), BTNil()) => BinaryTree.empty
+          case (BTNil(), x) => x
+          case (x, BTNil()) => x
+          case (x, y) => {
+            val min = y.min
 
-          min match {
-            case Some(a)            =>  Branch(min, x, y.remove(a))
-            case None()             =>  x //<- this should never happen
+            min match {
+              case Some(a) => Branch(min, x, y.remove(a))
+              case None() => x //<- this should never happen
+            }
           }
         }
       }
     }
+
+    balance(del(x))
   }
+
+
 
   def join(another: BinaryTree[A])(implicit order: Order[A]) = {
 
