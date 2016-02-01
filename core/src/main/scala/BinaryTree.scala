@@ -26,19 +26,19 @@ abstract class BinaryTree[A] {
   def isEmpty: Boolean
 
   def toLst(): List[A] = this match {
-    case BTNil()                =>  El[A]
+    case BTNil()                      =>  El[A]
     case Branch(Some(a), l, r, _, _)  =>  l.toLst ::: (a :: r.toLst)
   }
 
   def inorder() = toLst()
 
   def preorder(): List[A] = this match {
-    case BTNil()                =>  El[A]
+    case BTNil()                      =>  El[A]
     case Branch(Some(a), l, r, _, _)  =>  a :: l.preorder ::: r.preorder
   }
 
   def posorder(): List[A] = this match {
-    case BTNil()                =>  El[A]
+    case BTNil()                      =>  El[A]
     case Branch(Some(a), l, r, _, _)  =>  l.posorder() ::: r.posorder() ::: Nel(a, El[A])
   }
 
@@ -49,7 +49,7 @@ abstract class BinaryTree[A] {
     }
 
     this match {
-      case BTNil()              => None()
+      case BTNil()                    => None()
       case Branch(a, l, _, _, _)      =>  loop(l, a)
     }
   }
@@ -76,55 +76,10 @@ abstract class BinaryTree[A] {
     }
   }
 
-  private def balance(tree: BinaryTree[A]): BinaryTree[A] = {
-    var t = tree.update
-
-    if (t.balanceFactor > 1) {
-      if (t.right.balanceFactor <= 0) {
-        t = Branch(t.value, t.left, rotate(t.right, 1), t.size, t.height)
-      }
-      t = rotate(t, -1)
-    } else {
-      if (t.balanceFactor < -1)
-      {
-        if (t.left.balanceFactor >= 0){
-          t = Branch(t.value, rotate(t.left, -1), t.right, t.size, t.height)
-        }
-        t = rotate(t, 1)
-      }
-    }
-
-    return t
-  }
-
-  private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
-    if (direction < 0) {  // left
-
-      if (x == BTNil() || x.right == BTNil()) return x
-
-      val y = x.right
-      val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
-
-      val b = Branch(y.value, a, y.right, y.size, y.height).update()
-
-      return b
-    }
-    else { //right
-      if (x == BTNil() || x.left == BTNil()) return x
-
-      val y = x.left
-      val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
-
-      val b = Branch(y.value, y.left, a, y.size, y.height).update()
-
-      return b
-    }
-  }
-
   def add(x: A)(implicit order: Order[A]): Branch[A] = {
     def insert(x: A, order: Order[A])  = this match {
-      case BTNil()                      =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
-      case Branch(Some(a), l, r, _, _)  =>  order.compare(x, a) match {
+      case BTNil()                    =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
+      case Branch(Some(a), l, r, _, _)=>  order.compare(x, a) match {
         case LT                     =>  Branch(Some(a), l.add(x)(order), r)
         case EQ                     =>  this.asInstanceOf[Branch[A]]
         case GT                     =>  Branch(Some(a), l, r.add(x)(order))
@@ -176,7 +131,50 @@ abstract class BinaryTree[A] {
 
   def ++(another: BinaryTree[A])(implicit order: Order[A]) = join(another)
 
+  private def balance(tree: BinaryTree[A]): BinaryTree[A] = {
+    var t = tree.update
 
+    if (t.balanceFactor > 1) {
+      if (t.right.balanceFactor <= 0) {
+        t = Branch(t.value, t.left, rotate(t.right, 1), t.size, t.height)
+      }
+      t = rotate(t, -1)
+    } else {
+      if (t.balanceFactor < -1)
+      {
+        if (t.left.balanceFactor >= 0){
+          t = Branch(t.value, rotate(t.left, -1), t.right, t.size, t.height)
+        }
+        t = rotate(t, 1)
+      }
+    }
+
+    return t
+  }
+
+  private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
+    if (direction < 0) {  // left
+
+      if (x == BTNil() || x.right == BTNil()) return x
+
+      val y = x.right
+      val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
+
+      val b = Branch(y.value, a, y.right, y.size, y.height).update()
+
+      return b
+    }
+    else { //right
+      if (x == BTNil() || x.left == BTNil()) return x
+
+      val y = x.left
+      val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
+
+      val b = Branch(y.value, y.left, a, y.size, y.height).update()
+
+      return b
+    }
+  }
 
 }
 

@@ -10,8 +10,6 @@ import dogs.Predef._
 import org.scalatest._
 import tests.utils._
 
-
-
 class BinaryTreeTestAdd extends FlatSpec with Matchers {
 
    implicit val cmp =  new Order[Int] {
