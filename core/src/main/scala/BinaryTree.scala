@@ -149,7 +149,7 @@ abstract class BinaryTree[A] {
       }
     }
 
-    return t
+    t
   }
 
   private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
