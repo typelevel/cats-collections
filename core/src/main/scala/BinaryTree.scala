@@ -188,16 +188,16 @@ case class Branch[A](value: Option[A],
 
   private [dogs] override def balanceFactor: Int = this match {
     case Branch(_, BTNil(), BTNil(), _, _)    =>  0
-    case Branch(_, BTNil(), r, _, _)          =>  r.asInstanceOf[Branch[A]].height
-    case Branch(_, l, BTNil(), _, _)          =>  -1 * l.asInstanceOf[Branch[A]].height
-    case Branch(_, l, r, _, _)                =>  r.asInstanceOf[Branch[A]].height - l.asInstanceOf[Branch[A]].height
+    case Branch(_, BTNil(), r, _, _)          =>  r.height
+    case Branch(_, l, BTNil(), _, _)          =>  -1 * l.height
+    case Branch(_, l, r, _, _)                =>  r.height - l.height
   }
 
   private [dogs] override def update(): BinaryTree[A] = this match {
     case Branch(a, BTNil(), BTNil(), _, _)  =>  Branch(a, BTNil(), BTNil(), 1, 1)
     case Branch(a, BTNil(), r, _, _)        =>  {
-      val s = 1 + r.asInstanceOf[Branch[A]].size
-      val h = 1 + r.asInstanceOf[Branch[A]].height
+      val s = 1 + r.size
+      val h = 1 + r.height
 
       Branch(a, BTNil(), r, s, h)
     }
@@ -218,11 +218,8 @@ case class Branch[A](value: Option[A],
 
   override def isEmpty: Boolean = false
 
-  def apply(): BinaryTree[A] = this.asInstanceOf[BinaryTree[A]]
 
   def apply[B](a: B) = Branch[B](Some(a), BTNil(), BTNil())
-
-
 }
 
 case object BTNil extends BinaryTree[Nothing] {
