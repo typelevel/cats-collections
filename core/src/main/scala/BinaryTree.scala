@@ -138,14 +138,18 @@ abstract class BinaryTree[A] {
       if (t.right.balanceFactor <= 0) {
         t = Branch(t.value, t.left, rotate(t.right, 1), t.size, t.height)
       }
-      t = rotate(t, -1)
+      else {
+        t = rotate(t, -1)
+      }
     } else {
       if (t.balanceFactor < -1)
       {
         if (t.left.balanceFactor >= 0){
           t = Branch(t.value, rotate(t.left, -1), t.right, t.size, t.height)
         }
-        t = rotate(t, 1)
+        else {
+          t = rotate(t, 1)
+        }
       }
     }
 
