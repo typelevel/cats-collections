@@ -180,7 +180,7 @@ abstract class BinaryTree[A] {
 
 
 
-case class Branch[A](value: Option[A],
+case class Branch[A] private[dogs](value: Option[A],
                      left: BinaryTree[A],
                      right: BinaryTree[A],
                      private [dogs] val size: Int = 0,
