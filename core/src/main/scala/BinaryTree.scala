@@ -202,14 +202,14 @@ case class Branch[A](value: Option[A],
       Branch(a, BTNil(), r, s, h)
     }
     case Branch(a, l, BTNil(), _, _)        =>  {
-      val s = 1 + l.asInstanceOf[Branch[A]].size
-      val h = 1 + l.asInstanceOf[Branch[A]].height
+      val s = 1 + l.size
+      val h = 1 + l.height
 
       Branch(a, l, BTNil(), s, h)
     }
     case Branch(a, l, r, _, _)              =>  {
-      val s = l.asInstanceOf[Branch[A]].size + r.asInstanceOf[Branch[A]].size
-      val h = 1 + math.max(l.asInstanceOf[Branch[A]].height, r.asInstanceOf[Branch[A]].height)
+      val s = l.size + r.size
+      val h = 1 + math.max(l.height, r.height)
 
       Branch(a, l, r, s, h)
     }
