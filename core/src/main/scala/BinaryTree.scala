@@ -193,7 +193,7 @@ case class Branch[A] private[dogs](value: Option[A],
     case Branch(_, l, r, _, _)                =>  r.height - l.height
   }
 
-  private [dogs] override def update(): BinaryTree[A] = this match {
+  private [dogs] override def update(): Branch[A] = this match {
     case Branch(a, BTNil(), BTNil(), _, _)  =>  Branch(a, BTNil(), BTNil(), 1, 1)
     case Branch(a, BTNil(), r, _, _)        =>  {
       val s = 1 + r.size
