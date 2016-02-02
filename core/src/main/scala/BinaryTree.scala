@@ -78,10 +78,10 @@ abstract class BinaryTree[A] {
 
   def add(x: A)(implicit order: Order[A]): Branch[A] = {
     def insert(x: A, order: Order[A])  = this match {
-      case BTNil()                    =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
-      case Branch(Some(a), l, r, _, _)=>  order.compare(x, a) match {
+      case BTNil()                              =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
+      case branch @ Branch(Some(a), l, r, _, _) =>  order.compare(x, a) match {
         case LT                     =>  Branch(Some(a), l.add(x)(order), r)
-        case EQ                     =>  this.asInstanceOf[Branch[A]]
+        case EQ                     =>  branch
         case GT                     =>  Branch(Some(a), l, r.add(x)(order))
       }
     }
