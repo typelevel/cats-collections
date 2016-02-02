@@ -155,24 +155,26 @@ abstract class BinaryTree[A] {
   private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
     if (direction < 0) {  // left
 
-      if (x == BTNil() || x.right == BTNil()) return x
+      if (x == BTNil() || x.right == BTNil()) {
+        x
+      }
+      else {
+        val y = x.right
+        val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
 
-      val y = x.right
-      val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
-
-      val b = Branch(y.value, a, y.right, y.size, y.height).update()
-
-      return b
+        Branch(y.value, a, y.right, y.size, y.height).update()
+      }
     }
     else { //right
-      if (x == BTNil() || x.left == BTNil()) return x
+      if (x == BTNil() || x.left == BTNil()) {
+        x
+      }
+      else {
+        val y = x.left
+        val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
 
-      val y = x.left
-      val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
-
-      val b = Branch(y.value, y.left, a, y.size, y.height).update()
-
-      return b
+        Branch(y.value, y.left, a, y.size, y.height).update()
+      }
     }
   }
 
