@@ -3,6 +3,7 @@ package dogs
 import scala.{Boolean,Double,Int,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.tailrec
+import dogs.bedazzle.birds._
 
 /**
  * Immutable, singly-linked list implementation.
@@ -16,7 +17,7 @@ import scala.annotation.tailrec
  *
  * The types defined here are as follows:
  *
- *  - Lst[A] represents a list of zero-or-more elements.
+ *  - List[A] represents a list of zero-or-more elements.
  *  - Nel[A] represents a list of one-or-more elements.
  *  - El[A]  represents an empty list (exactly zero elements).
  *
@@ -90,9 +91,9 @@ sealed abstract class List[A] {
   final def forall(p: A => Boolean): Boolean =
     find(a => !p(a)).isNone
 
-/*  final def contains(a: A)(implicit ev: Eq[A]): Boolean =
-    find(_ === a).isDefined
-*/
+  final def contains(a: A)(implicit ev: Eq[A]): Boolean =
+    find(_ == a).isDefined
+
 
   def reverse: List[A]
 
@@ -104,12 +105,6 @@ sealed abstract class List[A] {
       case El() => this
     }
 
-/*
-  def traverse[F[_], B](f: A => F[B])(implicit F: Applicative[F]): F[List[B]] =
-    foldRight(Eval.now(F.pure(List.empty[B]))) { (a, lfbs) =>
-      lfbs.map(fbs => F.map2(f(a), fbs)(_ :: _))
-    }.value
- */
   override def toString: String = {
     def loop(sb: StringBuilder, h: A, t: List[A]): String =
       t match {
@@ -123,6 +118,9 @@ sealed abstract class List[A] {
       case Nel(h, t) => loop(new StringBuilder("List("), h, t)
     }
   }
+
+  def toScalaList: scala.List[A] =
+    foldRight[scala.List[A]](Eval.now(scala.Nil))(_ :: _.value |> Eval.now).value
 }
 
 final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[A] {

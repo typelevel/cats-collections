@@ -10,4 +10,6 @@ object Order {
   case object LT extends Ordering
   case object EQ extends Ordering
   case object GT extends Ordering
+
+  def apply[A](implicit A: Order[A]): Order[A] = A
 }

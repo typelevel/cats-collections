@@ -5,246 +5,154 @@
 package dogs
 
 import Predef._
-import dogs.Order.{GT, EQ, LT}
+import dogs.Order.{GT, EQ, LT, Ordering}
 import scala.annotation.tailrec
 import scala.math
 
+sealed abstract class BinaryTree[A] {
+  import BinaryTree._
 
-
-abstract class BinaryTree[A] {
-
-  def value: Option[A]
-
-  val left: BinaryTree[A]
-  val right: BinaryTree[A]
-
-  private [dogs] val size: Int
-  private[dogs] val height: Int
-  private [dogs] def balanceFactor: Int
-  private[dogs] def update(): BinaryTree[A]
+  val size: Int
+  val height: Int
 
   def isEmpty: Boolean
 
-  def toLst(): List[A] = this match {
-    case BTNil()                      =>  El[A]
-    case Branch(Some(a), l, r, _, _)  =>  l.toLst ::: (a :: r.toLst)
+  def toList(): List[A] = this match {
+    case BTNil() =>  El[A]
+    case Branch(a, l, r) => l.toList ::: (a :: r.toList)
   }
 
-  def inorder() = toLst()
+  def inorder() = toList()
 
-  def preorder(): List[A] = this match {
-    case BTNil()                      =>  El[A]
-    case Branch(Some(a), l, r, _, _)  =>  a :: l.preorder ::: r.preorder
-  }
-
-  def posorder(): List[A] = this match {
-    case BTNil()                      =>  El[A]
-    case Branch(Some(a), l, r, _, _)  =>  l.posorder() ::: r.posorder() ::: Nel(a, El[A])
-  }
-
-  def min(): Option[A] =  {
-    @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil()              =>  x
-      case Branch(a, l, _, _, _)      =>  loop(l, a)
+  def min: Option[A] = {
+    @tailrec def loop(sub: BinaryTree[A], x: A): A = sub match {
+      case BTNil() =>  x
+      case Branch(a, l, _) => loop(l, a)
     }
 
     this match {
-      case BTNil()                    => None()
-      case Branch(a, l, _, _, _)      =>  loop(l, a)
+      case BTNil() => None()
+      case Branch(a, l, _) => Some(loop(l, a))
     }
   }
 
-  def max(): Option[A] = {
-    @tailrec def loop(sub: BinaryTree[A], x: Option[A]): Option[A] = sub match {
-      case BTNil()                    =>  x
-      case Branch(a, _, r, _, _)      =>  loop(r, a)
+  def max: Option[A] = {
+    @tailrec def loop(sub: BinaryTree[A], x: A): A = sub match {
+      case BTNil() =>  x
+      case Branch(a, _, r) => loop(r, a)
     }
 
     this match {
-      case BTNil()                    =>  None()
-      case Branch(a, _, r, _, _)      =>  loop(r, a)
+      case BTNil() => None()
+      case Branch(a, _, r) => Some(loop(r, a))
     }
   }
 
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
-    case BTNil()                      =>  false
+    case BTNil() => false
 
-    case Branch(Some(a), l, r, _, _)  => order.compare(x, a) match {
-      case LT                             =>  l.contains(x)
-      case EQ                             =>  true
-      case GT                             =>  r.contains(x)
+    case Branch(a, l, r) => order.compare(x, a) match {
+      case LT => l.contains(x)
+      case EQ => true
+      case GT => r.contains(x)
     }
   }
 
-  def add(x: A)(implicit order: Order[A]): Branch[A] = {
-    def insert(x: A, order: Order[A])  = this match {
-      case BTNil()                              =>  Branch(Some(x), BinaryTree.empty, BinaryTree.empty)
-      case branch @ Branch(Some(a), l, r, _, _) =>  order.compare(x, a) match {
-        case LT                     =>  Branch(Some(a), l.add(x)(order), r)
-        case EQ                     =>  branch
-        case GT                     =>  Branch(Some(a), l, r.add(x)(order))
+  def add(x: A)(implicit order: Order[A]): Branch[A] =
+    (this match {
+      case BTNil() =>  Branch(x, BinaryTree.empty, BinaryTree.empty)
+      case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
+        case LT => Branch(a, l.add(x), r)
+        case EQ => branch
+        case GT => Branch(a, l, r.add(x))
       }
-    }
-
-    balance(insert(x, order)).asInstanceOf[Branch[A]]
-  }
+    }).balance
 
   def +(x: A)(implicit order: Order[A]): BinaryTree[A] = add(x)
 
-  def remove(x: A)(implicit order: Order[A]): BinaryTree[A] = {
-    def del(x:A)(implicit order: Order[A]): BinaryTree[A] = this match {
+  def remove(x: A)(implicit order: Order[A]): BinaryTree[A] =
+    this match {
       case BTNil() => BinaryTree.empty
-      case Branch(Some(a), l, r, _, _) => order.compare(x, a) match {
-        case LT => Branch(Some(a), l.remove(x), r)
-        case GT => Branch(Some(a), l, r.remove(x))
-        case EQ => (l, r) match {
-          case (BTNil(), BTNil()) => BinaryTree.empty
-          case (BTNil(), x) => x
-          case (x, BTNil()) => x
-          case (x, y) => {
-            val min = y.min
-
-            min match {
-              case Some(a) => Branch(min, x, y.remove(a))
-              case None() => x //<- this should never happen
-            }
+      case Branch(a, l, r) =>
+        order.compare(x, a) match {
+          case LT => Branch(a, l.remove(x), r).balance
+          case GT => Branch(a, l, r.remove(x)).balance
+          case EQ => r.min match {
+            case None() => l
+            case Some(v) => Branch(v,l,r.remove(v)).balance
           }
         }
-      }
     }
 
-    balance(del(x))
-  }
-
   def join(another: BinaryTree[A])(implicit order: Order[A]) = {
-
+    // todo, no need to go to list, we need a TreeLoc
     @tailrec def build(sub: BinaryTree[A], xs: List[A]): BinaryTree[A] = xs match {
-      case El()                 =>  sub
-      case Nel(h, t)            =>  build(sub + h, t)
+      case El() =>  sub
+      case Nel(h, t) =>  build(sub + h, t)
     }
 
     another match {
-      case BTNil()              =>  this
-      case _                    =>  build(this, another.toLst())
+      case BTNil() => this
+      case _ => build(this, another.toList())
     }
   }
 
   def ++(another: BinaryTree[A])(implicit order: Order[A]) = join(another)
-
-  private def balance(tree: BinaryTree[A]): BinaryTree[A] = {
-    var t = tree.update
-
-    if (t.balanceFactor > 1) {
-      if (t.right.balanceFactor <= 0) {
-        t = Branch(t.value, t.left, rotate(t.right, 1), t.size, t.height)
-      }
-      t = rotate(t, -1)
-    } else {
-      if (t.balanceFactor < -1)
-      {
-        if (t.left.balanceFactor >= 0){
-          t = Branch(t.value, rotate(t.left, -1), t.right, t.size, t.height)
-        }
-        t = rotate(t, 1)
-      }
-    }
-
-    t
-  }
-
-  private def rotate(x: BinaryTree[A], direction: Int): BinaryTree[A] = {
-    if (direction < 0) {  // left
-
-      if (x == BTNil() || x.right == BTNil()) {
-        x
-      }
-      else {
-        val y = x.right
-        val a = Branch(x.value, x.left, BTNil(), x.size, x.height).update()
-
-        Branch(y.value, a, y.right, y.size, y.height).update()
-      }
-    }
-    else { //right
-      if (x == BTNil() || x.left == BTNil()) {
-        x
-      }
-      else {
-        val y = x.left
-        val a = Branch(x.value, BTNil(), x.right, x.size, x.height).update()
-
-        Branch(y.value, y.left, a, y.size, y.height).update()
-      }
-    }
-  }
-
-}
-
-
-
-case class Branch[A] private[dogs](value: Option[A],
-                     left: BinaryTree[A],
-                     right: BinaryTree[A],
-                     private [dogs] val size: Int = 0,
-                     private[dogs] val height: Int = 0) extends BinaryTree[A] {
-
-  private [dogs] override def balanceFactor: Int = this match {
-    case Branch(_, BTNil(), BTNil(), _, _)    =>  0
-    case Branch(_, BTNil(), r, _, _)          =>  r.height
-    case Branch(_, l, BTNil(), _, _)          =>  -1 * l.height
-    case Branch(_, l, r, _, _)                =>  r.height - l.height
-  }
-
-  private [dogs] override def update(): Branch[A] = this match {
-    case Branch(a, BTNil(), BTNil(), _, _)  =>  Branch(a, BTNil(), BTNil(), 1, 1)
-    case Branch(a, BTNil(), r, _, _)        =>  {
-      val s = 1 + r.size
-      val h = 1 + r.height
-
-      Branch(a, BTNil(), r, s, h)
-    }
-    case Branch(a, l, BTNil(), _, _)        =>  {
-      val s = 1 + l.size
-      val h = 1 + l.height
-
-      Branch(a, l, BTNil(), s, h)
-    }
-    case Branch(a, l, r, _, _)              =>  {
-      val s = l.size + r.size
-      val h = 1 + math.max(l.height, r.height)
-
-      Branch(a, l, r, s, h)
-    }
-  }
-
-
-  override def isEmpty: Boolean = false
-
-
-  def apply[B](a: B) = Branch[B](Some(a), BTNil(), BTNil())
-}
-
-case object BTNil extends BinaryTree[Nothing] {
-  override def isEmpty: Boolean = true
-
-  def apply[A](): BinaryTree[A] = this.asInstanceOf[BinaryTree[A]]
-
-  def unapply[A](a: BinaryTree[A]): Boolean = a.isEmpty
-
-  override def value: Option[Nothing] = None()
-
-  override val left: BinaryTree[Nothing] = this
-  override val right: BinaryTree[Nothing] = this
-
-  private [dogs] override def update(): BinaryTree[Nothing] = this
-  private [dogs] override def balanceFactor: Int = 0
-  private [dogs] override val size: Int = 0
-  private [dogs] override val height: Int = 0
 }
 
 object BinaryTree {
-  def apply[A](a: A): BinaryTree[A] = Branch(Some(a),empty,empty)
 
+  def apply[A](a: A): BinaryTree[A] = Branch(a,empty,empty)
   def empty[A]: BinaryTree[A] = BTNil()
+
+  private[dogs] case class Branch[A] private[dogs](value: A,
+                                                   left: BinaryTree[A],
+                                                   right: BinaryTree[A]) extends BinaryTree[A] {
+    val size = left.size + right.size + 1
+    val height = java.lang.Math.max(left.height, right.height) + 1
+
+    override def isEmpty: Boolean = false
+
+    private[dogs] def balance: Branch[A] = {
+      def rotation(l: Int, r: Int, allow: Int): Ordering =
+        if(l - r > allow ) GT
+        else if(r - l > allow) LT
+        else EQ
+
+      rotation(left.height, right.height, 1) match {
+        case EQ => this
+        case GT => left match {
+          case BTNil() => this
+          case Branch(lv,ll,lr) => rotation(ll.height, lr.height, 0) match {
+            case LT =>
+              val Branch(lrv,lrl,lrr) = lr
+              Branch(lrv,Branch(lv, ll, lrl), Branch(value, lrr, right))
+            case _ => Branch(lv, ll, Branch(value, lr, right))
+          }
+        }
+        case LT => right match {
+          case BTNil() => this
+          case Branch(rv,rl,rr) => rotation(rl.height, rr.height, 0) match {
+            case GT =>
+              val Branch(rlv,rll,rlr) = rl
+              Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
+            case _ => Branch(rv, Branch(value, left, rl), rr)
+          }
+        }
+      }
+    }
+  }
+
+  private[dogs] case object BTNil extends BinaryTree[Nothing] {
+    override def isEmpty: Boolean = true
+
+    def apply[A](): BinaryTree[A] = this.asInstanceOf[BinaryTree[A]]
+
+    def unapply[A](a: BinaryTree[A]): Boolean = a.isEmpty
+
+    override val size: Int = 0
+    override val height: Int = 0
+  }
+
 }
 
