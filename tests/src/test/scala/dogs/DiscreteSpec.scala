@@ -29,7 +29,7 @@ class DietTest extends FlatSpec with Matchers {
   it should "create a new node when add not adj item" in {
     val diet = Diet[BigInt].add(5).add(3).add(7)
 
-    val result = diet.disjoins()(d).map(l => l.toScalaList).toScalaList
+    val result = diet.disjointSets()(d).map(l => l.toScalaList).toScalaList
 
     result should contain inOrderOnly (scala.List(3), scala.List(5), scala.List(7))
   }
@@ -37,9 +37,17 @@ class DietTest extends FlatSpec with Matchers {
   it should "join nodes when item adj to existing seq" in {
     val diet = Diet[BigInt].add(5).add(6).add(1).add(3).add(2).add(8)
 
-    val result = diet.disjoins()(d).map(l => l.toScalaList).toScalaList
+    val result = diet.disjointSets()(d).map(l => l.toScalaList).toScalaList
 
     result should contain inOrderOnly (scala.List(1, 2, 3), scala.List(5, 6), scala.List(8))
+  }
+
+  it should "be always sorted" in {
+    val diet = Diet[BigInt].add(5).add(6).add(1).add(3).add(2).add(8)
+
+    val sorted = diet.toList()(d).toScalaList
+
+    sorted should contain inOrderOnly (1, 2, 3, 5, 6, 8)
   }
 }
 
