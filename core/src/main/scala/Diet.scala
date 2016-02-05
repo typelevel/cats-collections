@@ -83,6 +83,13 @@ object DRange {
   def apply[A](x: A, y: A) = new DRange[A](x, y)
 }
 
+/**
+ * Discrete Interval Encoding Tree (Diet) (https://web.engr.oregonstate.edu/~erwig/diet/).
+ * It stores subsets of types having a total order, a predecessor and a successor function described by Discrete[A]
+ *
+ * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
+ * disjoint sets.
+ */
 sealed abstract class Diet[A] {
   import Diet._
 
