@@ -91,7 +91,7 @@ sealed abstract class Diet[A] {
   val isEmpty: Boolean
 
   /**
-   * verify is a value is in the tree
+   * verify x is a value is in the tree
    */
   def contains(x: A)(implicit discrete: Discrete[A]): Boolean = this match {
     case EmptyDiet()          =>  false
@@ -105,7 +105,7 @@ sealed abstract class Diet[A] {
   }
 
   /**
-   * return a list of all disjoit sets in the tree where each set is represented by ARange
+   * return a list of all disjoint sets in the tree where each set is represented by ARange
    */
   def disjointSets(): List[DRange[A]] = this match {
     case EmptyDiet()          =>  El()
