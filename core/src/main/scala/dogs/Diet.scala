@@ -51,6 +51,17 @@ object DRange {
 }
 
 sealed abstract class Diet[A] {
+  def contains(x: A)(implicit discrete: Discrete[A]): Boolean = this match {
+    case EmptyDiet()          => false
+    case DietNode(a,b, l, r)  =>  (discrete.compare(x, a), discrete.compare(x, b)) match {
+      case (EQ, _)  =>  true
+      case (_, EQ)  =>  true
+      case (GT, LT) =>  true
+      case (LT, _)  =>  l.contains(x)
+      case (_, GT)  =>  r.contains(x)
+    }
+  }
+
   val isEmpty: Boolean
 
   def disjointSets(): List[DRange[A]] = this match {

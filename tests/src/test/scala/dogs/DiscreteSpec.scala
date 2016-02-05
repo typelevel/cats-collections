@@ -86,5 +86,19 @@ class DietTest extends FlatSpec with Matchers {
 
     other.toList.toScalaList should contain inOrderOnly (1, 2, 3, 4, 5, 6, 7)
   }
+
+  it should "contain items from range" in {
+    val diet = Diet[BigInt].add(5, 10).add(1, 3).add(12, 20)
+
+    diet.contains(1) should be (true)
+    diet.contains(2) should be (true)
+    diet.contains(3) should be (true)
+
+    diet.contains(4) should be (false)
+
+    diet.contains(6) should be (true)
+
+    diet.contains(15) should be (true)
+  }
 }
 
