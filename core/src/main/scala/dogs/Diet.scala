@@ -6,7 +6,6 @@
 package dogs
 
 import Predef._
-import dogs.DRange.DRange
 import dogs.Diet.{EmptyDiet, DietNode}
 import dogs.Order._
 
@@ -23,31 +22,31 @@ trait Discrete[A] extends Order[A]{
 }
 
 trait ARange[A] {
-  def apply(start: A, end: A): DRange[A]
+  def apply(start: A, end: A): ARange[A]
   def generate()(implicit discrete: Discrete[A]): List[A]
 }
 
-object DRange {
-  private [dogs] class DRange[A](val start: A, val end: A) extends ARange[A]{
+sealed class DRange[A](val start: A, val end: A) extends ARange[A]{
 
-    def generate()(implicit discrete: Discrete[A]): List[A] = {
-      @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
-        if (discrete.compare(a, b) == EQ) {
-          xs ::: Nel(a, El())
-        } else if (discrete.adj(a, b)) {
-          xs ::: Nel(a, Nel(b, El()))
-        }
-        else {
-          genRange(discrete.succ(a), b, xs ::: (Nel(a, El())))
-        }
+  def generate()(implicit discrete: Discrete[A]): List[A] = {
+    @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
+      if (discrete.compare(a, b) == EQ) {
+        xs ::: Nel(a, El())
+      } else if (discrete.adj(a, b)) {
+        xs ::: Nel(a, Nel(b, El()))
       }
-
-      genRange(start, end, El())
+      else {
+        genRange(discrete.succ(a), b, xs ::: (Nel(a, El())))
+      }
     }
 
-    override def apply(start: A, end: A): DRange[A] = DRange.apply(start, end)
+    genRange(start, end, El())
   }
 
+  override def apply(start: A, end: A): DRange[A] = DRange.apply(start, end)
+}
+
+object DRange {
   def apply[A](x: A, y: A) = new DRange[A](x, y)
 }
 
