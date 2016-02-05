@@ -237,7 +237,7 @@ sealed abstract class Diet[A] {
 }
 
 object Diet {
-  def apply[A](): Diet[A] = empty()
+  def apply[A](): Diet[A] = empty() 
 
   def empty[A](): Diet[A] = EmptyDiet()
 
