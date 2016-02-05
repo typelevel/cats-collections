@@ -84,8 +84,6 @@ object DRange {
 }
 
 sealed abstract class Diet[A] {
-
-
   import Diet._
 
   val isEmpty: Boolean
