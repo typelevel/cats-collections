@@ -14,22 +14,40 @@ import scala.collection.immutable.IndexedSeq
 
 
 
+/**
+ * Represent discrete operations that can be performed on A
+ */
+trait Discrete[A] extends Order[A] {
 
-trait Discrete[A] extends Order[A]{
+  /**
+   * return the successor of x
+   */
   def succ(x: A): A
+
+  /**
+   * return the predecessor of
+   */
   def pred(x: A): A
+
+  /**
+   * verify if x and y are consecutive
+   */
   def adj(x: A, y: A): Boolean = succ(x) == y
 }
 
+/**
+ * Represent a range [x, y] that can be generated using generate() or reverse().
+ */
 trait ARange[A] {
   def apply(start: A, end: A): ARange[A]
   def generate()(implicit discrete: Discrete[A]): List[A]
   def reverse()(implicit discrete: Discrete[A]): List[A]
 }
 
+/**
+ * Implementation of ARange that uses Discrete[A] to generate items in the range
+ */
 sealed class DRange[A](val start: A, val end: A) extends ARange[A]{
-
-
   def generate()(implicit discrete: Discrete[A]): List[A] = {
     @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
       if (discrete.compare(a, b) == EQ) {
@@ -74,6 +92,9 @@ sealed abstract class Diet[A] {
 
   val isEmpty: Boolean
 
+  /**
+   * verify is a value is in the tree
+   */
   def contains(x: A)(implicit discrete: Discrete[A]): Boolean = this match {
     case EmptyDiet()          =>  false
     case DietNode(a,b, l, r)  =>  (discrete.compare(x, a), discrete.compare(x, b)) match {
@@ -85,23 +106,38 @@ sealed abstract class Diet[A] {
     }
   }
 
+  /**
+   * return a list of all disjoit sets in the tree where each set is represented by ARange
+   */
   def disjointSets(): List[DRange[A]] = this match {
     case EmptyDiet()          =>  El()
     case DietNode(x, y, l, r) =>  l.disjointSets() ::: (DRange(x, y) :: r.disjointSets())
   }
 
+  /**
+   * convert tree in a sorted list from all disjoint sets in the tree
+   */
   def toList()(implicit discrete: Discrete[A]): List[A] =
     disjointSets().flatMap(lst => lst.generate())
 
+  /**
+   * add new value range [x, y] to de tree. If x > y then it will add range [y, x]
+   */
   def add(x: A, y: A)(implicit discrete: Discrete[A]): Diet[A] = {
     if (discrete.compare(x, y) == EQ) {
       add(x)
     }
-    else {
+    else if (discrete.compare(x, y) == LT) {
       add(x).add(discrete.succ(x), y)
+    }
+    else {
+      add(y, x)
     }
   }
 
+  /**
+   * add new value to de tree
+   */
   def add(value: A)(implicit discrete: Discrete[A]): Diet[A] = this match {
     case EmptyDiet()                  =>  DietNode[A](value, value, EmptyDiet(), EmptyDiet())
     case d @ DietNode(x, y, l, r)     => {
@@ -122,6 +158,9 @@ sealed abstract class Diet[A] {
     }
   }
 
+  /**
+   * remove x from the tree
+   */
   def remove(x: A)(implicit discrete: Discrete[A]): Diet[A] = this match {
     case EmptyDiet()  =>  this
     case DietNode(a, b, l, r) =>  {
@@ -146,16 +185,28 @@ sealed abstract class Diet[A] {
     }
   }
 
+  /**
+   * alias for add
+   */
   def +(value: A)(implicit discrete: Discrete[A]): Diet[A] = add(value)
 
+  /**
+   * alias for remove
+   */
   def -(value: A)(implicit discrete: Discrete[A]): Diet[A] = remove(value)
 
+  /**
+   * min value in the tree
+   */
   def min: Option[A] = this match {
     case EmptyDiet()  =>  None()
     case DietNode(x, _, EmptyDiet(), _) => Some(x)
     case DietNode(_, _, l, _) => l.min
   }
 
+  /**
+   * max value in the tree
+   */
   def max: Option[A] = this match {
     case EmptyDiet()  => None()
     case DietNode(_, y, _, EmptyDiet()) => Some(y)
@@ -202,6 +253,9 @@ object Diet {
     override val isEmpty: Boolean = true
   }
 
+  /**
+   * merge to Diets
+   */
   private [dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
     case (l, EmptyDiet())   =>  l
     case (EmptyDiet(), r)   =>  r
@@ -253,7 +307,6 @@ object Diet {
         DietNode(x, y, l, r)
     }
   }
-
 }
 
 
