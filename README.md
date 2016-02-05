@@ -1,5 +1,7 @@
 ## Dogs
 
+[![Join the chat at https://gitter.im/anicolaspp/dogs](https://badges.gitter.im/anicolaspp/dogs.svg)](https://gitter.im/anicolaspp/dogs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://api.travis-ci.org/stew/dogs.png)](https://travis-ci.org/stew/dogs)
 [![codecov.io](http://codecov.io/github/stew/dogs/coverage.svg?branch=master)](http://codecov.io/github/stew/dogs?branch=master)
 

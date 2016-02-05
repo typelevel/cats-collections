@@ -8,9 +8,6 @@ import scala.collection.immutable.List
 import org.scalacheck._
 import org.scalacheck.Prop._
 
-
-
-
 object BedazzleSpec extends Properties("Bedazzle") {
   property("some") = secure {
     import bedazzle.option._
