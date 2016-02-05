@@ -9,6 +9,8 @@ import Predef._
 import dogs.Diet.{EmptyDiet, DietNode}
 import dogs.Order._
 
+import scala.collection.immutable.IndexedSeq
+
 
 trait Discrete[A] extends Order[A]{
   def succ(x: A): A
@@ -32,6 +34,8 @@ object Ext {
 
 
 sealed abstract class Diet[A] {
+
+
   val isEmpty: Boolean
 
   def disjointSets()(implicit discrete: Discrete[A]): List[List[A]] = this match {
@@ -42,6 +46,14 @@ sealed abstract class Diet[A] {
   def toList()(implicit discrete: Discrete[A]): List[A] =
     disjointSets().flatMap(lst => lst)
 
+  def add(x: A, y: A)(implicit discrete: Discrete[A]): Diet[A] = {
+    if (discrete.compare(x, y) == EQ) {
+      add(x)
+    }
+    else {
+      add(x).add(discrete.succ(x), y)
+    }
+  }
 
   def add(value: A)(implicit discrete: Discrete[A]): Diet[A] = this match {
     case EmptyDiet()                  =>  DietNode[A](value, value, EmptyDiet(), EmptyDiet())
