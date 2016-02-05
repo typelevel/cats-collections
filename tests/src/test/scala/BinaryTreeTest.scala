@@ -63,5 +63,26 @@ object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
       case (k,v) => tree.find(_ == k).isDefined == v
     }.foldLeft(true)(_ && _)
   }
+
+  property("intersect is correct") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
+    val xt = BinaryTree(xs.toSeq: _*)
+    val yt = BinaryTree(ys.toSeq: _*)
+
+    (xt intersect yt).toScalaSet == (xs intersect ys)
+  }
+
+  property("union is correct") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
+    val xt = BinaryTree(xs.toSeq: _*)
+    val yt = BinaryTree(ys.toSeq: _*)
+
+    (xt union yt).toScalaSet == (xs union ys)
+  }
+
+  property("we can take the difference of sets") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
+    val xt = BinaryTree(xs.toSeq: _*)
+    val yt = BinaryTree(ys.toSeq: _*)
+
+    (xt diff yt).toScalaSet == (xs diff ys)
+  }
 }
 

@@ -2,6 +2,7 @@ package dogs
 
 import Predef._
 import dogs.Order.{GT, EQ, LT, Ordering}
+import dogs.std.intOrder
 import scala.annotation.tailrec
 import scala.math
 
@@ -151,25 +152,59 @@ sealed abstract class BinaryTree[A] {
    * the given tree.
    * O(n log n)
    */
-  def join(another: BinaryTree[A])(implicit order: Order[A]) = {
-    // todo, no need to go to list, we need a TreeLoc
-    @tailrec def build(sub: BinaryTree[A], xs: List[A]): BinaryTree[A] = xs match {
-      case El() =>  sub
-      case Nel(h, t) =>  build(sub + h, t)
-    }
-
-    another match {
-      case BTNil() => this
-      case _ => build(this, another.toList())
-    }
-  }
+  def union(another: BinaryTree[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
 
   /**
    * Return a tree containing the union of elements with this tree and
    * the given tree.
    * O(n log n)
    */
-  def ++(another: BinaryTree[A])(implicit order: Order[A]) = join(another)
+  def |(another: BinaryTree[A])(implicit order: Order[A]) = this union another
+
+  /**
+   * Return a tree containing the intersection of elements with this tree and
+   * the given tree.
+   * O(n log n)
+   */
+  def intersect(another: BinaryTree[A])(implicit order: Order[A]) = {
+    def _intersect(small: BinaryTree[A], large: BinaryTree[A]): BinaryTree[A] =
+      small.foldLeft[BinaryTree[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
+
+    intOrder(this.size, another.size) match {
+      case LT => _intersect(this, another)
+      case _ => _intersect(another,this)
+    }
+  }
+
+  /**
+   * Return a tree containing the intersection of elements with this tree and
+   * the given tree.
+   * O(n log n)
+   */
+  def &(another: BinaryTree[A])(implicit order: Order[A]) = this intersect another
+
+  /**
+   * Return a tree containing the union of elements with this tree and
+   * the given tree.
+   * O(n log n)
+   */
+  def ++(another: BinaryTree[A])(implicit order: Order[A]) = this union another
+
+  /**
+   * Return a tree that has any elements appearing in the removals set removed
+   * O(n log n)
+   */
+  def diff(removals: BinaryTree[A])(implicit order: Order[A]) =
+    removals.foldLeft(this)(_ remove _)
+
+  /**
+   * Return a scala set containing the elments in the tree
+   * O(n)
+   */
+  def toScalaSet: scala.collection.immutable.Set[A] = {
+    import scala.collection.immutable.Set
+    foldLeft[Set[A]](Set.empty)(_ + _)
+  }
 
   private[dogs] val height: Int
 }
