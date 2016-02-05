@@ -24,9 +24,11 @@ trait Discrete[A] extends Order[A]{
 trait ARange[A] {
   def apply(start: A, end: A): ARange[A]
   def generate()(implicit discrete: Discrete[A]): List[A]
+  def reverse()(implicit discrete: Discrete[A]): List[A]
 }
 
 sealed class DRange[A](val start: A, val end: A) extends ARange[A]{
+
 
   def generate()(implicit discrete: Discrete[A]): List[A] = {
     @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
@@ -43,6 +45,21 @@ sealed class DRange[A](val start: A, val end: A) extends ARange[A]{
     genRange(start, end, El())
   }
 
+  override def reverse()(implicit discrete: Discrete[A]): List[A] = {
+    @tailrec def genRev(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
+      if (discrete.compare(a, b) == EQ) {
+        xs ::: Nel(a, El())
+      } else if (discrete.adj(a, b)) {
+        xs ::: Nel(a, Nel(b, El()))
+      }
+      else {
+        genRev(discrete.pred(a), b, xs ::: (Nel(a, El())))
+      }
+    }
+
+    genRev(end, start, El())
+  }
+
   override def apply(start: A, end: A): DRange[A] = DRange.apply(start, end)
 }
 
@@ -51,6 +68,9 @@ object DRange {
 }
 
 sealed abstract class Diet[A] {
+
+
+  import Diet._
 
   val isEmpty: Boolean
 
@@ -142,57 +162,27 @@ sealed abstract class Diet[A] {
     case DietNode(_, _, _, r) => r.max
   }
 
-  private [dogs] def splitMin(n: Diet[A]): (Diet[A], (A, A)) = n match {
-    case DietNode(x, y, EmptyDiet(), r)   => (r, (x, y))
-    case DietNode(x, y, l, r)             => {
-      val (d, i) = splitMin(l)
+  def map[B](f: A => B)(implicit discrete: Discrete[B]): Diet[B] = this match {
+    case EmptyDiet()          =>  Diet.empty[B]()
+    case DietNode(a, b, l, r) =>  {
+      val (lp, rp) = (l.map(f), r.map(f))
 
-      (DietNode(x, y, d, r), i)
+      val n = lp + f(a) + f(b)
+
+      merge(n, rp)
     }
   }
 
-  private [dogs] def splitMax(n: Diet[A]): (Diet[A], (A, A)) = n match {
-    case DietNode(x, y, l, EmptyDiet())   =>  (l, (x, y))
-    case DietNode(x, y, l, r)             =>  {
-      val (d, i) = splitMax(r)
-
-      (DietNode(x, y,l, d), i)
-    }
+  def foldRight[B](s: B)(f: (B, A) => B)(implicit discrete: Discrete[A]): B = this match {
+    case EmptyDiet()          =>  s
+    case DietNode(a, b, l, r) =>  l.foldRight(DRange(a, b).reverse().foldLeft(r.foldRight(s)(f))(f))(f)
   }
 
-  private [dogs] def joinLeft(node: DietNode[A])(implicit discrete: Discrete[A]): Diet[A] = node match {
-    case DietNode(_, _, EmptyDiet(), _)   =>  node
-    case DietNode(x, y, l, r)             =>  {
-      val (lp, (li, lj)) = splitMax(l)
-
-      if (discrete.adj(lj, x))
-        DietNode(li, y, lp, r)
-      else
-        DietNode(x, y, l, r)
-    }
+  def foldLeft[B](s: B)(f: (B, A) => B)(implicit discrete: Discrete[A]): B = this match {
+    case EmptyDiet()          =>  s
+    case DietNode(a, b, l, r) =>  r.foldLeft(DRange(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
   }
 
-  private [dogs] def joinRight(node: DietNode[A])(implicit  discrete: Discrete[A]): Diet[A] = node match {
-    case DietNode(_, _, _, EmptyDiet())   =>  node
-    case DietNode(x, y, l, r)             =>  {
-      val (rp, (ri, rj)) = splitMin(r)
-
-      if (discrete.adj(y, ri))
-        DietNode(x, rj, l, rp)
-      else
-        DietNode(x, y, l, r)
-    }
-  }
-
-  private [dogs] def merge(l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
-    case (l, EmptyDiet())   =>  l
-    case (EmptyDiet(), r)   =>  r
-    case (l, r)             =>  {
-      val (lp, i) = splitMax(l)
-
-      DietNode(i._1, i._2, lp, r)
-    }
-  }
 }
 
 object Diet {
@@ -211,6 +201,59 @@ object Diet {
 
     override val isEmpty: Boolean = true
   }
+
+  private [dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
+    case (l, EmptyDiet())   =>  l
+    case (EmptyDiet(), r)   =>  r
+    case (l, r)             =>  {
+      val (lp, i) = splitMax(l)
+
+      DietNode(i._1, i._2, lp, r)
+    }
+  }
+
+  private [dogs] def splitMin[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
+    case DietNode(x, y, EmptyDiet(), r)   => (r, (x, y))
+    case DietNode(x, y, l, r)             => {
+      val (d, i) = splitMin(l)
+
+      (DietNode(x, y, d, r), i)
+    }
+  }
+
+  private [dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
+    case DietNode(x, y, l, EmptyDiet())   =>  (l, (x, y))
+    case DietNode(x, y, l, r)             =>  {
+      val (d, i) = splitMax(r)
+
+      (DietNode(x, y,l, d), i)
+    }
+  }
+
+  private [dogs] def joinLeft[A](node: DietNode[A])(implicit discrete: Discrete[A]): Diet[A] = node match {
+    case DietNode(_, _, EmptyDiet(), _)   =>  node
+    case DietNode(x, y, l, r)             =>  {
+      val (lp, (li, lj)) = splitMax(l)
+
+      if (discrete.adj(lj, x))
+        DietNode(li, y, lp, r)
+      else
+        DietNode(x, y, l, r)
+    }
+  }
+
+  private [dogs] def joinRight[A](node: DietNode[A])(implicit  discrete: Discrete[A]): Diet[A] = node match {
+    case DietNode(_, _, _, EmptyDiet())   =>  node
+    case DietNode(x, y, l, r)             =>  {
+      val (rp, (ri, rj)) = splitMin(r)
+
+      if (discrete.adj(y, ri))
+        DietNode(x, rj, l, rp)
+      else
+        DietNode(x, y, l, r)
+    }
+  }
+
 }
 
 

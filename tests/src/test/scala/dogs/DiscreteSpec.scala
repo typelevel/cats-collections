@@ -120,5 +120,20 @@ class DietTest extends FlatSpec with Matchers {
 
     other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
   }
+
+  it should "map" in {
+    val diet = Diet[BigInt] + 1 +2 + 8 + 5
+
+    val other = diet.map(x => x + 2).disjointSets().map(x => x.generate().toScalaList).toScalaList
+
+    other should contain inOrderOnly(scala.List(3,4), scala.List(7), scala.List(10))
+  }
+
+  it should "foldLeft" in {
+    val diet = Diet[BigInt] + 1 +2 + 8 + 5
+
+    diet.foldLeft(BigInt(10))((a: BigInt,b: BigInt) => a + b) should be (26)
+    diet.foldRight(BigInt(10))((a: BigInt,b: BigInt) => a + b) should be (26)
+  }
 }
 
