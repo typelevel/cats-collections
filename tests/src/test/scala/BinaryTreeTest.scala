@@ -1,7 +1,3 @@
-/**
- * Created by Nicolas A Perez (@anicolaspp) on 1/29/16.
- */
-
 package dogs
 package tests
 
@@ -34,8 +30,38 @@ object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
   }
 
   property("binary tree is always balanced") = forAll { (xs: List[Int]) =>
-    val tree = xs.foldLeft(BinaryTree.empty[Int])(_ + _)
+    val tree = BinaryTree(xs.toScalaList: _*)
     balanced(tree)
+  }
+
+  property("binary tree can delete") = forAll{ (xs: Map[Int,Boolean]) =>
+    val tree = BinaryTree(xs.keySet.toSeq: _*)
+    val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
+
+    val ours: Set[Int] = filtered.toList.toScalaList.to[Set]
+    val theirs: Set[Int] = xs.collect{ case (i, true) => i }.to[Set]
+
+    (ours == theirs) && balanced(filtered)
+  }
+
+  property("contains works") = forAll{ (xs: Map[Int,Boolean]) =>
+    val tree = xs.foldLeft[BinaryTree[Int]](BinaryTree.empty)((t,i) =>
+      if(i._2) t + i._1 else t
+    )
+
+    xs.map{
+      case (k,v) => tree.contains(k) == v
+    }.foldLeft(true)(_ && _)
+  }
+
+  property("find works") = forAll{ (xs: Map[Int,Boolean]) =>
+    val tree = xs.foldLeft[BinaryTree[Int]](BinaryTree.empty)((t,i) =>
+      if(i._2) t + i._1 else t
+    )
+
+    xs.map{
+      case (k,v) => tree.find(_ == k).isDefined == v
+    }.foldLeft(true)(_ && _)
   }
 }
 
