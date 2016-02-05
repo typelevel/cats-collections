@@ -1,9 +1,7 @@
 package dogs
 
-import cats._
-import cats.data._
-import scala.{annotation,Boolean,Int,Nothing,unchecked}
-import scala.Predef.identity
+import Predef._
+import scala.{annotation,unchecked}
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
@@ -22,42 +20,39 @@ import scala.Predef.identity
   * resulting queue by taking elements from the opposite side
   */
 sealed abstract class Dequeue[A] {
-  import Maybe._
-  import IList._
-  import Dequeue._
+  import Option._
 
   def isEmpty: Boolean
 
-  def frontMaybe: Maybe[A]
-  def backMaybe: Maybe[A]
+  def frontOption: Option[A]
+  def backOption: Option[A]
 
   /**
     * dequeue from the front of the queue
     */
-  def uncons: Maybe[(A, Dequeue[A])] = this match {
-    case EmptyDequeue() => Maybe.notThere
-    case SingletonDequeue(a) => There((a, EmptyDequeue()))
-    case FullDequeue(OneAnd(f, INil()), 1, OneAnd(single, nil), 1) => There((f, SingletonDequeue(single)))
-    case FullDequeue(OneAnd(f, INil()), 1, OneAnd(x, ICons(xx, xs)), bs) => {
-      val xsr = reverseNEL(OneAnd(xx, xs))
-      There((f, FullDequeue(xsr, bs-1, OneAnd(x, INil()), 1)))
+  def uncons: Option[(A, Dequeue[A])] = this match {
+    case EmptyDequeue() => Option.none
+    case SingletonDequeue(a) => Some((a, EmptyDequeue()))
+    case FullDequeue(Nel(f, El()), 1, Nel(x, Nel(xx, xs)), bs) => {
+      val xsr = Nel(xx, xs).reverse
+      Some((f, FullDequeue(xsr, bs-1, Nel(x, El()), 1)))
     }
-    case FullDequeue(OneAnd(f, ICons(ff, fs)), s, back, bs) => There((f, FullDequeue(OneAnd(ff, fs), s-1, back, bs)))
+    case FullDequeue(Nel(f, El()), 1, Nel(single, El()), 1) => Some((f, SingletonDequeue(single)))
+    case FullDequeue(Nel(f, Nel(ff, fs)), s, back, bs) => Some((f, FullDequeue(Nel(ff, fs), s-1, back, bs)))
   }
 
   /**
     * dequeue from the back of the queue
     */
-  def unsnoc: Maybe[(A, Dequeue[A])] = this match {
-    case EmptyDequeue() => Maybe.notThere
-    case SingletonDequeue(a) => There((a, EmptyDequeue()))
-    case FullDequeue(OneAnd(single, INil()), 1, OneAnd(b, INil()), 1) => There((b, SingletonDequeue(single)))
-    case FullDequeue(OneAnd(x, ICons(xx,xs)), fs, OneAnd(b, INil()), 1) => {
-      val xsr = reverseNEL(OneAnd(xx, xs))
-      There((b, FullDequeue(OneAnd(x, INil()), 1, xsr, fs-1)))
+  def unsnoc: Option[(A, Dequeue[A])] = this match {
+    case EmptyDequeue() => Option.none
+    case SingletonDequeue(a) => Some((a, EmptyDequeue()))
+    case FullDequeue(Nel(x, Nel(xx,xs)), fs, Nel(b, El()), 1) => {
+      val xsr = Nel(xx, xs).reverse
+      Some((b, FullDequeue(Nel(x, El()), 1, xsr, fs-1)))
     }
-
-    case FullDequeue(front, fs, OneAnd(b, ICons(bb,bs)), s) => There((b, FullDequeue(front, fs, OneAnd(bb,bs), s-1)))
+    case FullDequeue(Nel(single, El()), 1, Nel(b, El()), 1) => Some((b, SingletonDequeue(single)))
+    case FullDequeue(front, fs, Nel(b, Nel(bb,bs)), s) => Some((b, FullDequeue(front, fs, Nel(bb,bs), s-1)))
   }
 
   /**
@@ -65,8 +60,8 @@ sealed abstract class Dequeue[A] {
     */
   def cons(a: A): Dequeue[A] = this match {
     case EmptyDequeue() => SingletonDequeue(a)
-    case SingletonDequeue(single) => FullDequeue(OneAnd(a, INil()), 1, OneAnd(single, INil()), 1 )
-    case FullDequeue(front, fs, back, bs) => FullDequeue(OneAnd(a, ICons(front.head, front.tail)), fs+1, back, bs)
+    case SingletonDequeue(single) => FullDequeue(Nel(a, El()), 1, Nel(single, El()), 1 )
+    case FullDequeue(front, fs, back, bs) => FullDequeue(Nel(a, Nel(front.head, front.tail)), fs+1, back, bs)
   }
 
   /**
@@ -74,8 +69,8 @@ sealed abstract class Dequeue[A] {
     */
   def snoc(a: A): Dequeue[A] = this match {
     case EmptyDequeue() => SingletonDequeue(a)
-    case SingletonDequeue(single) => FullDequeue(OneAnd(single, INil[A]()), 1, OneAnd(a, INil[A]()), 1 )
-    case FullDequeue(front, fs, back, bs) => FullDequeue(front, fs, OneAnd(a, ICons(back.head, back.tail)), bs+1)
+    case SingletonDequeue(single) => FullDequeue(Nel(single, El()), 1, Nel(a, El()), 1 )
+    case FullDequeue(front, fs, back, bs) => FullDequeue(front, fs, Nel(a, Nel(back.head, back.tail)), bs+1)
   }
 
   /**
@@ -91,30 +86,12 @@ sealed abstract class Dequeue[A] {
   /**
     * convert this queue to a stream of elements from front to back
     */
-  def toStreaming: Streaming[A] = streaming.unfold(this)(_.uncons)
+  def toStreaming: Streaming[A] = Streaming.unfold(this)(_.uncons)
 
   /**
     * convert this queue to a stream of elements from back to front
     */
-  def toBackStream: Streaming[A] = streaming.unfold(this)(_.unsnoc)
-
-  /**
-    * convert this queue to a list of elements from front to back
-    */
-  def toIList: IList[A] = this match {
-    case EmptyDequeue() => INil()
-    case SingletonDequeue(a) => ICons(a, INil())
-    case FullDequeue(front, fs, back, bs) => front.head +: (front.tail ++ (back.tail reverse_::: ICons(back.head, INil())))
-  }
-
-  /**
-    * convert this queue to a list of elements from back to front
-    */
-  def toBackIList: IList[A] = this match {
-    case EmptyDequeue() => INil()
-    case SingletonDequeue(a) => ICons(a, INil())
-    case FullDequeue(front, fs, back, bs) => back.head +: (back.tail ++ (front.tail.reverse ++ (ICons(front.head, INil()))))
-  }
+  def toBackStream: Streaming[A] = Streaming.unfold(this)(_.unsnoc)
 
   /**
     * Append another Deuque to this dequeue
@@ -126,12 +103,11 @@ sealed abstract class Dequeue[A] {
       case EmptyDequeue() => this
       case SingletonDequeue(a) => this :+ a
       case FullDequeue(of,ofs,ob,obs) =>
-        FullDequeue(OneAnd(f.head, (f.tail ++
-                                      ((b.head +: b.tail) reverse_:::
-                                      ICons(of.head, of.tail)))),
-                                    fs + bs + ofs,
-                                    ob,
-                                    obs)
+        FullDequeue(
+          Nel(f.head, f.tail ::: (Nel(b.head, b.tail).reverse) ::: of),
+          fs + bs + ofs,
+          ob,
+          obs)
     }
   }
 
@@ -161,8 +137,7 @@ sealed abstract class Dequeue[A] {
       case EmptyDequeue() => EmptyDequeue()
       case SingletonDequeue(a) => SingletonDequeue(f(a))
       case FullDequeue(front, fs, back, bs) => {
-        val F = Functor[NEL]
-        FullDequeue(F.map(front)(f), fs, F.map(back)(f), bs)
+        FullDequeue(front.map(f), fs, back.map(f), bs)
       }
     }
   }
@@ -179,27 +154,14 @@ sealed abstract class Dequeue[A] {
   }
 }
 
-object Dequeue extends DequeueInstances {
-  type NEL[A] = OneAnd[A, IList]
-
+object Dequeue {
   def apply[A](as: A*) = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
 
+/*
   def fromFoldable[F[_],A](fa: F[A])(implicit F: Foldable[F]): Dequeue[A] =
     F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) ⇒ q :+ a)
-
+*/
   def empty[A]: Dequeue[A] = EmptyDequeue()
-
-  private def reverseNEL[A](fa: NEL[A]): NEL[A] = {
-    @annotation.tailrec
-    def loop(xs: IList[A], acc: IList[A]): NEL[A] =
-      (xs: @unchecked) match {
-        case ICons(h, INil()) =>
-          OneAnd(h, acc)
-        case ICons(h, t) =>
-          loop(t, h :: acc)
-      }
-    loop(fa.head :: fa.tail, INil())
-  }
 }
 
 /**
@@ -208,50 +170,31 @@ object Dequeue extends DequeueInstances {
   */
 private[dogs] final case class SingletonDequeue[A](single: A) extends Dequeue[A] {
   override def isEmpty = false
-  override def frontMaybe = Maybe.there(single)
-  override def backMaybe = Maybe.there(single)
+  override def frontOption = Option.some(single)
+  override def backOption = Option.some(single)
 }
 
 /**
   * a queue which has at least two elements, it is guaranteed that the
   * front list and back lists cannot be empty
   */
-private[dogs] final case class FullDequeue[A](front: OneAnd[A, IList], fsize: Int, back: OneAnd[A, IList], backSize: Int) extends Dequeue[A]  {
+private[dogs] final case class FullDequeue[A](front: Nel[A], fsize: Int, back: Nel[A], backSize: Int) extends Dequeue[A]  {
   override def isEmpty = false
-  override def frontMaybe = Maybe.there(front.head)
-  override def backMaybe = Maybe.there(back.head)
+  override def frontOption = Option.some(front.head)
+  override def backOption = Option.some(back.head)
 }
 /**
   * a queue which has no elements
   */
-private[dogs] final case object EmptyDequeue extends Dequeue[Nothing] {
+private[dogs] case object EmptyDequeue extends Dequeue[Nothing] { self =>
   override val isEmpty = true
-  override val frontMaybe = Maybe.notThere
-  override val backMaybe = Maybe.notThere
+  override val frontOption = Option.none
+  override val backOption = Option.none
+  
+  override def toString: String = "EmptyDequeue"
 
-  def apply[A]() = this.asInstanceOf[Dequeue[A]]
+  def apply[A]() = self.asInstanceOf[Dequeue[A]]
   def unapply[A](q: Dequeue[A]) = q.isEmpty
-}
-
-sealed abstract class DequeueInstances {
-  implicit def equalDequeue[A](implicit A0: Eq[A]): Eq[Dequeue[A]] =
-    new DequeueEqual[A] {
-      val A = A0
-    }
-
-  implicit def dequeueMonoid[A]: Monoid[Dequeue[A]] = new Monoid[Dequeue[A]] {
-    def empty: Dequeue[A] = Dequeue.empty
-    def combine(a: Dequeue[A], b :Dequeue[A]): Dequeue[A] = a ++ b
-  }
-
-  implicit val dequeueInstances: Foldable[Dequeue] with Functor[Dequeue] = new Foldable[Dequeue] with Functor[Dequeue] {
-    override def foldRight[A,B](fa: Dequeue[A], b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(b)((a,b) => f(a,b))
-
-
-    override def foldLeft[A,B](fa: Dequeue[A], b: B)(f: (B,A)=>B): B = fa.foldLeft(b)(f)
-    override def foldMap[A,B](fa: Dequeue[A])(f: A => B)(implicit F: Monoid[B]): B = fa.foldLeft(F.empty)((b,a) => F.combine(b, f(a)))
-    override def map[A,B](fa: Dequeue[A])(f: A => B): Dequeue[B] = fa map f
-  }
 }
 
 private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
@@ -260,4 +203,3 @@ private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
   final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
     Eq[Streaming[A]].eqv(a.toStreaming, b.toStreaming)
 }
-

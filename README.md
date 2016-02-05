@@ -1,12 +1,9 @@
 ## Dogs
 
-[![Join the chat at https://gitter.im/anicolaspp/dogs](https://badges.gitter.im/anicolaspp/dogs.svg)](https://gitter.im/anicolaspp/dogs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/stew/dogs](https://badges.gitter.im/stew/dogs.svg)](https://gitter.im/stew/dogs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Build Status](https://api.travis-ci.org/stew/dogs.png)](https://travis-ci.org/stew/dogs)
 [![codecov.io](http://codecov.io/github/stew/dogs/coverage.svg?branch=master)](http://codecov.io/github/stew/dogs?branch=master)
-
-This project is intended to be a companion to the
-[Cats project](https://github.com/non/cats).
 
 It intends to be a library containing data structures which facilitate
 pure functional programming in the Scala programming language. Some of
