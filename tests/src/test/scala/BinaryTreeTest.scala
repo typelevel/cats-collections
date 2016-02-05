@@ -1,15 +1,12 @@
 package dogs
 package tests
 
-import dogs.Order.Ordering
 import dogs.Predef._
 import dogs.std.intOrder
 import dogs.tests.arbitrary._
-import dogs.bedazzle.birds._
-import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
+import org.scalacheck.Arbitrary.{arbitrary => getArbitrary, _}
 import org.scalacheck.Prop._
-import org.scalatest._
+import org.scalacheck._
 
 object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
   property("binary tree is always sorted") = forAll { (xs: List[Int]) =>

@@ -6,10 +6,14 @@
 package dogs
 
 import Predef._
+import dogs.DRange.DRange
 import dogs.Diet.{EmptyDiet, DietNode}
 import dogs.Order._
 
+import scala.annotation.tailrec
 import scala.collection.immutable.IndexedSeq
+
+
 
 
 trait Discrete[A] extends Order[A]{
@@ -18,33 +22,45 @@ trait Discrete[A] extends Order[A]{
   def adj(x: A, y: A): Boolean = succ(x) == y
 }
 
-class BigIntDiscrete extends Discrete[BigInt] {
-  override def succ(x: BigInt): BigInt = x + 1
-
-  override def pred(x: BigInt): BigInt = x - 1
-
-  override def apply(l: BigInt, r: BigInt): Ordering = if (l < r) LT else if (l > r) GT else EQ
+trait ARange[A] {
+  def apply(start: A, end: A): DRange[A]
+  def generate()(implicit discrete: Discrete[A]): List[A]
 }
 
-object Ext {
+object DRange {
+  private [dogs] class DRange[A](val start: A, val end: A) extends ARange[A]{
 
-  implicit def toBigIntDiscrete(x: BigInt) = new BigIntDiscrete()
+    def generate()(implicit discrete: Discrete[A]): List[A] = {
+      @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
+        if (discrete.compare(a, b) == EQ) {
+          xs ::: Nel(a, El())
+        } else if (discrete.adj(a, b)) {
+          xs ::: Nel(a, Nel(b, El()))
+        }
+        else {
+          genRange(discrete.succ(a), b, xs ::: (Nel(a, El())))
+        }
+      }
 
+      genRange(start, end, El())
+    }
+
+    override def apply(start: A, end: A): DRange[A] = DRange.apply(start, end)
+  }
+
+  def apply[A](x: A, y: A) = new DRange[A](x, y)
 }
-
 
 sealed abstract class Diet[A] {
-
-
   val isEmpty: Boolean
 
-  def disjointSets()(implicit discrete: Discrete[A]): List[List[A]] = this match {
+  def disjointSets(): List[DRange[A]] = this match {
     case EmptyDiet()          =>  El()
-    case DietNode(x, y, l, r) =>  l.disjointSets() ::: (range(x,y)(discrete) :: r.disjointSets())
+    case DietNode(x, y, l, r) =>  l.disjointSets() ::: (DRange(x, y) :: r.disjointSets())
   }
 
   def toList()(implicit discrete: Discrete[A]): List[A] =
-    disjointSets().flatMap(lst => lst)
+    disjointSets().flatMap(lst => lst.generate())
 
   def add(x: A, y: A)(implicit discrete: Discrete[A]): Diet[A] = {
     if (discrete.compare(x, y) == EQ) {
@@ -87,16 +103,6 @@ sealed abstract class Diet[A] {
     case EmptyDiet()  => None()
     case DietNode(_, y, _, EmptyDiet()) => Some(y)
     case DietNode(_, _, _, r) => r.max
-  }
-
-
-  private [dogs] def range(x: A, y: A)(implicit discrete: Discrete[A]): List[A] = {
-    if (discrete.compare(x, y) == EQ){
-      Nel(x, El())
-    }
-    else {
-      x :: range(discrete.succ(x), y)
-    }
   }
 
   private [dogs] def splitMin(n: Diet[A]): (Diet[A], (A, A)) = n match {
