@@ -51,8 +51,45 @@ object DRange {
 }
 
 sealed abstract class Diet[A] {
+
+  def merge(l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
+    case (l, EmptyDiet())   =>  l
+    case (EmptyDiet(), r)   =>  r
+    case (l, r)             =>  {
+      val (lp, i) = splitMax(l)
+
+      DietNode(i._1, i._2, lp, r)
+    }
+  }
+
+  def remove(x: A)(implicit discrete: Discrete[A]): Diet[A] = this match {
+    case EmptyDiet()  =>  this
+    case DietNode(a, b, l, r) =>  {
+      if (discrete.compare(x, a) == LT) {
+        DietNode(a, b, l.remove(x), r)
+      }
+      else if (discrete.compare(x, b) == GT) {
+        DietNode(a, b, l, r.remove(x))
+      }
+      else if (discrete.compare(x, a) == EQ) {
+        if (discrete.compare(a, b) == EQ)
+          merge(l, r)
+        else
+          DietNode(discrete.succ(a), b, l, r)
+      }
+      else if (discrete.compare(x, b) == EQ) {
+        DietNode(a, discrete.pred(b), l, r)
+      }
+      else {
+        DietNode(a, discrete.pred(x), l, DietNode(discrete.succ(x), b, EmptyDiet(), r))
+      }
+    }
+  }
+
+  val isEmpty: Boolean
+
   def contains(x: A)(implicit discrete: Discrete[A]): Boolean = this match {
-    case EmptyDiet()          => false
+    case EmptyDiet()          =>  false
     case DietNode(a,b, l, r)  =>  (discrete.compare(x, a), discrete.compare(x, b)) match {
       case (EQ, _)  =>  true
       case (_, EQ)  =>  true
@@ -61,8 +98,6 @@ sealed abstract class Diet[A] {
       case (_, GT)  =>  r.contains(x)
     }
   }
-
-  val isEmpty: Boolean
 
   def disjointSets(): List[DRange[A]] = this match {
     case EmptyDiet()          =>  El()

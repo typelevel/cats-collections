@@ -6,6 +6,7 @@
 package dogs
 package tests
 
+import dogs.Diet.EmptyDiet
 import dogs.Order.{EQ, GT, LT, Ordering}
 import dogs.Predef._
 import org.scalacheck.Arbitrary.{arbitrary => getArbitrary}
@@ -99,6 +100,25 @@ class DietTest extends FlatSpec with Matchers {
     diet.contains(6) should be (true)
 
     diet.contains(15) should be (true)
+  }
+
+  it should "return empty when removing from empty" in {
+    Diet[BigInt].remove(1) should be (EmptyDiet())
+  }
+
+  it should "not be modified when removing non existed item" in {
+
+    val diet = Diet[BigInt] + 1 +2 + 3 + 5
+
+    diet.remove(4) should be (diet)
+  }
+
+  it should "be split when removing from range" in {
+    val diet = Diet[BigInt] + 1 +2 + 3 + 5
+
+    val other = diet.remove(2).disjointSets().map(x => x.generate().toScalaList).toScalaList
+
+    other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
   }
 }
 
