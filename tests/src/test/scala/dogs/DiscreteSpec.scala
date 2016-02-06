@@ -38,7 +38,7 @@ class DietTest extends FlatSpec with Matchers {
   it should "create a new node when add not adj item" in {
     val diet = Diet[BigInt].add(5).add(3).add(7)
 
-    val result = diet.disjointSets().map(l => l.generate().toScalaList).toScalaList
+    val result = diet.disjointSets.map(l => l.generate().toScalaList).toScalaList
 
     result should contain inOrderOnly (scala.List(3), scala.List(5), scala.List(7))
   }
@@ -46,7 +46,7 @@ class DietTest extends FlatSpec with Matchers {
   it should "join nodes when item adj to existing seq" in {
     val diet = Diet[BigInt].add(5).add(6).add(1).add(3).add(2).add(8)
 
-    val result = diet.disjointSets().map(l => l.generate().toScalaList).toScalaList
+    val result = diet.disjointSets.map(l => l.generate().toScalaList).toScalaList
 
     result should contain inOrderOnly (scala.List(1, 2, 3), scala.List(5, 6), scala.List(8))
   }
@@ -64,7 +64,7 @@ class DietTest extends FlatSpec with Matchers {
 
     val result = diet.add(0, 100)
 
-    val other = result.disjointSets().map(l => l.generate().toScalaList).toScalaList
+    val other = result.disjointSets.map(l => l.generate().toScalaList).toScalaList
 
     other should contain ((Range(0, 101)).toList)
   }
@@ -105,7 +105,7 @@ class DietTest extends FlatSpec with Matchers {
   it should "be split when removing from range" in {
     val diet = Diet[BigInt] + 1 +2 + 3 + 5
 
-    val other = diet.remove(2).disjointSets().map(x => x.generate().toScalaList).toScalaList
+    val other = diet.remove(2).disjointSets.map(x => x.generate().toScalaList).toScalaList
 
     other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
   }
@@ -113,7 +113,7 @@ class DietTest extends FlatSpec with Matchers {
   it should "map" in {
     val diet = Diet[BigInt] + 1 +2 + 8 + 5
 
-    val other = diet.map(x => x + 2).disjointSets().map(x => x.generate().toScalaList).toScalaList
+    val other = diet.map(x => x + 2).disjointSets.map(x => x.generate().toScalaList).toScalaList
 
     other should contain inOrderOnly(scala.List(3,4), scala.List(7), scala.List(10))
   }
