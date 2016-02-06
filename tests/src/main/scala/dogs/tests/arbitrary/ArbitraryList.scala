@@ -1,7 +1,7 @@
 package dogs
 package tests.arbitrary
 
-import org.scalacheck.{Gen, Arbitrary}, Arbitrary.arbitrary
+import org.scalacheck.{Gen, Arbitrary, Shrink}, Arbitrary.arbitrary
 
 trait ArbitraryList {
   def listGen[A](implicit arbA: Arbitrary[A]): Gen[List[A]] =
@@ -19,4 +19,9 @@ trait ArbitraryList {
   implicit def arbitraryNel[A: Arbitrary]: Arbitrary[Nel[A]] =
     Arbitrary(nelGen)
 
+
+  implicit def shrinkList[A]: Shrink[List[A]] = Shrink { l =>
+    import scala.collection.immutable.{List => SList}
+    implicitly[Shrink[SList[A]]].shrink(l.toScalaList).map(List.fromIterable)
+  }
 }

@@ -126,7 +126,9 @@ sealed abstract class Option[A] {
   final def collect[B](f: PartialFunction[A,B]): Option[B] = this match {
     case Some(a) if f.isDefinedAt(a) => Some(f(a))
     case _ => None()
+
   }
+  final def toScalaOption: scala.Option[A] = cata(scala.Some.apply,scala.None)
 
 /*
   /** Return the underlying value if present, otherwise the monoid zero */

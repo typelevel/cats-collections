@@ -1,6 +1,9 @@
 package dogs
 
+import Predef._
+
 trait Order[A] { self =>
+  import Order._
   /**
    * Compare `l` and `r` values returning:
    * Order.LT when `l` is less than `r`
@@ -24,6 +27,8 @@ trait Order[A] { self =>
   def contramap[B](f: B => A): Order[B] = new Order[B] {
     override def apply(l: B, r: B) = self(f(l), f(r))
   }
+
+  def eq(l: A, r: A): Boolean = apply(l, r) == EQ
 }
 
 object Order {

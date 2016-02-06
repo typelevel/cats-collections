@@ -1,5 +1,4 @@
 package dogs
-package tests
 
 import dogs.Order.Ordering
 import dogs.Predef._
@@ -9,12 +8,11 @@ import dogs.bedazzle.birds._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
-import org.scalatest._
 
 object SetSpec extends Properties("Set") with ArbitraryList {
-  import scala.collection.immutable.{Set => SSet}
+  import scala.collection.immutable.{Set => SSet, Map => MMap}
 
-  property("binary tree is always sorted") = forAll { (xs: List[Int]) =>
+  property("set is always sorted") = forAll { (xs: List[Int]) =>
     val tree = xs.foldLeft(Set.empty[Int])(_ + _)
 
     val ours: scala.List[Int] = tree.toList.toScalaList
@@ -31,12 +29,12 @@ object SetSpec extends Properties("Set") with ArbitraryList {
 
   }
 
-  property("binary tree is always balanced") = forAll { (xs: List[Int]) =>
+  property("set is always balanced") = forAll { (xs: List[Int]) =>
     val tree = Set(xs.toScalaList: _*)
     balanced(tree)
   }
 
-  property("binary tree can delete") = forAll{ (xs: Map[Int,Boolean]) =>
+  property("set can delete") = forAll{ (xs: MMap[Int,Boolean]) =>
     val tree = Set(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
@@ -46,7 +44,7 @@ object SetSpec extends Properties("Set") with ArbitraryList {
     (ours == theirs) && balanced(filtered)
   }
 
-  property("contains works") = forAll{ (xs: Map[Int,Boolean]) =>
+  property("contains works") = forAll{ (xs: MMap[Int,Boolean]) =>
     val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
@@ -56,7 +54,7 @@ object SetSpec extends Properties("Set") with ArbitraryList {
     }.foldLeft(true)(_ && _)
   }
 
-  property("find works") = forAll{ (xs: Map[Int,Boolean]) =>
+  property("find works") = forAll{ (xs: MMap[Int,Boolean]) =>
     val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )

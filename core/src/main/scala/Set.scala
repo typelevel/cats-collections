@@ -17,13 +17,13 @@ sealed abstract class Set[A] {
   import Set._
 
   /**
-   * The number of items in the tree.
+   * The number of items in the Set.
    * O(1)
    */
   val size: Int
 
   /**
-   * Returns `true` if the tree is the empty tree.
+   * Returns `true` if the Set is the empty Set.
    * O(1)
    */
   def isEmpty: Boolean
@@ -38,7 +38,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Retruns None if the Tree is empty, otherwise returns the minumum
+   * Retruns None if the Set is empty, otherwise returns the minumum
    * element.
    * O(log n)
    */
@@ -55,7 +55,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Retruns `None` if the Tree is empty, otherwise returns the maximum
+   * Retruns `None` if the Set is empty, otherwise returns the maximum
    * element.
    * O(log n)
    */
@@ -93,7 +93,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Returns `true` if the given element is in the tree.
+   * Returns `true` if the given element is in the Set.
    * O(log n)
    */
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
@@ -107,7 +107,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Add's the given element to the tree if it is not already present.
+   * Add's the given element to the Set if it is not already present.
    * O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
@@ -115,20 +115,20 @@ sealed abstract class Set[A] {
       case BTNil() =>  Branch(x, Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
         case LT => Branch(a, l.add(x), r)
-        case EQ => branch
+        case EQ => Branch(x, l, r)
         case GT => Branch(a, l, r.add(x))
       }
     }).balance
 
 
   /**
-   * Add's the given element to the tree if it is not already present.
+   * Add's the given element to the Set if it is not already present.
    * O(log n)
    */
   def +(x: A)(implicit order: Order[A]): Set[A] = add(x)
 
   /**
-   * Return a tree which does not contain the given element.
+   * Return a Set which does not contain the given element.
    * O(log n)
    */
   def remove(x: A)(implicit order: Order[A]): Set[A] =
@@ -145,23 +145,39 @@ sealed abstract class Set[A] {
         }
     }
 
+  // STU: this is used by Map, not sure what to do about this
+  private[dogs] def removef[B](x: B, f: A => B)(implicit B: Order[B]): Set[A] =
+    this match {
+      case BTNil() => Set.empty
+      case Branch(a, l, r) =>
+        B.compare(x, f(a)) match {
+          case LT => Branch(a, l.removef(x, f), r).balance
+          case GT => Branch(a, l, r.removef(x, f)).balance
+          case EQ => r.min match {
+            case None() => l
+            case Some(v) =>
+              Branch(v,l,r.removef(f(v), f)).balance
+          }
+        }
+    }
+
   /**
-   * Return a tree containing the union of elements with this tree and
-   * the given tree.
+   * Return a Set containing the union of elements with this Set and
+   * the given Set.
    * O(n log n)
    */
   def union(another: Set[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
 
   /**
-   * Return a tree containing the union of elements with this tree and
-   * the given tree.
+   * Return a Set containing the union of elements with this Set and
+   * the given Set.
    * O(n log n)
    */
   def |(another: Set[A])(implicit order: Order[A]) = this union another
 
   /**
-   * Return a tree containing the intersection of elements with this tree and
-   * the given tree.
+   * Return a Set containing the intersection of elements with this Set and
+   * the given Set.
    * O(n log n)
    */
   def intersect(another: Set[A])(implicit order: Order[A]) = {
@@ -175,28 +191,28 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Return a tree containing the intersection of elements with this tree and
-   * the given tree.
+   * Return a Set containing the intersection of elements with this Set and
+   * the given Set.
    * O(n log n)
    */
   def &(another: Set[A])(implicit order: Order[A]) = this intersect another
 
   /**
-   * Return a tree containing the union of elements with this tree and
-   * the given tree.
+   * Return a Set containing the union of elements with this Set and
+   * the given Set.
    * O(n log n)
    */
   def ++(another: Set[A])(implicit order: Order[A]) = this union another
 
   /**
-   * Return a tree that has any elements appearing in the removals set removed
+   * Return a Set that has any elements appearing in the removals set removed
    * O(n log n)
    */
   def diff(removals: Set[A])(implicit order: Order[A]) =
     removals.foldLeft(this)(_ remove _)
 
   /**
-   * Return a scala set containing the elments in the tree
+   * Return a scala set containing the elments in the Set
    * O(n)
    */
   def toScalaSet: scala.collection.immutable.Set[A] = {
@@ -210,13 +226,13 @@ sealed abstract class Set[A] {
 object Set {
 
   /**
-   * Create a binary tree with the given elements. 
+   * Create a set with the given elements. 
    */
   def apply[A: Order](as: A*): Set[A] =
     as.foldLeft[Set[A]](empty)(_ + _)
 
   /**
-   * The empty tree.
+   * The empty Set.
    */
   def empty[A]: Set[A] = BTNil()
 
