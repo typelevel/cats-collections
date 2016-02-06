@@ -45,8 +45,8 @@ trait ARange[A] {
 /**
  * Implementation of ARange that uses Discrete[A] to generate items in the range
  */
-sealed class DRange[A](val start: A, val end: A) extends ARange[A]{
-  def generate()(implicit discrete: Discrete[A]): List[A] = {
+sealed class DRange[A] private [dogs] (val start: A, val end: A) extends ARange[A] {
+  override def generate()(implicit discrete: Discrete[A]): List[A] = {
     @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Discrete[A]): List[A] = {
       if (discrete.compare(a, b) == EQ) {
         xs ::: Nel(a, El())
