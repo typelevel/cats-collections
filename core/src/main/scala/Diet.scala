@@ -41,16 +41,16 @@ sealed abstract class Diet[A] {
   /**
     * return a list of all disjoint sets in the tree where each set is represented by ARange
     */
-  def disjointSets(): List[ARange[A]] = this match {
+  def disjointSets: List[ARange[A]] = this match {
     case EmptyDiet()          =>  El()
-    case DietNode(x, y, l, r) =>  l.disjointSets() ::: (ARange(x, y) :: r.disjointSets())
+    case DietNode(x, y, l, r) =>  l.disjointSets ::: (ARange(x, y) :: r.disjointSets)
   }
 
   /**
     * convert tree in a sorted list from all disjoint sets in the tree
     */
   def toList()(implicit discrete: Enum[A]): List[A] =
-    disjointSets().flatMap(lst => lst.generate())
+    disjointSets.flatMap(lst => lst.generate())
 
   /**
     * add new value range [x, y] to de tree. If x > y then it will add range [y, x]
@@ -146,7 +146,7 @@ sealed abstract class Diet[A] {
   }
 
   def map[B](f: A => B)(implicit discrete: Enum[B]): Diet[B] = this match {
-    case EmptyDiet()          =>  Diet.empty[B]()
+    case EmptyDiet()          =>  Diet.empty[B]
     case DietNode(a, b, l, r) =>  {
       val (lp, rp) = (l.map(f), r.map(f))
 
@@ -168,9 +168,9 @@ sealed abstract class Diet[A] {
 }
 
 object Diet {
-  def apply[A](): Diet[A] = empty()
+  def apply[A]: Diet[A] = empty
 
-  def empty[A](): Diet[A] = EmptyDiet()
+  def empty[A]: Diet[A] = EmptyDiet()
 
   private [dogs] case class DietNode[A](x: A, y: A, left: Diet[A], right: Diet[A]) extends Diet[A] {
     override val isEmpty: Boolean = false
