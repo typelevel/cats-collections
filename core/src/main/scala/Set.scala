@@ -8,15 +8,13 @@ import scala.math
 
 
 /**
- * An immutable balanced binary tree.
+ * An immutable, ordered Set
  * 
  * This datastructure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
- * 
- * originally Created by Nicolas A Perez (@anicolaspp) on 2016-01-29.
  */
-sealed abstract class BinaryTree[A] {
-  import BinaryTree._
+sealed abstract class Set[A] {
+  import Set._
 
   /**
    * The number of items in the tree.
@@ -45,7 +43,7 @@ sealed abstract class BinaryTree[A] {
    * O(log n)
    */
   def min: Option[A] = {
-    @tailrec def loop(sub: BinaryTree[A], x: A): A = sub match {
+    @tailrec def loop(sub: Set[A], x: A): A = sub match {
       case BTNil() =>  x
       case Branch(a, l, _) => loop(l, a)
     }
@@ -62,7 +60,7 @@ sealed abstract class BinaryTree[A] {
    * O(log n)
    */
   def max: Option[A] = {
-    @tailrec def loop(sub: BinaryTree[A], x: A): A = sub match {
+    @tailrec def loop(sub: Set[A], x: A): A = sub match {
       case BTNil() =>  x
       case Branch(a, _, r) => loop(r, a)
     }
@@ -114,7 +112,7 @@ sealed abstract class BinaryTree[A] {
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
     (this match {
-      case BTNil() =>  Branch(x, BinaryTree.empty, BinaryTree.empty)
+      case BTNil() =>  Branch(x, Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
         case LT => Branch(a, l.add(x), r)
         case EQ => branch
@@ -127,15 +125,15 @@ sealed abstract class BinaryTree[A] {
    * Add's the given element to the tree if it is not already present.
    * O(log n)
    */
-  def +(x: A)(implicit order: Order[A]): BinaryTree[A] = add(x)
+  def +(x: A)(implicit order: Order[A]): Set[A] = add(x)
 
   /**
    * Return a tree which does not contain the given element.
    * O(log n)
    */
-  def remove(x: A)(implicit order: Order[A]): BinaryTree[A] =
+  def remove(x: A)(implicit order: Order[A]): Set[A] =
     this match {
-      case BTNil() => BinaryTree.empty
+      case BTNil() => Set.empty
       case Branch(a, l, r) =>
         order.compare(x, a) match {
           case LT => Branch(a, l.remove(x), r).balance
@@ -152,23 +150,23 @@ sealed abstract class BinaryTree[A] {
    * the given tree.
    * O(n log n)
    */
-  def union(another: BinaryTree[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
+  def union(another: Set[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
 
   /**
    * Return a tree containing the union of elements with this tree and
    * the given tree.
    * O(n log n)
    */
-  def |(another: BinaryTree[A])(implicit order: Order[A]) = this union another
+  def |(another: Set[A])(implicit order: Order[A]) = this union another
 
   /**
    * Return a tree containing the intersection of elements with this tree and
    * the given tree.
    * O(n log n)
    */
-  def intersect(another: BinaryTree[A])(implicit order: Order[A]) = {
-    def _intersect(small: BinaryTree[A], large: BinaryTree[A]): BinaryTree[A] =
-      small.foldLeft[BinaryTree[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
+  def intersect(another: Set[A])(implicit order: Order[A]) = {
+    def _intersect(small: Set[A], large: Set[A]): Set[A] =
+      small.foldLeft[Set[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
     intOrder(this.size, another.size) match {
       case LT => _intersect(this, another)
@@ -181,20 +179,20 @@ sealed abstract class BinaryTree[A] {
    * the given tree.
    * O(n log n)
    */
-  def &(another: BinaryTree[A])(implicit order: Order[A]) = this intersect another
+  def &(another: Set[A])(implicit order: Order[A]) = this intersect another
 
   /**
    * Return a tree containing the union of elements with this tree and
    * the given tree.
    * O(n log n)
    */
-  def ++(another: BinaryTree[A])(implicit order: Order[A]) = this union another
+  def ++(another: Set[A])(implicit order: Order[A]) = this union another
 
   /**
    * Return a tree that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def diff(removals: BinaryTree[A])(implicit order: Order[A]) =
+  def diff(removals: Set[A])(implicit order: Order[A]) =
     removals.foldLeft(this)(_ remove _)
 
   /**
@@ -202,29 +200,29 @@ sealed abstract class BinaryTree[A] {
    * O(n)
    */
   def toScalaSet: scala.collection.immutable.Set[A] = {
-    import scala.collection.immutable.Set
-    foldLeft[Set[A]](Set.empty)(_ + _)
+    import scala.collection.immutable.{Set => SSet}
+    foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
 
   private[dogs] val height: Int
 }
 
-object BinaryTree {
+object Set {
 
   /**
    * Create a binary tree with the given elements. 
    */
-  def apply[A: Order](as: A*): BinaryTree[A] =
-    as.foldLeft[BinaryTree[A]](empty)(_ + _)
+  def apply[A: Order](as: A*): Set[A] =
+    as.foldLeft[Set[A]](empty)(_ + _)
 
   /**
    * The empty tree.
    */
-  def empty[A]: BinaryTree[A] = BTNil()
+  def empty[A]: Set[A] = BTNil()
 
   private[dogs] case class Branch[A](value: A,
-                                     left: BinaryTree[A],
-                                     right: BinaryTree[A]) extends BinaryTree[A] {
+                                     left: Set[A],
+                                     right: Set[A]) extends Set[A] {
 
     val size = left.size + right.size + 1
     val height = java.lang.Math.max(left.height, right.height) + 1
@@ -269,12 +267,12 @@ object BinaryTree {
     }
   }
 
-  private[dogs] case object BTNil extends BinaryTree[Nothing] {
+  private[dogs] case object BTNil extends Set[Nothing] {
     override def isEmpty: Boolean = true
 
-    def apply[A](): BinaryTree[A] = this.asInstanceOf[BinaryTree[A]]
+    def apply[A](): Set[A] = this.asInstanceOf[Set[A]]
 
-    def unapply[A](a: BinaryTree[A]): Boolean = a.isEmpty
+    def unapply[A](a: Set[A]): Boolean = a.isEmpty
 
     override val size: Int = 0
     override val height: Int = 0

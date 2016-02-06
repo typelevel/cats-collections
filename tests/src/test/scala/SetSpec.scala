@@ -11,18 +11,20 @@ import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
 import org.scalatest._
 
-object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
+object SetSpec extends Properties("Set") with ArbitraryList {
+  import scala.collection.immutable.{Set => SSet}
+
   property("binary tree is always sorted") = forAll { (xs: List[Int]) =>
-    val tree = xs.foldLeft(BinaryTree.empty[Int])(_ + _)
+    val tree = xs.foldLeft(Set.empty[Int])(_ + _)
 
     val ours: scala.List[Int] = tree.toList.toScalaList
-    val theirs: scala.List[Int] = xs.toScalaList.to[Set].to[Array].sorted.to[scala.List]
+    val theirs: scala.List[Int] = xs.toScalaList.to[SSet].to[Array].sorted.to[scala.List]
 
     ours == theirs
   }
 
-  import BinaryTree._
-  def balanced[A](t: BinaryTree[A]): Boolean = t match {
+  import Set._
+  def balanced[A](t: Set[A]): Boolean = t match {
     case BTNil() => true
     case Branch(_, l, r) =>
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
@@ -30,22 +32,22 @@ object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
   }
 
   property("binary tree is always balanced") = forAll { (xs: List[Int]) =>
-    val tree = BinaryTree(xs.toScalaList: _*)
+    val tree = Set(xs.toScalaList: _*)
     balanced(tree)
   }
 
   property("binary tree can delete") = forAll{ (xs: Map[Int,Boolean]) =>
-    val tree = BinaryTree(xs.keySet.toSeq: _*)
+    val tree = Set(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
-    val ours: Set[Int] = filtered.toList.toScalaList.to[Set]
-    val theirs: Set[Int] = xs.collect{ case (i, true) => i }.to[Set]
+    val ours: SSet[Int] = filtered.toList.toScalaList.to[SSet]
+    val theirs: SSet[Int] = xs.collect{ case (i, true) => i }.to[SSet]
 
     (ours == theirs) && balanced(filtered)
   }
 
   property("contains works") = forAll{ (xs: Map[Int,Boolean]) =>
-    val tree = xs.foldLeft[BinaryTree[Int]](BinaryTree.empty)((t,i) =>
+    val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
 
@@ -55,7 +57,7 @@ object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
   }
 
   property("find works") = forAll{ (xs: Map[Int,Boolean]) =>
-    val tree = xs.foldLeft[BinaryTree[Int]](BinaryTree.empty)((t,i) =>
+    val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
 
@@ -64,23 +66,23 @@ object BinaryTreeSpec extends Properties("BinaryTree") with ArbitraryList {
     }.foldLeft(true)(_ && _)
   }
 
-  property("intersect is correct") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
-    val xt = BinaryTree(xs.toSeq: _*)
-    val yt = BinaryTree(ys.toSeq: _*)
+  property("intersect is correct") = forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+    val xt = Set(xs.toSeq: _*)
+    val yt = Set(ys.toSeq: _*)
 
     (xt intersect yt).toScalaSet == (xs intersect ys)
   }
 
-  property("union is correct") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
-    val xt = BinaryTree(xs.toSeq: _*)
-    val yt = BinaryTree(ys.toSeq: _*)
+  property("union is correct") = forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+    val xt = Set(xs.toSeq: _*)
+    val yt = Set(ys.toSeq: _*)
 
     (xt union yt).toScalaSet == (xs union ys)
   }
 
-  property("we can take the difference of sets") = forAll{ (xs: Set[Int], ys: Set[Int]) =>
-    val xt = BinaryTree(xs.toSeq: _*)
-    val yt = BinaryTree(ys.toSeq: _*)
+  property("we can take the difference of sets") = forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+    val xt = Set(xs.toSeq: _*)
+    val yt = Set(ys.toSeq: _*)
 
     (xt diff yt).toScalaSet == (xs diff ys)
   }
