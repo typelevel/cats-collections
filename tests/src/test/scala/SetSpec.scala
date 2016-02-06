@@ -84,5 +84,13 @@ object SetSpec extends Properties("Set") with ArbitraryList {
 
     (xt diff yt).toScalaSet == (xs diff ys)
   }
+
+  property("map works") = forAll{ (xs: SSet[Int]) =>
+    val f: Int => Int = _ + 1
+
+    val xt = Set(xs.toSeq: _*)
+
+    (xt map f).toScalaSet == (xs map f)
+  }
 }
 

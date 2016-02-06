@@ -6,11 +6,25 @@ import Predef._
  * A tree based immutable Map.
  */
 class Map[K,V](val set: Set[(K,V)]) {
+
   /**
-   * Fetch a Key/Value pair from the Map if the key is present.
-   * O(log n)
+   * Map a function on all the values in the Map.
    */
-  private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] = set.find(kv => K.eq(kv._1,key))
+  def map[B](f: V => B)(implicit K: Order[K]): Map[K,B] =
+    new Map(set.map(kv => kv._1 -> f(kv._2)))
+
+  /**
+   * Map a function on all the values in the Map.
+   */
+  def flatMap[B](f: V => Map[K,V])(implicit K: Order[K]): Map[K,V] =
+    new Map(set.flatMap(kv => f(kv._2).set))
+
+  /**
+   * Fold across all the key/value pairs, associating minumum keys
+   * first.
+   */
+  def foldLeft[B](b: B)(f: (B,(K,V)) => B): B =
+    set.foldLeft(b)(f)
 
   /**
    * Check if we have the given key in the map.
@@ -36,7 +50,19 @@ class Map[K,V](val set: Set[(K,V)]) {
    */
   def remove(key: K)(implicit K: Order[K]): Map[K,V] = new Map(set.removef(key, _._1))
 
-  private implicit def order(implicit K: Order[K]): Order[(K,V)] = K.contramap[(K,V)](_._1)
+  /**
+   * Merge this Map with anohter Map.
+   * O(n log n)
+   */
+  def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
+
+  // 
+  // Fetch a Key/Value pair from the Map if the key is present.
+  // O(log n)
+  // 
+  private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] = set.find(kv => K.eq(kv._1,key))
+
+  private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 }
 
 object Map {

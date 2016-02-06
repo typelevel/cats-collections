@@ -29,6 +29,18 @@ sealed abstract class Set[A] {
   def isEmpty: Boolean
 
   /**
+   * Map a function on all values of the set
+   */
+  def map[B: Order](f: A => B): Set[B] =
+    foldLeft[Set[B]](empty)((s,a) => s + f(a))
+
+  /**
+   * Map a function on all values of the set
+   */
+  def flatMap[B: Order](f: A => Set[B]): Set[B] =
+    foldLeft[Set[B]](empty)((s,a) => s ++ f(a))
+
+  /**
    * Return the sorted list of elements.
    * O(n)
    */

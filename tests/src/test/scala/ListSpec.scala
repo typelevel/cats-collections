@@ -1,4 +1,5 @@
 package dogs
+package tests
 
 import Predef._
 import dogs.std.{intEq,intOrder}
@@ -13,11 +14,8 @@ import org.scalacheck.Gen._
 import org.scalacheck.Arbitrary._
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 
-//import List._
-
 object ListTest extends Properties("ListTest") with ArbitraryList {
-  // we need to provid our own tuple instance until
-  // https://github.com/non/algebra/pull/82 is merged
+
   implicit def eqTuple2[A: Eq, B: Eq]: Eq[(A,B)] = new Eq[(A,B)] {
     def eqv(l: (A,B), r: (A,B)) = l._1 == r._1 && l._2 == r._2
   }
