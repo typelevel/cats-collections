@@ -12,22 +12,11 @@ import dogs.Predef._
 import org.scalacheck.Arbitrary.{arbitrary => getArbitrary}
 import org.scalatest.{FlatSpec, Matchers}
 
-class BigIntDiscrete extends Discrete[BigInt] {
-  override def succ(x: BigInt): BigInt = x + 1
-
-  override def pred(x: BigInt): BigInt = x - 1
-
-  override def apply(l: BigInt, r: BigInt): Ordering = if (l < r) LT else if (l > r) GT else EQ
-}
-object Ext {
-  implicit def toBigIntDiscrete(x: BigInt) = new BigIntDiscrete()
-}
-
 class DietTest extends FlatSpec with Matchers {
 
   import dogs.Predef._
 
-  implicit val d = new BigIntDiscrete()
+  implicit val d = new BigIntEnum()
 
   "diet" should "return node with value range when inserting into empty" in {
 
