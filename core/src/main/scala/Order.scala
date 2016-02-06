@@ -29,6 +29,11 @@ trait Order[A] { self =>
   }
 
   def eq(l: A, r: A): Boolean = apply(l, r) == EQ
+
+  def min(l: A, r: A): A = compare(l,r) match {
+    case LT => l
+    case _ => r
+  }
 }
 
 object Order {
