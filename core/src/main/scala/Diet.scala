@@ -41,9 +41,9 @@ sealed abstract class Diet[A] {
   /**
     * return a list of all disjoint sets in the tree where each set is represented by ARange
     */
-  def disjointSets: List[ARange[A]] = this match {
+  def disjointSets: List[Range[A]] = this match {
     case EmptyDiet()          =>  El()
-    case DietNode(x, y, l, r) =>  l.disjointSets ::: (ARange(x, y) :: r.disjointSets)
+    case DietNode(x, y, l, r) =>  l.disjointSets ::: (Range(x, y) :: r.disjointSets)
   }
 
   /**
@@ -158,12 +158,12 @@ sealed abstract class Diet[A] {
 
   def foldRight[B](s: B)(f: (B, A) => B)(implicit discrete: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  l.foldRight(ARange(a, b).reverse().foldLeft(r.foldRight(s)(f))(f))(f)
+    case DietNode(a, b, l, r) =>  l.foldRight(Range(a, b).reverse().foldLeft(r.foldRight(s)(f))(f))(f)
   }
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit discrete: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  r.foldLeft(ARange(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
+    case DietNode(a, b, l, r) =>  r.foldLeft(Range(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
   }
 }
 

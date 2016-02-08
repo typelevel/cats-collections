@@ -165,7 +165,7 @@ class DietTest extends FlatSpec with Matchers {
 
     val other = result.disjointSets.map(l => l.generate().toScalaList).toScalaList
 
-    other should contain ((Range(0, 101)).toList)
+    other should contain ((scala.Range(0, 101)).toList)
   }
 
   it should "join disjoint range" in {
