@@ -6,10 +6,7 @@ package dogs
 
 import dogs.Order._
 import Predef._
-
 import scala.annotation.tailrec
-
-import scala.Unit
 
 
 /**
