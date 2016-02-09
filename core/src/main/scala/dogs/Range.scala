@@ -6,6 +6,7 @@ package dogs
 
 import dogs.Order._
 import Predef._
+import dogs.Range.EmptyRange
 import scala.annotation.tailrec
 
 
@@ -22,28 +23,39 @@ sealed class Range[A](val start: A, val end: A) {
     * It basically calculates what is to the left of range that is in this and what is to the right
     * of range that is in this (in both cases it does not include elements in range)
     */
-  def -(range: Range[A])(implicit discrete: Enum[A]): (Range[A], Range[A]) =
-    (discrete.compare(start, range.start), discrete.compare(end, range.end)) match {
-      case (EQ, EQ) => (Range.empty(), Range.empty())
-      case (EQ, LT) => (Range.empty(), Range.empty())
-      case (EQ, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
+  def -(range: Range[A])(implicit discrete: Enum[A]): (Range[A], Range[A]) = {
 
-      case (GT, EQ) => (Range.empty(), Range.empty())
-      case (LT, EQ) => (Range(start, discrete.pred(range.start)), Range.empty())
-
-      case (GT, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
-
-      case (LT, LT) => (Range(start, discrete.pred(range.start)), Range.empty())
-
-      case (GT, LT) => (Range.empty(), Range.empty())
-      case (LT, GT) => (Range(start, discrete.pred(range.start)), Range(discrete.succ(range.end), end))
+    if (discrete.compare(end, range.start) == LT) {
+      (this, Range.empty[A]())
     }
+    else if (discrete.compare(start, range.end) == GT) {
+      (Range.empty[A](), this)
+    }
+    else {
+      (discrete.compare(start, range.start), discrete.compare(end, range.end)) match {
+        case (EQ, EQ) => (Range.empty(), Range.empty())
+        case (EQ, LT) => (Range.empty(), Range.empty())
+        case (EQ, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
+
+        case (GT, EQ) => (Range.empty(), Range.empty())
+        case (LT, EQ) => (Range(start, discrete.pred(range.start)), Range.empty())
+
+        case (GT, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
+
+        case (LT, LT) => (Range(start, discrete.pred(range.start)), Range.empty())
+
+        case (GT, LT) => (Range.empty(), Range.empty())
+        case (LT, GT) => (Range(start, discrete.pred(range.start)), Range(discrete.succ(range.end), end))
+      }
+    }
+  }
 
   /**
     * Verify that the passed range is within
     */
   def contains(range: Range[A])(implicit discrete: Enum[A]) =
      discrete.le(start, range.start) && discrete.ge(end, range.end)
+
 
 
   /**

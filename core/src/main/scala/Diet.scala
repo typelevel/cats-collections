@@ -56,7 +56,18 @@ sealed abstract class Diet[A] {
   def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
     case (_, EmptyRange())              =>  this
     case (EmptyDiet(), r)               =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
+    case (DietNode(x, y, l, r), rng)    => {
 
+      val (m, n) = rng.-(Range(x, y))
+      val t = l.add(m)
+
+      if (discrete.adj(m.end, x)) {
+        DietNode(m.start, y, EmptyDiet(), r)
+      }
+      else {
+        DietNode(x, y, t, r)
+      }
+    }
   }
 
 

@@ -246,5 +246,24 @@ class DietTestJoin extends FlatSpec with Matchers {
     other.min should be (Some(20))
     other.max should be (Some(30))
   }
+
+  it should "increase range to the left" in {
+    val diet = Diet[BigInt] + 20 + 21
+    val range = Range[BigInt](15, 19)
+
+    val other = diet.add(range)
+
+    other.disjointSets.toScalaList(0).generate().toScalaList should contain inOrderOnly (15, 16,17,18,19,20,21)
+  }
+
+  it should "create disjoint range to the left" in {
+    val diet = Diet[BigInt] + 20 + 21
+    val range = Range[BigInt](15, 18)
+
+    val sets = diet.add(range).disjointSets.map(r=>r.generate().toScalaList).toScalaList
+
+    sets(0) should contain inOrderOnly(15,16,17,18)
+    sets(1) should contain inOrderOnly(20, 21)
+  }
 }
 
