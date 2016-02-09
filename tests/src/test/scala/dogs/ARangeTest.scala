@@ -10,7 +10,7 @@ import dogs.Predef._
 import dogs.std._
 import org.scalatest.{FlatSpec, Matchers}
 
-class ARangeTest extends FlatSpec with Matchers {
+class RangeTest extends FlatSpec with Matchers {
   implicit object EnumInt extends Enum[Int] {
     override def succ(x: Int): Int = x + 1
     override def pred(x: Int): Int = x - 1

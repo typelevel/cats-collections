@@ -225,3 +225,26 @@ class DietTest extends FlatSpec with Matchers {
   }
 }
 
+class DietTestJoin extends FlatSpec with Matchers {
+  implicit val d = new BigIntEnum()
+
+  "diet" should "return the same diet when join to empty range" in {
+    val diet = Diet[BigInt] + 20 + 30
+
+    val range = Range.empty[BigInt]
+
+    diet.add(range) should be (diet)
+  }
+
+  it should "return a diet with range when added to empty diet" in {
+    val diet = Diet[BigInt]
+
+    val range = Range[BigInt](20, 30)
+
+    val other = diet.add(range)
+
+    other.min should be (Some(20))
+    other.max should be (Some(30))
+  }
+}
+

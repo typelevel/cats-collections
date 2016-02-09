@@ -6,21 +6,21 @@ package dogs
 
 import dogs.Order._
 import dogs.Predef._
-import scala.annotation.tailrec
 
 /**
   * Discrete Interval Encoding Tree (Diet).
-  * It stores subsets of types having a total order, a predecessor and a successor function described by Enum[A]
-  *
-  * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
-  * disjoint sets.
-  *
-  * In the best case, when there are no "holes" in the stored set, the interval representation consists of just one
-  * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there
-  * are not two adjacent elements in the set, the representation is equivalent to a binary search tree.
-  */
+ * It stores subsets of types having a total order, a predecessor and a successor function described by Enum[A]
+ *
+ * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
+ * disjoint sets.
+ *
+ * In the best case, when there are no "holes" in the stored set, the interval representation consists of just one
+ * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there
+ * are not two adjacent elements in the set, the representation is equivalent to a binary search tree.
+ */
 sealed abstract class Diet[A] {
   import Diet._
+  import dogs.Range.EmptyRange
 
   val isEmpty: Boolean
 
@@ -51,6 +51,14 @@ sealed abstract class Diet[A] {
     */
   def toList()(implicit discrete: Enum[A]): List[A] =
     disjointSets.flatMap(lst => lst.generate())
+
+
+  def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
+    case (_, EmptyRange())              =>  this
+    case (EmptyDiet(), r)               =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
+
+  }
+
 
   /**
     * add new value range [x, y] to de tree. If x > y then it will add range [y, x]

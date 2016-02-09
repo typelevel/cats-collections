@@ -108,15 +108,23 @@ sealed class Range[A](val start: A, val end: A) {
       }
     }
 
+  private [dogs] def isEmpty: Boolean = false
+
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
 }
 
-private [dogs] case object EmptyRange extends Range[Option[Nothing]](None(), None()) {
-  def apply[A]() = this.asInstanceOf[A]
-}
 
 object Range {
   def apply[A](x: A, y: A) = new Range[A](x, y)
 
   def empty[A](): Range[A] = EmptyRange()
+
+
+  private [dogs] case object EmptyRange extends Range[Option[Nothing]](None(), None()) {
+    def apply[A]() = this.asInstanceOf[A]
+
+    def unapply[A](r: Range[A]) = r.isEmpty
+
+    override def isEmpty = true
+  }
 }
