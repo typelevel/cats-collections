@@ -182,10 +182,22 @@ sealed abstract class Diet[A] {
    */
   def +(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = add(range)
 
+  def +(x: A, y: A)(implicit discrete: Enum[A]): Diet[A] = add(x, y)
+
   /**
     * alias for remove
     */
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
+
+  /**
+   * merge with that diet
+   */
+  def ::(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = (this, that) match {
+    case (EmptyDiet(), EmptyDiet())       =>  EmptyDiet()
+    case (x, EmptyDiet())                 =>  x
+    case (EmptyDiet(), y)                 =>  y
+    case (x, y)                           =>  y.disjointSets.foldLeft(x)((d, r) => d + r)
+  }
 
   /**
     * min value in the tree

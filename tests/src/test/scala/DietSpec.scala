@@ -1,10 +1,6 @@
 package dogs
+package tests
 
-import org.scalacheck._
-import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary,Gen,Properties}
-import dogs.Order._
-import dogs.std.intOrder
 import dogs.Diet._
 import dogs.Predef._
 import org.scalatest.{FlatSpec, Matchers}
@@ -331,6 +327,27 @@ class DietTestJoin extends FlatSpec with Matchers {
     other.toList().toScalaList.foreach {i =>
       x.contains(i) should be (false)
     }
+  }
+
+  it should "join to an empty diet" in {
+    val diet = Diet[BigInt] + (20, 30)
+
+    val other = diet :: Diet.empty[BigInt]
+
+    other should be (diet)
+  }
+
+  it should "join to another diet" in {
+    val diet = Diet[BigInt] + (20, 30)
+
+    val other = diet :: (Diet[BigInt] + (25, 35) + (5, 10) + (15, 22))
+
+    val sets = other.disjointSets.map(r => r.generate().toScalaList).toScalaList
+
+    sets should contain inOrderOnly(
+      scala.Range(5,11).toList,
+      scala.Range(15, 36).toList
+    )
   }
 }
 
