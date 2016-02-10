@@ -182,6 +182,9 @@ sealed abstract class Diet[A] {
    */
   def +(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = add(range)
 
+  /**
+   * alias for add
+   */
   def +(x: A, y: A)(implicit discrete: Enum[A]): Diet[A] = add(x, y)
 
   /**
@@ -310,27 +313,13 @@ object Diet {
   private [dogs] def isBestLeft[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
     dietNode.min match {
       case None() => false
-      case Some(a) => {
-        if (discrete.lt(r.start, a)) {
-          true
-        }
-        else {
-          false
-        }
-      }
+      case Some(a) => discrete.lt(r.start, a)
     }
 
   private [dogs] def isBestRight[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
     dietNode.max match {
       case None()       =>  false
-      case Some(a)      =>  {
-        if (discrete.gt(r.end, a)) {
-          true
-        }
-        else {
-          false
-        }
-      }
+      case Some(a)      =>  discrete.gt(r.end, a)
     }
 }
 
