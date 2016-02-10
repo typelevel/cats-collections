@@ -53,7 +53,7 @@ sealed abstract class Diet[A] {
     disjointSets.flatMap(lst => lst.generate())
 
   /**
-   * add new value range [x, y] to de tree. If x > y then it will add range [y, x]
+   * add new value range [x, y] to de tree.
    */
   def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
     case (_, EmptyRange())              =>  this
@@ -80,9 +80,8 @@ sealed abstract class Diet[A] {
 
         if (!n.isEmpty && discrete.adj(y, n.start)) {
           val ri = DietNode(root.x, n.end, EmptyDiet(), EmptyDiet())
-          val t = r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
 
-          t.asInstanceOf[DietNode[A]]
+          r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
         }
         else {
           DietNode(root.x, y, root.left, r.add(n))
