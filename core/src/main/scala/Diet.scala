@@ -192,12 +192,7 @@ sealed abstract class Diet[A] {
   /**
    * merge with that diet
    */
-  def ::(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = (this, that) match {
-    case (EmptyDiet(), EmptyDiet())       =>  EmptyDiet()
-    case (x, EmptyDiet())                 =>  x
-    case (EmptyDiet(), y)                 =>  y
-    case (x, y)                           =>  y.disjointSets.foldLeft(x)((d, r) => d + r)
-  }
+  def ::(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.disjointSets.foldLeft(this)((d, r) => d + r)
 
   /**
     * min value in the tree
