@@ -28,14 +28,14 @@ sealed abstract class Diet[A] {
     * verify x is a value is in the tree
     */
   def contains(x: A)(implicit discrete: Enum[A]): Boolean = this match {
-    case EmptyDiet()          =>  false
-    case DietNode(a,b, l, r)  =>  (discrete.compare(x, a), discrete.compare(x, b)) match {
-      case (EQ, _)  =>  true
-      case (_, EQ)  =>  true
-      case (GT, LT) =>  true
-      case (LT, _)  =>  l.contains(x)
-      case (_, GT)  =>  r.contains(x)
-    }
+    case EmptyDiet()            =>  false
+    case DietNode(a, b, l, r)   => (discrete.compare(x, a), discrete.compare(x, b)) match {
+        case (EQ, _)  =>  true
+        case (_, EQ)  =>  true
+        case (GT, LT) =>  true
+        case (LT, _)  =>  l.contains(x)
+        case (_, GT)  =>  r.contains(x)
+      }
   }
 
   /**
@@ -58,18 +58,40 @@ sealed abstract class Diet[A] {
     case (EmptyDiet(), r)               =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
     case (DietNode(x, y, l, r), rng)    => {
 
-      val (m, n) = rng.-(Range(x, y))
-      val t = l.add(m)
-
-      if (discrete.adj(m.end, x)) {
-        DietNode(m.start, y, EmptyDiet(), r)
+      if (Range(x, y).contains(rng)) {
+        this
       }
       else {
-        DietNode(x, y, t, r)
+        val (m, n) = rng - (Range(x, y))
+
+        val root = {
+          if (!m.isEmpty && discrete.adj(m.end, x)) {
+
+            val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
+
+            val t = l.disjointSets.foldLeft[Diet[A]](li)((d, r) => d.add(r))
+
+            t.asInstanceOf[DietNode[A]]
+            //DietNode(m.start, y, t, r)
+          }
+          else {
+            DietNode(x, y, l.add(m), r)
+          }
+        }
+
+        if (!n.isEmpty && discrete.adj(y, n.start)) {
+          val ri = DietNode(root.x, n.end, EmptyDiet(), EmptyDiet())
+
+          val t = r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
+
+          t.asInstanceOf[DietNode[A]]
+        }
+        else {
+          DietNode(root.x, y, root.left, r.add(n))
+        }
       }
     }
   }
-
 
   /**
     * add new value range [x, y] to de tree. If x > y then it will add range [y, x]
@@ -79,10 +101,10 @@ sealed abstract class Diet[A] {
       add(x)
     }
     else if (discrete.compare(x, y) == LT) {
-      add(x).add(discrete.succ(x), y)
+      add(Range(x, y))
     }
     else {
-      add(y, x)
+      add(Range(y, x))
     }
   }
 
