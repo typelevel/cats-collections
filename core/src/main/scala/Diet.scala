@@ -54,37 +54,54 @@ sealed abstract class Diet[A] {
 
   /**
    * add new value range [x, y] to de tree.
+   *
+   * Cases:
+   *  Trivial:
+   *    (1) [x, y] is a subrange of an existing range
+   *    (2) [x, y] extends diet to the left st x < min(diet) => left(diet) is not needed
+   *    (3) same as (2) but to the right
+   *  Non-Trivial:
+   *    (4) [x, y] extends diet to the left st x > min(diet) => extend diet and re-insert ranges in left(diet)
+   *    (5) [x, y] does not extend diet, [x, y] has to be insert into left(diet)
+   *    (6) same as (4) to the right
+   *    (7) same as (5) to the right
    */
   def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
     case (_, EmptyRange())              =>  this
     case (EmptyDiet(), r)               =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
-    case (DietNode(x, y, l, r), rng)    => {
+    case (d @ DietNode(x, y, l, r), rng)    => {
 
-      if (Range(x, y).contains(rng)) {
+      val (m, n) = rng - (Range(x, y))
+
+      if (Range(x, y).contains(rng)) {                                      //(1)
         this
       }
-      else {
-        val (m, n) = rng - (Range(x, y))
-
+      else if (isBestLeft(rng, d) && discrete.adj(m.end, x)) {              //(2)
+        DietNode(rng.start, y, EmptyDiet(), r).asInstanceOf[Diet[A]].add(n)
+      }
+      else if (isBestRight(rng, d) && discrete.adj(y, n.start)){            //(3)
+        DietNode(x, rng.end, l, EmptyDiet())
+      }
+      else {                                                                //More complex case
         val root = {
-          if (!m.isEmpty && discrete.adj(m.end, x)) {
+          if (!m.isEmpty && discrete.adj(m.end, x)) {                       //(4)
             val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
             val t = l.disjointSets.foldLeft[Diet[A]](li)((d, r) => d.add(r))
 
             t.asInstanceOf[DietNode[A]]
           }
           else {
-            DietNode(x, y, l.add(m), r)
+            DietNode(x, y, l.add(m), r)                                     //(5)
           }
         }
 
-        if (!n.isEmpty && discrete.adj(y, n.start)) {
+        if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
           val ri = DietNode(root.x, n.end, EmptyDiet(), EmptyDiet())
 
           r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
         }
         else {
-          DietNode(root.x, y, root.left, r.add(n))
+          DietNode(root.x, y, root.left, r.add(n))                          //(7)
         }
       }
     }
@@ -282,6 +299,32 @@ object Diet {
         DietNode(x, y, l, r)
     }
   }
+
+  private [dogs] def isBestLeft[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
+    dietNode.min match {
+      case None() => false
+      case Some(a) => {
+        if (discrete.lt(r.start, a)) {
+          true
+        }
+        else {
+          false
+        }
+      }
+    }
+
+  private [dogs] def isBestRight[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
+    dietNode.max match {
+      case None()       =>  false
+      case Some(a)      =>  {
+        if (discrete.gt(r.end, a)) {
+          true
+        }
+        else {
+          false
+        }
+      }
+    }
 }
 
 /**
