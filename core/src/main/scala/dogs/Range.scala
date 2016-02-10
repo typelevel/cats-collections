@@ -24,7 +24,6 @@ sealed class Range[A](val start: A, val end: A) {
     * of range that is in this (in both cases it does not include elements in range)
     */
   def -(range: Range[A])(implicit discrete: Enum[A]): (Range[A], Range[A]) = {
-
     if (discrete.compare(end, range.start) == LT) {
       (this, Range.empty[A]())
     }
@@ -56,8 +55,6 @@ sealed class Range[A](val start: A, val end: A) {
   def contains(range: Range[A])(implicit discrete: Enum[A]) =
      discrete.le(start, range.start) && discrete.ge(end, range.end)
 
-
-
   /**
     * Generates the elements of the range [start, end] base of the discrete operations
     */
@@ -77,9 +74,7 @@ sealed class Range[A](val start: A, val end: A) {
   /**
     * Verify is x is in range [start, end]
     */
-  def contains(x: A)(implicit discrete: Enum[A]) =
-    discrete.ge(x, start) && discrete.le(x, end)
-
+  def contains(x: A)(implicit discrete: Enum[A]) = discrete.ge(x, start) && discrete.le(x, end)
 
   /**
     * Apply function f to each element in range [star, end]
@@ -124,7 +119,6 @@ sealed class Range[A](val start: A, val end: A) {
 
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
 }
-
 
 object Range {
   def apply[A](x: A, y: A) = new Range[A](x, y)
