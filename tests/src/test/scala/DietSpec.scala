@@ -3,120 +3,122 @@ package tests
 
 import dogs.Diet._
 import dogs.Predef._
+import org.scalacheck._
+import org.scalacheck.Prop.forAll
 import org.scalatest.{FlatSpec, Matchers}
+import dogs.std.intOrder
+import dogs.Order._
+
 
 // this has something wrong.
 // once, look at the last test in DietTestJoin. The ranges were return by this test class
 // however, they passed the new test. I think the problem is that you are taken
 // more number that the ones you actually need.
 
+//
+object DietSpec extends Properties("Diet") {
 
-//object DietSpec extends Properties("Diet") {
-//
-//  // we'll pick 8 ranges between 0 and 1000,
-//  // 5 which we'll add, then 3 which we'll remove
-//  case class Ranges(a1: (Int,Int),
-//                    a2: (Int,Int),
-//                    a3: (Int,Int),
-//                    a4: (Int,Int),
-//                    a5: (Int,Int),
-//                    r1: (Int,Int),
-//                    r2: (Int,Int),
-//                    r3: (Int,Int)
-//  ) {
-//    def in(i: Int)(r: (Int,Int)): Boolean = i >= r._1 && i <= r._2
-//
-//    // test if we think any given I *should* be returns as in the Diet
-//    def contains(i: Int) = {
-//      val f = in(i) _
-//      (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1)| f(r2) | f(r3))
-//    }
-//  }
-//
-//  implicit object EnumInt extends Enum[Int] {
-//    override def succ(x: Int): Int = x + 1
-//    override def pred(x: Int): Int = x - 1
-//    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-//  }
-//
-//  def orderedTuple(x: Int, y: Int): (Int,Int) =
-//    intOrder(x,y) match {
-//      case GT => y -> x
-//      case _ => x -> y
-//    }
-//
-//  implicit val arbNine: Arbitrary[Ranges] = Arbitrary(
-//    for {
-//      i1  <- Gen.choose(0,999)
-//      i2  <- Gen.choose(0,999)
-//      i3  <- Gen.choose(0,999)
-//      i4  <- Gen.choose(0,999)
-//      i5  <- Gen.choose(0,999)
-//      i6  <- Gen.choose(0,999)
-//      i7  <- Gen.choose(0,999)
-//      i8  <- Gen.choose(0,999)
-//      i9  <- Gen.choose(0,999)
-//      i10 <- Gen.choose(0,999)
-//      i11 <- Gen.choose(0,999)
-//      i12 <- Gen.choose(0,999)
-//      i13 <- Gen.choose(0,999)
-//      i14 <- Gen.choose(0,999)
-//      i15 <- Gen.choose(0,999)
-//      i16 <- Gen.choose(0,999)
-//    } yield Ranges(orderedTuple(i1, i2),
-//                   orderedTuple(i3, i4),
-//                   orderedTuple(i5, i6),
-//                   orderedTuple(i7, i8),
-//                   orderedTuple(i9, i10),
-//                   orderedTuple(i11, i12),
-//                   orderedTuple(i13, i14),
-//                   orderedTuple(i15, i16))
-//  )
-//
-//  def fromRanges(r: Ranges): Diet[Int] = {
-//    // hmm, can't remove a range, have to do it one by one
-//    def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] =
-//      (i._1 to i._2).foldLeft(d)(_ remove _)
-//
-//    val d = Diet[Int].add(r.a1._1, r.a1._2)
-//      .add(r.a2._1, r.a2._2)
-//      .add(r.a3._1, r.a3._2)
-//      .add(r.a4._1, r.a4._2)
-//      .add(r.a5._1, r.a5._2)
-//
-//    remove(remove(remove(d, r.r1), r.r2), r.r3)
-//  }
-//
-//  property("diet") = forAll{ (r: Ranges) =>
-//    val d = fromRanges(r)
-//
-//    (0 to 100).toList.foreach {i =>
-//      if(d.contains(i) != r.contains(i)) {
-//        println(s"for $i, got ${d.contains(i)} expected ${r.contains(i)}")
-//      }
-//    }
-//
-//    (0 to 100).toList.forall(i => d.contains(i) == r.contains(i))
-//  }
-//
-////  property("xs") = forAll { (r: Ranges) =>
-////
-////  }
-//
-///* commenting out unti we can merge to Diets
-//  property("merge") = forAll{ (r1: Ranges, r2: Ranges) =>
-//    val d = Diet.merge(fromRanges(r1), fromRanges(r2))
-//
-//
-//    (0 to 1000).toList.foreach {i =>
-//      if(d.contains(i) != (r1.contains(i) || r2.contains(i)))
-//        println(s"for $i, got ${d.contains(i)} expected ${r1.contains(i)} || ${r2.contains(i)}")
-//    }
-//
-//    (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
-//  }
-// */
-//}
+  // we'll pick 8 ranges between 0 and 1000,
+  // 5 which we'll add, then 3 which we'll remove
+  case class Ranges(a1: (Int,Int),
+                    a2: (Int,Int),
+                    a3: (Int,Int),
+                    a4: (Int,Int),
+                    a5: (Int,Int),
+                    r1: (Int,Int),
+                    r2: (Int,Int),
+                    r3: (Int,Int)
+  ) {
+    def in(i: Int)(r: (Int,Int)): Boolean = i >= r._1 && i <= r._2
+
+    // test if we think any given I *should* be returns as in the Diet
+    def contains(i: Int) = {
+      val f = in(i) _
+      (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1)| f(r2) | f(r3))
+    }
+  }
+
+  implicit object EnumInt extends Enum[Int] {
+    override def succ(x: Int): Int = x + 1
+    override def pred(x: Int): Int = x - 1
+    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
+
+  }
+
+  def orderedTuple(x: Int, y: Int): (Int,Int) =
+    intOrder(x,y) match {
+      case GT => y -> x
+      case _ => x -> y
+    }
+
+  implicit val arbNine: Arbitrary[Ranges] = Arbitrary(
+    for {
+      i1  <- Gen.choose(0,999)
+      i2  <- Gen.choose(0,999)
+      i3  <- Gen.choose(0,999)
+      i4  <- Gen.choose(0,999)
+      i5  <- Gen.choose(0,999)
+      i6  <- Gen.choose(0,999)
+      i7  <- Gen.choose(0,999)
+      i8  <- Gen.choose(0,999)
+      i9  <- Gen.choose(0,999)
+      i10 <- Gen.choose(0,999)
+      i11 <- Gen.choose(0,999)
+      i12 <- Gen.choose(0,999)
+      i13 <- Gen.choose(0,999)
+      i14 <- Gen.choose(0,999)
+      i15 <- Gen.choose(0,999)
+      i16 <- Gen.choose(0,999)
+    } yield Ranges(orderedTuple(i1, i2),
+                   orderedTuple(i3, i4),
+                   orderedTuple(i5, i6),
+                   orderedTuple(i7, i8),
+                   orderedTuple(i9, i10),
+                   orderedTuple(i11, i12),
+                   orderedTuple(i13, i14),
+                   orderedTuple(i15, i16))
+  )
+
+  def fromRanges(r: Ranges): Diet[Int] = {
+    // hmm, can't remove a range, have to do it one by one
+    def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] =
+      (i._1 to i._2).foldLeft(d)(_ remove _)
+
+    val d = Diet[Int].add(r.a1._1, r.a1._2)
+      .add(r.a2._1, r.a2._2)
+      .add(r.a3._1, r.a3._2)
+      .add(r.a4._1, r.a4._2)
+      .add(r.a5._1, r.a5._2)
+
+    remove(remove(remove(d, r.r1), r.r2), r.r3)
+  }
+
+  property("diet") = forAll { (r: Ranges) =>
+    val d = fromRanges(r)
+
+    (0 to 100).toList.foreach {i =>
+      if(d.contains(i) != r.contains(i)) {
+        println(s"for $i, got ${d.contains(i)} expected ${r.contains(i)}")
+      }
+    }
+
+    (0 to 100).toList.forall(i => d.contains(i) == r.contains(i))
+  }
+
+/* commenting out unti we can merge to Diets
+  property("merge") = forAll{ (r1: Ranges, r2: Ranges) =>
+    val d = Diet.merge(fromRanges(r1), fromRanges(r2))
+
+
+    (0 to 1000).toList.foreach {i =>
+      if(d.contains(i) != (r1.contains(i) || r2.contains(i)))
+        println(s"for $i, got ${d.contains(i)} expected ${r1.contains(i)} || ${r2.contains(i)}")
+    }
+
+    (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
+  }
+ */
+}
 
 class DietTest extends FlatSpec with Matchers {
 
@@ -282,43 +284,24 @@ class DietTestJoin extends FlatSpec with Matchers {
     other should contain (20.to(30).toList)
   }
 
-  it should "add range" in {
-    var s = Diet[BigInt].add(271, 561).add(69, 292)
-    s = s.add(820,895)
-    s = s.add(252,425)
-    s = s.add(294,791)
-    s = s.add(268,886)
-    s = s.add(224,298)
-    s = s.add(578, 590)
-
-    s.contains(887) should be (true)
-    s.contains(888) should be (true)
-    s.contains(889) should be (true)
-    s.contains(890) should be (true)
-    s.contains(891) should be (true)
-    s.contains(892) should be (true)
-    s.contains(893) should be (true)
-    s.contains(894) should be (true)
-    s.contains(895) should be (true)
-  }
-
   it should "pass failing property test" in {
-    val s = Diet[BigInt].add(449, 687)
-      .add(94, 121)
-    .add(835, 990)
-    .add(517,727)
-    .add(590, 865)
-    .add(378, 954)
-    .add(262, 779)
-    .add(342, 376)
+    var s = Diet[BigInt]
+    s = s +(154,376)
+    s= s +(512,813)
+    s=s+(428,581)
+    s=s+(41,117)
+    s=s+(183,693)
+    s=s+(701,702)
+    s=s+(793,950)
+    s=s+(198,652)
 
     var x = s
 
-    378.to(954).foreach(i => x = x.remove(i))
-    262.to(779).foreach(i => x = x.remove(i))
-    342.to(376).foreach(i => x = x.remove(i))
+    701.to(702).foreach(i => x = x.remove(i))
+    793.to(950).foreach(i => x = x.remove(i))
+    198.to(652).foreach(i => x = x.remove(i))
 
-    val other = Diet[BigInt].add(378, 954).add(262, 779).add(342, 376)
+    val other = Diet[BigInt]+(701,702)+(793,950)+(198,652)
 
     x.toList().toScalaList.foreach {i =>
       other.contains(i) should be (false)
@@ -327,6 +310,7 @@ class DietTestJoin extends FlatSpec with Matchers {
     other.toList().toScalaList.foreach {i =>
       x.contains(i) should be (false)
     }
+
   }
 
   it should "join to an empty diet" in {

@@ -96,7 +96,7 @@ sealed abstract class Diet[A] {
         }
 
         if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
-          val ri = DietNode(root.x, n.end, EmptyDiet(), EmptyDiet())
+          val ri = DietNode(root.x, n.end, root.left, EmptyDiet())
 
           r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
         }
@@ -233,7 +233,7 @@ sealed abstract class Diet[A] {
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit discrete: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  r.foldLeft(Range(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
+    case DietNode(a, b, l, r) => r.foldLeft(Range(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
   }
 }
 
