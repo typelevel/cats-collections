@@ -53,22 +53,22 @@ object DietSpec extends Properties("Diet") {
 
   implicit val arbNine: Arbitrary[Ranges] = Arbitrary(
     for {
-      i1  <- Gen.choose(0,999)
-      i2  <- Gen.choose(0,999)
-      i3  <- Gen.choose(0,999)
-      i4  <- Gen.choose(0,999)
-      i5  <- Gen.choose(0,999)
-      i6  <- Gen.choose(0,999)
-      i7  <- Gen.choose(0,999)
-      i8  <- Gen.choose(0,999)
-      i9  <- Gen.choose(0,999)
-      i10 <- Gen.choose(0,999)
-      i11 <- Gen.choose(0,999)
-      i12 <- Gen.choose(0,999)
-      i13 <- Gen.choose(0,999)
-      i14 <- Gen.choose(0,999)
-      i15 <- Gen.choose(0,999)
-      i16 <- Gen.choose(0,999)
+      i1  <- Gen.choose(0,9999)
+      i2  <- Gen.choose(0,9999)
+      i3  <- Gen.choose(0,9999)
+      i4  <- Gen.choose(0,9999)
+      i5  <- Gen.choose(0,9999)
+      i6  <- Gen.choose(0,9999)
+      i7  <- Gen.choose(0,9999)
+      i8  <- Gen.choose(0,9999)
+      i9  <- Gen.choose(0,9999)
+      i10 <- Gen.choose(0,9999)
+      i11 <- Gen.choose(0,9999)
+      i12 <- Gen.choose(0,9999)
+      i13 <- Gen.choose(0,9999)
+      i14 <- Gen.choose(0,9999)
+      i15 <- Gen.choose(0,9999)
+      i16 <- Gen.choose(0,9999)
     } yield Ranges(orderedTuple(i1, i2),
                    orderedTuple(i3, i4),
                    orderedTuple(i5, i6),
@@ -96,19 +96,19 @@ object DietSpec extends Properties("Diet") {
   property("diet") = forAll { (r: Ranges) =>
     val d = fromRanges(r)
 
-    (0 to 100).toList.foreach {i =>
+    (0 to 1000).toList.foreach {i =>
       if(d.contains(i) != r.contains(i)) {
         println(s"for $i, got ${d.contains(i)} expected ${r.contains(i)}")
       }
     }
 
-    (0 to 100).toList.forall(i => d.contains(i) == r.contains(i))
+    (0 to 1000).toList.forall(i => d.contains(i) == r.contains(i))
   }
-
-/* commenting out unti we can merge to Diets
+ // /* commenting out unti we can merge to Diets
   property("merge") = forAll{ (r1: Ranges, r2: Ranges) =>
-    val d = Diet.merge(fromRanges(r1), fromRanges(r2))
+    //val d = Diet.merge(fromRanges(r1), fromRanges(r2))
 
+    val d = Diet[Int] :: fromRanges(r1) :: fromRanges(r2)
 
     (0 to 1000).toList.foreach {i =>
       if(d.contains(i) != (r1.contains(i) || r2.contains(i)))
@@ -117,7 +117,6 @@ object DietSpec extends Properties("Diet") {
 
     (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
   }
- */
 }
 
 class DietTest extends FlatSpec with Matchers {
