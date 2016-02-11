@@ -82,9 +82,9 @@ sealed abstract class Diet[A] {
    *    (7) same as (5) to the right
    */
   def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
-    case (_, EmptyRange())              =>  this
-    case (EmptyDiet(), r)               =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
-    case (d @ DietNode(x, y, l, r), rng)    => {
+    case (_, EmptyRange())                =>  this
+    case (EmptyDiet(), r)                 =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
+    case (d @ DietNode(x, y, l, r), rng)  => {
 
       val (m, n) = rng - (Range(x, y))
 
@@ -164,7 +164,7 @@ sealed abstract class Diet[A] {
     * remove x from the tree
     */
   def remove(x: A)(implicit discrete: Enum[A]): Diet[A] = this match {
-    case EmptyDiet()  =>  this
+    case EmptyDiet()          =>  this
     case DietNode(a, b, l, r) =>  {
       if (discrete.compare(x, a) == LT) {
         DietNode(a, b, l.remove(x), r)
@@ -211,6 +211,27 @@ sealed abstract class Diet[A] {
    * merge with the given diet
    */
   def ++(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.disjointSets.foldLeft(this)((d, r) => d + r)
+
+  /**
+   * union with the given diet
+   */
+  def |(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = this ++ that
+
+  /**
+   * intersection with the given diet
+   */
+  def &(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = (this, that) match {
+    case (_, EmptyDiet()) => EmptyDiet()
+    case (EmptyDiet(), _) => EmptyDiet()
+    case (a, b)           => {
+      (a.disjointSets ::: b.disjointSets).foldLeft(Diet[A])((d, r) =>
+        if (a.contains(r) && b.contains(r))
+          d + r
+        else
+          r.generate().foldLeft(d)((s, x) => if (a.contains(x) && b.contains(x)) s + x else s)
+      )
+    }
+  }
 
   /**
     * min value in the tree

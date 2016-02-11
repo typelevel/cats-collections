@@ -307,6 +307,26 @@ class DietTestJoin extends FlatSpec with Matchers {
       scala.Range(5,11).toList,
       scala.Range(15, 36).toList
     )
+
+    val otherSets = diet | other
+
+    otherSets.disjointSets.map(r => r.generate().toScalaList).toScalaList should contain inOrderOnly(
+      scala.Range(5,11).toList,
+      scala.Range(15, 36).toList
+      )
+  }
+
+  it should "interset with another diet" in {
+    val diet = Diet[BigInt] + (20, 30)
+
+    (diet & Diet[BigInt]).disjointSets.toScalaList.length should be (0)
+
+    (diet & diet) should be(diet)
+
+    (diet & (Diet[BigInt] + (15, 25) + (28, 32))).toList().toScalaList should
+      contain inOrderOnly (20, 21, 22, 23, 24, 25, 28, 29, 30)
+
+    (diet & (Diet[BigInt] + (10, 15))).toList().toScalaList.length should be(0)
   }
 }
 
