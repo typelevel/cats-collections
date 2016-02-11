@@ -20,7 +20,8 @@ import dogs.Predef._
  */
 sealed abstract class Diet[A] {
   import Diet._
-  import dogs.Range.EmptyRange
+
+  import Range.EmptyRange
 
   val isEmpty: Boolean
 
@@ -36,6 +37,20 @@ sealed abstract class Diet[A] {
         case (LT, _)  =>  l.contains(x)
         case (_, GT)  =>  r.contains(x)
       }
+  }
+
+  def contains(range: Range[A])(implicit discrete: Enum[A]): Boolean = this match {
+    case EmptyDiet()            =>  false
+    case DietNode(x, y, l, r)   => {
+      if (Range(x, y).contains(range)){
+        true
+      }
+      else if (discrete.lt(range.start, x)) {
+        l.contains(range)
+      } else {
+        r.contains(range)
+      }
+    }
   }
 
   /**
@@ -193,9 +208,9 @@ sealed abstract class Diet[A] {
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
 
   /**
-   * merge with that diet
+   * merge with the given diet
    */
-  def ::(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.disjointSets.foldLeft(this)((d, r) => d + r)
+  def ++(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.disjointSets.foldLeft(this)((d, r) => d + r)
 
   /**
     * min value in the tree

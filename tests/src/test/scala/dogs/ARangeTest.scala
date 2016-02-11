@@ -1,5 +1,5 @@
 /**
-  * Created by anicolaspp on 2/8/16.
+  * Created by Nicolas A Perez (@anicolaspp) on 2/8/16.
   */
 
 package dogs

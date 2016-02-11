@@ -9,13 +9,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import dogs.std.intOrder
 import dogs.Order._
 
-
-// this has something wrong.
-// once, look at the last test in DietTestJoin. The ranges were return by this test class
-// however, they passed the new test. I think the problem is that you are taken
-// more number that the ones you actually need.
-
-//
 object DietSpec extends Properties("Diet") {
 
   // we'll pick 8 ranges between 0 and 1000,
@@ -104,11 +97,9 @@ object DietSpec extends Properties("Diet") {
 
     (0 to 1000).toList.forall(i => d.contains(i) == r.contains(i))
   }
- // /* commenting out unti we can merge to Diets
-  property("merge") = forAll{ (r1: Ranges, r2: Ranges) =>
-    //val d = Diet.merge(fromRanges(r1), fromRanges(r2))
 
-    val d = Diet[Int] :: fromRanges(r1) :: fromRanges(r2)
+  property("merge") = forAll{ (r1: Ranges, r2: Ranges) =>
+    val d = Diet[Int] ++ fromRanges(r1) ++ fromRanges(r2)
 
     (0 to 1000).toList.foreach {i =>
       if(d.contains(i) != (r1.contains(i) || r2.contains(i)))
@@ -231,6 +222,20 @@ class DietTest extends FlatSpec with Matchers {
     diet.foldLeft(BigInt(10))((a: BigInt,b: BigInt) => a + b) should be (26)
     diet.foldRight(BigInt(10))((a: BigInt,b: BigInt) => a + b) should be (26)
   }
+
+  it should "contain range" in {
+    val x = Diet[BigInt] + (20, 30)
+
+    x.contains(Range[BigInt](20, 30)) should be (true)
+    x.contains(Range[BigInt](25, 26)) should be (true)
+    x.contains(Range[BigInt](1,10)) should be (false)
+
+    val s = x + (10, 15)
+
+    s.contains(Range[BigInt](9, 15)) should be (false)
+    s.contains(Range[BigInt](10, 15)) should be (true)
+    s.contains(Range[BigInt](9, 16)) should be (false)
+  }
 }
 
 class DietTestJoin extends FlatSpec with Matchers {
@@ -283,39 +288,10 @@ class DietTestJoin extends FlatSpec with Matchers {
     other should contain (20.to(30).toList)
   }
 
-  it should "pass failing property test" in {
-    var s = Diet[BigInt]
-    s = s +(154,376)
-    s= s +(512,813)
-    s=s+(428,581)
-    s=s+(41,117)
-    s=s+(183,693)
-    s=s+(701,702)
-    s=s+(793,950)
-    s=s+(198,652)
-
-    var x = s
-
-    701.to(702).foreach(i => x = x.remove(i))
-    793.to(950).foreach(i => x = x.remove(i))
-    198.to(652).foreach(i => x = x.remove(i))
-
-    val other = Diet[BigInt]+(701,702)+(793,950)+(198,652)
-
-    x.toList().toScalaList.foreach {i =>
-      other.contains(i) should be (false)
-    }
-
-    other.toList().toScalaList.foreach {i =>
-      x.contains(i) should be (false)
-    }
-
-  }
-
   it should "join to an empty diet" in {
     val diet = Diet[BigInt] + (20, 30)
 
-    val other = diet :: Diet.empty[BigInt]
+    val other = diet ++ Diet.empty[BigInt]
 
     other should be (diet)
   }
@@ -323,7 +299,7 @@ class DietTestJoin extends FlatSpec with Matchers {
   it should "join to another diet" in {
     val diet = Diet[BigInt] + (20, 30)
 
-    val other = diet :: (Diet[BigInt] + (25, 35) + (5, 10) + (15, 22))
+    val other = diet ++ (Diet[BigInt] + (25, 35) + (5, 10) + (15, 22))
 
     val sets = other.disjointSets.map(r => r.generate().toScalaList).toScalaList
 
