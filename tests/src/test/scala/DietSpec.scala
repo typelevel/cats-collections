@@ -8,7 +8,7 @@ import org.scalacheck.Prop.forAll
 import org.scalatest.{FlatSpec, Matchers}
 import dogs.std.intOrder
 import dogs.Order._
-
+//
 object DietSpec extends Properties("Diet") {
 
   // we'll pick 8 ranges between 0 and 1000,
@@ -309,4 +309,5 @@ class DietTestJoin extends FlatSpec with Matchers {
     )
   }
 }
+
 
