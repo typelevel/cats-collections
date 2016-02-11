@@ -223,14 +223,12 @@ sealed abstract class Diet[A] {
   def &(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = (this, that) match {
     case (_, EmptyDiet()) => EmptyDiet()
     case (EmptyDiet(), _) => EmptyDiet()
-    case (a, b)           => {
-      (a.disjointSets ::: b.disjointSets).foldLeft(Diet[A])((d, r) =>
+    case (a, b)           => (a.disjointSets ::: b.disjointSets).foldLeft(Diet[A])((d, r) =>
         if (a.contains(r) && b.contains(r))
           d + r
         else
           r.generate().foldLeft(d)((s, x) => if (a.contains(x) && b.contains(x)) s + x else s)
       )
-    }
   }
 
   /**
