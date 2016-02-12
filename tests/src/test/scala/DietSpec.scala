@@ -8,7 +8,7 @@ import org.scalacheck.Prop.forAll
 import org.scalatest.{FlatSpec, Matchers}
 import dogs.std.intOrder
 import dogs.Order._
-//
+
 object DietSpec extends Properties("Diet") {
 
   // we'll pick 8 ranges between 0 and 1000,
@@ -74,8 +74,8 @@ object DietSpec extends Properties("Diet") {
 
   def fromRanges(r: Ranges): Diet[Int] = {
     // hmm, can't remove a range, have to do it one by one
-    def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] =
-      (i._1 to i._2).foldLeft(d)(_ remove _)
+    def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] = d - Range(i._1, i._2)
+      //(i._1 to i._2).foldLeft(d)(_ remove _)
 
     val d = Diet[Int].add(r.a1._1, r.a1._2)
       .add(r.a2._1, r.a2._2)
@@ -327,6 +327,42 @@ class DietTestJoin extends FlatSpec with Matchers {
       contain inOrderOnly (20, 21, 22, 23, 24, 25, 28, 29, 30)
 
     (diet & (Diet[BigInt] + (10, 15))).toList().toScalaList.length should be(0)
+  }
+}
+
+class DietTestRemove extends FlatSpec with Matchers {
+  implicit val d = new BigIntEnum()
+
+  "diet" should "remove empty range" in {
+    val diet = Diet[BigInt] + (20, 30)
+
+    (diet - Range.empty[BigInt]) should be(diet)
+  }
+
+  it should "return empty when removing from empty" in {
+
+    (Diet[BigInt] - Range[BigInt](10, 100)) should be (EmptyDiet())
+  }
+
+  it should "remove inner range" in {
+    val diet = ((Diet[BigInt] + (20, 30)) - Range[BigInt](22, 27))
+
+    diet.toList().toScalaList should contain inOrderOnly(20, 21, 28, 29, 30)
+  }
+
+  it should "remove side ranges" in {
+    val diet = ((Diet[BigInt]
+      + (20, 21)
+      + (9,10)
+      + (12, 18)
+      + (23, 30)
+      + (40, 50)
+      + (35, 48)
+      + (55, 60))
+      - Range[BigInt](15, 18)
+      - Range[BigInt](25, 60))
+
+    diet.toList().toScalaList should contain inOrderOnly (9, 10, 12, 13, 14, 20, 21, 23, 24)
   }
 }
 

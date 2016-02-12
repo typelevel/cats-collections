@@ -207,6 +207,46 @@ sealed abstract class Diet[A] {
     */
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
 
+  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = {
+    def rmv(node: Diet[A], range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
+      case (_, EmptyRange())            => node
+      case (EmptyDiet(), _)             => node
+      case (DietNode(a, b, l, r), rng)  => {
+        if (discrete.compare(a, rng.start) == EQ && discrete.compare(b, rng.end) == EQ) {
+          merge(l, r)
+        }
+        else if (Range(a, b).contains(rng)) {
+          if (discrete.compare(a, rng.start) == EQ) {
+            merge(l, DietNode(discrete.succ(rng.end), b, EmptyDiet(), r))
+          }
+          else if (discrete.compare(b, rng.end) == EQ) {
+            merge(DietNode(a, discrete.pred(rng.start), l, EmptyDiet()), r)
+          }
+          else {
+            merge(
+              DietNode(a, discrete.pred(rng.start), l, EmptyDiet()),
+              DietNode(discrete.succ(rng.end), b, EmptyDiet(), r)
+            )
+          }
+        }
+        else {
+            (Range(a, b) - rng) match {
+            case (EmptyRange(), EmptyRange()) =>  merge(l - rng, r - rng)
+            case (m, EmptyRange())            =>  merge(DietNode(m.start, m.end, l, EmptyDiet()), r - rng)
+            case (EmptyRange(), n)            =>  merge(l - rng, DietNode(n.start, n.end, EmptyDiet(), r))
+          }
+        }
+      }
+    }
+
+    if (range.isEmpty) {
+      this
+    }
+    else {
+      rmv(this, range)
+    }
+  }
+
   /**
    * merge with the given diet
    */
