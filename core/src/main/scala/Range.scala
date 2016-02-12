@@ -57,12 +57,12 @@ sealed class Range[A](val start: A, val end: A) {
   /**
     * Generates the elements of the range [start, end] base of the discrete operations
     */
-  def generate()(implicit discrete: Enum[A]): List[A] = gen (start, end, El())(_=>{})
+  def generate(implicit discrete: Enum[A]): List[A] = gen (start, end, El())(_=>{})
 
   /**
     * Generates the elements of the range [end, start] base of the discrete operations
     */
-  def reverse()(implicit discrete: Enum[A]): List[A] = {
+  def reverse(implicit discrete: Enum[A]): List[A] = {
     gen(end, start, El())(_=>{})(new Enum[A] {
       override def pred(x: A): A = discrete.succ(x)
       override def succ(x: A): A = discrete.pred(x)
@@ -86,7 +86,7 @@ sealed class Range[A](val start: A, val end: A) {
     genMap[B](start, end, El())(f)
 
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A]): B =
-    generate().foldLeft(s)(f)
+    generate.foldLeft(s)(f)
 
   @tailrec private def genMap[B](a: A, b: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A]): List[B] = {
     if (discrete.compare(a, b) == EQ) {

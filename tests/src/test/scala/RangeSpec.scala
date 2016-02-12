@@ -66,8 +66,8 @@ class RangeTest extends FlatSpec with Matchers {
 
     val (l, r) = range - Range(2,9)
 
-    l.generate().toScalaList should be(scala.List(1))
-    r.generate().toScalaList should be(scala.List(10))
+    l.generate.toScalaList should be(scala.List(1))
+    r.generate.toScalaList should be(scala.List(10))
 
     val (l1, r1) = range - range
 
@@ -77,11 +77,11 @@ class RangeTest extends FlatSpec with Matchers {
     val (l2, r2) = range - Range(-1, 5)
 
     l2 should be (Range.empty())
-    r2.generate().toScalaList should contain inOrderOnly (6, 7, 8, 9, 10)
+    r2.generate.toScalaList should contain inOrderOnly (6, 7, 8, 9, 10)
 
     val (l3, r3) = range - Range(3, 12)
 
-    l3.generate().toScalaList should contain inOrderOnly(1, 2)
+    l3.generate.toScalaList should contain inOrderOnly(1, 2)
     r3 should be (Range.empty())
   }
 }
