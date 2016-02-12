@@ -6,21 +6,22 @@ package dogs
 
 import dogs.Order._
 import dogs.Predef._
-import scala.annotation.tailrec
 
 /**
   * Discrete Interval Encoding Tree (Diet).
-  * It stores subsets of types having a total order, a predecessor and a successor function described by Enum[A]
-  *
-  * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
-  * disjoint sets.
-  *
-  * In the best case, when there are no "holes" in the stored set, the interval representation consists of just one
-  * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there
-  * are not two adjacent elements in the set, the representation is equivalent to a binary search tree.
-  */
+ * It stores subsets of types having a total order, a predecessor and a successor function described by Enum[A]
+ *
+ * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
+ * disjoint sets.
+ *
+ * In the best case, when there are no "holes" in the stored set, the interval representation consists of just one
+ * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there
+ * are not two adjacent elements in the set, the representation is equivalent to a binary search tree.
+ */
 sealed abstract class Diet[A] {
   import Diet._
+
+  import Range.EmptyRange
 
   val isEmpty: Boolean
 
@@ -28,29 +29,98 @@ sealed abstract class Diet[A] {
     * verify x is a value is in the tree
     */
   def contains(x: A)(implicit discrete: Enum[A]): Boolean = this match {
-    case EmptyDiet()          =>  false
-    case DietNode(a,b, l, r)  =>  (discrete.compare(x, a), discrete.compare(x, b)) match {
-      case (EQ, _)  =>  true
-      case (_, EQ)  =>  true
-      case (GT, LT) =>  true
-      case (LT, _)  =>  l.contains(x)
-      case (_, GT)  =>  r.contains(x)
+    case EmptyDiet()            =>  false
+    case DietNode(a, b, l, r)   => (discrete.compare(x, a), discrete.compare(x, b)) match {
+        case (EQ, _)  =>  true
+        case (_, EQ)  =>  true
+        case (GT, LT) =>  true
+        case (LT, _)  =>  l.contains(x)
+        case (_, GT)  =>  r.contains(x)
+      }
+  }
+
+  def contains(range: Range[A])(implicit discrete: Enum[A]): Boolean = this match {
+    case EmptyDiet()            =>  false
+    case DietNode(x, y, l, r)   => {
+      if (Range(x, y).contains(range)){
+        true
+      }
+      else if (discrete.lt(range.start, x)) {
+        l.contains(range)
+      } else {
+        r.contains(range)
+      }
     }
   }
 
   /**
     * return a list of all disjoint sets in the tree where each set is represented by ARange
     */
-  def disjointSets: List[ARange[A]] = this match {
+  def intervals: List[Range[A]] = this match {
     case EmptyDiet()          =>  El()
-    case DietNode(x, y, l, r) =>  l.disjointSets ::: (ARange(x, y) :: r.disjointSets)
+    case DietNode(x, y, l, r) =>  l.intervals ::: (Range(x, y) :: r.intervals)
   }
 
   /**
     * convert tree in a sorted list from all disjoint sets in the tree
     */
   def toList()(implicit discrete: Enum[A]): List[A] =
-    disjointSets.flatMap(lst => lst.generate())
+    intervals.flatMap(lst => lst.generate())
+
+  /**
+   * add new value range [x, y] to de tree.
+   *
+   * Cases:
+   *  Trivial:
+   *    (1) [x, y] is a subrange of an existing range
+   *    (2) [x, y] extends diet to the left st x < min(diet) => left(diet) is not needed
+   *    (3) same as (2) but to the right
+   *  Non-Trivial:
+   *    (4) [x, y] extends diet to the left st x > min(diet) => extend diet and re-insert ranges in left(diet)
+   *    (5) [x, y] does not extend diet, [x, y] has to be insert into left(diet)
+   *    (6) same as (4) to the right
+   *    (7) same as (5) to the right
+   */
+  def add(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
+    case (_, EmptyRange())                =>  this
+    case (EmptyDiet(), r)                 =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
+    case (d @ DietNode(x, y, l, r), rng)  => {
+
+      val (m, n) = rng - (Range(x, y))
+
+      if (Range(x, y).contains(rng)) {                                      //(1)
+        this
+      }
+      else if (isBestLeft(rng, d) && discrete.adj(m.end, x)) {              //(2)
+        DietNode(rng.start, y, EmptyDiet(), r) + n
+      }
+      else if (isBestRight(rng, d) && discrete.adj(y, n.start)){            //(3)
+        DietNode(x, rng.end, l, EmptyDiet()) + m
+      }
+      else {                                                                //More complex case
+        val root = {
+          if (!m.isEmpty && discrete.adj(m.end, x)) {                       //(4)
+            val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
+            val t = l.intervals.foldLeft[Diet[A]](li)((d, r) => d.add(r))
+
+            t.asInstanceOf[DietNode[A]]
+          }
+          else {
+            DietNode(x, y, l.add(m), r)                                     //(5)
+          }
+        }
+
+        if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
+          val ri = DietNode(root.x, n.end, root.left, EmptyDiet())
+
+          r.intervals.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
+        }
+        else {
+          DietNode(root.x, y, root.left, r.add(n))                          //(7)
+        }
+      }
+    }
+  }
 
   /**
     * add new value range [x, y] to de tree. If x > y then it will add range [y, x]
@@ -60,10 +130,10 @@ sealed abstract class Diet[A] {
       add(x)
     }
     else if (discrete.compare(x, y) == LT) {
-      add(x).add(discrete.succ(x), y)
+      add(Range(x, y))
     }
     else {
-      add(y, x)
+      add(Range(y, x))
     }
   }
 
@@ -94,7 +164,7 @@ sealed abstract class Diet[A] {
     * remove x from the tree
     */
   def remove(x: A)(implicit discrete: Enum[A]): Diet[A] = this match {
-    case EmptyDiet()  =>  this
+    case EmptyDiet()          =>  this
     case DietNode(a, b, l, r) =>  {
       if (discrete.compare(x, a) == LT) {
         DietNode(a, b, l.remove(x), r)
@@ -123,9 +193,77 @@ sealed abstract class Diet[A] {
   def +(value: A)(implicit discrete: Enum[A]): Diet[A] = add(value)
 
   /**
+   * alias for add
+   */
+  def +(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = add(range)
+
+  /**
+   * alias for add
+   */
+  def +(x: A, y: A)(implicit discrete: Enum[A]): Diet[A] = add(x, y)
+
+  /**
     * alias for remove
     */
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
+
+  /**
+   * remove a range from tree
+   */
+  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] =  (this, range) match {
+      case (_, EmptyRange())            => this
+      case (EmptyDiet(), _)             => this
+      case (DietNode(a, b, l, r), rng)  => {
+        if (discrete.compare(a, rng.start) == EQ && discrete.compare(b, rng.end) == EQ) {
+          merge(l, r)
+        }
+        else if (Range(a, b).contains(rng)) {
+          if (discrete.compare(a, rng.start) == EQ) {
+            merge(l, DietNode(discrete.succ(rng.end), b, EmptyDiet(), r))
+          }
+          else if (discrete.compare(b, rng.end) == EQ) {
+            merge(DietNode(a, discrete.pred(rng.start), l, EmptyDiet()), r)
+          }
+          else {
+            merge(
+              DietNode(a, discrete.pred(rng.start), l, EmptyDiet()),
+              DietNode(discrete.succ(rng.end), b, EmptyDiet(), r)
+            )
+          }
+        }
+        else {
+            (Range(a, b) - rng) match {
+            case (EmptyRange(), EmptyRange()) =>  merge(l - rng, r - rng)
+            case (m, EmptyRange())            =>  merge(DietNode(m.start, m.end, l, EmptyDiet()), r - rng)
+            case (EmptyRange(), n)            =>  merge(l - rng, DietNode(n.start, n.end, EmptyDiet(), r))
+          }
+        }
+      }
+  }
+
+  /**
+   * merge with the given diet
+   */
+  def ++(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.intervals.foldLeft(this)((d, r) => d + r)
+
+  /**
+   * union with the given diet
+   */
+  def |(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = this ++ that
+
+  /**
+   * intersection with the given diet
+   */
+  def &(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = (this, that) match {
+    case (_, EmptyDiet()) => EmptyDiet()
+    case (EmptyDiet(), _) => EmptyDiet()
+    case (a, b)           => (a.intervals ::: b.intervals).foldLeft(Diet[A])((d, r) =>
+        if (a.contains(r) && b.contains(r))
+          d + r
+        else
+          r.generate().foldLeft(d)((s, x) => if (a.contains(x) && b.contains(x)) s + x else s)
+      )
+  }
 
   /**
     * min value in the tree
@@ -158,12 +296,12 @@ sealed abstract class Diet[A] {
 
   def foldRight[B](s: B)(f: (B, A) => B)(implicit discrete: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  l.foldRight(ARange(a, b).reverse().foldLeft(r.foldRight(s)(f))(f))(f)
+    case DietNode(a, b, l, r) =>  l.foldRight(Range(a, b).reverse().foldLeft(r.foldRight(s)(f))(f))(f)
   }
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit discrete: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  r.foldLeft(ARange(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
+    case DietNode(a, b, l, r) => r.foldLeft(Range(a, b).generate().foldLeft(l.foldLeft[B](s)(f))(f))(f)
   }
 }
 
@@ -239,6 +377,18 @@ object Diet {
         DietNode(x, y, l, r)
     }
   }
+
+  private [dogs] def isBestLeft[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
+    dietNode.min match {
+      case None() => false
+      case Some(a) => discrete.lt(r.start, a)
+    }
+
+  private [dogs] def isBestRight[A](r: Range[A], dietNode: DietNode[A])(implicit discrete: Enum[A]): Boolean =
+    dietNode.max match {
+      case None()       =>  false
+      case Some(a)      =>  discrete.gt(r.end, a)
+    }
 }
 
 /**
@@ -271,54 +421,6 @@ sealed class BigIntEnum extends Enum[BigInt] {
   override def pred(x: BigInt): BigInt = x - 1
 
   override def apply(l: BigInt, r: BigInt): Ordering = if (l < r) LT else if (l > r) GT else EQ
-}
-
-/**
- * Represent a range [x, y] that can be generated by using discrete operations
- */
-sealed class ARange[A] (val start: A, val end: A) {
-
-  /**
-  * Generates the elements of the range [start, end] base of the discrete operations
-  */
-  def generate()(implicit discrete: Enum[A]): List[A] = {
-    @tailrec def genRange(a: A, b: A, xs: List[A])(implicit discrete: Enum[A]): List[A] = {
-      if (discrete.compare(a, b) == EQ) {
-        xs ::: Nel(a, El())
-      } else if (discrete.adj(a, b)) {
-        xs ::: Nel(a, Nel(b, El()))
-      }
-      else {
-        genRange(discrete.succ(a), b, xs ::: (Nel(a, El())))
-      }
-    }
-
-    genRange(start, end, El())
-  }
-
-  /**
-    * Generates the elements of the range [end, start] base of the discrete operations
-    */
-  def reverse()(implicit discrete: Enum[A]): List[A] = {
-    @tailrec def genRev(a: A, b: A, xs: List[A])(implicit discrete: Enum[A]): List[A] = {
-      if (discrete.compare(a, b) == EQ) {
-        xs ::: Nel(a, El())
-      } else if (discrete.adj(a, b)) {
-        xs ::: Nel(a, Nel(b, El()))
-      }
-      else {
-        genRev(discrete.pred(a), b, xs ::: (Nel(a, El())))
-      }
-    }
-
-    genRev(end, start, El())
-  }
-
-  def apply(start: A, end: A): ARange[A] = ARange.apply(start, end)
-}
-
-object ARange {
-  def apply[A](x: A, y: A) = new ARange[A](x, y)
 }
 
 
