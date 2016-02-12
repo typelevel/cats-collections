@@ -117,6 +117,8 @@ sealed class Range[A](val start: A, val end: A) {
   private [dogs] def isEmpty: Boolean = false
 
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
+
+  override def toString: String = s"Range($start,$end)"
 }
 
 object Range {
