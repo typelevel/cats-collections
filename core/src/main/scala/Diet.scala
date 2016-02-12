@@ -207,10 +207,12 @@ sealed abstract class Diet[A] {
     */
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
 
-  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = {
-    def rmv(node: Diet[A], range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
-      case (_, EmptyRange())            => node
-      case (EmptyDiet(), _)             => node
+  /**
+   * remove a range from tree
+   */
+  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] =  (this, range) match {
+      case (_, EmptyRange())            => this
+      case (EmptyDiet(), _)             => this
       case (DietNode(a, b, l, r), rng)  => {
         if (discrete.compare(a, rng.start) == EQ && discrete.compare(b, rng.end) == EQ) {
           merge(l, r)
@@ -237,14 +239,6 @@ sealed abstract class Diet[A] {
           }
         }
       }
-    }
-
-    if (range.isEmpty) {
-      this
-    }
-    else {
-      rmv(this, range)
-    }
   }
 
   /**
