@@ -56,16 +56,16 @@ sealed abstract class Diet[A] {
   /**
     * return a list of all disjoint sets in the tree where each set is represented by ARange
     */
-  def disjointSets: List[Range[A]] = this match {
+  def intervals: List[Range[A]] = this match {
     case EmptyDiet()          =>  El()
-    case DietNode(x, y, l, r) =>  l.disjointSets ::: (Range(x, y) :: r.disjointSets)
+    case DietNode(x, y, l, r) =>  l.intervals ::: (Range(x, y) :: r.intervals)
   }
 
   /**
     * convert tree in a sorted list from all disjoint sets in the tree
     */
   def toList()(implicit discrete: Enum[A]): List[A] =
-    disjointSets.flatMap(lst => lst.generate())
+    intervals.flatMap(lst => lst.generate())
 
   /**
    * add new value range [x, y] to de tree.
@@ -101,7 +101,7 @@ sealed abstract class Diet[A] {
         val root = {
           if (!m.isEmpty && discrete.adj(m.end, x)) {                       //(4)
             val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
-            val t = l.disjointSets.foldLeft[Diet[A]](li)((d, r) => d.add(r))
+            val t = l.intervals.foldLeft[Diet[A]](li)((d, r) => d.add(r))
 
             t.asInstanceOf[DietNode[A]]
           }
@@ -113,7 +113,7 @@ sealed abstract class Diet[A] {
         if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
           val ri = DietNode(root.x, n.end, root.left, EmptyDiet())
 
-          r.disjointSets.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
+          r.intervals.foldLeft[Diet[A]](ri)((d, r) => d.add(r))
         }
         else {
           DietNode(root.x, y, root.left, r.add(n))                          //(7)
@@ -244,7 +244,7 @@ sealed abstract class Diet[A] {
   /**
    * merge with the given diet
    */
-  def ++(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.disjointSets.foldLeft(this)((d, r) => d + r)
+  def ++(that: Diet[A])(implicit discrete:Enum[A]): Diet[A] = that.intervals.foldLeft(this)((d, r) => d + r)
 
   /**
    * union with the given diet
@@ -257,7 +257,7 @@ sealed abstract class Diet[A] {
   def &(that: Diet[A])(implicit discrete: Enum[A]): Diet[A] = (this, that) match {
     case (_, EmptyDiet()) => EmptyDiet()
     case (EmptyDiet(), _) => EmptyDiet()
-    case (a, b)           => (a.disjointSets ::: b.disjointSets).foldLeft(Diet[A])((d, r) =>
+    case (a, b)           => (a.intervals ::: b.intervals).foldLeft(Diet[A])((d, r) =>
         if (a.contains(r) && b.contains(r))
           d + r
         else
