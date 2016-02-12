@@ -26,6 +26,7 @@ object Predef {
   type Short = scala.Short
   type String = java.lang.String
   type Unit = scala.Unit
+  type StringContext = scala.StringContext
 
   final val BigInt = scala.BigInt
   final val BigDecimal = scala.BigDecimal
@@ -38,7 +39,7 @@ object Predef {
   final val Long = scala.Long
   final val Short = scala.Short
   final val Unit = scala.Unit
- 
+  final val StringContext = scala.StringContext
 
   /**
    * An instance of `A <:< B` witnesses that `A` is a subtype of `B`.
