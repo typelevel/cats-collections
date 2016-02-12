@@ -359,41 +359,6 @@ object Diet {
     }
 }
 
-/**
-  * Represent discrete operations that can be performed on A
-  */
-trait Enum[A] extends Order[A] {
-
-  /**
-    * return the successor of x
-    */
-  def succ(x: A): A
-
-  /**
-    * return the predecessor of
-    */
-  def pred(x: A): A
-
-  /**
-    * verify if x and y are consecutive
-    */
-  def adj(x: A, y: A): Boolean = succ(x) == y
-}
-
-/**
-  * Represent discrete operations that can be performed on BigInt
-  */
-sealed class BigIntEnum extends Enum[BigInt] {
-  override def succ(x: BigInt): BigInt = x + 1
-
-  override def pred(x: BigInt): BigInt = x - 1
-
-  override def apply(l: BigInt, r: BigInt): Ordering = if (l < r) LT else if (l > r) GT else EQ
-}
-
- 
-
-
 
 
 
