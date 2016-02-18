@@ -62,7 +62,7 @@ sealed abstract class Validated[+E, +A] extends Product with Serializable {
    * Convert this value to a single element List if it is Valid,
    * otherwise return an empty List
    */
-  def toList[AA >: A]: List[AA] = fold(_ => El(), List(_))
+  def toList[AA >: A]: List[AA] = fold(_ => List.empty, List(_))
 
   /** Lift the Invalid value into a NonEmptyList. */
   def toValidatedNel[EE >: E, AA >: A]: ValidatedNel[EE, AA] =
@@ -221,7 +221,7 @@ object Validated extends ValidatedFunctions{
 trait ValidatedFunctions {
   def invalid[A, B](a: A): Validated[A,B] = Validated.Invalid(a)
 
-  def invalidNel[A, B](a: A): ValidatedNel[A, B] = Validated.Invalid(Nel(a, El()))
+  def invalidNel[A, B](a: A): ValidatedNel[A, B] = Validated.Invalid(Nel(a, List.empty))
 
   def valid[A, B](b: B): Validated[A,B] = Validated.Valid(b)
 

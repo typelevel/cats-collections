@@ -69,7 +69,7 @@ sealed abstract class Xor[+A, +B] extends Product with Serializable {
 
   def toOption[BB >: B]: Option[BB] = fold(_ => None(), Some(_))
 
-  def toList[BB >: B]: List[BB] = fold(_ => El(), _ :: El())
+  def toList[BB >: B]: List[BB] = fold(_ => List.empty, _ :: List.empty)
 
   def toValidated: Validated[A,B] = fold(Validated.Invalid.apply, Validated.Valid.apply)
 
