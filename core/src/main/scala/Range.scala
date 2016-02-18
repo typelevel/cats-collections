@@ -57,13 +57,13 @@ sealed class Range[A](val start: A, val end: A) {
   /**
     * Generates the elements of the range [start, end] base of the discrete operations
     */
-  def generate(implicit discrete: Enum[A]): List[A] = gen (start, end, El())(_=>{})
+  def generate(implicit discrete: Enum[A]): List[A] = gen (start, end, List.empty)(_=>{})
 
   /**
     * Generates the elements of the range [end, start] base of the discrete operations
     */
   def reverse(implicit discrete: Enum[A]): List[A] = {
-    gen(end, start, El())(_=>{})(new Enum[A] {
+    gen(end, start, List.empty)(_=>{})(new Enum[A] {
       override def pred(x: A): A = discrete.succ(x)
       override def succ(x: A): A = discrete.pred(x)
       override def apply(l: A, r: A): Ordering = discrete.apply(l, r)
@@ -79,38 +79,38 @@ sealed class Range[A](val start: A, val end: A) {
     * Apply function f to each element in range [star, end]
     */
   def foreach(f: A => Unit)(implicit discrete: Enum[A]): Unit = {
-    val ignore = gen(start, end, El())(f)
+    val ignore = gen(start, end, List.empty)(f)
   }
 
   def map[B](f: A => B)(implicit discrete: Enum[A]): List[B] =
-    genMap[B](start, end, El())(f)
+    genMap[B](start, end, List.empty)(f)
 
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A]): B =
     generate.foldLeft(s)(f)
 
   @tailrec private def genMap[B](a: A, b: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A]): List[B] = {
     if (discrete.compare(a, b) == EQ) {
-      xs ::: Nel(f(a), El())
+      xs ::: Nel(f(a), List.empty)
     } else if (discrete.adj(a, b)) {
 
-      xs ::: Nel(f(a), Nel(f(b), El()))
+      xs ::: Nel(f(a), Nel(f(b), List.empty))
     } else {
-      genMap(discrete.succ(a), b, xs ::: (Nel(f(a), El())))(f)
+      genMap(discrete.succ(a), b, xs ::: (Nel(f(a), List.empty)))(f)
     }
   }
 
   @tailrec private def gen(a: A, b: A, xs: List[A])(f: A=>Unit)(implicit discrete: Enum[A]): List[A] = {
       if (discrete.compare(a, b) == EQ) {
         f(a)
-        xs ::: Nel(a, El())
+        xs ::: Nel(a, List.empty)
       } else if (discrete.adj(a, b)) {
         f(a)
         f(b)
-        xs ::: Nel(a, Nel(b, El()))
+        xs ::: Nel(a, Nel(b, List.empty))
       }
       else {
         f(a)
-        gen(discrete.succ(a), b, xs ::: (Nel(a, El())))(f)
+        gen(discrete.succ(a), b, xs ::: (Nel(a, List.empty)))(f)
       }
     }
 

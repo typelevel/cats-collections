@@ -35,7 +35,7 @@ sealed abstract class Dequeue[A] {
     case SingletonDequeue(a) => Some((a, EmptyDequeue()))
     case FullDequeue(Nel(f, El()), 1, Nel(x, Nel(xx, xs)), bs) => {
       val xsr = Nel(xx, xs).reverse
-      Some((f, FullDequeue(xsr, bs-1, Nel(x, El()), 1)))
+      Some((f, FullDequeue(xsr, bs-1, Nel(x, List.empty), 1)))
     }
     case FullDequeue(Nel(f, El()), 1, Nel(single, El()), 1) => Some((f, SingletonDequeue(single)))
     case FullDequeue(Nel(f, Nel(ff, fs)), s, back, bs) => Some((f, FullDequeue(Nel(ff, fs), s-1, back, bs)))
@@ -49,7 +49,7 @@ sealed abstract class Dequeue[A] {
     case SingletonDequeue(a) => Some((a, EmptyDequeue()))
     case FullDequeue(Nel(x, Nel(xx,xs)), fs, Nel(b, El()), 1) => {
       val xsr = Nel(xx, xs).reverse
-      Some((b, FullDequeue(Nel(x, El()), 1, xsr, fs-1)))
+      Some((b, FullDequeue(Nel(x, List.empty), 1, xsr, fs-1)))
     }
     case FullDequeue(Nel(single, El()), 1, Nel(b, El()), 1) => Some((b, SingletonDequeue(single)))
     case FullDequeue(front, fs, Nel(b, Nel(bb,bs)), s) => Some((b, FullDequeue(front, fs, Nel(bb,bs), s-1)))
@@ -60,7 +60,7 @@ sealed abstract class Dequeue[A] {
     */
   def cons(a: A): Dequeue[A] = this match {
     case EmptyDequeue() => SingletonDequeue(a)
-    case SingletonDequeue(single) => FullDequeue(Nel(a, El()), 1, Nel(single, El()), 1 )
+    case SingletonDequeue(single) => FullDequeue(Nel(a, List.empty), 1, Nel(single, List.empty), 1 )
     case FullDequeue(front, fs, back, bs) => FullDequeue(Nel(a, Nel(front.head, front.tail)), fs+1, back, bs)
   }
 
@@ -69,7 +69,7 @@ sealed abstract class Dequeue[A] {
     */
   def snoc(a: A): Dequeue[A] = this match {
     case EmptyDequeue() => SingletonDequeue(a)
-    case SingletonDequeue(single) => FullDequeue(Nel(single, El()), 1, Nel(a, El()), 1 )
+    case SingletonDequeue(single) => FullDequeue(Nel(single, List.empty), 1, Nel(a, List.empty), 1 )
     case FullDequeue(front, fs, back, bs) => FullDequeue(front, fs, Nel(a, Nel(back.head, back.tail)), bs+1)
   }
 

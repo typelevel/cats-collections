@@ -266,7 +266,7 @@ object Eval {
               case El() => x.value
             }
         }
-      loop(this.asInstanceOf[L], El()).asInstanceOf[A]
+      loop(this.asInstanceOf[L], List.empty).asInstanceOf[A]
     }
   }
 }
