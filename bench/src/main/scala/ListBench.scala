@@ -1,15 +1,8 @@
 package dogs
 package bench
 
-import dogs.Order.Ordering
-import dogs.std._
+import dogs.Predef._
 import org.openjdk.jmh.annotations._
-
-import Predef._
-
-import scala.collection.immutable.IndexedSeq
-import scala.util.Random
-import scalaz.{OrderingInstances, Diev}
 
 
 @State(Scope.Benchmark)
@@ -48,7 +41,6 @@ class ListPrependBench {
 
     sum(l, 0)
   }
-
 }
 
 
