@@ -41,6 +41,7 @@ class ListFlatMapathon {
   @Benchmark def scalazFlatMapathon(): Unit = {
     val f: Int => IList[Int] = _ => 1 :: IList()
 
+<<<<<<< HEAD
     var i = 0
     var l = IList(1)
     while(i < 10000) {
@@ -98,3 +99,9 @@ class ListMapperfy extends BigNumberLists {
     scalaz.map(_ + 1)
   }
 }
+=======
+
+
+
+
+>>>>>>> refactoring benchmarks
