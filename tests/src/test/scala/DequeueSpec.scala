@@ -44,28 +44,28 @@ object DequeueSpec extends Properties("Dequeue") with ArbitraryList {
   }
   property("cons and then uncons") = forAll { (xs: List[Int]) =>
     val q = consL(xs, empty)
-    val l = unconsL(q, El())
+    val l = unconsL(q, List.empty)
 
     xs == l
   }
 
   property("snoc and then unsnoc") = forAll { (xs: List[Int]) =>
     val q = snocL(xs, empty)
-    val l = unsnocL(q, El())
+    val l = unsnocL(q, List.empty)
 
     xs == l
   }
 
   property("cons and then unsnoc") = forAll { (xs: List[Int]) =>
     val q = consL(xs, empty)
-    val l = unsnocL(q, El())
+    val l = unsnocL(q, List.empty)
 
     xs == l.reverse
   }
 
   property("snoc and then uncons") = forAll { (xs: List[Int]) =>
     val q = snocL(xs, empty)
-    val l = unconsL(q, El())
+    val l = unconsL(q, List.empty)
 
     xs == l.reverse
   }
@@ -77,10 +77,10 @@ object DequeueSpec extends Properties("Dequeue") with ArbitraryList {
     } yield consL(l, snocL(r, empty)))
 
   property("foldLeft") = forAll { (q: Dequeue[Int]) =>
-    q.foldLeft[List[Int]](El())((xs,x) => Nel(x, xs)) == q.toBackStream.toList
+    q.foldLeft[List[Int]](List.empty)((xs,x) => Nel(x, xs)) == q.toBackStream.toList
   }
   property("foldRight") = forAll { (q: Dequeue[Int]) =>
-    q.foldRight[List[Int]](Eval.now(El()))((x,xs) => xs.map(xs => Nel(x,xs))).value == q.toStreaming.toList
+    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => Nel(x,xs))).value == q.toStreaming.toList
   }
 }
 

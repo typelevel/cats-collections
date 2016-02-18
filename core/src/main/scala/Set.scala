@@ -45,7 +45,7 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def toList(): List[A] = this match {
-    case BTNil() =>  El[A]
+    case BTNil() =>  List.empty[A]
     case Branch(a, l, r) => l.toList ::: (a :: r.toList)
   }
 

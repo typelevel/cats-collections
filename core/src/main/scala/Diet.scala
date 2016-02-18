@@ -58,7 +58,7 @@ sealed abstract class Diet[A] {
    * represented by ARange.
    */
   def intervals: List[Range[A]] = this match {
-    case EmptyDiet()          =>  El()
+    case EmptyDiet()          =>  List.empty
     case DietNode(x, y, l, r) =>  l.intervals ::: (Range(x, y) :: r.intervals)
   }
 

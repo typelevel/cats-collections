@@ -577,7 +577,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * This will evaluate the stream immediately, and will hang in the
    * case of infinite streams.
    */
-  def toList: List[A] = foldLeft[List[A]](El())((as,a) => Nel(a,as)).reverse
+  def toList: List[A] = foldLeft[List[A]](List.empty)((as,a) => Nel(a,as)).reverse
 
   /**
    * Basic string representation of a stream.
