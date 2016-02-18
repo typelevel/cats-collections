@@ -154,6 +154,7 @@ sealed abstract class Xor[+A, +B] extends Product with Serializable {
    */
   def toOption[BB >: B]: Option[BB] = fold(_ => None(), Some(_))
 
+<<<<<<< HEAD
   /**
    * Convert this value to a single element List if it is Right,
    * otherwise return an empty List
@@ -166,6 +167,8 @@ sealed abstract class Xor[+A, +B] extends Product with Serializable {
    * res1: End
    * }}}
    */
+=======
+>>>>>>> added some benchmarks for list.
   def toList[BB >: B]: List[BB] = fold(_ => List.empty, _ :: List.empty)
 
   /**

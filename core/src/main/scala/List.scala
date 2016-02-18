@@ -4,7 +4,7 @@ import Predef._
 import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
-import dogs.syntax.birds._
+import dogs.bedazzle.birds._
 
 /**
  * Immutable, singly-linked list implementation.
@@ -74,33 +74,6 @@ sealed abstract class List[A] {
    */
   def foldRight[B](b: B)(f: (A, B) => B): B =
     this.reverse.foldLeft(b)((b,a) => f(a,b))
-
-  /**
-   * Execute the side-effecting function on each memeber of the list, in order
-   */
-  def foreach(f: A => Unit): Unit = this match {
-    case h Nel t =>
-      f(h)
-      t foreach f
-    case _ => ()
-  }
-
-  /**
-   * Return the head of the list, if one exists
-   */
-  final def headOption: Option[A] = this match {
-    case h Nel _ => Option.some(h)
-    case _ => Option.none
-  }
-
-  /**
-   * Return the tail of the list, if one exists
-   */
-  final def tailOption: Option[List[A]] = this match {
-    case _ Nel t => Option.some(t)
-    case _ => Option.none
-  }
-
 
   /**
    * Append a list to this list. 
@@ -325,18 +298,12 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     tail.foldLeft(List(head))((lst, a) => a :: lst)
 
   override final def take(n: Int): List[A] = {
-    val lb = new ListBuilder[A]
-    @tailrec def loop(i: Int, l: List[A]): Unit =
-      if(i > 0)
-        l match {
-          case h Nel t =>
-            lb += h
-            loop(i - 1, t)
-          case _ => ()
-        }
-
-    loop(n, this)
-    lb.run
+    @tailrec def loop(i: Int, acc: List[A], rest: List[A]): List[A] =
+      if (i >= n) acc else rest match {
+        case El() => acc
+        case Nel(h, t) => loop(i + 1, h :: acc, t)
+      }
+    loop(0, List.empty, reverse)
   }
 }
 
@@ -346,7 +313,7 @@ final case object El extends List[Nothing] {
   @inline final def unapply[A](l: List[A]) = l.isEmpty
 }
 
-object List extends ListInstances {
+object List {
   final def empty[A]: List[A] =
     El.asInstanceOf[List[A]]
 
@@ -368,20 +335,6 @@ object List extends ListInstances {
   }
 }
 
-trait ListInstances {
-  import List._
-
-  implicit def listEq[A](implicit A: Eq[A]): Eq[List[A]] = new Eq[List[A]] {
-    def eqv(a: List[A], b: List[A]) = (a,b) match {
-      case (El(), El()) => true
-      case (El(), _) => false
-      case (_, El()) => false
-      case (Nel(ha,ta), Nel(hb,tb)) =>
-        if(A.eqv(ha, hb)) eqv(ta,tb) else false
-    }
-  }
-}
-
 final private[dogs] class ListBuilder[A] {
   import List.empty
   var run: List[A] = List.empty
@@ -398,4 +351,8 @@ final private[dogs] class ListBuilder[A] {
         end = newEnd
     }
   }
+
+  def nonEmpty: Boolean = run != El
+  def isEmpty: Boolean = run == El
+  def toList:List[A] = run
 }
