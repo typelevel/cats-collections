@@ -1,9 +1,6 @@
 package dogs
 package bench
 
-import dogs.Order.Ordering
-import dogs.Predef._
-import dogs.std._
 import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
 
 import scala.util.Random
@@ -15,11 +12,7 @@ import scalaz.Diev
 @State(Scope.Benchmark)
 class DietBenchSearch {
 
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-  }
+  import dogs.Predef._
 
   implicit object scalazEnumInt extends scalaz.Enum[Int] {
     override def succ(a: Int): Int = a + 1
