@@ -1,13 +1,12 @@
 package dogs
 package tests
 
-import dogs.Diet._
-import dogs.Predef._
-import org.scalacheck._
-import org.scalacheck.Prop.forAll
-import org.scalatest.{FlatSpec, Matchers}
-import dogs.std.intOrder
 import dogs.Order._
+import dogs.Predef._
+import dogs.std.intOrder
+import org.scalacheck.Prop.forAll
+import org.scalacheck._
+import org.scalatest.{FlatSpec, Matchers}
 
 object DietSpec extends Properties("Diet") {
 
@@ -112,15 +111,8 @@ object DietSpec extends Properties("Diet") {
 
 class DietTest extends FlatSpec with Matchers {
 
-  import dogs.Predef._
   import Diet._
-
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-
-  }
+  import dogs.Predef._
 
   "diet" should "return node with value range when inserting into empty" in {
 
@@ -246,7 +238,6 @@ class DietTest extends FlatSpec with Matchers {
 }
 
 class DietTestJoin extends FlatSpec with Matchers {
-  import Diet._
 
   implicit object EnumInt extends Enum[Int] {
     override def succ(x: Int): Int = x + 1
