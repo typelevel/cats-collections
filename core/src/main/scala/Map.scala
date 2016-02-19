@@ -56,6 +56,7 @@ class Map[K,V](val set: Set[(K,V)]) {
    */
   def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
 
+
   // 
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)

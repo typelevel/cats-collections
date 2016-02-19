@@ -6,8 +6,9 @@ import dogs.std.intOrder
 import scala.annotation.tailrec
 import scala.math
 
+
 /**
- * An immutable, ordered, extesntional Set
+ * An immutable, ordered Set
  * 
  * This datastructure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
@@ -223,19 +224,6 @@ sealed abstract class Set[A] {
     removals.foldLeft(this)(_ remove _)
 
   /**
-   * Return a Set that has any elements appearing in the removals set removed
-   * O(n log n)
-   */
-  def -(removals: Set[A])(implicit order: Order[A]) =
-    removals.foldLeft(this)(_ remove _)
-
-
-  /**
-   * Return an ISet (intentional set) with the same members as this set
-   */
-  def iset(implicit order: Order[A]): ISet[A] = ISet(contains)
-
-  /**
    * Return a scala set containing the elments in the Set
    * O(n)
    */
@@ -243,7 +231,6 @@ sealed abstract class Set[A] {
     import scala.collection.immutable.{Set => SSet}
     foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
-
 
   // So yeah. we had to make a decision, either we have to make this
   // structure Key/Value pairs even when we don't always need a value
@@ -277,9 +264,6 @@ object Set {
    * Create a set with the given elements. 
    */
   def apply[A: Order](as: A*): Set[A] =
-    as.foldLeft[Set[A]](empty)(_ + _)
-
-  def fromList[A: Order](as: List[A]): Set[A] =
     as.foldLeft[Set[A]](empty)(_ + _)
 
   /**
