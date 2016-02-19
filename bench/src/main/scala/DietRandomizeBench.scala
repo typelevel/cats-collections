@@ -13,15 +13,17 @@ import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
 import scala.util.Random
 import scalaz.Diev
 
-@State(Scope.Benchmark)
-class DietAddBench {
 
+/**
+  * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
+  */
+@State(Scope.Benchmark)
+class DietRandomizeBench {
   implicit object EnumInt extends Enum[Int] {
     override def succ(x: Int): Int = x + 1
     override def pred(x: Int): Int = x - 1
     override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
   }
-
   implicit object scalazEnumInt extends scalaz.Enum[Int] {
     override def succ(a: Int): Int = a + 1
 
@@ -34,56 +36,42 @@ class DietAddBench {
     }
   }
 
-  var items: Seq[Int] = Seq[Int]()
-  var ranges = Seq[scala.Range]()
-  var toSearch = Seq[Int]()
-
-  @Setup
-  def setup: Unit = {
-    items = DietDataGen.getWorstCaseData
-
-    toSearch = Random.shuffle(items)
-
-    ranges = DietDataGen.getBestCaseData
-  }
-
   @Benchmark
-  def dogsDietAdd: Unit = {
-    var diet = dogs.Diet.empty[Int]
+  def dogsDietAddRandom: Unit = {
+    var diet = Diet.empty[Int]
 
-    items.foreach{ i=>
-      diet = diet + i
+    (1 to 10000).foreach {_ =>
+      diet = diet + Random.nextInt()
     }
   }
 
   @Benchmark
-  def scalazDievAdd: Unit = {
+  def scalazDievAddRandom: Unit = {
     var diev = Diev.empty[Int]
 
-    items.foreach{i =>
-      diev = diev + i
+    (1 to 10000).foreach {_ =>
+      diev = diev + Random.nextInt()
     }
   }
 
   @Benchmark
-  def dogsDietAddRange: Unit = {
-    var diet = dogs.Diet.empty[Int]
+  def dogsDietAddRangeRandom: Unit = {
+    var diet = Diet.empty[Int]
 
-    ranges.foreach {r =>
-      diet = diet +  Range(r.start, r.end)
+    (1 to 10000).foreach {_ =>
+      val i = Random.nextInt()
+      diet = diet + dogs.Range(i, i + 10)
     }
   }
 
   @Benchmark
-  def scalazDievAddRange: Unit = {
-    var diev = scalaz.Diev.empty[Int]
+  def scalazDievAddRangeRandom: Unit = {
+    var diev = Diev.empty[Int]
 
-    ranges.foreach {r =>
-      diev = diev + (r.start, r.end)
+    (1 to 10000).foreach {_ =>
+      val i = Random.nextInt()
+
+      diev = diev + (i, i + 10)
     }
   }
 }
-
-
-
-
