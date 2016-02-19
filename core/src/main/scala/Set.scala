@@ -232,6 +232,29 @@ sealed abstract class Set[A] {
     foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
 
+  // So yeah. we had to make a decision, either we have to make this
+  // structure Key/Value pairs even when we don't always need a value
+  // (in the case of a Set), or we have to have separate structures
+  // for Set and Map, or we have to have a function like this one,
+  // that only really make sense fo Map. I chose this one. This
+  // function makes it so that we can find things in the tree just
+  // based on a Key, when the set is really storing a Key value pair.
+  // The name was chosen so that it would be convenient for nobody to
+  // remember.
+  private[dogs] def dothestupidthingbecausesetisnotamapdotbiz[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
+    @tailrec def go(t: Set[A]): Option[A] = t match {
+      case BTNil() => None()
+      case Branch(v,l,r) =>
+        B.compare(b, f(v)) match {
+          case EQ => Some(v)
+          case LT => go(l)
+          case GT => go(r)
+        }
+    }
+    go(this)
+  }
+
+
   private[dogs] val height: Int
 }
 
