@@ -1,8 +1,9 @@
 package dogs
 package tests
 
+import dogs.Predef._
 import java.lang.String
-import scala.{Either,Function,Int,Left,None,Option,Right,Some,Unit}
+import scala.{Function,Int,Unit}
 import scala.collection.immutable.List
 import org.scalacheck._
 import org.scalacheck.Prop._
@@ -23,9 +24,9 @@ object BedazzleSpec extends Properties("Bedazzle") {
   }
 
   property("left, left, left right left") = secure {
-    import bedazzle.either._
-    val x: Either[Int, String] = 1.left
-    val y: Either[String, Int] = 1.right
+    import bedazzle.xor._
+    val x: Xor[Int, String] = 1.left
+    val y: Xor[String, Int] = 1.right
 
     x.swap == y
   }
