@@ -30,14 +30,11 @@ scalacOptions := Seq(
   "-Yno-imports",
   "-Yno-predef")
 
-scalacOptions in (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports")))
+scalacOptions in  (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports","-Yno-predef")))
 scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
-scalacOptions in Test ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports", "-Yno-predef")))
+scalacOptions in Test <<= (scalacOptions in (Compile, console))
+
 
 doctestWithDependencies := false
 
 doctestSettings
-
-(initialCommands in console) := """
-import dogs._, dogs.Predef._
-"""
