@@ -34,7 +34,10 @@ scalacOptions in  (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import",
 scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
 scalacOptions in Test <<= (scalacOptions in (Compile, console))
 
-
 doctestWithDependencies := false
 
 doctestSettings
+
+(initialCommands in console) := """
+import dogs._, dogs.Predef._
+"""

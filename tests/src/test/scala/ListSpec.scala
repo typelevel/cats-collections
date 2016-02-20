@@ -10,26 +10,12 @@ import scala.collection.immutable.{Nil,List=>SList,::}
 import org.typelevel.discipline.scalatest.Discipline
 import org.scalacheck._
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen._
-import org.scalacheck.Arbitrary._
-import org.scalatest.{FunSuite, PropSpec, Matchers}
 
-object ListTest extends Properties("ListTest") with ArbitraryList {
+object ListSpec extends Properties("List") with ArbitraryList {
 
   implicit def eqTuple2[A: Eq, B: Eq]: Eq[(A,B)] = new Eq[(A,B)] {
     def eqv(l: (A,B), r: (A,B)) = l._1 == r._1 && l._2 == r._2
   }
-  // implicit val intBooleanArb: Arbitrary[Int => Boolean] = {
-  //   val intGen = implicitly[Arbitrary[Int]].arbitrary
-  //   Arbitrary(Gen.oneOf(
-  //     Gen.const((_: Int) => true),
-  //     Gen.const((_: Int) => false),
-  //     Gen.choose(2, 5).map(n => (a: Int) => a % n == 0),
-  //     Gen.choose(2, 5).map(n => (a: Int) => a % n != 0),
-  //     intGen.map(n => (_: Int) > n),
-  //     intGen.map(n => (_: Int) < n)
-  //   ))
-  // }
 
   implicit class IterableOps[A](as: Iterable[A]) {
     def toScalaList: List[A] = List.fromIterable(as)
