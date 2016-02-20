@@ -76,6 +76,23 @@ sealed abstract class List[A] {
     this.reverse.foldLeft(b)((b,a) => f(a,b))
 
   /**
+   * Return the head of the list, if one exists
+   */
+  final def headOption: Option[A] = this match {
+    case h Nel _ => Option.some(h)
+    case _ => Option.none
+  }
+
+  /**
+   * Return the tail of the list, if one exists
+   */
+  final def tailOption: Option[List[A]] = this match {
+    case _ Nel t => Option.some(t)
+    case _ => Option.none
+  }
+
+
+  /**
    * Append a list to this list. 
    * O(n) on the size of this list
    */
@@ -313,7 +330,7 @@ final case object El extends List[Nothing] {
   @inline final def unapply[A](l: List[A]) = l.isEmpty
 }
 
-object List {
+object List extends ListInstances {
   final def empty[A]: List[A] =
     El.asInstanceOf[List[A]]
 
@@ -332,6 +349,20 @@ object List {
       if(n > 0) go(n-1, a, a :: l) else l
 
     go(n, a, List.empty[A])
+  }
+}
+
+trait ListInstances {
+  import List._
+
+  implicit def listEq[A](implicit A: Eq[A]): Eq[List[A]] = new Eq[List[A]] {
+    def eqv(a: List[A], b: List[A]) = (a,b) match {
+      case (El(), El()) => true
+      case (El(), _) => false
+      case (_, El()) => false
+      case (Nel(ha,ta), Nel(hb,tb)) =>
+        if(A.eqv(ha, hb)) eqv(ta,tb) else false
+    }
   }
 }
 

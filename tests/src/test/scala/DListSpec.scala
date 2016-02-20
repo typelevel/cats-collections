@@ -2,17 +2,18 @@ package dogs
 package tests
 
 import Predef._
-import syntax.birds._
+import bedazzle.birds._
 import dogs.std.intEq
 import dogs.tests.arbitrary._
 
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 
-object DListSpec extends Properties("DList") {
+object DListSpec extends Properties("DList") with ArbitraryList {
   import List._
-  import arbitrary.list._
-  import arbitrary.dlist._
+
+  def fromLL(ls: List[List[Int]]): DList[Int] = 
+    ls.foldLeft(DList.empty[Int])((dl,l) => dl ++ DList(l))
 
   property("sanity check") = forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
