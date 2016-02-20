@@ -8,35 +8,60 @@ import scala.Null
 
 /** Represents a right-biased disjunction that is either an `A` or a `B`.
  *
- * An instance of `A [[Xor]] B` is either a `[[Xor.Left Left]][A]` or a `[[Xor.Right Right]][B]`.
+ * An instance of `A [[Xor]] B` is either a `[[Xor.Left Left]][A]` or
+ * a `[[Xor.Right Right]][B]`.
  *
- * A common use of [[Xor]] is to explicitly represent the possibility of failure in a result as opposed to
- * throwing an exception.  By convention, [[Xor.Left Left]] is used for errors and [[Xor.Right Right]] is reserved for successes.
- * For example, a function that attempts to parse an integer from a string may have a return type of
- * `NumberFormatException [[Xor]] Int`. However, since there is no need to actually throw an exception, the type (`A`)
- * chosen for the "left" could be any type representing an error and has no need to actually extend `Exception`.
+ * A common use of [[Xor]] is to explicitly represent the possibility
+ * of failure in a result as opposed to throwing an exception.  By
+ * convention, [[Xor.Left Left]] is used for errors and [[Xor.Right
+ * Right]] is reserved for successes.
+ * 
+ * For example, a function that attempts to parse an integer from a
+ * string may have a return type of `NumberFormatException [[Xor]]
+ * Int`. However, since there is no need to actually throw an
+ * exception, the type (`A`) chosen for the "left" could be any type
+ * representing an error and has no need to actually extend
+ * `Exception`.
  *
- * `A [[Xor]] B` is isomorphic to `scala.Either[A, B]`, but [[Xor]] is right-biased, so methods such as `map` and
- * `flatMap` apply only in the context of the "right" case. This right bias makes [[Xor]] more convenient to use
- * than `scala.Either` in a monadic context. Methods such as `swap`, and `leftMap` provide functionality
- * that `scala.Either` exposes through left projections.
+ * `A [[Xor]] B` is isomorphic to `scala.Either[A, B]`, but [[Xor]] is
+ * right-biased, so methods such as `map` and `flatMap` apply only in
+ * the context of the "right" case. This right bias makes [[Xor]] more
+ * convenient to use than `scala.Either` in a monadic context. Methods
+ * such as `swap`, and `leftMap` provide functionality that
+ * `scala.Either` exposes through left projections.
  */
 sealed abstract class Xor[+A, +B] extends Product with Serializable {
   import Option._
+  import Xor._
 
+  /**
+   * The catamorphism for Xor
+   */
   def fold[C](fa: A => C, fb: B => C): C = this match {
     case Xor.Left(a) => fa(a)
     case Xor.Right(b) => fb(b)
   }
 
-  def isLeft: Boolean = fold(_ => true, _ => false)
+  /**
+   * Return a Left if the value is on the Right .
+   * Return a Right if the value is on the Left.
+   */
+  def swap: B Xor A = this match {
+    case Right(a) => Left(a)
+    case Left(a) => Right(a)
+  }
 
+  def isLeft: Boolean = fold(_ => true, _ => false)
   def isRight: Boolean = fold(_ => false, _ => true)
 
-  def swap: B Xor A = fold(Xor.right, Xor.left)
-
+  /**
+   * Run the side-effecting function on the value if it is Valid
+   */
   def foreach(f: B => Unit): Unit = fold(_ => (), f)
 
+  /**
+   * Return the Right value, or the default if Left
+   */
   def getOrElse[BB >: B](default: => BB): BB = fold(_ => default, identity)
 
   def orElse[C, BB >: B](fallback: => C Xor BB): C Xor BB = this match {
@@ -161,8 +186,9 @@ trait XorFunctions {
    *
    * For example:
    * {{{
-   * scala> Xor.catchOnly[NumberFormatException] { "foo".toInt }
-   * res0: Xor[NumberFormatException, Int] = Left(java.lang.NumberFormatException: For input string: "foo")
+   * scala> import dogs._, dogs.Predef._
+   * scala> Xor.catchOnly[java.lang.NumberFormatException] { "foo".toInt }
+   * res0: Xor[java.lang.NumberFormatException, Int] = Left(java.lang.NumberFormatException: For input string: "foo")
    * }}}
    */
   def catchOnly[T >: Null <: Throwable]: CatchOnlyPartiallyApplied[T] =
