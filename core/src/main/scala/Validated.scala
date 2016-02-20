@@ -42,10 +42,30 @@ sealed abstract class Validated[+E, +A] extends Product with Serializable {
    * scala> import dogs._, Predef._
    * scala> Validated.invalid(1).getOrElse(2)
    * res0: Int = 2
+   * scala> Validated.valid(1).getOrElse(2)
+   * res0: Int = 1
    * }}}
-
    */
   def getOrElse[B >: A](default: => B): B = fold(_ => default, identity)
+
+  /**
+   * Return this if it is Valid, or else fall back to the given default.
+   * 
+   * {{{
+   * scala> import dogs._, Predef._, Validated._
+   * scala> valid[String,Int](1) orElse valid[String,Int](2)
+   * res0: Validated[String,Int] = Valid(1)
+   * scala> invalid[String,Int]("invalid") orElse valid[String,Int](2)
+   * res1: Validated[String,Int] = Valid(2)
+   * scala> invalid[String,Int]("invalid") orElse invalid[String,Int]("also invalid")
+   * res2: Validated[String,Int] = Invalid(also invalid)
+   * }}}
+   */
+  def orElse[EE, AA >: A](default: => Validated[EE,AA]): Validated[EE,AA] =
+    this match {
+      case v @ Valid(_) => v
+      case Invalid(_) => default
+    }
 
   /**
    * Is this Valid and matching the given predicate
@@ -77,24 +97,6 @@ sealed abstract class Validated[+E, +A] extends Product with Serializable {
    */
   def forall(f: A => Boolean): Boolean = fold(_ => true, f)
 
-  /**
-   * Return this if it is Valid, or else fall back to the given default.
-   * 
-   * {{{
-   * scala> import dogs._, Predef._, Validated._
-   * scala> valid[String,Int](1) orElse valid[String,Int](2)
-   * res0: Validated[String,Int] = Valid(1)
-   * scala> invalid[String,Int]("invalid") orElse valid[String,Int](2)
-   * res1: Validated[String,Int] = Valid(2)
-   * scala> invalid[String,Int]("invalid") orElse invalid[String,Int]("also invalid")
-   * res2: Validated[String,Int] = Invalid(also invalid)
-   * }}}
-   */
-  def orElse[EE, AA >: A](default: => Validated[EE,AA]): Validated[EE,AA] =
-    this match {
-      case v @ Valid(_) => v
-      case Invalid(_) => default
-    }
 
   /**
    * Converts the value to an Either[E,A]
@@ -210,7 +212,7 @@ sealed abstract class Validated[+E, +A] extends Product with Serializable {
    * Lazily-apply the given function to the value with the given B
    * when valid, otherwise return the given B.
    */
-  def foldRight[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+  def foldr[B](lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     fold(_ => lb, a => f(a, lb))
 
   def show[EE >: E, AA >: A](implicit EE: Show[EE], AA: Show[AA]): String =
