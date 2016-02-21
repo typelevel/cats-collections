@@ -2,7 +2,7 @@ package dogs
 package tests
 
 import Predef._
-import bedazzle.birds._
+import syntax.birds._
 import dogs.std.intEq
 import dogs.tests.arbitrary._
 

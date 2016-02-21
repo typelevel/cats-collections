@@ -4,7 +4,7 @@ import Predef._
 import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
-import dogs.bedazzle.birds._
+import dogs.syntax.birds._
 
 /**
  * Immutable, singly-linked list implementation.
