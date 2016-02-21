@@ -85,4 +85,9 @@ object Predef {
     @inline def -> [B](y: B): Tuple2[A, B] = Tuple2(self, y)
     def →[B](y: B): Tuple2[A, B] = ->(y)
   }
+
+  // stew: should we make these use Show?
+  def print(x: Any) = scala.Console.print(x)
+  def println() = scala.Console.println()
+  def println(x: Any) = scala.Console.println(x)
 }
