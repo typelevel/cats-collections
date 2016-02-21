@@ -31,7 +31,7 @@ Here is a list of the current structures present in dogs:
 - List      - A singly linked List
 - Map       - A tree based Map
 - NotNull   - Proof that a value is not Null
-- Option    - A value which may or may not be present
+- [Option](tut/option)    - A value which may or may not be present
 - Order     - A typeclass for values which can be compared
 - Range     - A range of values from an Enum
 - Set       - A tree based, ordered, extensional set
