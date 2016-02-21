@@ -12,9 +12,7 @@ import org.scalacheck.Prop.{forAll,secure}
 object DListSpec extends Properties("DList") {
   import List._
   import arbitrary.list._
-
-  def fromLL[A](ls: List[List[A]]): DList[A] = 
-    ls.foldLeft(DList.empty[A])((dl,l) => dl ++ DList(l))
+  import arbitrary.dlist._
 
   property("sanity check") = forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
