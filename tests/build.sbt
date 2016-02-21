@@ -1,3 +1,5 @@
+import ScoverageSbtPlugin.ScoverageKeys._
+
 name := "dogs-tests"
 
 libraryDependencies ++= Seq (
@@ -6,3 +8,5 @@ libraryDependencies ++= Seq (
   "org.typelevel"  %%% "discipline" % "0.4"      % "test",
   compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 )
+
+coverageExcludedPackages := "dogs\\.tests\\.arbitrary\\..*"
