@@ -3,7 +3,7 @@ package dogs
 import dogs.Predef._
 import dogs.std.intOrder
 import dogs.tests.arbitrary._
-import dogs.bedazzle.birds._
+import dogs.syntax.birds._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._

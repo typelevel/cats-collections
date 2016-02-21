@@ -1,4 +1,4 @@
-package dogs.bedazzle
+package dogs.syntax
 
 import scala.{AnyVal,Unit}
 
