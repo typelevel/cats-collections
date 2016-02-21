@@ -1,6 +1,7 @@
 package dogs
 package tests.arbitrary
 
+import Predef._
 import org.scalacheck.{Gen, Arbitrary}
 import Arbitrary.arbitrary
 
