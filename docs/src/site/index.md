@@ -27,7 +27,7 @@ Here is a list of the current structures present in dogs:
 - Eq        - A typeclass for testing equality
 - Eval      - An abstraction of possibly lazy values
 - Ior       - An inclusive Or: Left, Right, or Both
-- [ISet](tut/iset)      - An intensional Set
+- ISet      - An intensional Set
 - [List](tut/list)      - A singly linked List
 - Map       - A tree based Map
 - NotNull   - Proof that a value is not Null
