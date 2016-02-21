@@ -73,11 +73,28 @@ sealed abstract class Option[A] {
   final def isNone: Boolean =
     cata(_ => false, true)
 
+  /**
+   * Return a new Option which is the result of applying a function to
+   * the value if a value is present.
+   */
   final def map[B](f: A => B): Option[B] =
     cata(f andThen some[B], none[B])
 
-  final def flatMap[B](f: A => Option[B]) =
+  /**
+   * Return a new Option which is the result of applying a function to
+   * the value if a value is present.
+   */
+  final def flatMap[B](f: A => Option[B]): Option[B] =
     cata(f, none[B])
+
+  /**
+   * Call the side-effecting function with the value if one is present.
+   */
+  final def foreach(f: A => Unit): Unit =
+    this match {
+      case Some(a) => f(a)
+      case _ => ()
+    }
 
   /** Convert to a standard library `Option` */
   final def toStdOption: scala.Option[A] =
