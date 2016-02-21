@@ -179,14 +179,10 @@ sealed trait OptionFunctions {
 
   final def apply[A](a: A): Option[A] = if(a == null) none else some(a)
 
-  /** Wrap a value in Some, or return None if the value is null */
-  final def fromNullable[A](a: A): Option[A] =
-    if (null == a) none else some(a)
-
   final def none[A]: Option[A] = None()
   final def some[A](a: A): Option[A] = Some(a)
 
-  final def fromStdOption[A](oa: scala.Option[A]): Option[A] =
+  final def fromScalaOption[A](oa: scala.Option[A]): Option[A] =
     oa.fold(none[A])(some)
 
   def fromTryCatchNonFatal[T](a: => T): Option[T] = try {
