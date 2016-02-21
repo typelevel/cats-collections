@@ -76,6 +76,15 @@ sealed class Range[A](val start: A, val end: A) {
   def contains(x: A)(implicit discrete: Enum[A]) = discrete.ge(x, start) && discrete.le(x, end)
 
   /**
+   * Return all the values in the Range as a List
+   */
+  def toList(implicit A: Enum[A]): List[A] = {
+    val lb = new ListBuilder[A]
+    foreach(lb += _)
+    lb.run
+  }
+
+  /**
     * Apply function f to each element in range [star, end]
     */
   def foreach(f: A => Unit)(implicit discrete: Enum[A]): Unit = {

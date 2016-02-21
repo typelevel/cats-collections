@@ -4,7 +4,7 @@ organization in Global := "org.typelevel"
 
 scalaVersion in Global := "2.11.7"
 
-crossScalaVersions in Global := Seq("2.10.5", "2.11.7")
+crossScalaVersions in Global := Seq("2.10.6", "2.11.7")
 
 resolvers in Global += Resolver.sonatypeRepo("snapshots")
 

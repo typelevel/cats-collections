@@ -7,9 +7,12 @@ import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
+<<<<<<< HEAD
+=======
 import dogs.std.intOrder
 import syntax.range._
 import dogs.Order._
+>>>>>>> Get tests passing for 2.10 and 2.11
 
 object DietSpec extends Properties("Diet") {
 
@@ -106,6 +109,10 @@ object DietSpec extends Properties("Diet") {
 }
 
 class DietTest extends FlatSpec with Matchers {
+<<<<<<< HEAD
+
+=======
+>>>>>>> Get tests passing for 2.10 and 2.11
   import Diet._
   import dogs.Predef._
 
