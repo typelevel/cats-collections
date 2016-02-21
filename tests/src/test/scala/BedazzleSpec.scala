@@ -10,21 +10,21 @@ import org.scalacheck.Prop._
 
 object BedazzleSpec extends Properties("Bedazzle") {
   property("some") = secure {
-    import bedazzle.option._
+    import syntax.option._
     1.some == Some(1)
   }
   property("some") = secure {
-    import bedazzle.all._
+    import syntax.all._
     none[String] == Option.apply[String](null)
   }
 
   property("i fixed ur inference") = secure {
-    import bedazzle.list._
+    import syntax.list._
     List(1,2,3).foldRight(nil[Int])(_ :: _).sum == 6
   }
 
   property("left, left, left right left") = secure {
-    import bedazzle.xor._
+    import syntax.xor._
     val x: Xor[Int, String] = 1.left
     val y: Xor[String, Int] = 1.right
 
@@ -32,7 +32,7 @@ object BedazzleSpec extends Properties("Bedazzle") {
   }
 
   property("kestrel aka unsafeTap") = secure {
-    import bedazzle.birds._
+    import syntax.birds._
     
     var called = false
     val call: String => Unit = Function.const(called = true)
@@ -43,7 +43,7 @@ object BedazzleSpec extends Properties("Bedazzle") {
   }
 
   property("thrush") = secure {
-    import bedazzle.all._
+    import syntax.all._
 
     val a = 1
     val f: Int => String = _.toString
@@ -53,7 +53,7 @@ object BedazzleSpec extends Properties("Bedazzle") {
   }
 
   property("$") = secure {
-    import bedazzle.all._
+    import syntax.all._
 
     val a = 1
     val f: Int => String = _.toString

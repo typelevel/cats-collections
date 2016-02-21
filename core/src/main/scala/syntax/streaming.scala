@@ -1,5 +1,5 @@
 package dogs
-package bedazzle
+package syntax
 
 /**
  * Contains various Stream-specific syntax.
