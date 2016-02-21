@@ -76,6 +76,16 @@ sealed abstract class List[A] {
     this.reverse.foldLeft(b)((b,a) => f(a,b))
 
   /**
+   * Execute the side-effecting function on each memeber of the list, in order
+   */
+  def foreach(f: A => Unit): Unit = this match {
+    case h Nel t =>
+      f(h)
+      t foreach f
+    case _ => ()
+  }
+
+  /**
    * Return the head of the list, if one exists
    */
   final def headOption: Option[A] = this match {
