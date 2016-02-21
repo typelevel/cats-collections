@@ -325,12 +325,18 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     tail.foldLeft(List(head))((lst, a) => a :: lst)
 
   override final def take(n: Int): List[A] = {
-    @tailrec def loop(i: Int, acc: List[A], rest: List[A]): List[A] =
-      if (i >= n) acc else rest match {
-        case El() => acc
-        case Nel(h, t) => loop(i + 1, h :: acc, t)
-      }
-    loop(0, List.empty, reverse)
+    val lb = new ListBuilder[A]
+    @tailrec def loop(i: Int, l: List[A]): Unit =
+      if(i > 0)
+        l match {
+          case h Nel t =>
+            lb += h
+            loop(i - 1, t)
+          case _ => ()
+        }
+
+    loop(n, this)
+    lb.run
   }
 }
 
