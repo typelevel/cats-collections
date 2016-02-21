@@ -1,6 +1,7 @@
 ---
 layout: default
-title:  "Option"
+title:  "Applicative"
+section: "typeclasses"
 source: "core/src/main/scala/Option.scala"
 ---
 # Option
@@ -75,9 +76,7 @@ val z = Option.fromScalaOption(y)
 
 ### Methods on dogs.Option
 
-Many of the methods you would find on `scala.Option` will also be
-found on `dogs.Option`, There is likely some which are missing, please
-send a Pull Request!:
+Many of the methods you would find on `scala.Option` will also be found on `dogs.Option`, There is likely some which are missing, please send a Pull Request!:
 
 ```tut
 val n = none[Int]
