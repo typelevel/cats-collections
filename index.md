@@ -28,7 +28,7 @@ Here is a list of the current structures present in dogs:
 - Eval      - An abstraction of possibly lazy values
 - Ior       - An inclusive Or: Left, Right, or Both
 - ISet      - An intensional Set
-- List      - A singly linked List
+- [List](tut/list)      - A singly linked List
 - Map       - A tree based Map
 - NotNull   - Proof that a value is not Null
 - [Option](tut/option)    - A value which may or may not be present
