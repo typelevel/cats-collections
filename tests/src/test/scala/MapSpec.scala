@@ -1,6 +1,7 @@
 package dogs
 package tests
 
+import Predef._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._

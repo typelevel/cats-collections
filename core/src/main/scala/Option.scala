@@ -73,11 +73,28 @@ sealed abstract class Option[A] {
   final def isNone: Boolean =
     cata(_ => false, true)
 
+  /**
+   * Return a new Option which is the result of applying a function to
+   * the value if a value is present.
+   */
   final def map[B](f: A => B): Option[B] =
     cata(f andThen some[B], none[B])
 
-  final def flatMap[B](f: A => Option[B]) =
+  /**
+   * Return a new Option which is the result of applying a function to
+   * the value if a value is present.
+   */
+  final def flatMap[B](f: A => Option[B]): Option[B] =
     cata(f, none[B])
+
+  /**
+   * Call the side-effecting function with the value if one is present.
+   */
+  final def foreach(f: A => Unit): Unit =
+    this match {
+      case Some(a) => f(a)
+      case _ => ()
+    }
 
   /** Convert to a standard library `Option` */
   final def toStdOption: scala.Option[A] =
@@ -162,14 +179,10 @@ sealed trait OptionFunctions {
 
   final def apply[A](a: A): Option[A] = if(a == null) none else some(a)
 
-  /** Wrap a value in Some, or return None if the value is null */
-  final def fromNullable[A](a: A): Option[A] =
-    if (null == a) none else some(a)
-
   final def none[A]: Option[A] = None()
   final def some[A](a: A): Option[A] = Some(a)
 
-  final def fromStdOption[A](oa: scala.Option[A]): Option[A] =
+  final def fromScalaOption[A](oa: scala.Option[A]): Option[A] =
     oa.fold(none[A])(some)
 
   def fromTryCatchNonFatal[T](a: => T): Option[T] = try {

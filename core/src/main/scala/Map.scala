@@ -60,7 +60,8 @@ class Map[K,V](val set: Set[(K,V)]) {
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)
   // 
-  private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] = set.find(kv => K.eq(kv._1,key))
+  private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
+    set.dothestupidthingbecausesetisnotamapdotbiz(_._1,  key)
 
   private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 }

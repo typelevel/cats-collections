@@ -4,6 +4,7 @@ libraryDependencies ++= Seq(
   "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",
   "org.typelevel"                  %%% "machinist"  % "0.4.1",
   "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",
+  "org.scalacheck"                 %%% "scalacheck" % "1.12.5",
 
   compilerPlugin("org.spire-math"  %% "kind-projector" % "0.6.3"),
   compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0-M5" cross CrossVersion.full)
@@ -29,6 +30,14 @@ scalacOptions := Seq(
   "-Yno-imports",
   "-Yno-predef")
 
-scalacOptions in (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports","-Yno-predef")))
+scalacOptions in (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports")))
 scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
+scalacOptions in Test ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports", "-Yno-predef")))
 
+doctestWithDependencies := false
+
+doctestSettings
+
+(initialCommands in console) := """
+import dogs._, dogs.Predef._
+"""

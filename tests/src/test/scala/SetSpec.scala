@@ -1,13 +1,14 @@
 package dogs
 
-import dogs.Order.Ordering
 import dogs.Predef._
 import dogs.std.intOrder
 import dogs.tests.arbitrary._
-import dogs.bedazzle.birds._
+import dogs.syntax.birds._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
+import scala.Array
+import scala.Predef.intArrayOps
 
 object SetSpec extends Properties("Set") with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
@@ -68,21 +69,23 @@ object SetSpec extends Properties("Set") with ArbitraryList {
     val xt = Set(xs.toSeq: _*)
     val yt = Set(ys.toSeq: _*)
 
-    (xt intersect yt).toScalaSet == (xs intersect ys)
+    (xt intersect yt).toScalaSet == (xs intersect ys) && (xt & yt).toScalaSet == (xs intersect ys)
+
   }
 
   property("union is correct") = forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
     val xt = Set(xs.toSeq: _*)
     val yt = Set(ys.toSeq: _*)
 
-    (xt union yt).toScalaSet == (xs union ys)
+    (xt union yt).toScalaSet == (xs union ys) && (xt | yt).toScalaSet == (xs union ys) 
+
   }
 
   property("we can take the difference of sets") = forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
     val xt = Set(xs.toSeq: _*)
     val yt = Set(ys.toSeq: _*)
 
-    (xt diff yt).toScalaSet == (xs diff ys)
+    (xt diff yt).toScalaSet == (xs diff ys) && (xt - yt).toScalaSet == (xs diff ys)
   }
 
   property("map works") = forAll{ (xs: SSet[Int]) =>

@@ -80,9 +80,14 @@ object Predef {
      implicit def tpEquals[A]: A =:= A = singleton_=:=.asInstanceOf[A =:= A]
   }
 
-  implicit final class ArrowAssoc[A](private val self: A) extends AnyVal {
+  implicit final class ArrowAssoc[A](val self: A) extends AnyVal {
     import scala.Tuple2
     @inline def -> [B](y: B): Tuple2[A, B] = Tuple2(self, y)
     def →[B](y: B): Tuple2[A, B] = ->(y)
   }
+
+  // stew: should we make these use Show?
+  def print(x: Any) = scala.Console.print(x)
+  def println() = scala.Console.println()
+  def println(x: Any) = scala.Console.println(x)
 }

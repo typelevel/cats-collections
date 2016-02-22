@@ -1,7 +1,3 @@
-/**
-  * Created by Nicolas A Perez (@anicolaspp) on 2/8/16.
-  */
-
 package dogs
 package tests
 
@@ -20,7 +16,7 @@ class RangeTest extends FlatSpec with Matchers {
   "a range" should "contain items within [start, end]" in {
     val range = Range(1, 100)
 
-    1.to(100).foreach(i => range.contains(i) should be (true))
+    scala.Range(1,100).foreach(i => range.contains(i) should be (true))
   }
 
   it should "not contain items outside [start, end]" in {
@@ -44,21 +40,20 @@ class RangeTest extends FlatSpec with Matchers {
 
     range.foreach(i => s += i)
 
-    1.to(100).sum should be (s)
+    scala.Range(1,101).sum should be (s)
   }
 
   it should "map" in {
     val range = Range(1, 100)
-
     val result = range.map(i => i.toString)
 
-    1.to(100).map(i => i.toString).toList should be (result.toScalaList)
+    scala.Range(1,101).map(i => i.toString).toList should be (result.toScalaList)
   }
 
   it should "fold" in {
     val range = Range(1, 100)
 
-    range.foldLeft[Int](0, (a,b) => a + b) should be (1.to(100).sum)
+    range.foldLeft[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
   }
 
   it should "be able to diff (-)" in {

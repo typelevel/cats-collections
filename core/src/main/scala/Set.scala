@@ -6,9 +6,8 @@ import dogs.std.intOrder
 import scala.annotation.tailrec
 import scala.math
 
-
 /**
- * An immutable, ordered Set
+ * An immutable, ordered, extesntional Set
  * 
  * This datastructure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
@@ -224,6 +223,19 @@ sealed abstract class Set[A] {
     removals.foldLeft(this)(_ remove _)
 
   /**
+   * Return a Set that has any elements appearing in the removals set removed
+   * O(n log n)
+   */
+  def -(removals: Set[A])(implicit order: Order[A]) =
+    removals.foldLeft(this)(_ remove _)
+
+
+  /**
+   * Return an ISet (intentional set) with the same members as this set
+   */
+  def iset(implicit order: Order[A]): ISet[A] = ISet(contains)
+
+  /**
    * Return a scala set containing the elments in the Set
    * O(n)
    */
@@ -231,6 +243,30 @@ sealed abstract class Set[A] {
     import scala.collection.immutable.{Set => SSet}
     foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
+
+
+  // So yeah. we had to make a decision, either we have to make this
+  // structure Key/Value pairs even when we don't always need a value
+  // (in the case of a Set), or we have to have separate structures
+  // for Set and Map, or we have to have a function like this one,
+  // that only really make sense fo Map. I chose this one. This
+  // function makes it so that we can find things in the tree just
+  // based on a Key, when the set is really storing a Key value pair.
+  // The name was chosen so that it would be convenient for nobody to
+  // remember.
+  private[dogs] def dothestupidthingbecausesetisnotamapdotbiz[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
+    @tailrec def go(t: Set[A]): Option[A] = t match {
+      case BTNil() => None()
+      case Branch(v,l,r) =>
+        B.compare(b, f(v)) match {
+          case EQ => Some(v)
+          case LT => go(l)
+          case GT => go(r)
+        }
+    }
+    go(this)
+  }
+
 
   private[dogs] val height: Int
 }
@@ -241,6 +277,9 @@ object Set {
    * Create a set with the given elements. 
    */
   def apply[A: Order](as: A*): Set[A] =
+    as.foldLeft[Set[A]](empty)(_ + _)
+
+  def fromList[A: Order](as: List[A]): Set[A] =
     as.foldLeft[Set[A]](empty)(_ + _)
 
   /**

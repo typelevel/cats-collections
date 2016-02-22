@@ -4,6 +4,7 @@ package object arbitrary {
   object all extends AllArbitrary
 
   object const extends ArbitraryConst
+  object dlist extends ArbitraryDList
   object eval extends ArbitraryEval
   object ior extends ArbitraryIor
   object list extends ArbitraryList
