@@ -31,17 +31,21 @@ sealed trait Task[A] {
 
 object Task {
   /**
-   * Construct a Task which represents an already calculated eager value
+   * Construct a Task which represents an already calculated eager
+   * value
    */
   def now[A](a: A): Task[A] = Value(Eval.now(a))
 
   /**
-   * Construct a Task that when run will produce an A by evaluating the argument
+   * Construct a Task that when run will produce an A by evaluating
+   * the argument. This is useful for a pure but expensive computation
    */
   def later[A](a: => A): Task[A] = Value(Eval.later(a))
 
   /**
-   * Construct a task from a thunk that will be executed each time the Task is run
+   * Construct a task from a thunk that will be executed each time the
+   * Task is run. This is an effect capturing constructor which is
+   * suitable for wrapping code which is side-effecting.
    */
   def always[A](a: () => A): Task[A] = Value(new Always(a))
 
@@ -54,11 +58,14 @@ object Task {
    */
   def async[A](cb: (A => Unit) => Unit): Task[A] = Async(cb)
 
+  // Here we already have an eval, so we just have to return it 
   private[dogs] final case class Value[A](eval: Eval[A]) extends Task[A] {
-    override def map[B](f: A => B): Task[B] =
-      Value(eval.map(f))
+    override def map[B](f: A => B): Task[B] = Value(eval.map(f))
   }
 
+  // Store a flatMap operation on the Heap. when asked to eval, we
+  // flatMap against the given task, using Eval.defer to ensure that
+  // the computation is stack-safe
   private[dogs] final class Bind[Z, A](t: Task[Z], f: Z => Task[A]) extends Task[A] {
     override def eval: Eval[A] = Eval.defer(t.eval.flatMap(f andThen (_.eval)))
   }
