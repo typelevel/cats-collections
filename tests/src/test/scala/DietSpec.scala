@@ -30,13 +30,6 @@ object DietSpec extends Properties("Diet") {
     }
   }
 
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-
-  }
-
   def orderedTuple(x: Int, y: Int): (Int,Int) =
     intOrder(x,y) match {
       case GT => y -> x
@@ -239,13 +232,6 @@ class DietTest extends FlatSpec with Matchers {
 
 class DietTestJoin extends FlatSpec with Matchers {
 
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-
-  }
-
   "diet" should "return the same diet when join to empty range" in {
     val diet = Diet.empty[Int] + 20 + 30
 
@@ -337,13 +323,6 @@ class DietTestJoin extends FlatSpec with Matchers {
 
 class DietTestRemove extends FlatSpec with Matchers {
   import Diet._
-
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-
-  }
 
   "diet" should "remove empty range" in {
     val diet = Diet.empty[Int] + Range(20, 30)
