@@ -26,7 +26,7 @@ sealed trait Task[A] {
   def catchNonFatal: Task[Throwable Xor A] =
     new AttemptNonFatal(this)
 
-  final def unsafePerformIO: A = eval.value
+  final def unsafePerformIO(): A = eval.value
 }
 
 object Task {
