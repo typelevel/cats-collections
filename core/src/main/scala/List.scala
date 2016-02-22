@@ -398,8 +398,4 @@ final private[dogs] class ListBuilder[A] {
         end = newEnd
     }
   }
-
-  def nonEmpty: Boolean = run != El
-  def isEmpty: Boolean = run == El
-  def toList:List[A] = run
 }

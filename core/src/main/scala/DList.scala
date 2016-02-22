@@ -46,17 +46,30 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
       case h Nel t => f(h, DList(t))
     }
 
+  /**
+   * O(n)
+   */
   def toList: List[A] = run(empty).value
 
-  /** Get the first element of the list, if any. */
+  /** 
+   * Get the first element of the list, if any. 
+   * O(n) where n is the number of append operations in this DList
+   */
   def headOption: Option[A] = uncons[Option[A]](now(none),(x, _) => now(Some(x))).value
 
-  /** Get the tail of the list, if any. */
+  /** 
+   * Get the tail of the list, if any. 
+   * O(n) where n is the number of append operations in this DList
+   */
   def tailOption: Option[DList[A]] =
     uncons[Option[DList[A]]](now(none), (_, y) => now(Some(y))).value
 
-  /** Tests whether list is empty. */
-  def isEmpty: Boolean = uncons(now(true), (_, _) => now(false)).value
+  /** 
+   * Tests whether list is empty.
+   * O(n) where n is the number of append operations in this DList
+   * which is a bit weirdly expensive
+   */
+  def isEmpty: Boolean = headOption.isNone
 
   def foldr[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     run(empty).flatMap( _.foldRight(b)(f))
