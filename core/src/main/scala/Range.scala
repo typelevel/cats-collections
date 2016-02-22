@@ -1,7 +1,3 @@
-/**
-  * Created by Nicolas A Perez (@anicolaspp) on 2/8/16.
-  */
-
 package dogs
 
 import dogs.Order._
@@ -31,19 +27,14 @@ sealed class Range[A](val start: A, val end: A) {
     }
     else {
       (discrete.compare(start, range.start), discrete.compare(end, range.end)) match {
-        case (EQ, EQ) => (Range.empty(), Range.empty())
-        case (EQ, LT) => (Range.empty(), Range.empty())
         case (EQ, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
-
-        case (GT, EQ) => (Range.empty(), Range.empty())
-        case (LT, EQ) => (Range(start, discrete.pred(range.start)), Range.empty())
+        case (EQ, _)  => (Range.empty(), Range.empty())
 
         case (GT, GT) => (Range.empty(), Range(discrete.succ(range.end), end))
+        case (GT, _)  => (Range.empty(), Range.empty())
 
-        case (LT, LT) => (Range(start, discrete.pred(range.start)), Range.empty())
-
-        case (GT, LT) => (Range.empty(), Range.empty())
         case (LT, GT) => (Range(start, discrete.pred(range.start)), Range(discrete.succ(range.end), end))
+        case (LT, _)  => (Range(start, discrete.pred(range.start)), Range.empty())
       }
     }
   }

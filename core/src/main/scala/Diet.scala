@@ -1,7 +1,3 @@
-/**
- * Created by Nicolas A Perez (@anicolaspp) on 2/4/16.
- */
-
 package dogs
 
 import dogs.Order._
