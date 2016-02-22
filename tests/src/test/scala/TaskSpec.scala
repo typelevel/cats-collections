@@ -6,32 +6,32 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class TaskTests extends FlatSpec with Matchers {
 
-  "Task" should "not run side-effects until .unsafePerformIO is called" in {
+  "Task" should "not run side-effects until .unsafePerformIO() is called" in {
     var run: Int = 0
     val t: Task[Int] = Task.later { run += 1; run }
     run should be (0)
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
   }
 
   it should "only evaulate side-effects once for Task.later" in {
     var run: Int = 0
     val t: Task[Int] = Task.later { run += 1; run }
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be(1)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
 
     val t2 = t.map(_ + 1)
-    t2.unsafePerformIO
-    t2.unsafePerformIO
+    t2.unsafePerformIO()
+    t2.unsafePerformIO()
 
     run should be (1)
 
     val t3 = t.flatMap(x => Task.now(x + 1))
-    t3.unsafePerformIO
-    t3.unsafePerformIO
+    t3.unsafePerformIO()
+    t3.unsafePerformIO()
 
     run should be (1)
   }
@@ -41,7 +41,7 @@ class TaskTests extends FlatSpec with Matchers {
     val t: Task[Int] = Task.async { cb => run += 1; cb(1) }
     run should be (0)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
   }
 
@@ -50,14 +50,14 @@ class TaskTests extends FlatSpec with Matchers {
     val t: Task[Int] = Task.async { cb => run += 1; cb(1) }
     run should be (0)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (2)
 
     val t2 = t.flatMap(x => Task.now(x + 1))
-    t2.unsafePerformIO
+    t2.unsafePerformIO()
     run should be (3)
   }
 
@@ -66,7 +66,7 @@ class TaskTests extends FlatSpec with Matchers {
     val t: Task[Int] = Task.always { () => run += 1; 1 }
     run should be (0)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
   }
 
@@ -75,14 +75,14 @@ class TaskTests extends FlatSpec with Matchers {
     val t: Task[Int] = Task.always { () => run += 1; 1 }
     run should be (0)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (1)
 
-    t.unsafePerformIO
+    t.unsafePerformIO()
     run should be (2)
 
     val t2 = t.flatMap(x => Task.now(x + 1))
-    t2.unsafePerformIO
+    t2.unsafePerformIO()
     run should be (3)
   }
 
@@ -94,7 +94,7 @@ class TaskTests extends FlatSpec with Matchers {
 
 
   it should "put success on the right when catch is called" in {
-    val attempted = ones.map(_.catchNonFatal.unsafePerformIO)
+    val attempted = ones.map(_.catchNonFatal.unsafePerformIO())
     println(attempted)
     attempted.forall(_ == Xor.Right(1)) should be (true)
   }
@@ -117,7 +117,7 @@ class TaskTests extends FlatSpec with Matchers {
   it should "have a stack-safe flatMap" in {
     val howmany = 1000000
 
-    sequenceStreaming(onesStream.take(howmany)).unsafePerformIO.foldLeft(0)((x, _) => x + 1) should be (howmany)
+    sequenceStreaming(onesStream.take(howmany)).unsafePerformIO().foldLeft(0)((x, _) => x + 1) should be (howmany)
   }
 }
 
