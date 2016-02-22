@@ -1,0 +1,6 @@
+---
+layout: default
+title:  "Dequeue"
+source: "core/src/main/scala/Dequeue.scala"
+---
+# Dequeue

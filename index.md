@@ -27,14 +27,14 @@ Here is a list of the current structures present in dogs:
 - Eq        - A typeclass for testing equality
 - Eval      - An abstraction of possibly lazy values
 - Ior       - An inclusive Or: Left, Right, or Both
-- ISet      - An intensional Set
+- [ISet](tut/iset)      - An intensional Set
 - [List](tut/list)      - A singly linked List
 - Map       - A tree based Map
 - NotNull   - Proof that a value is not Null
 - [Option](tut/option)    - A value which may or may not be present
 - Order     - A typeclass for values which can be compared
 - Range     - A range of values from an Enum
-- Set       - A tree based, ordered, extensional set
+- [Set](tut/set)       - A tree based, ordered, extensional set
 - Show      - A typeclass for turning values into Strings
 - Streaming - A stream of values with a lazily evaluated tail
 - Validated - An exlusive Or
