@@ -6,7 +6,6 @@ import dogs.std.intOrder
 import scala.annotation.tailrec
 import scala.math
 
-
 /**
  * An immutable, ordered, extesntional Set
  * 
