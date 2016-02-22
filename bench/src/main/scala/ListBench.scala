@@ -11,7 +11,7 @@ class ListPrependBench {
   @Benchmark
   def dogsSum(): Int = {
     var i = 0
-    var l: dogs.List[Int] = dogs.El()
+    var l: dogs.List[Int] = dogs.List.empty
     while(i < 100000) {
       l = i :: l
       i = i + 1
