@@ -7,6 +7,11 @@ import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
+import dogs.std.intOrder
+import syntax.range._
+import dogs.Order._
+
+
 
 object DietSpec extends Properties("Diet") {
 
@@ -275,7 +280,6 @@ class DietTestJoin extends FlatSpec with Matchers {
 
     val other = diet.addRange(range).intervals.map(r => r.generate.toScalaList).toScalaList
 
-    other should contain (20.to(30).toList)
   }
 
   it should "join to an empty diet" in {
