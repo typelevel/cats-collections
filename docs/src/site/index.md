@@ -21,9 +21,9 @@ Here is a list of the current structures present in dogs:
 
 - Const     - A value with a phantom type
 - [Dequeue](tut/dequeue)   - A double-ended queue
-- Diet      - Efficient storage of ragnes of values
+- [Diet](tut/diet)      - Efficient storage of ragnes of values
 - DList     - A list that supports constant-time append
-- Enum      - An enumeration of values
+- [Enum](tut/enum)      - An enumeration of values
 - Eq        - A typeclass for testing equality
 - Eval      - An abstraction of possibly lazy values
 - Ior       - An inclusive Or: Left, Right, or Both
@@ -33,7 +33,7 @@ Here is a list of the current structures present in dogs:
 - NotNull   - Proof that a value is not Null
 - [Option](tut/option)    - A value which may or may not be present
 - Order     - A typeclass for values which can be compared
-- Range     - A range of values from an Enum
+- [Range](tut/range)     - A range of values from an Enum
 - [Set](tut/set)       - A tree based, ordered, extensional set
 - Show      - A typeclass for turning values into Strings
 - Streaming - A stream of values with a lazily evaluated tail

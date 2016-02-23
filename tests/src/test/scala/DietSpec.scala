@@ -1,10 +1,11 @@
 package dogs
 package tests
 
-import dogs.Diet._
+import dogs.Order._
 import dogs.Predef._
-import org.scalacheck._
+import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
+import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
 import dogs.std.intOrder
 import syntax.range._
@@ -30,13 +31,6 @@ object DietSpec extends Properties("Diet") {
       val f = in(i) _
       (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1)| f(r2) | f(r3))
     }
-  }
-
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-
   }
 
   def orderedTuple(x: Int, y: Int): (Int,Int) =
@@ -113,6 +107,7 @@ object DietSpec extends Properties("Diet") {
 
 class DietTest extends FlatSpec with Matchers {
   import Diet._
+  import dogs.Predef._
 
   "diet" should "return node with value range when inserting into empty" in {
 
@@ -238,7 +233,6 @@ class DietTest extends FlatSpec with Matchers {
 }
 
 class DietTestJoin extends FlatSpec with Matchers {
-  import Diet._
 
   "diet" should "return the same diet when join to empty range" in {
     val diet = Diet.empty[Int] + 20 + 30
