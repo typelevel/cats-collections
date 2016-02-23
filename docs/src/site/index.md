@@ -21,7 +21,7 @@ Here is a list of the current structures present in dogs:
 
 - Const     - A value with a phantom type
 - [Dequeue](tut/dequeue)   - A double-ended queue
-- Diet      - Efficient storage of ragnes of values
+- [Diet](tut/diet)      - Efficient storage of ragnes of values
 - DList     - A list that supports constant-time append
 - Enum      - An enumeration of values
 - Eq        - A typeclass for testing equality
