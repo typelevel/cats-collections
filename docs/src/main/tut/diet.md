@@ -32,5 +32,6 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - intervals:				the list of all intervals (sets) in the tree. The sets are disjoint sets.
 - toList: 				list of sorted values in the tree
 
+## Generating Value in a Range of Type A
 
-
+In order to generate all values in `Diet` we need to generate the values of each [Range](range) that `Diet` stores.
