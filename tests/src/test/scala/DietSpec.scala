@@ -1,7 +1,7 @@
 package dogs
 package tests
 
-import dogs.Diet._
+import dogs.Order._
 import dogs.Predef._
 import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
