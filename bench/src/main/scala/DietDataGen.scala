@@ -9,14 +9,7 @@ import dogs.Predef._
 
 object DietDataGen {
 
-  def getWorstCaseData: scala.IndexedSeq[Int] = {
-
-    scala.Range(1, 1000, 2).to[IndexedSeq]
-
-    for (x <- scala.Range(1, 1000)
-      if (x % 2 == 0)
-    ) yield x
-  }
+  def getWorstCaseData: scala.IndexedSeq[Int] = scala.Range(1, 1000, 2).to[IndexedSeq]
 
   def getBestCaseData: scala.IndexedSeq[scala.Range] = {
     for (x <- scala.Range(1, 1000)
