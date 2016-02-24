@@ -14,17 +14,7 @@ class DietBenchSearch {
 
   import dogs.Predef._
 
-  implicit object scalazEnumInt extends scalaz.Enum[Int] {
-    override def succ(a: Int): Int = a + 1
-
-    override def pred(a: Int): Int = a - 1
-
-    override def order(x: Int, y: Int): scalaz.Ordering = {
-      if (x == y) scalaz.Ordering.EQ
-      else if (x < y) scalaz.Ordering.LT
-      else scalaz.Ordering.GT
-    }
-  }
+  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 
   var diet = Diet.empty[Int]
   var diev = Diev.empty[Int]

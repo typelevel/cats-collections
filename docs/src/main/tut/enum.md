@@ -15,7 +15,9 @@ These operations are presented by the following functions.
 
 An example of the discrete operation on interger values could be: 
 
-```
+```tut
+import dogs._, Predef._, dogs.Order._
+
 implicit val intEnum: Enum[Int] = new Enum[Int] {
     override def succ(x: Int): Int = x + 1
     override def pred(x: Int): Int = x - 1
