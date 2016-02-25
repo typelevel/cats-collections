@@ -1,14 +1,24 @@
 package dogs
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
+import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.collection.immutable.{List => SList, Nil => SNil}
 import scalaz.{IList,ICons,INil}
 
 trait BigNumberLists {
-  val dogs = List.fromIterable(1 to 10000)
-  val scala = (1 to 10000).to[SList]
-  val scalaz = IList((1 to 10000):_*)
+  @Param(Array("10", "100", "1000", "10000"))
+  var n: Int = _
+
+  var dogs: List[Int] = _
+  var scala: SList[Int] = _
+  var scalaz: IList[Int] = _
+
+  @Setup
+  def setup: Unit = {
+    dogs = List.fromIterable(1 to n)
+    scala = (1 to n).to[SList]
+    scalaz = IList((1 to n):_*)
+  }
 }
 
 
