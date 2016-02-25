@@ -1,52 +1,43 @@
 package dogs
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
+import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.collection.immutable.{List => SList, Nil => SNil}
 import scalaz.{IList,ICons,INil}
 
 trait BigNumberLists {
-  val dogs = List.fromIterable(1 to 10000)
-  val scala = (1 to 10000).to[SList]
-  val scalaz = IList((1 to 10000):_*)
+  @Param(Array("10", "100", "1000", "10000"))
+  var n: Int = _
+
+  var dogs: List[Int] = _
+  var scala: SList[Int] = _
+  var scalaz: IList[Int] = _
+
+  @Setup
+  def setup: Unit = {
+    dogs = List.fromIterable(1 to n)
+    scala = (1 to n).to[SList]
+    scalaz = IList((1 to n):_*)
+  }
 }
 
 
 @State(Scope.Thread)
-class ListFlatMapathon {
+class ListFlatMapathon extends BigNumberLists {
 
   @Benchmark def dogsListFlatMapathon(): Unit = {
     val f: Int => List[Int] = _ => new Nel(1, List.empty)
-
-    var i = 0
-    var l: List[Int]  = List(1)
-    while(i < 10000) {
-      i = i + 1
-      l = l flatMap f
-    }
+    dogs flatMap f
   }
-
 
   @Benchmark def scalaFlatMapathon(): Unit = {
     val f: Int => SList[Int] = _ => 1 :: SNil
-
-    var i = 0
-    var l = SList(1)
-    while(i < 10000) {
-      i = i + 1
-      l = l flatMap f
-    }
+    scala flatMap f
   }
 
   @Benchmark def scalazFlatMapathon(): Unit = {
     val f: Int => IList[Int] = _ => 1 :: IList()
-
-    var i = 0
-    var l = IList(1)
-    while(i < 10000) {
-      i = i + 1
-      l = l flatMap f
-    }
+    scalaz flatMap f
   }
 }
 
