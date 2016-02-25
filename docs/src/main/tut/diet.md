@@ -15,7 +15,8 @@ The discrete interval encoding tree is based on the observation that the set of 
 
 The best case is when there is no holes in the stored set, so the tree contains only one node (a single interval). In this case, it has ***O***(1) space requirement, inserting, deleting and finding a value is in constant time. 
 
-In the worst case scenario, there is a hole of size one (1) between each node and each node is in fact a set on size one (1). Under these circumstances, it behaves as a regular binary search tree. 
+In the worst case scenario, there is a hole of size one (1) between each node and each node is in fact a set on size one (1). Under these circumstances, operations in the tree required O(n). 
+
 
 ## Supported Operations
 
