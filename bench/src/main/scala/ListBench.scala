@@ -3,7 +3,7 @@ package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.collection.immutable.{List => SList, Nil => SNil}
-import scalaz.{IList,ICons,INil}
+import scalaz.IList
 
 trait BigNumberLists {
   @Param(Array("10", "100", "1000", "10000"))
