@@ -22,29 +22,23 @@ class DietRandomizeBench extends BigNumberLists{
 
   @Benchmark
   def dogsDietAddRandom: Unit = {
-    var diet = Diet.empty[Int]
-
-    Random.shuffle(dogs.toScalaList).foreach{ i => diet = diet + i }
+    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
   def scalazDievAddRandom: Unit = {
-    var diev = Diev.empty[Int]
-
-    Random.shuffle(scalazlst.toList).foreach { i => diev = diev + i}
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
   def dogsDietAddRangeRandom: Unit = {
-    var diet = Diet.empty[Int]
-
-    Random.shuffle(dogs.toScalaList).foreach { i => diet = diet + Range(i, i + 10)}
+    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
   }
 
   @Benchmark
   def scalazDievAddRangeRandom: Unit = {
     var diev = Diev.empty[Int]
 
-    Random.shuffle(scalazlst.toList).foreach { i => diev = diev + (i, i + 10)}
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + (r, r + 10))
   }
 }

@@ -59,23 +59,17 @@ class DietAddBench extends BestCaseRangesList {
 
   @Benchmark
   def scalazDievAdd: Unit = {
-    var diev = Diev.empty[Int]
-
-    scalazValues.foreach{ i => diev = diev + i }
+    scalazValues.foldLeft(Diev.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
   def dogsDietAddRange: Unit = {
-    var diet = dogs.Diet.empty[Int]
-
-    dogRanges.foreach { r => diet = diet +  Range(r.start, r.end) }
+    dogRanges.foldLeft(Diet.empty[Int])((d, r) => d + Range(r.start, r.end))
   }
 
   @Benchmark
   def scalazDievAddRange: Unit = {
-    var diev = scalaz.Diev.empty[Int]
-
-    scalazRanges.foreach { r => diev = diev + (r.start, r.end) }
+    scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + (r.start, r.end))
   }
 }
 
