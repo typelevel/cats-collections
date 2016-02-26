@@ -14,48 +14,31 @@ import scalaz.Diev
   * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
   */
 @State(Scope.Benchmark)
-class DietRandomizeBench {
+class DietRandomizeBench extends BigNumberLists{
 
-  import dogs.Predef._
+//  import dogs.Predef._
 
   implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 
   @Benchmark
   def dogsDietAddRandom: Unit = {
-    var diet = Diet.empty[Int]
-
-    (1 to 10000).foreach {_ =>
-      diet = diet + Random.nextInt()
-    }
+    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
   def scalazDievAddRandom: Unit = {
-    var diev = Diev.empty[Int]
-
-    (1 to 10000).foreach {_ =>
-      diev = diev + Random.nextInt()
-    }
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
   def dogsDietAddRangeRandom: Unit = {
-    var diet = Diet.empty[Int]
-
-    (1 to 10000).foreach {_ =>
-      val i = Random.nextInt()
-      diet = diet + dogs.Range(i, i + 10)
-    }
+    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
   }
 
   @Benchmark
   def scalazDievAddRangeRandom: Unit = {
     var diev = Diev.empty[Int]
 
-    (1 to 10000).foreach {_ =>
-      val i = Random.nextInt()
-
-      diev = diev + (i, i + 10)
-    }
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + (r, r + 10))
   }
 }

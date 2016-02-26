@@ -11,13 +11,13 @@ trait BigNumberLists {
 
   var dogs: List[Int] = _
   var scala: SList[Int] = _
-  var scalaz: IList[Int] = _
+  var scalazlst: IList[Int] = _
 
   @Setup
   def setup: Unit = {
     dogs = List.fromIterable(1 to n)
     scala = (1 to n).to[SList]
-    scalaz = IList((1 to n):_*)
+    scalazlst = IList((1 to n):_*)
   }
 }
 
@@ -37,7 +37,7 @@ class ListFlatMapathon extends BigNumberLists {
 
   @Benchmark def scalazFlatMapathon(): Unit = {
     val f: Int => IList[Int] = _ => 1 :: IList()
-    scalaz flatMap f
+    scalazlst flatMap f
   }
 }
 
@@ -54,7 +54,7 @@ class ListFilternium extends BigNumberLists {
   }
 
   @Benchmark def scalazFilternium(): Unit = {
-    scalaz.filter(_ % 2 == 0)
+    scalazlst.filter(_ % 2 == 0)
   }
 }
 
@@ -70,7 +70,7 @@ class ListFoldlefteron extends BigNumberLists {
   }
 
   @Benchmark def scalazFoldlefteron(): Unit = {
-    scalaz.foldLeft(0)(_ + _)
+    scalazlst.foldLeft(0)(_ + _)
   }
 }
 
@@ -86,6 +86,6 @@ class ListMapperfy extends BigNumberLists {
   }
 
   @Benchmark def scalazMapperfy(): Unit = {
-    scalaz.map(_ + 1)
+    scalazlst.map(_ + 1)
   }
 }
