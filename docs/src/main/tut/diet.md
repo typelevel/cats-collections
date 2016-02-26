@@ -98,25 +98,28 @@ Asking to remove non existing range yields the same diet
 ```tut
 import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
 
-val d = Diet.empty[Int].addRange(Range(5, 20))
+val d = Diet.empty[Int].addRange((5 to 20))
 
-val d1 = d.removeRange(Range(1, 4))
+val d1 = d.removeRange((1 to 4))
+d1.intervals
 ```
 
 Asking to remove a range yields a new Diet without the range
 
 ```tut
-val d2 = d.removeRange(Range(5, 20))
+val d = Diet.empty[Int].addRange((5 to 20)).addRange(22 to 30)
+val d2 = d.removeRange((5 to 20))
 
-d2.isEmpty
+d2.intervals
 ```
 
 Asking to remove a subrange splits the Diet
 
 ```tut
-val d3 = d.removeRange(Range(10, 15)) 
+val d = Diet.empty[Int].addRange((5 to 20))
+val d3 = d.removeRange((10 to 15)) 
 
-scala.Range(10, 15).forall { i => d3.contains(i) }
-scala.Range(5, 9).forall {i => d3.contains(i) }
-scala.Range(16, 20).forall {i => d3.contains(i) }
+(10 to 15).toList.forall { i => d3.contains(i) }
+(5 to 9).toList.forall {i => d3.contains(i) }
+(16 to 20).toList.forall {i => d3.contains(i) }
 ```
