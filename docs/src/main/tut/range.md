@@ -19,6 +19,7 @@ source: "core/src/main/scala/Range.scala"
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
 	- It basically calculates what is to the *left* of `other` that is in `Range` and what is to the *right* of `other` that is in `Range` (in both cases it does not include elements in `other`)
+- toString: returns string representing the range in math notation. `Range(x, y)` is represented by **[x, y]** and `Range.empty` is represented by **[]**
 	
 ## Inverted Range
 
