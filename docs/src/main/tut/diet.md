@@ -23,6 +23,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - add:						add a value to the tree
 - addRange:				add the entire range to the tree
 - remove:					remove a value from the tree
+- removeRange:          remove a range from the tree
 - contains:				verify is a value is on the tree
 - containsRange:			verify that an interval is on the tree
 - (`-`) operator:		remove a range from the tree
@@ -91,4 +92,84 @@ val d1 = Diet.empty[Int] + (5 to 10)
 val d2 = Diet.empty[Int] + (7 to 12)
 (d1 & d2).intervals
 (d1 | d2).intervals
+```
+Asking to remove non existing range yields the same diet
+
+```tut
+import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+
+val d = Diet.empty[Int].addRange(Range(5, 20))
+
+val d1 = d.removeRange(Range(1, 4))
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```tut
+val d2 = d.removeRange(Range(5, 20))
+
+d2.isEmpty
+```
+
+Asking to remove a subrange splits the Diet
+
+```tut
+val d3 = d.removeRange(Range(10, 15)) 
+
+(10 to 15).forall { i => d3.contains(i) }
+(5 to 9).forall {i => d3.contains(i) }
+(16 to 20).forall {i => d3.contains(i) }
+```
+Asking to remove non existing range yields the same diet
+
+```tut
+import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+
+val d = Diet.empty[Int].addRange(Range(5, 20))
+
+val d1 = d.removeRange(Range(1, 4))
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```tut
+val d2 = d.removeRange(Range(5, 20))
+
+d2.isEmpty
+```
+
+Asking to remove a subrange splits the Diet
+
+```tut
+val d3 = d.removeRange(Range(10, 15)) 
+
+(10 to 15).forall { i => d3.contains(i) }
+(5 to 9).forall {i => d3.contains(i) }
+(16 to 20).forall {i => d3.contains(i) }
+```
+
+Asking to remove non existing range yields the same diet
+
+```tut
+val d = Diet.empty[Int].addRange(Range(5, 20))
+
+val d1 = d.removeRange(Range(1, 4))
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```tut
+val d2 = d.removeRange(Range(5, 20))
+
+d2.isEmpty
+```
+
+Asking to remove a subrange splits the Diet
+
+```tut
+val d3 = d.removeRange(Range(10, 15)) 
+
+(10 to 15).forall { i => d3.contains(i) }
+(5 to 9).forall {i => d3.contains(i) }
+(16 to 20).forall {i => d3.contains(i) }
 ```
