@@ -23,6 +23,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - add:						add a value to the tree
 - addRange:				add the entire range to the tree
 - remove:					remove a value from the tree
+- removeRange:          remove a range from the tree
 - contains:				verify is a value is on the tree
 - containsRange:			verify that an interval is on the tree
 - (`-`) operator:		remove a range from the tree

@@ -140,6 +140,37 @@ sealed abstract class Diet[A] {
   }
 
   /**
+    * remove a range from Diet
+    */
+  def removeRange(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = (this, range) match {
+    case (_, EmptyRange())            => this
+    case (EmptyDiet(), _)             => this
+    case (DietNode(a, b, l, r), rng)  => {
+      if (discrete.compare(a, rng.start) == EQ &&
+        discrete.compare(b, rng.end) == EQ) {
+        merge(l, r)
+      } else if (Range(a, b).contains(rng)) {
+        if (discrete.compare(a, rng.start) == EQ) {
+          merge(l, DietNode(discrete.succ(rng.end), b, EmptyDiet(), r))
+        } else if (discrete.compare(b, rng.end) == EQ) {
+          merge(DietNode(a, discrete.pred(rng.start), l, EmptyDiet()), r)
+        } else {
+          merge(
+            DietNode(a, discrete.pred(rng.start), l, EmptyDiet()),
+            DietNode(discrete.succ(rng.end), b, EmptyDiet(), r)
+          )
+        }
+      } else {
+        (Range(a, b) - rng) match {
+          case (EmptyRange(), EmptyRange()) =>  merge(l - rng, r - rng)
+          case (m, EmptyRange())            =>  merge(DietNode(m.start, m.end, l, EmptyDiet()), r - rng)
+          case (EmptyRange(), n)            =>  merge(l - rng, DietNode(n.start, n.end, EmptyDiet(), r))
+        }
+      }
+    }
+  }
+
+  /**
     * remove x from the tree
     */
   def remove(x: A)(implicit discrete: Enum[A]): Diet[A] = this match {
@@ -182,35 +213,9 @@ sealed abstract class Diet[A] {
   def -(value: A)(implicit discrete: Enum[A]): Diet[A] = remove(value)
 
   /**
-   * remove a range from tree
-   */
-  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] =  (this, range) match {
-      case (_, EmptyRange())            => this
-      case (EmptyDiet(), _)             => this
-      case (DietNode(a, b, l, r), rng)  => {
-        if (discrete.compare(a, rng.start) == EQ &&
-            discrete.compare(b, rng.end) == EQ) {
-          merge(l, r)
-        } else if (Range(a, b).contains(rng)) {
-          if (discrete.compare(a, rng.start) == EQ) {
-            merge(l, DietNode(discrete.succ(rng.end), b, EmptyDiet(), r))
-          } else if (discrete.compare(b, rng.end) == EQ) {
-            merge(DietNode(a, discrete.pred(rng.start), l, EmptyDiet()), r)
-          } else {
-            merge(
-              DietNode(a, discrete.pred(rng.start), l, EmptyDiet()),
-              DietNode(discrete.succ(rng.end), b, EmptyDiet(), r)
-            )
-          }
-        } else {
-            (Range(a, b) - rng) match {
-            case (EmptyRange(), EmptyRange()) =>  merge(l - rng, r - rng)
-            case (m, EmptyRange())            =>  merge(DietNode(m.start, m.end, l, EmptyDiet()), r - rng)
-            case (EmptyRange(), n)            =>  merge(l - rng, DietNode(n.start, n.end, EmptyDiet(), r))
-          }
-        }
-      }
-  }
+    * Alias for removeRange
+    */
+  def -(range: Range[A])(implicit discrete: Enum[A]): Diet[A] = removeRange(range)
 
   /**
    * Returns the union of this Diet with another Diet.
