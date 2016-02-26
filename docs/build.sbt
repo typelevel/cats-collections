@@ -17,3 +17,23 @@ ghpagesNoJekyll := false
 includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.yml" | "*.md"
 
 git.remoteRepo := "git@github.com:stew/dogs.git"
+
+scalacOptions := Seq(
+  "-feature",
+  "-deprecation",
+  "-encoding", "utf8",
+  "-language:postfixOps",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-target:jvm-1.7",
+  "-unchecked",
+  "-Xcheckinit",
+  "-Xfuture",
+  "-Xlint",
+  "-Xfatal-warnings",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-value-discard",
+  "-Xfuture",
+  "-Yno-predef")
+
