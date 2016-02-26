@@ -6,63 +6,76 @@ package dogs
 package bench
 
 import dogs.Predef._
-import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
+import org.openjdk.jmh.annotations._
 
+import scala.collection.immutable.List
 import scala.util.Random
-import scalaz.Diev
+import scalaz.{IList, Diev}
 
-@State(Scope.Benchmark)
-class DietAddBench {
+@State(Scope.Thread)
+class BestCaseRangesList {
+  @Param(Array("10", "100", "1000", "10000"))
+  var n: Int = _
 
-  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
+  var scalazRanges: IndexedSeq[scala.Range] = _
+  var dogRanges: IndexedSeq[Range[Predef.Int]] = _
 
-  var items: Seq[Int] = Seq[Int]()
-  var ranges = Seq[scala.Range]()
-  var toSearch = Seq[Int]()
+  var scalazValues: IndexedSeq[Int] = _
+  var dogValues: IndexedSeq[Predef.Int] = _
+
+  def getBestCaseDataScalaz: scala.IndexedSeq[scala.Range] = {
+    for (x <- scala.Range(1, n)
+         if (x % 10 == 0)
+    ) yield scala.Range(x, x + 10)
+  }
+
+  def getBestCaseDataDogs: scala.IndexedSeq[Range[Predef.Int]] = {
+    for (x <- scala.Range(1, n)
+         if (x % 10 == 0)
+    ) yield Range(x, x + 10)
+  }
 
   @Setup
   def setup: Unit = {
-    items = DietDataGen.getWorstCaseData
+    scalazRanges = getBestCaseDataScalaz
+    dogRanges = getBestCaseDataDogs
 
-    toSearch = Random.shuffle(items)
-
-    ranges = DietDataGen.getBestCaseData
+    scalazValues = (1 to n)
+    dogValues = (1 to n)
   }
+}
+
+@State(Scope.Thread)
+class DietAddBench extends BestCaseRangesList {
+
+  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 
   @Benchmark
   def dogsDietAdd: Unit = {
     var diet = dogs.Diet.empty[Int]
 
-    items.foreach{ i=>
-      diet = diet + i
-    }
+    dogValues.foreach{ i => diet = diet + i }
   }
 
   @Benchmark
   def scalazDievAdd: Unit = {
     var diev = Diev.empty[Int]
 
-    items.foreach{i =>
-      diev = diev + i
-    }
+    scalazValues.foreach{ i => diev = diev + i }
   }
 
   @Benchmark
   def dogsDietAddRange: Unit = {
     var diet = dogs.Diet.empty[Int]
 
-    ranges.foreach {r =>
-      diet = diet +  Range(r.start, r.end)
-    }
+    dogRanges.foreach { r => diet = diet +  Range(r.start, r.end) }
   }
 
   @Benchmark
   def scalazDievAddRange: Unit = {
     var diev = scalaz.Diev.empty[Int]
 
-    ranges.foreach {r =>
-      diev = diev + (r.start, r.end)
-    }
+    scalazRanges.foreach { r => diev = diev + (r.start, r.end) }
   }
 }
 
