@@ -34,6 +34,32 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - intervals:				the list of all intervals (sets) in the tree. The sets are disjoint sets.
 - toList: 				list of sorted values in the tree
 
-## Generating Value in a Range of Type A
+## Example usage:
 
-In order to generate all values in `Diet` we need to generate the values of each [Range](range) that `Diet` stores.
+Asking to remove non existing range yields the same diet
+
+```tut
+import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+
+val d = Diet.empty[Int].addRange(Range(5, 20))
+
+val d1 = d.removeRange(Range(1, 4))
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```tut
+val d2 = d.removeRange(Range(5, 20))
+
+d2.isEmpty
+```
+
+Asking to remove a subrange splits the Diet
+
+```tut
+val d3 = d.removeRange(Range(10, 15)) 
+
+(10 to 15).forall { i => d3.contains(i) }
+(5 to 9).forall {i => d3.contains(i) }
+(16 to 20).forall {i => d3.contains(i) }
+```
