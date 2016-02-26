@@ -1,6 +1,0 @@
----
-layout: default
-title:  "Applicative"
-section: "typeclasses"
-source: "core/src/main/scala/Option.scala"
----

@@ -23,15 +23,16 @@ source: "core/src/main/scala/Option.scala"
 The preferred method of creating an option is by using the `some` and `none` "smart constructors` on the Option companion object:
 
 ```scala
-scala> import dogs._, Option._
+scala> import dogs._, dogs.Predef._, Option._
 import dogs._
+import dogs.Predef._
 import Option._
 
 scala> val x = some(1)
 x: dogs.Option[Int] = Some(1)
 
 scala> val y = none[Int]
-y: dogs.Option[Int] = None
+y: dogs.Option[dogs.Predef.Int] = None
 ```
 
 Note that in both cases, the type is inferred as Option[Int], and not
@@ -58,7 +59,7 @@ scala> val x = None()
 x: dogs.Option[Nothing] = None
 
 scala> val x: Option[Int] = None()
-x: dogs.Option[Int] = None
+x: dogs.Option[dogs.Predef.Int] = None
 ```
 
 ### Pattern Matching
@@ -99,19 +100,19 @@ send a Pull Request!:
 
 ```scala
 scala> val n = none[Int]
-n: dogs.Option[Int] = None
+n: dogs.Option[dogs.Predef.Int] = None
 
 scala> val s = some(1)
 s: dogs.Option[Int] = Some(1)
 
 scala> n getOrElse 2
-res1: Int = 2
+res1: dogs.Predef.Int = 2
 
 scala> s getOrElse 2
 res2: Int = 1
 
 scala> n orElse some(2)
-res3: dogs.Option[Int] = Some(2)
+res3: dogs.Option[dogs.Predef.Int] = Some(2)
 
 scala> s orElse some(2)
 res4: dogs.Option[Int] = Some(1)
