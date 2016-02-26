@@ -19,3 +19,74 @@ source: "core/src/main/scala/Range.scala"
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
 	- It basically calculates what is to the *left* of `other` that is in `Range` and what is to the *right* of `other` that is in `Range` (in both cases it does not include elements in `other`)
+	
+## Inverted Range
+
+Note that if x > y and we create the range [x, y] it will be treated as the **inverted** range [y, x].
+	
+## Using Range
+
+We can get the values from a range using **generate** or **toList** functions
+
+```tut
+ import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+
+val range = Range(1, 10)
+
+range.generate
+range.toList
+```
+
+We can get the inverted range using the **reverse** functions
+
+```tut
+range.reverse
+```
+
+Asking for **start** and **end** on a Range
+
+```tut
+range.start
+range.end
+```
+
+Asking for a value within Range
+
+```tut
+range.contains(5)
+```
+
+Asking for a value that is not within Range
+
+```tut
+range.contains(20)
+```
+
+Asking for the difference to another Range
+
+```tut
+val range = Range(10, 20)
+
+range - Range(5, 9)
+range - Range(30, 40)
+range - Range(15, 18)
+range - Range (5, 30)
+
+```
+
+Creating an **inverted** range
+
+```tut
+val range = Range(50, 20)
+
+range.toList
+```
+
+The reverse of a range should be its inverted range
+
+```tut
+val range = Range(20, 30)
+val other = Range(30, 20)
+
+range.reverse == other.toList
+```

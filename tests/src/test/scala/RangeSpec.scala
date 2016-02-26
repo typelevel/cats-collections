@@ -79,4 +79,25 @@ class RangeTest extends FlatSpec with Matchers {
     l3.generate.toScalaList should contain inOrderOnly(1, 2)
     r3 should be (Range.empty())
   }
+
+  it should "generate inverted range" in {
+    val range = Range(5, 1)
+
+    range.generate.toScalaList should contain inOrderOnly(5, 4, 3, 2, 1)
+  }
+
+  it should "map inverted range" in {
+    val range = Range(5, 1)
+
+    val result = range.map(i => i.toString)
+
+    result.toScalaList should contain inOrderOnly ("5", "4", "3", "2", "1")
+  }
+
+  it should "the reverse be equals to the reverted range" in {
+    val range = Range (20, 50)
+    val other = Range (50, 20)
+
+    range.reverse.toScalaList should be (other.toList.toScalaList)
+  }
 }
