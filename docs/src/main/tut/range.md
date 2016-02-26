@@ -15,7 +15,7 @@ source: "core/src/main/scala/Range.scala"
 - `contains(value)`: verifies `value` is within the `Range`.
 - `contains(range)`: verifies `range` is within the `Range`.
 - `generate`: returns all the values in the `Range [start, end]`
-- `reverse`: returns all the values in the `Range [end, start]`
+- `reverse`: returns the reverted range `Range [end, start]`
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
 	- It basically calculates what is to the *left* of `other` that is in `Range` and what is to the *right* of `other` that is in `Range` (in both cases it does not include elements in `other`)
@@ -88,5 +88,5 @@ The reverse of a range should be its inverted range
 val range = Range(20, 30)
 val other = Range(30, 20)
 
-range.reverse == other.toList
+range.reverse.toList == other.toList
 ```

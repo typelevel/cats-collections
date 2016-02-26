@@ -98,6 +98,6 @@ class RangeTest extends FlatSpec with Matchers {
     val range = Range (20, 50)
     val other = Range (50, 20)
 
-    range.reverse.toScalaList should be (other.toList.toScalaList)
+    range.reverse.toList.toScalaList should be (other.toList.toScalaList)
   }
 }

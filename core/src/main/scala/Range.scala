@@ -51,9 +51,9 @@ sealed class Range[A](val start: A, val end: A) {
   def generate(implicit discrete: Enum[A]): List[A] = gen (start, end, List.empty)(_=>{})
 
   /**
-    * Generates the elements of the range [end, start] base of the discrete operations
+    * Returns range [end, start]
     */
-  def reverse(implicit discrete: Enum[A]): List[A] = Range(end, start).generate
+  def reverse(implicit discrete: Enum[A]): Range[A] = Range(end, start)
 
   /**
     * Verify is x is in range [start, end]
