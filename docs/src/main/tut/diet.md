@@ -116,60 +116,7 @@ Asking to remove a subrange splits the Diet
 ```tut
 val d3 = d.removeRange(Range(10, 15)) 
 
-(10 to 15).forall { i => d3.contains(i) }
-(5 to 9).forall {i => d3.contains(i) }
-(16 to 20).forall {i => d3.contains(i) }
-```
-Asking to remove non existing range yields the same diet
-
-```tut
-import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
-
-val d = Diet.empty[Int].addRange(Range(5, 20))
-
-val d1 = d.removeRange(Range(1, 4))
-```
-
-Asking to remove a range yields a new Diet without the range
-
-```tut
-val d2 = d.removeRange(Range(5, 20))
-
-d2.isEmpty
-```
-
-Asking to remove a subrange splits the Diet
-
-```tut
-val d3 = d.removeRange(Range(10, 15)) 
-
-(10 to 15).forall { i => d3.contains(i) }
-(5 to 9).forall {i => d3.contains(i) }
-(16 to 20).forall {i => d3.contains(i) }
-```
-
-Asking to remove non existing range yields the same diet
-
-```tut
-val d = Diet.empty[Int].addRange(Range(5, 20))
-
-val d1 = d.removeRange(Range(1, 4))
-```
-
-Asking to remove a range yields a new Diet without the range
-
-```tut
-val d2 = d.removeRange(Range(5, 20))
-
-d2.isEmpty
-```
-
-Asking to remove a subrange splits the Diet
-
-```tut
-val d3 = d.removeRange(Range(10, 15)) 
-
-(10 to 15).forall { i => d3.contains(i) }
-(5 to 9).forall {i => d3.contains(i) }
-(16 to 20).forall {i => d3.contains(i) }
+scala.Range(10, 15).forall { i => d3.contains(i) }
+scala.Range(5, 9).forall {i => d3.contains(i) }
+scala.Range(16, 20).forall {i => d3.contains(i) }
 ```
