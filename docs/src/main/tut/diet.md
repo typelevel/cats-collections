@@ -23,6 +23,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - add:						add a value to the tree
 - addRange:				add the entire range to the tree
 - remove:					remove a value from the tree
+- removeRange:          remove a range from the tree
 - contains:				verify is a value is on the tree
 - containsRange:			verify that an interval is on the tree
 - (`-`) operator:		remove a range from the tree
@@ -91,4 +92,34 @@ val d1 = Diet.empty[Int] + (5 to 10)
 val d2 = Diet.empty[Int] + (7 to 12)
 (d1 & d2).intervals
 (d1 | d2).intervals
+```
+Asking to remove non existing range yields the same diet
+
+```tut
+import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+
+val d = Diet.empty[Int].addRange((5 to 20))
+
+val d1 = d.removeRange((1 to 4))
+d1.intervals
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```tut
+val d = Diet.empty[Int].addRange((5 to 20)).addRange(22 to 30)
+val d2 = d.removeRange((5 to 20))
+
+d2.intervals
+```
+
+Asking to remove a subrange splits the Diet
+
+```tut
+val d = Diet.empty[Int].addRange((5 to 20))
+val d3 = d.removeRange((10 to 15)) 
+
+(10 to 15).toList.forall { i => d3.contains(i) }
+(5 to 9).toList.forall {i => d3.contains(i) }
+(16 to 20).toList.forall {i => d3.contains(i) }
 ```
