@@ -272,7 +272,7 @@ sealed abstract class Diet[A] {
 
   def foldRight[B](s: B)(f: (B, A) => B)(implicit A: Enum[A]): B = this match {
     case EmptyDiet()          =>  s
-    case DietNode(a, b, l, r) =>  l.foldRight(Range(a, b).reverse.foldLeft(r.foldRight(s)(f))(f))(f)
+    case DietNode(a, b, l, r) =>  l.foldRight(Range(a, b).reverse.toList.foldLeft(r.foldRight(s)(f))(f))(f)
   }
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit A: Enum[A]): B = this match {

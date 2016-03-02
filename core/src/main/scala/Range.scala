@@ -51,15 +51,9 @@ sealed class Range[A](val start: A, val end: A) {
   def generate(implicit discrete: Enum[A]): List[A] = gen (start, end, List.empty)(_=>{})
 
   /**
-    * Generates the elements of the range [end, start] base of the discrete operations
+    * Returns range [end, start]
     */
-  def reverse(implicit discrete: Enum[A]): List[A] = {
-    gen(end, start, List.empty)(_=>{})(new Enum[A] {
-      override def pred(x: A): A = discrete.succ(x)
-      override def succ(x: A): A = discrete.pred(x)
-      override def apply(l: A, r: A): Ordering = discrete.apply(l, r)
-    })
-  }
+  def reverse(implicit discrete: Enum[A]): Range[A] = Range(end, start)
 
   /**
     * Verify is x is in range [start, end]
@@ -88,18 +82,31 @@ sealed class Range[A](val start: A, val end: A) {
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A]): B =
     generate.foldLeft(s)(f)
 
-  @tailrec private def genMap[B](a: A, b: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A]): List[B] = {
-    if (discrete.compare(a, b) == EQ) {
-      xs ::: Nel(f(a), List.empty)
-    } else if (discrete.adj(a, b)) {
+  private def genMap[B](x: A, y: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A]): List[B] = {
+    @tailrec def traverse(a: A, b: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A]): List[B] = {
 
-      xs ::: Nel(f(a), Nel(f(b), List.empty))
-    } else {
-      genMap(discrete.succ(a), b, xs ::: (Nel(f(a), List.empty)))(f)
+      if (discrete.compare(a, b) == EQ) {
+        xs ::: Nel(f(a), List.empty)
+      } else if (discrete.adj(a, b)) {
+        xs ::: Nel(f(a), Nel(f(b), List.empty))
+      } else {
+        traverse(discrete.succ(a), b, xs ::: (Nel(f(a), List.empty)))(f)
+      }
     }
+
+    if (discrete.lt(x, y))
+      traverse(x, y, xs)(f)
+    else
+      traverse(x, y, xs)(f)(new Enum[A] {
+        override def pred(x: A): A = discrete.succ(x)
+        override def succ(x: A): A = discrete.pred(x)
+        override def apply(l: A, r: A): Ordering = discrete.apply(l, r)
+      })
   }
 
-  @tailrec private def gen(a: A, b: A, xs: List[A])(f: A=>Unit)(implicit discrete: Enum[A]): List[A] = {
+  private def gen(x: A, y: A, xs: List[A])(f: A=>Unit)(implicit discrete: Enum[A]): List[A] = {
+  @tailrec def traverse(a: A, b: A, xs: List[A])(f: A => Unit)(implicit discrete: Enum[A]): List[A] = {
+
       if (discrete.compare(a, b) == EQ) {
         f(a)
         xs ::: Nel(a, List.empty)
@@ -110,15 +117,25 @@ sealed class Range[A](val start: A, val end: A) {
       }
       else {
         f(a)
-        gen(discrete.succ(a), b, xs ::: (Nel(a, List.empty)))(f)
+        traverse(discrete.succ(a), b, xs ::: (Nel(a, List.empty)))(f)
       }
     }
+
+    if (discrete.lt(x, y))
+      traverse(x, y, xs)(f)
+    else
+      traverse(x, y, xs)(f)(new Enum[A] {
+        override def pred(x: A): A = discrete.succ(x)
+        override def succ(x: A): A = discrete.pred(x)
+        override def apply(l: A, r: A): Ordering = discrete.apply(l, r)
+      })
+  }
 
   private [dogs] def isEmpty: Boolean = false
 
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
 
-  override def toString: String = s"Range($start,$end)"
+  override def toString: String = if (isEmpty) s"[]" else s"[$start,$end]"
 }
 
 object Range {
