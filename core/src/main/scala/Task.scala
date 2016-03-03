@@ -53,12 +53,12 @@ object Task {
    *  Construct a Task which will represent an asynchronous
    *  computation. The constructor takes a function which will be
    *  invoked when the Task is run, passing the task a callback (A =>
-   *  Unit) which will be called when the asyncrounous computation is
+   *  Unit) which will be called when the asynchronous computation is
    *  complete.
    */
   def async[A](cb: (A => Unit) => Unit): Task[A] = Async(cb)
 
-  // Here we already have an eval, so we just have to return it 
+  // Here we already have an eval, so we just have to return it
   private[dogs] final case class Value[A](eval: Eval[A]) extends Task[A] {
     override def map[B](f: A => B): Task[B] = Value(eval.map(f))
   }
