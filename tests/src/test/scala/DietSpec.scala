@@ -7,6 +7,9 @@ import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
+import dogs.std.intOrder
+import syntax.range._
+import dogs.Order._
 
 
 
