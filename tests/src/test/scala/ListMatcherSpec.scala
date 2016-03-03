@@ -7,8 +7,9 @@ package tests
 
 import dogs.Predef._
 import dogs.std.intOrder
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Matchers} 
 
+//forcing rebuild
 
 class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
 
