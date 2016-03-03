@@ -26,10 +26,11 @@ class ListMatcherSpec extends FlatSpec with Matchers with ListMatcher {
     val a = List(1, 3, 4, 5)
     val matcher = matchTo(a)
 
-    val result = matcher.apply(List(1, 2, 3, 4, 5))
+    val other = List(1, 2, 3, 4, 5)
+    val result = matcher.apply(other)
 
     result.matches should be (false)
-    result.failureMessage should be ("Lists don't match")
+    result.failureMessage should be (s"Lists don't match. Expected: $a Received: $other")
   }
 
   it should "match nested list" in {

@@ -43,12 +43,12 @@ trait ListMatcher {
     override def apply(left: List[A]): MatchResult = {
       val result = ListCmp[A].compare(left, aList) == Order.EQ
 
-      MatchResult(result, "Lists don't match", "")
+      MatchResult(result, s"Lists don't match. Expected: $aList Received: $left" , "")
     }
   }
 
   def matchTo[A](aList: List[A])(implicit eq: Order[A]) = new ListMatchTo[A](aList)
 
-  implicit val listCmp = ListCmp[Int]
+  implicit val listCmpInt = ListCmp[Int]
 }
 
