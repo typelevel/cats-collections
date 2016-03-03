@@ -12,8 +12,7 @@ import syntax.range._
 import dogs.Order._
 
 
-
-object DietSpec extends Properties("Diet") {
+object DietSpec extends Properties("Diet")  with DogMatcher {
 
   // we'll pick 8 ranges between 0 and 1000,
   // 5 which we'll add, then 3 which we'll remove
@@ -70,9 +69,7 @@ object DietSpec extends Properties("Diet") {
   )
 
   def fromRanges(r: Ranges): Diet[Int] = {
-    // hmm, can't remove a range, have to do it one by one
     def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] = d - Range(i._1, i._2)
-      //(i._1 to i._2).foldLeft(d)(_ remove _)
 
     val d = Diet.empty[Int].addRange(Range(r.a1._1, r.a1._2))
       .addRange(Range(r.a2._1, r.a2._2))
@@ -105,9 +102,17 @@ object DietSpec extends Properties("Diet") {
 
     (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
   }
+
+//  property("match") = forAll{ (r: Ranges) =>
+//    val d = fromRanges(r)
+//
+//    val matcher = matchTo(d)
+//
+//    matcher.apply(d).matches == true
+//  }
 }
 
-class DietTest extends FlatSpec with Matchers {
+class DietTest extends FlatSpec with Matchers with DogMatcher {
   import Diet._
   import dogs.Predef._
 
@@ -131,25 +136,26 @@ class DietTest extends FlatSpec with Matchers {
   it should "create a new node when add not adj item" in {
     val diet = Diet.empty[Int].add(5).add(3).add(7)
 
-    val result = diet.intervals.map(l => l.generate.toScalaList).toScalaList
+    val result = diet.intervals.map(l => l.generate)
 
-    result should contain inOrderOnly (scala.List(3), scala.List(5), scala.List(7))
+
+    result should matchTo(List[List[Int]](List(3), List(5), List(7)))
   }
 
   it should "join nodes when item adj to existing seq" in {
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
 
-    val result = diet.intervals.map(l => l.generate.toScalaList).toScalaList
+    val result = diet.intervals.map(l => l.generate)
 
-    result should contain inOrderOnly (scala.List(1, 2, 3), scala.List(5, 6), scala.List(8))
+    result should matchTo(List[List[Int]](List(1, 2, 3), List(5, 6), List(8)))
   }
 
   it should "be always sorted" in {
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
 
-    val sorted = diet.toList().toScalaList
+    val sorted = diet.toList()
 
-    sorted should contain inOrderOnly (1, 2, 3, 5, 6, 8)
+    sorted should matchTo(List(1, 2, 3, 5, 6, 8))
   }
 
   it should "add disjoint range" in {
@@ -157,10 +163,9 @@ class DietTest extends FlatSpec with Matchers {
 
     val result = diet.addRange(Range(0, 100))
 
-    val other = result.intervals.map(l => l.generate.toScalaList).toScalaList
+    val other = result.intervals.map(l => l.generate)
 
-
-    other should contain ((scala.Range(0, 101)).toList)
+    other should matchTo(List(Range(0, 100).toList))
   }
 
   it should "join disjoint range" in {
@@ -168,7 +173,7 @@ class DietTest extends FlatSpec with Matchers {
 
     val other = diet + 3 + 4
 
-    other.toList.toScalaList should contain inOrderOnly (1, 2, 3, 4, 5, 6, 7)
+    other.toList should matchTo(List(1, 2, 3, 4, 5, 6, 7))
   }
 
   it should "contain items from range" in {
@@ -207,9 +212,9 @@ class DietTest extends FlatSpec with Matchers {
   it should "map" in {
     val diet = Diet.empty[Int] + 1 +2 + 8 + 5
 
-    val other = diet.map(x => x + 2).intervals.map(x => x.generate.toScalaList).toScalaList
+    val other = diet.map(x => x + 2).intervals.map(x => x.generate)
 
-    other should contain inOrderOnly(scala.List(3,4), scala.List(7), scala.List(10))
+    other should matchTo(List[List[Int]](List(3,4), List(7), List(10)))
   }
 
   it should "foldLeft" in {
@@ -234,7 +239,9 @@ class DietTest extends FlatSpec with Matchers {
   }
 }
 
-class DietTestJoin extends FlatSpec with Matchers {
+class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
+
+  import dogs.Predef._
 
   "diet" should "return the same diet when join to empty range" in {
     val diet = Diet.empty[Int] + 20 + 30
@@ -261,25 +268,26 @@ class DietTestJoin extends FlatSpec with Matchers {
 
     val other = diet.addRange(range)
 
-    other.intervals.toScalaList(0).generate.toScalaList should contain inOrderOnly (15, 16,17,18,19,20,21)
+    other.intervals.toScalaList(0).generate should matchTo(List(15, 16, 17, 18, 19, 20, 21))
   }
 
   it should "create disjoint range to the left" in {
     val diet = Diet.empty[Int] + 20 + 21
     val range = Range(15, 18)
 
-    val sets = diet.addRange(range).intervals.map(r=>r.generate.toScalaList).toScalaList
+    val sets = diet.addRange(range).intervals.map(r=>r.generate).toScalaList
 
-    sets(0) should contain inOrderOnly(15,16,17,18)
-    sets(1) should contain inOrderOnly(20, 21)
+    sets(0) should matchTo(List(15, 16, 17, 18))
+    sets(1) should matchTo(List(20, 21))
   }
 
   it should "increase range to the right" in {
     val diet = Diet.empty[Int] + 20 + 22
     val range = Range(21, 30)
 
-    val other = diet.addRange(range).intervals.map(r => r.generate.toScalaList).toScalaList
+    val other = diet.addRange(range).intervals.map(r => r.generate)
 
+    other should matchTo(List(Range(20, 30).toList))
   }
 
   it should "join to an empty diet" in {
@@ -295,19 +303,13 @@ class DietTestJoin extends FlatSpec with Matchers {
 
     val other = diet ++ (Diet.empty[Int] + Range(25, 35) + Range(5, 10) + Range(15, 22))
 
-    val sets = other.intervals.map(r => r.generate.toScalaList).toScalaList
+    val sets = other.intervals.map(r => r.generate)
 
-    sets should contain inOrderOnly(
-      scala.Range(5,11).toList,
-      scala.Range(15, 36).toList
-    )
+    sets should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
 
     val otherSets = diet | other
 
-    otherSets.intervals.map(r => r.generate.toScalaList).toScalaList should contain inOrderOnly(
-      scala.Range(5,11).toList,
-      scala.Range(15, 36).toList
-      )
+    otherSets.intervals.map(r => r.generate) should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
   }
 
   it should "interset with another diet" in {
@@ -317,14 +319,14 @@ class DietTestJoin extends FlatSpec with Matchers {
 
     (diet & diet) should be(diet)
 
-    (diet & (Diet.empty[Int] + Range(15, 25) + Range(28, 32))).toList.toScalaList should
-      contain inOrderOnly (20, 21, 22, 23, 24, 25, 28, 29, 30)
+    (diet & (Diet.empty[Int] + Range(15, 25) + Range(28, 32))).toList should
+      matchTo(List (20, 21, 22, 23, 24, 25, 28, 29, 30))
 
-    (diet & (Diet.empty[Int] + Range(10, 15))).toList.toScalaList.length should be(0)
+    (diet & (Diet.empty[Int] + Range(10, 15))).toList should matchTo(El[Int])
   }
 }
 
-class DietTestRemove extends FlatSpec with Matchers {
+class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
   import Diet._
 
   "diet" should "remove empty range" in {
@@ -341,7 +343,7 @@ class DietTestRemove extends FlatSpec with Matchers {
   it should "remove inner range" in {
     val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
 
-    diet.toList().toScalaList should contain inOrderOnly(20, 21, 28, 29, 30)
+    diet.toList() should matchTo(List(20, 21, 28, 29, 30))
   }
 
   it should "remove side ranges" in {
@@ -356,7 +358,7 @@ class DietTestRemove extends FlatSpec with Matchers {
       - Range(15, 18)
       - Range(25, 60))
 
-    diet.toList().toScalaList should contain inOrderOnly (9, 10, 12, 13, 14, 20, 21, 23, 24)
+    diet.toList() should matchTo(List(9, 10, 12, 13, 14, 20, 21, 23, 24))
   }
 }
 

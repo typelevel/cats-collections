@@ -43,3 +43,12 @@ Here is a list of the current structures present in dogs:
 ## Predef
 
 dogs offers an alternate Predef 
+
+## Testing
+
+In some circumstances, we want to compare two List[A] without converting
+the list to an scala.List. We have defined a Matcher to be use along
+the ScalaTest matchers. 
+
+- [ListMatcher](tut/listMatcher) - A ScalaTest Matcher for List[A] 
+comparison
