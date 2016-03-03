@@ -385,6 +385,8 @@ trait ListInstances {
           this.compare(ta, tb)
         else
           cmp
+    }
+  }
 
   implicit def listMonoid[A]: Monoid[List[A]] = new Monoid[List[A]] {
     override val empty: List[A] = List.empty
@@ -462,10 +464,8 @@ trait ListInstances {
       case (_, El()) => false
       case (Nel(ha,ta), Nel(hb,tb)) =>
         if(A.eqv(ha, hb)) eqv(ta,tb) else false
-======= end
     }
   }
-
 }
 
 final private[dogs] class ListBuilder[A] {
