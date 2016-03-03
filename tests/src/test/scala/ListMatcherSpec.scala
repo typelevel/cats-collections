@@ -10,7 +10,7 @@ import dogs.std.intOrder
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class ListMatcherSpec extends FlatSpec with Matchers with ListMatcher {
+class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
 
   "ListMatchWithScalaList" should "match lists" in {
 
@@ -41,5 +41,35 @@ class ListMatcherSpec extends FlatSpec with Matchers with ListMatcher {
     val result = matcher.apply(List(List(1), List(2)))
 
     result.matches should be (true)
+  }
+}
+
+class DietMatcherSpec extends FlatSpec with Matchers with DogMatcher {
+
+  "Diet" should "match to another empty diet" in {
+    val diet = Diet.empty[Int]
+    val matcher = matchTo(diet)
+
+    val result = matcher.apply(Diet.empty[Int])
+
+    result.matches should be (true)
+  }
+
+  it should "match equal diets" in {
+    val a = Diet.empty[Int] + 2 + 5 + 7
+    val matcher = matchTo(a)
+
+    val result = matcher.apply(Diet.empty[Int] + 2 + 5 + 7)
+
+    result.matches should be (true)
+  }
+
+  it should "not match different diets" in {
+    val a = Diet.empty[Int] + 2 + 5 + 7
+    val matcher = matchTo(a)
+
+    val result = matcher.apply(Diet.empty[Int] + 1 + 2 + 5 + 7)
+
+    result.matches should be (false)
   }
 }

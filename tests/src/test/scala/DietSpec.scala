@@ -12,8 +12,7 @@ import syntax.range._
 import dogs.Order._
 
 
-
-object DietSpec extends Properties("Diet") {
+object DietSpec extends Properties("Diet")  with DogMatcher {
 
   // we'll pick 8 ranges between 0 and 1000,
   // 5 which we'll add, then 3 which we'll remove
@@ -70,9 +69,7 @@ object DietSpec extends Properties("Diet") {
   )
 
   def fromRanges(r: Ranges): Diet[Int] = {
-    // hmm, can't remove a range, have to do it one by one
     def remove(d: Diet[Int], i: (Int,Int)): Diet[Int] = d - Range(i._1, i._2)
-      //(i._1 to i._2).foldLeft(d)(_ remove _)
 
     val d = Diet.empty[Int].addRange(Range(r.a1._1, r.a1._2))
       .addRange(Range(r.a2._1, r.a2._2))
@@ -105,10 +102,17 @@ object DietSpec extends Properties("Diet") {
 
     (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
   }
+
+  property("match") = forAll{ (r: Ranges) =>
+    val d = fromRanges(r)
+
+    val matcher = matchTo(d)
+
+    matcher.apply(d).matches == true
+  }
 }
 
-
-class DietTest extends FlatSpec with Matchers with ListMatcher {
+class DietTest extends FlatSpec with Matchers with DogMatcher {
   import Diet._
   import dogs.Predef._
 
@@ -134,15 +138,16 @@ class DietTest extends FlatSpec with Matchers with ListMatcher {
 
     val result = diet.intervals.map(l => l.generate)
 
+
     result should matchTo(List[List[Int]](List(3), List(5), List(7)))
   }
 
   it should "join nodes when item adj to existing seq" in {
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
 
-    val result = diet.intervals.map(l => l.generate.toScalaList).toScalaList
+    val result = diet.intervals.map(l => l.generate)
 
-    result should contain inOrderOnly (scala.List(1, 2, 3), scala.List(5, 6), scala.List(8))
+    result should matchTo(List[List[Int]](List(1, 2, 3), List(5, 6), List(8)))
   }
 
   it should "be always sorted" in {
@@ -234,7 +239,7 @@ class DietTest extends FlatSpec with Matchers with ListMatcher {
   }
 }
 
-class DietTestJoin extends FlatSpec with Matchers with ListMatcher {
+class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
 
   import dogs.Predef._
 
@@ -321,7 +326,7 @@ class DietTestJoin extends FlatSpec with Matchers with ListMatcher {
   }
 }
 
-class DietTestRemove extends FlatSpec with Matchers with ListMatcher {
+class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
   import Diet._
 
   "diet" should "remove empty range" in {
