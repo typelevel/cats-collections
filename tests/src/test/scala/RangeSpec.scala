@@ -1,18 +1,11 @@
 package dogs
 package tests
 
-import dogs.Order.Ordering
 import dogs.Predef._
-import dogs.std._
 import org.scalatest.{FlatSpec, Matchers}
+import algebra.std.int._
 
 class RangeTest extends FlatSpec with Matchers {
-  implicit object EnumInt extends Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-    override def apply(l: Int, r: Int): Ordering = intOrder(l,r)
-  }
-
   "a range" should "contain items within [start, end]" in {
     val range = Range(1, 100)
 

@@ -6,11 +6,10 @@ package dogs
 package bench
 
 import dogs.Predef._
-import org.openjdk.jmh.annotations._
-
-import scala.collection.immutable.List
+import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.util.Random
 import scalaz.{IList, Diev}
+import algebra.std.int._
 
 @State(Scope.Thread)
 class BestCaseRangesList {
@@ -72,7 +71,3 @@ class DietAddBench extends BestCaseRangesList {
     scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + (r.start, r.end))
   }
 }
-
-
-
-

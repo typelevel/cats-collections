@@ -9,6 +9,7 @@ import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
 
 import scala.util.Random
 import scalaz.Diev
+import algebra.std.int._
 
 @State(Scope.Benchmark)
 class DietBenchSearch {

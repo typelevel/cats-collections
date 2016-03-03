@@ -5,6 +5,8 @@ import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
 import dogs.syntax.birds._
+import algebra.{Order,Eq}
+import cats.Eval, cats.Eval._
 
 /**
  * Immutable, singly-linked list implementation.
@@ -299,14 +301,14 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     tail.foldLeft(head)(f)
 
   override final def :::(as: List[A]): Nel[A] =
-    as.foldr(Now(this))((a, lbs) => lbs.map(a :: _)).value
+    as.foldr(now(this))((a, lbs) => lbs.map(a :: _)).value
 
   final def :::(as: Nel[A]): Nel[A] =
-    as.foldr(Now(this))((a, lbs) => lbs.map(a :: _)).value
+    as.foldr(now(this))((a, lbs) => lbs.map(a :: _)).value
 
   override final def map[B](f: A => B): Nel[B] = {
     val h = f(head)
-    val t = tail.foldr(Now(List.empty[B])) { (a, lbs) =>
+    val t = tail.foldr(now(List.empty[B])) { (a, lbs) =>
       lbs.map(f(a) :: _)
     }.value
     Nel(h, t)
@@ -371,15 +373,24 @@ object List extends ListInstances {
 trait ListInstances {
   import List._
 
-  implicit def listEq[A](implicit A: Eq[A]): Eq[List[A]] = new Eq[List[A]] {
-    def eqv(a: List[A], b: List[A]) = (a,b) match {
-      case (El(), El()) => true
-      case (El(), _) => false
-      case (_, El()) => false
-      case (Nel(ha,ta), Nel(hb,tb)) =>
-        if(A.eqv(ha, hb)) eqv(ta,tb) else false
+  /**
+    * Compares two list item by item
+   */
+  implicit def listCmp[A](implicit A: Order[A]): Order[List[A]] = new Order[List[A]] {
+    override def compare(a: List[A], b: List[A]): Int = (a,b) match {
+      case (El(), El()) =>  0
+      case (El(), _)    =>  -1
+      case (_, El())    =>  1
+
+      case (Nel(ha, ta), Nel(hb, tb)) =>
+        val cmp = A.compare(ha, hb)
+        if(cmp == 0)
+          this.compare(ta, tb)
+        else
+          cmp
     }
   }
+
 }
 
 final private[dogs] class ListBuilder[A] {

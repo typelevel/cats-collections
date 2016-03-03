@@ -1,7 +1,6 @@
 package dogs
 
 import dogs.Predef._
-import dogs.std.intOrder
 import dogs.tests.arbitrary._
 import dogs.syntax.birds._
 import org.scalacheck._
@@ -9,6 +8,7 @@ import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
 import scala.Array
 import scala.Predef.intArrayOps
+import algebra.std.int._
 
 object SetSpec extends Properties("Set") with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}

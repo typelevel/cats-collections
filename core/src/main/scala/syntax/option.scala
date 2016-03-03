@@ -2,6 +2,7 @@ package dogs
 package syntax
 
 import Predef._
+import cats.data.{Validated,ValidatedNel,Xor}
 
 trait OptionSyntax {
   import Option._

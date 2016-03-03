@@ -4,9 +4,10 @@ package tests.arbitrary
 import Predef._
 import org.scalacheck.{Gen, Arbitrary}
 import Arbitrary.arbitrary
+import cats.Eval
 
 trait ArbitraryStreaming {
-  import tests.arbitrary.eval._
+  import cats.laws.discipline.arbitrary._
 
   def streamingGen[A:Arbitrary](maxDepth: Int): Gen[Streaming[A]] =
     if (maxDepth <= 1)

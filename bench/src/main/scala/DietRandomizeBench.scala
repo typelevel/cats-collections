@@ -8,7 +8,7 @@ package bench
 import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
 import scala.util.Random
 import scalaz.Diev
-
+import algebra.std.int._
 
 /**
   * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark

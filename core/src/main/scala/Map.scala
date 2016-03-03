@@ -1,6 +1,7 @@
 package dogs
 
 import Predef._
+import algebra.Order
 
 /**
  * A tree based immutable Map.
@@ -63,7 +64,7 @@ class Map[K,V](val set: Set[(K,V)]) {
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
     set.dothestupidthingbecausesetisnotamapdotbiz(_._1,  key)
 
-  private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
+  private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
 }
 
 object Map {

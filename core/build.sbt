@@ -1,6 +1,7 @@
 name := "dogs-core"
 
 libraryDependencies ++= Seq(
+  "org.typelevel"                  %%% "cats-core"  % "0.4.1",
   "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",
   "org.typelevel"                  %%% "machinist"  % "0.4.1",
   "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",

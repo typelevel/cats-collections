@@ -23,14 +23,6 @@ object BedazzleSpec extends Properties("Bedazzle") {
     List(1,2,3).foldRight(nil[Int])(_ :: _).sum == 6
   }
 
-  property("left, left, left right left") = secure {
-    import syntax.xor._
-    val x: Xor[Int, String] = 1.left
-    val y: Xor[String, Int] = 1.right
-
-    x.swap == y
-  }
-
   property("kestrel aka unsafeTap") = secure {
     import syntax.birds._
     

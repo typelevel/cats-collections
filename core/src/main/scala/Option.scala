@@ -2,6 +2,7 @@ package dogs
 
 import Predef._
 import scala.util.control.NonFatal
+import cats.data.{Validated,ValidatedNel,Xor}
 
 /** An optional value
  *

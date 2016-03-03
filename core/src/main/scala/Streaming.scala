@@ -5,6 +5,9 @@ import scala.reflect.ClassTag
 import scala.annotation.tailrec
 import scala.collection.mutable
 import Option._
+import cats.data.Ior
+import algebra.Eq
+import cats.Eval, cats.Eval._
 
 /**
  * `Streaming[A]` represents a stream of values. A stream can be
@@ -18,12 +21,12 @@ import Option._
  *     instructions for producing the next step.
  *
  * Streams are not necessarily lazy: they use `Eval[Streaming[A]]` to
- * represent a tail that may (or may not be) lazy. If `Now[A]` is used
+ * represent a tail that may (or may not be) lazy. If `now[A]` is used
  * for each tail, then `Streaming[A]` will behave similarly to
  * `List[A]`. If `Later[A]` is used for each tail, then `Streaming[A]`
  * will behave similarly to `scala.Stream[A]` (i.e. it will
  * lazily-compute the tail, and will memoize the result to improve the
- * performance of repeated traversals). If `Always[A]` is used for
+ * performance of repeated traversals). If `always[A]` is used for
  * each tail, the result will be a lazy stream which does not memoize
  * results (saving space at the cost of potentially-repeated
  * calculations).
@@ -32,7 +35,7 @@ import Option._
  * worth noting some key differences between the two types:
  *
  *  1. When the entire stream is known ahead of time, `Streaming[A]`
- *     can represent it more efficiencly, using `Now[A]`, rather than
+ *     can represent it more efficiencly, using `now[A]`, rather than
  *     allocating a list of closures.
  *
  *  2. `Streaming[A]` does not memoize by default. This protects
@@ -423,14 +426,14 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
           val k = i - j
           if (j >= xs.length || k >= ys.length) build(j + 1) else {
             val tpl = (xs(j).asInstanceOf[A], ys(k).asInstanceOf[B])
-            Cons(tpl, Always(build(j + 1)))
+            Cons(tpl, always(build(j + 1)))
           }
         }
       if (i > xs.length + ys.length - 2) Empty() else {
-        build(0) ++ Always(loop(i + 1))
+        build(0) ++ always(loop(i + 1))
       }
     }
-    Wait(Always(loop(0)))
+    Wait(always(loop(0)))
   }
 
   /**
@@ -473,7 +476,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       case Empty() => Empty()
       case Wait(lt) => Wait(lt.map(_.take(n)))
       case Cons(a, lt) =>
-        Cons(a, if (n == 1) Now(Empty()) else lt.map(_.take(n - 1)))
+        Cons(a, if (n == 1) now(Empty()) else lt.map(_.take(n - 1)))
     }
 
   /**
@@ -545,7 +548,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     this match {
       case Cons(a, lt) => Cons(this, lt.map(_.tails))
       case Wait(lt) => Wait(lt.map(_.tails))
-      case Empty() => Cons(this, Always(Streaming.empty))
+      case Empty() => Cons(this, always(Streaming.empty))
     }
 
 /*
@@ -561,7 +564,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
         { if (s == null) { s = ls.value; ls = null }; s.nonEmpty }
 
       val emptyCase: Eval[A] =
-        Always(throw new NoSuchElementException("next on empty iterator"))
+        always(throw new NoSuchElementException("next on empty iterator"))
       val consCase: (A, Eval[Streaming[A]]) => A =
         (a, lt) => { ls = lt; s = null; a }
 
@@ -685,9 +688,9 @@ object Streaming extends StreamingInstances {
    *  - Wait(tail): a deferred stream.
    *
    * Cons represents a lazy, possibly infinite stream of values.
-   * Eval[_] is used to represent possible laziness (via Now, Later,
-   * and Always). The head of `Cons` is eager -- a lazy head can be
-   * represented using `Wait(Always(...))` or `Wait(Later(...))`.
+   * Eval[_] is used to represent possible laziness (via now, later,
+   * and always). The head of `Cons` is eager -- a lazy head can be
+   * represented using `Wait(always(...))` or `Wait(Later(...))`.
    */
   final case class Empty[A]() extends Streaming[A]
   final case class Wait[A](next: Eval[Streaming[A]]) extends Streaming[A]
@@ -708,13 +711,13 @@ object Streaming extends StreamingInstances {
    * Create a stream consisting of a single value.
    */
   def apply[A](a: A): Streaming[A] =
-    Cons(a, Now(Empty()))
+    Cons(a, now(Empty()))
 
   /**
    * Prepend a value to a stream.
    */
   def cons[A](a: A, s: Streaming[A]): Streaming[A] =
-    Cons(a, Now(s))
+    Cons(a, now(s))
 
   /**
    * Prepend a value to an Eval[Streaming[A]].
@@ -736,7 +739,7 @@ object Streaming extends StreamingInstances {
    * that creation, allowing the head (if any) to be lazy.
    */
   def defer[A](s: => Streaming[A]): Streaming[A] =
-    wait(Always(s))
+    wait(always(s))
 
   /**
    * Create a stream from an `Eval[Streaming[A]]` value.
@@ -754,7 +757,7 @@ object Streaming extends StreamingInstances {
    */
   def fromVector[A](as: scala.Vector[A]): Streaming[A] = {
     def loop(s: Streaming[A], i: Int): Streaming[A] =
-      if (i < 0) s else loop(Cons(as(i), Now(s)), i - 1)
+      if (i < 0) s else loop(Cons(as(i), now(s)), i - 1)
     loop(Empty(), as.length - 1)
   }
 
@@ -767,7 +770,7 @@ object Streaming extends StreamingInstances {
     def loop(s: Streaming[A], ras: List[A]): Streaming[A] =
       ras match {
         case El() => s
-        case Nel(a, rt) => loop(Cons(a, Now(s)), rt)
+        case Nel(a, rt) => loop(Cons(a, now(s)), rt)
       }
     loop(Empty(), as.reverse)
   }
@@ -804,7 +807,7 @@ object Streaming extends StreamingInstances {
    * Create a self-referential stream.
    */
   def knot[A](f: Eval[Streaming[A]] => Streaming[A], memo: Boolean = false): Streaming[A] = {
-    lazy val s: Eval[Streaming[A]] = if (memo) Later(f(s)) else Always(f(s))
+    lazy val s: Eval[Streaming[A]] = if (memo) later(f(s)) else always(f(s))
     s.value
   }
 
@@ -829,7 +832,7 @@ object Streaming extends StreamingInstances {
    * tranformation function.
    */
   def infinite[A](a: A)(f: A => A): Streaming[A] =
-    Cons(a, Always(infinite(f(a))(f)))
+    Cons(a, always(infinite(f(a))(f)))
 
   /**
    * Stream of integers starting at n.
@@ -842,7 +845,7 @@ object Streaming extends StreamingInstances {
    * with `end` (i.e. inclusive).
    */
   def interval(start: Int, end: Int): Streaming[Int] =
-    if (start > end) Empty() else Cons(start, Always(interval(start + 1, end)))
+    if (start > end) Empty() else Cons(start, always(interval(start + 1, end)))
 
   /**
    * Produce a stream given an "unfolding" function.
@@ -853,16 +856,15 @@ object Streaming extends StreamingInstances {
   def unfold[A](o: Option[A])(f: A => Option[A]): Streaming[A] =
     o match {
       case None() => Empty()
-      case Some(a) => Cons(a, Always(unfold(f(a))(f)))
+      case Some(a) => Cons(a, always(unfold(f(a))(f)))
     }
 }
 
 trait StreamingInstances {
-  import Eq.ops._
-  implicit def streamEq[A: Eq]: Eq[Streaming[A]] =
+  implicit def streamEq[A: Eq](implicit A: Eq[A]): Eq[Streaming[A]] =
     new Eq[Streaming[A]] {
       def eqv(x: Streaming[A], y: Streaming[A]): Boolean =
-        (x izipMap y)(_ === _, _ => false, _ => false)
+        (x izipMap y)(A.eqv, _ => false, _ => false)
           .forall(_ == true)
     }
 }

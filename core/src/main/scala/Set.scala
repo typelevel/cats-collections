@@ -1,8 +1,8 @@
 package dogs
 
 import Predef._
-import dogs.Order.{GT, EQ, LT, Ordering}
-import dogs.std.intOrder
+import algebra.Order
+import algebra.std.int._
 import scala.annotation.tailrec
 import scala.math
 
@@ -111,9 +111,9 @@ sealed abstract class Set[A] {
     case BTNil() => false
 
     case Branch(a, l, r) => order.compare(x, a) match {
-      case LT => l.contains(x)
-      case EQ => true
-      case GT => r.contains(x)
+      case 0 => true
+      case o if o < 0 => l.contains(x)
+      case _ => r.contains(x)
     }
   }
 
@@ -125,9 +125,9 @@ sealed abstract class Set[A] {
     (this match {
       case BTNil() =>  Branch(x, Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
-        case LT => Branch(a, l.add(x), r)
-        case EQ => Branch(x, l, r)
-        case GT => Branch(a, l, r.add(x))
+        case 0 => Branch(x, l, r)
+        case o if o < 0 => Branch(a, l.add(x), r)
+        case _ => Branch(a, l, r.add(x))
       }
     }).balance
 
@@ -147,12 +147,12 @@ sealed abstract class Set[A] {
       case BTNil() => Set.empty
       case Branch(a, l, r) =>
         order.compare(x, a) match {
-          case LT => Branch(a, l.remove(x), r).balance
-          case GT => Branch(a, l, r.remove(x)).balance
-          case EQ => r.min match {
+          case 0 => r.min match {
             case None() => l
             case Some(v) => Branch(v,l,r.remove(v)).balance
           }
+          case o if o < 0 => Branch(a, l.remove(x), r).balance
+          case _ => Branch(a, l, r.remove(x)).balance
         }
     }
 
@@ -162,13 +162,13 @@ sealed abstract class Set[A] {
       case BTNil() => Set.empty
       case Branch(a, l, r) =>
         B.compare(x, f(a)) match {
-          case LT => Branch(a, l.removef(x, f), r).balance
-          case GT => Branch(a, l, r.removef(x, f)).balance
-          case EQ => r.min match {
+          case 0 => r.min match {
             case None() => l
             case Some(v) =>
               Branch(v,l,r.removef(f(v), f)).balance
           }
+          case o if o < 0 => Branch(a, l.removef(x, f), r).balance
+          case _ => Branch(a, l, r.removef(x, f)).balance
         }
     }
 
@@ -195,10 +195,10 @@ sealed abstract class Set[A] {
     def _intersect(small: Set[A], large: Set[A]): Set[A] =
       small.foldLeft[Set[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
-    intOrder(this.size, another.size) match {
-      case LT => _intersect(this, another)
-      case _ => _intersect(another,this)
-    }
+    if(Order[Int].compare(this.size, another.size) < 0)
+      _intersect(this, another)
+    else 
+      _intersect(another,this)
   }
 
   /**
@@ -259,9 +259,9 @@ sealed abstract class Set[A] {
       case BTNil() => None()
       case Branch(v,l,r) =>
         B.compare(b, f(v)) match {
-          case EQ => Some(v)
-          case LT => go(l)
-          case GT => go(r)
+          case 0 => Some(v)
+          case x if x < 0 => go(l)
+          case _ => go(r)
         }
     }
     go(this)
@@ -300,34 +300,34 @@ object Set {
 
       // Determine the direction that the tree should be rotated,
       // given the allowed amount of imbalance.
-      // Returns LT when a left rotation is called for.
-      // Returns GT when a right rotation is called for.
-      // Returns EQ when the tree is withing the allowance.
-      def rotation(l: Int, r: Int, allow: Int): Ordering =
-        if(l - r > allow ) GT
-        else if(r - l > allow) LT
-        else EQ
+      // Returns -1 when a left rotation is called for.
+      // Returns 0 when a right rotation is called for.
+      // Returns 1 when the tree is withing the allowance.
+      def rotation(l: Int, r: Int, allow: Int): Int =
+        if(l - r > allow ) 1
+        else if(r - l > allow) -1
+        else 0
 
       rotation(left.height, right.height, 1) match {
-        case EQ => this
+        case 0 => this
 
-        case GT => left match {
+        case x if x > 0 => left match {
           case BTNil() => this
           case Branch(lv,ll,lr) => rotation(ll.height, lr.height, 0) match {
-            case LT =>
+            case x if x < 0 =>
               val Branch(lrv,lrl,lrr) = lr
               Branch(lrv,Branch(lv, ll, lrl), Branch(value, lrr, right))
             case _ => Branch(lv, ll, Branch(value, lr, right))
           }
         }
 
-        case LT => right match {
+        case _ => right match {
           case BTNil() => this
-          case Branch(rv,rl,rr) => rotation(rl.height, rr.height, 0) match {
-            case GT =>
-              val Branch(rlv,rll,rlr) = rl
-              Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
-            case _ => Branch(rv, Branch(value, left, rl), rr)
+          case Branch(rv,rl,rr) => if(rotation(rl.height, rr.height, 0) > 0) {
+            val Branch(rlv,rll,rlr) = rl
+            Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
+          } else {
+            Branch(rv, Branch(value, left, rl), rr)
           }
         }
       }

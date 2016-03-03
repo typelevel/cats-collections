@@ -2,14 +2,14 @@ package dogs
 package tests
 
 import Predef._
-import dogs.std.{intEq,intOrder}
 import dogs.tests.arbitrary._
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
-
 import org.typelevel.discipline.scalatest.Discipline
 import org.scalacheck._
 import org.scalacheck.Prop.forAll
+import algebra.Eq
+import algebra.std.int._
 
 object ListSpec extends Properties("List") with ArbitraryList {
 

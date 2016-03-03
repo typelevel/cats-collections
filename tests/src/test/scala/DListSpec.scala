@@ -3,9 +3,10 @@ package tests
 
 import Predef._
 import syntax.birds._
-import dogs.std.intEq
 import dogs.tests.arbitrary._
-
+import algebra.Eq
+import algebra.std.int._
+import cats.Eval
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 

@@ -3,7 +3,7 @@ package dogs
 import Predef._
 import List._
 import Option._
-import Eval._
+import cats.Eval, cats.Eval._
 
 /**
  * A "difference list" - A List like structure with O(1) appends.

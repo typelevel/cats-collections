@@ -1,15 +1,13 @@
 package dogs
 package tests
 
-import dogs.Order._
 import dogs.Predef._
-import dogs.std.intOrder
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
-import dogs.std.intOrder
 import syntax.range._
-import dogs.Order._
+import algebra.Order
+import algebra.std.int._
 
 
 object DietSpec extends Properties("Diet")  with DogMatcher {
@@ -35,10 +33,10 @@ object DietSpec extends Properties("Diet")  with DogMatcher {
   }
 
   def orderedTuple(x: Int, y: Int): (Int,Int) =
-    intOrder(x,y) match {
-      case GT => y -> x
-      case _ => x -> y
-    }
+    if(Order[Int].compare(x,y) > 0)
+      y -> x
+    else 
+      x -> y
 
   implicit val arbNine: Arbitrary[Ranges] = Arbitrary(
     for {

@@ -3,6 +3,7 @@ import ScoverageSbtPlugin.ScoverageKeys._
 name := "dogs-tests"
 
 libraryDependencies ++= Seq (
+  "org.typelevel"  %%% "cats-laws"  % "0.4.1",
   "org.scalacheck" %%% "scalacheck" % "1.12.4",
   "org.scalatest"  %%% "scalatest"  % "3.0.0-M7" % "test",
   "org.typelevel"  %%% "discipline" % "0.4"      % "test",

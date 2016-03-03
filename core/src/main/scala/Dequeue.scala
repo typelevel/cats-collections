@@ -2,6 +2,8 @@ package dogs
 
 import Predef._
 import scala.{annotation,unchecked}
+import algebra.Eq
+import cats.Eval
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as

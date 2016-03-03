@@ -7,7 +7,9 @@ import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
 import org.scalatest._
 import dogs.tests.arbitrary._
-import dogs.std.stringOrder
+import algebra.Order
+import algebra.std.int._
+import algebra.std.string._
 
 object MapSpec extends Properties("Map") with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}

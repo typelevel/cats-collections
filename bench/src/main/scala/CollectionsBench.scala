@@ -4,6 +4,7 @@ package bench
 import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
 import scala.collection.immutable.{List => SList, Nil => SNil}
 import scalaz.{DList => SZDList, IList}
+import cats.Eval
 
 @State(Scope.Thread)
 class Append {

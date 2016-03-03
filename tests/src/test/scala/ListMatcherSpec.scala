@@ -6,7 +6,8 @@ package dogs
 package tests
 
 import dogs.Predef._
-import dogs.std.intOrder
+import algebra.Order
+import algebra.std.int._
 import org.scalatest.{FlatSpec, Matchers} 
 
 //forcing rebuild

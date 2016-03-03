@@ -1,11 +1,11 @@
 package dogs
 
 import dogs.Predef._
-import dogs.std.{intOrder,intEq}
 import dogs.tests.arbitrary._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
+import algebra.std.int._
 
 object ISetSpec extends Properties("ISet") with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}

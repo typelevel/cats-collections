@@ -7,6 +7,7 @@ import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
 import scala.{annotation}
+import cats.Eval
 
 object DequeueSpec extends Properties("Dequeue") with ArbitraryList {
   import Option._

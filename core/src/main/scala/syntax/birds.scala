@@ -8,6 +8,10 @@ trait BedazzleBirds {
 
 class BirdOps[A](val a: A) extends AnyVal {
 
+  /**
+   * also called Thrush, see
+   * http://www.angelfire.com/tx4/cus/combinator/birds.html
+   */
   def |>[B](f: A => B): B = f(a)
 
   def unsafeTap(f: A => Unit): A = {
@@ -15,6 +19,10 @@ class BirdOps[A](val a: A) extends AnyVal {
     a
   }
 
+  /**
+   * also called Kestrel, see
+   * http://www.angelfire.com/tx4/cus/combinator/birds.html
+   */
   def <|(f: A => Unit): A = {
     f(a)
     a
