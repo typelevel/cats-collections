@@ -65,7 +65,7 @@ sealed class Range[A](val start: A, val end: A) {
    */
   def toList(implicit eA: Enum[A], oA: Order[A]): List[A] = {
     val lb = new ListBuilder[A]
-   foreach(lb += _)
+   foreach{a => val _ = lb += a}
     lb.run
   }
 

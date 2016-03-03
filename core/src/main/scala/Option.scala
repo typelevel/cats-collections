@@ -2,7 +2,8 @@ package dogs
 
 import Predef._
 import scala.util.control.NonFatal
-import cats.data.{Validated,ValidatedNel,Xor}
+import cats._
+import cats.data._
 
 /** An optional value
  *
@@ -173,8 +174,7 @@ case object None extends Option[Nothing] {
 
 final case class Some[A](a: A) extends Option[A]
 
-object Option extends OptionFunctions {
-}
+object Option extends OptionFunctions with OptionInstances
 
 sealed trait OptionFunctions {
 
@@ -192,4 +192,107 @@ sealed trait OptionFunctions {
     case NonFatal(t) => none
   }
 }
+
+trait OptionInstances extends OptionInstances1 {
+  implicit val optionInstance: Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] =
+    new Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] {
+
+      def empty[A]: Option[A] = None()
+
+      def combineK[A](x: Option[A], y: Option[A]): Option[A] = x orElse y
+
+      def pure[A](x: A): Option[A] = Some(x)
+
+      override def map[A, B](fa: Option[A])(f: A => B): Option[B] =
+        fa.map(f)
+
+      def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] =
+        fa.flatMap(f)
+
+      override def map2[A, B, Z](fa: Option[A], fb: Option[B])(f: (A, B) => Z): Option[Z] =
+        fa.flatMap(a => fb.map(b => f(a, b)))
+
+      def coflatMap[A, B](fa: Option[A])(f: Option[A] => B): Option[B] =
+        if (fa.isDefined) Some(f(fa)) else None()
+
+      def foldLeft[A, B](fa: Option[A], b: B)(f: (B, A) => B): B =
+        fa match {
+          case None() => b
+          case Some(a) => f(b, a)
+        }
+
+      def foldRight[A, B](fa: Option[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+        fa match {
+          case None() => lb
+          case Some(a) => f(a, lb)
+        }
+
+      def traverse[G[_]: Applicative, A, B](fa: Option[A])(f: A => G[B]): G[Option[B]] =
+        fa match {
+          case None() => Applicative[G].pure(None())
+          case Some(a) => Applicative[G].map(f(a))(Some(_))
+        }
+
+      override def exists[A](fa: Option[A])(p: A => Boolean): Boolean =
+        fa.exists(p)
+
+      override def forall[A](fa: Option[A])(p: A => Boolean): Boolean =
+        fa.forall(p)
+
+      override def isEmpty[A](fa: Option[A]): Boolean =
+        fa.isEmpty
+    }
+
+  implicit def optionMonoid[A](implicit ev: Semigroup[A]): Monoid[Option[A]] =
+    new Monoid[Option[A]] {
+      def empty: Option[A] = None()
+      def combine(x: Option[A], y: Option[A]): Option[A] =
+        x match {
+          case None() => y
+          case Some(xx) => y match {
+            case None() => x
+            case Some(yy) => Some(ev.combine(xx,yy))
+          }
+        }
+    }
+
+  implicit def orderOption[A](implicit ev: Order[A]): Order[Option[A]] =
+    new Order[Option[A]] {
+      def compare(x: Option[A], y: Option[A]): Int =
+        x match {
+          case Some(a) =>
+            y match {
+              case Some(b) => ev.compare(a, b)
+              case None => 1
+            }
+          case None =>
+            if (y.isDefined) -1 else 0
+        }
+    }
+
+  implicit def showOption[A](implicit A: Show[A]): Show[Option[A]] =
+    new Show[Option[A]] {
+      def show(fa: Option[A]): String = fa match {
+        case Some(a) => s"Some(${A.show(a)})"
+        case None => "None"
+      }
+    }
+}
+
+private[dogs] sealed trait OptionInstances1 extends OptionInstances2 {
+  implicit def partialOrderOption[A](implicit ev: PartialOrder[A]): PartialOrder[Option[A]] =
+    new PartialOrder[Option[A]] {
+      def partialCompare(x: Option[A], y: Option[A]): Double =
+        x.cata(a => y.cata(ev.partialCompare(_, a), 1.0), if (y.isDefined) -1.0 else 0.0)
+    }
+}
+
+private[dogs] sealed trait OptionInstances2 {
+  implicit def eqOption[A](implicit ev: Eq[A]): Eq[Option[A]] =
+    new Eq[Option[A]] {
+      def eqv(x: Option[A], y: Option[A]): Boolean =
+        x.cata(a => y.cata(ev.eqv(_, a), false), y == None)
+    }
+}
+
 

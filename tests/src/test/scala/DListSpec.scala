@@ -3,7 +3,7 @@ package tests
 
 import Predef._
 import syntax.birds._
-import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.all._
 import algebra.Eq
 import algebra.std.int._
 import cats.Eval

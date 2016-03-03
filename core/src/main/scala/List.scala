@@ -5,8 +5,7 @@ import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
 import dogs.syntax.birds._
-import algebra.{Order,Eq}
-import cats.Eval, cats.Eval._
+import cats._
 
 /**
  * Immutable, singly-linked list implementation.
@@ -156,7 +155,7 @@ sealed abstract class List[A] {
       l match {
         case El() =>
         case h Nel t =>
-          f(h).foldLeft(())((_,b) => lb += b)
+          f(h).foldLeft(()){(_,b) => val _ = lb += b}
           go(t)
       }
     }
@@ -301,14 +300,14 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     tail.foldLeft(head)(f)
 
   override final def :::(as: List[A]): Nel[A] =
-    as.foldr(now(this))((a, lbs) => lbs.map(a :: _)).value
+    as.foldr(Eval.now(this))((a, lbs) => lbs.map(a :: _)).value
 
   final def :::(as: Nel[A]): Nel[A] =
-    as.foldr(now(this))((a, lbs) => lbs.map(a :: _)).value
+    as.foldr(Eval.now(this))((a, lbs) => lbs.map(a :: _)).value
 
   override final def map[B](f: A => B): Nel[B] = {
     val h = f(head)
-    val t = tail.foldr(now(List.empty[B])) { (a, lbs) =>
+    val t = tail.foldr(Eval.now(List.empty[B])) { (a, lbs) =>
       lbs.map(f(a) :: _)
     }.value
     Nel(h, t)
@@ -373,9 +372,7 @@ object List extends ListInstances {
 trait ListInstances {
   import List._
 
-  /**
-    * Compares two list item by item
-   */
+
   implicit def listCmp[A](implicit A: Order[A]): Order[List[A]] = new Order[List[A]] {
     override def compare(a: List[A], b: List[A]): Int = (a,b) match {
       case (El(), El()) =>  0
@@ -388,6 +385,84 @@ trait ListInstances {
           this.compare(ta, tb)
         else
           cmp
+
+  implicit def listMonoid[A]: Monoid[List[A]] = new Monoid[List[A]] {
+    override val empty: List[A] = List.empty
+    override def combine(l: List[A], r: List[A]) = l ::: r
+  }
+
+  implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
+    new Traverse[List] with MonadCombine[List] with CoflatMap[List] {
+
+      def empty[A]: List[A] = empty
+
+      def combineK[A](x: List[A], y: List[A]): List[A] = x ++ y
+
+      def pure[A](x: A): List[A] = x :: empty
+
+      override def map[A, B](fa: List[A])(f: A => B): List[B] =
+        fa.map(f)
+
+      def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] =
+        fa.flatMap(f)
+
+      override def map2[A, B, Z](fa: List[A], fb: List[B])(f: (A, B) => Z): List[Z] =
+        fa.flatMap(a => fb.map(b => f(a, b)))
+
+      def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = {
+        @tailrec def loop(buf: ListBuilder[B], as: List[A]): List[B] =
+          as match {
+            case El() => buf.run
+            case Nel(_,rest) => loop(buf += f(as), rest)
+          }
+        loop(new ListBuilder[B], fa)
+      }
+
+      def foldLeft[A, B](fa: List[A], b: B)(f: (B, A) => B): B =
+        fa.foldLeft(b)(f)
+
+      def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
+        def loop(as: List[A]): Eval[B] =
+          as match {
+            case El() => lb
+            case Nel(h, t) => f(h, Eval.defer(loop(t)))
+          }
+        Eval.defer(loop(fa))
+      }
+
+      def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = {
+        val gba = G.pure(new ListBuilder[B])
+        val gbb = fa.foldLeft(gba)((buf, a) => G.map2(buf, f(a)){(lb,a) => lb += a; lb })
+        G.map(gbb)(_.run)
+      }
+
+      override def exists[A](fa: List[A])(p: A => Boolean): Boolean =
+        fa.exists(p)
+
+      override def forall[A](fa: List[A])(p: A => Boolean): Boolean =
+        fa.forall(p)
+
+      override def isEmpty[A](fa: List[A]): Boolean = fa.isEmpty
+
+      /** not until we have streaming in dogs
+      override def toStreaming[A](fa: List[A]): Streaming[A] =
+        Streaming.fromList(fa)
+       */
+    }
+
+  implicit def listShow[A](implicit A: Show[A]): Show[List[A]] =
+    new Show[List[A]] {
+      def show(fa: List[A]): String = fa.map(A.show).toString
+    }
+
+  implicit def listEq[A](implicit A: Eq[A]): Eq[List[A]] = new Eq[List[A]] {
+    override def eqv(a: List[A], b: List[A]): Boolean = (a,b) match {
+      case (El(), El()) => true
+      case (El(), _) => false
+      case (_, El()) => false
+      case (Nel(ha,ta), Nel(hb,tb)) =>
+        if(A.eqv(ha, hb)) eqv(ta,tb) else false
+======= end
     }
   }
 
@@ -398,15 +473,17 @@ final private[dogs] class ListBuilder[A] {
   var run: List[A] = List.empty
   var end: Nel[A] = _
 
-  def +=(a: A): Unit = {
+  def +=(a: A): ListBuilder[A] = {
     run match {
       case El() =>
         end = Nel(a, empty[A])
         run = end
+        this
       case _ =>
         val newEnd = Nel(a, empty[A])
         end._tail = newEnd
         end = newEnd
+        this
     }
   }
 }

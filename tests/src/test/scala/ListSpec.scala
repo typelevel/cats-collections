@@ -2,16 +2,36 @@ package dogs
 package tests
 
 import Predef._
-import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.all._
+import cats._
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
 import org.typelevel.discipline.scalatest.Discipline
-import org.scalacheck._
-import org.scalacheck.Prop.forAll
+import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
+import org.scalatest.{FunSuite, PropSpec, Matchers}
 import algebra.Eq
 import algebra.std.int._
+import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
+import cats.laws.discipline.arbitrary._
+import cats.laws.discipline.eq._
 
-object ListSpec extends Properties("List") with ArbitraryList {
+object ListSpec extends FunSuite
+    with Matchers
+    with Configuration
+    with GeneratorDrivenPropertyChecks
+    with Discipline {
+
+  checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
+  checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
+
+  checkAll("List[Int]", CoflatMapTests[List].coflatMap[Int, Int, Int])
+  checkAll("CoflatMap[List]", SerializableTests.serializable(CoflatMap[List]))
+
+  checkAll("List[Int]", MonadCombineTests[List].monadCombine[Int, Int, Int])
+  checkAll("MonadCombine[List]", SerializableTests.serializable(MonadCombine[List]))
+
+  checkAll("List[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
+  checkAll("Traverse[List]", SerializableTests.serializable(Traverse[List]))
 
   implicit def eqTuple2[A: Eq, B: Eq]: Eq[(A,B)] = new Eq[(A,B)] {
     def eqv(l: (A,B), r: (A,B)) = l._1 == r._1 && l._2 == r._2
@@ -21,15 +41,11 @@ object ListSpec extends Properties("List") with ArbitraryList {
     def toScalaList: List[A] = List.fromIterable(as)
   }
 
-  property("map") =
+  test("filter"){
     forAll { (xs: List[Int], n: Int) =>
-      xs.toScalaList.map(_ ^ n) == xs.map(_ ^ n).toScalaList
+      xs.toScalaList.filter(_ < n) should be (xs.filter(_ < n).toScalaList)
     }
-
-  property("filter") =
-    forAll { (xs: List[Int], n: Int) =>
-      xs.toScalaList.filter(_ < n) == xs.filter(_ < n).toScalaList
-    }
+  }
 
 //  property("flatMap") =
 //    forAll { (xs: SList[Int], n: Int) =>
@@ -37,47 +53,29 @@ object ListSpec extends Properties("List") with ArbitraryList {
 //      xs.flatMap(x => f(x)) == xs.map(f).flatMap(x => f(x))
 //    }
 
-  property("isEmpty") =
+  test("isEmpty")(
     forAll { (xs: List[Int]) =>
-      xs.toScalaList.isEmpty == xs.isEmpty
-    }
+      xs.toScalaList.isEmpty should be (xs.isEmpty)
+    })
 
-  property("toNel") =
+  test("toNel")(
     forAll { (xs: SList[Int]) =>
-      xs.headOption.map(_ => xs.toScalaList) == List.fromIterable(xs).toNel.toScalaOption
-    }
+      xs.headOption.map(_ => xs.toScalaList) should be(List.fromIterable(xs).toNel.toScalaOption)
+    })
 
-  property("cons") =
-    forAll { (xs: List[Int], x: Int) =>
-      (x :: xs).toScalaList == x :: xs.toScalaList
-    }
-
-  property("concat") =
-    forAll { (xs: List[Int], ys: List[Int]) =>
-      (xs ::: ys).toScalaList == xs.toScalaList ::: ys.toScalaList
-    }
-
-//   property("coflatMap") =
-//     forAll { (xs0: List[Int], x0: Int) =>
-//       val xs: Nel[Int] = x0 :: xs0
-//       def findMin(xs: Nel[Int]): Int = xs.reduceLeft(intOrder.min)
-//       val ys = xs.coflatMap(ns => findMin(ns))
-//       ys.head == (x0 :: xs0).min
-//     }
-
-  property("exists") =
+  test("exists")(
     forAll { (xs: SList[Int], x: Int) =>
-      xs.exists(_ > x) == xs.toScalaList.exists(_ > x)
-      xs.exists(_ == x) == xs.toScalaList.exists(_ == x)
-      xs.exists(_ != x) == xs.toScalaList.exists(_ != x)
-    }
+      xs.exists(_ > x) should be(xs.toScalaList.exists(_ > x))
+      xs.exists(_ == x) should be(xs.toScalaList.exists(_ == x))
+      xs.exists(_ != x) should be(xs.toScalaList.exists(_ != x))
+    })
 
-  property("forall") =
+  test("forall")(
     forAll { (xs: SList[Int], x: Int) =>
-      xs.forall(_ > x) == xs.toScalaList.forall(_ > x)
-      xs.forall(_ == x) == xs.toScalaList.forall(_ == x)
-      xs.forall(_ != x) == xs.toScalaList.forall(_ != x)
-    }
+      xs.forall(_ > x) should be(xs.toScalaList.forall(_ > x))
+      xs.forall(_ == x) should be(xs.toScalaList.forall(_ == x))
+      xs.forall(_ != x) should be(xs.toScalaList.forall(_ != x))
+    })
 
 //   property("find") =
 //     forAll { (xs: List[Int], x: Int) =>
@@ -86,20 +84,20 @@ object ListSpec extends Properties("List") with ArbitraryList {
 //       xs.find(_ != x) == xs.toScalaList.find(_ != x)
 //     }
 
-  property("contains") =
+  test("contains")(
     forAll { (xs: SList[Int], x: Int) =>
-      xs.contains(x) == xs.toScalaList.contains(x)
-    }
+      xs.contains(x) should be(xs.toScalaList.contains(x))
+    })
 
-  property("reverse") =
+    test("reverse")(
     forAll { (xs: SList[Int]) =>
-      xs.reverse.toScalaList == xs.toScalaList.reverse
-    }
+      xs.reverse.toScalaList should be(xs.toScalaList.reverse)
+    })
 
-  property("take/drop") =
+      test("take/drop")(
     forAll { (xs: List[Int], n: Int) =>
-      xs.take(n).toScalaList == xs.toScalaList.take(n)
-      xs.drop(n).toScalaList == xs.toScalaList.drop(n)
-    }
+      xs.take(n).toScalaList should be (xs.toScalaList.take(n))
+      xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
+    })
 
 }
