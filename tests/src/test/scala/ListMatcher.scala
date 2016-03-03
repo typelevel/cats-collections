@@ -36,14 +36,13 @@ object ListCmp {
   def apply[A](implicit eq: Order[A]): Order[List[A]] = new ListCmp[A]
 }
 
-
 trait ListMatcher {
 
   private [tests] class ListMatchTo[A](aList: List[A])(implicit eq: Order[A]) extends Matcher[List[A]] {
     override def apply(left: List[A]): MatchResult = {
       val result = ListCmp[A].compare(left, aList) == Order.EQ
 
-      MatchResult(result, s"Lists don't match. Expected: $aList Received: $left" , "")
+      MatchResult(result, s"Lists don't match. Expected: $left Received: $aList" , "")
     }
   }
 
