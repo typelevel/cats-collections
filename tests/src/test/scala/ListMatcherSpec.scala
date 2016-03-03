@@ -5,10 +5,12 @@
 package dogs
 package tests
 
-import org.scalatest.{Matchers, FlatSpec}
+import dogs.Predef._
+import dogs.std.intOrder
+import org.scalatest.{FlatSpec, Matchers}
 
-class ListMatchToSpec extends FlatSpec with Matchers with ListMatcher {
 
+class ListMatcherSpec extends FlatSpec with Matchers with ListMatcher {
 
   "ListMatchWithScalaList" should "match lists" in {
 
@@ -28,5 +30,15 @@ class ListMatchToSpec extends FlatSpec with Matchers with ListMatcher {
 
     result.matches should be (false)
     result.failureMessage should be ("Lists don't match")
+  }
+
+  it should "match nested list" in {
+    val a: List[List[Int]] = List(List(1), List(2))
+
+    val matcher = matchTo(a)
+
+    val result = matcher.apply(List(List(1), List(2)))
+
+    result.matches should be (true)
   }
 }
