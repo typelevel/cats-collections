@@ -103,13 +103,13 @@ object DietSpec extends Properties("Diet")  with DogMatcher {
     (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
   }
 
-  property("match") = forAll{ (r: Ranges) =>
-    val d = fromRanges(r)
-
-    val matcher = matchTo(d)
-
-    matcher.apply(d).matches == true
-  }
+//  property("match") = forAll{ (r: Ranges) =>
+//    val d = fromRanges(r)
+//
+//    val matcher = matchTo(d)
+//
+//    matcher.apply(d).matches == true
+//  }
 }
 
 class DietTest extends FlatSpec with Matchers with DogMatcher {
