@@ -11,7 +11,7 @@ import scala.util.control.NonFatal
  * `Option[A]` is isomorphic to the Option in the Scala standard
  * library, however there are some differences between the two. This
  * `Option` is invariant in `A` while the standard library `Option` is
- * covariant. thIs `Option` does not expose an unsafe `get` operation
+ * covariant. This `Option` does not expose an unsafe `get` operation
  * to access the underlying `A` value (that may not exist) like the
  * standard library version does. This `Option` does not come with an
  * implicit conversion to `Iterable` (a trait with over a dozen super
