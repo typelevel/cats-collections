@@ -39,7 +39,7 @@ object ListCmp {
 
 trait ListMatcher {
 
-  class ListMatchWithScalaList[A](aList: List[A])(implicit eq: Order[A]) extends Matcher[List[A]] {
+  private [tests] class ListMatchTo[A](aList: List[A])(implicit eq: Order[A]) extends Matcher[List[A]] {
     override def apply(left: List[A]): MatchResult = {
       val result = ListCmp[A].compare(left, aList) == Order.EQ
 
@@ -47,7 +47,7 @@ trait ListMatcher {
     }
   }
 
-  def matchTo[A](aList: List[A])(implicit eq: Order[A]) = new ListMatchWithScalaList[A](aList)
+  def matchTo[A](aList: List[A])(implicit eq: Order[A]) = new ListMatchTo[A](aList)
 
   implicit val listCmp = ListCmp[Int]
 }
