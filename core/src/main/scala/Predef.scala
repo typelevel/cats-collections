@@ -41,6 +41,8 @@ object Predef {
   final val Unit = scala.Unit
   final val StringContext = scala.StringContext
 
+  type tailrec = scala.annotation.tailrec
+
   /**
    * An instance of `A <:< B` witnesses that `A` is a subtype of `B`.
    * Requiring an implicit argument of the type `A <:< B` encodes

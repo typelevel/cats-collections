@@ -40,5 +40,6 @@ doctestWithDependencies := false
 doctestSettings
 
 (initialCommands in console) := """
+import cats._, cats.implicits._
 import dogs._, dogs.Predef._
 """

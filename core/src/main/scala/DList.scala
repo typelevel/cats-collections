@@ -3,7 +3,7 @@ package dogs
 import Predef._
 import List._
 import Option._
-import cats.Eval, cats.Eval._
+import cats._, cats.Eval._
 
 /**
  * A "difference list" - A List like structure with O(1) appends.
@@ -81,8 +81,40 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
    foldr(now(DList.empty[B]))((a,bs) => bs.map(bs => f(a) ++ bs)).value
 }
 
-object DList {
+object DList extends DListInstances{
   def empty[A]: DList[A] = new DList(t => defer(now(t)))
   def apply[A](as: List[A]): DList[A] = new DList(tail => defer(now(as ::: tail)))
 }
 
+trait DListInstances {
+  implicit def dlistMonoid[A]: Monoid[DList[A]] = new Monoid[DList[A]] {
+    override def empty: DList[A] = DList.empty
+    override def combine(l: DList[A], r: DList[A]): DList[A] = l ++ r
+  }
+
+  implicit def dlistEq[A](implicit A: Eq[A]): Eq[DList[A]] =
+    Eq[List[A]].on[DList[A]](_.toList)
+
+  implicit val dlistInstance: MonadCombine[DList] with Traverse[DList] =
+    new MonadCombine[DList] with Traverse[DList] {
+      override def pure[A](a: A): DList[A] =
+        DList.empty :+ a
+
+      override def map[A,B](fa: DList[A])(f: A => B): DList[B] = fa map f
+
+      override def flatMap[A,B](fa: DList[A])(f: A => DList[B]): DList[B] =
+        fa flatMap f
+
+      override def traverse[G[_], A, B](fa: DList[A])(f: A => G[B])(implicit G: Applicative[G]): G[DList[B]] =
+        foldLeft[A, G[DList[B]]](fa,G.pure(DList.empty))((res, a) =>
+          G.map2(res, f(a))(_ :+ _)
+        )
+
+      def foldLeft[A, B](fa: dogs.DList[A],b: B)(f: (B, A) => B): B =
+        fa.toList.foldLeft(b)(f)
+
+      def foldRight[A, B](fa: dogs.DList[A],lb: cats.Eval[B])(f: (A, cats.Eval[B]) => cats.Eval[B]): cats.Eval[B] = fa.foldr(lb)(f)
+      def empty[A]: dogs.DList[A] = DList.empty
+      def combineK[A](x: dogs.DList[A],y: dogs.DList[A]): dogs.DList[A] = x ++ y
+    }
+}

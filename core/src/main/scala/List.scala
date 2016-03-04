@@ -372,7 +372,6 @@ object List extends ListInstances {
 trait ListInstances {
   import List._
 
-
   implicit def listCmp[A](implicit A: Order[A]): Order[List[A]] = new Order[List[A]] {
     override def compare(a: List[A], b: List[A]): Int = (a,b) match {
       case (El(), El()) =>  0
