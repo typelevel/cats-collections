@@ -3,9 +3,18 @@ package tests
 
 import dogs.Predef._
 import org.scalatest.{FlatSpec, Matchers}
-import algebra.std.int._
+
 
 class RangeTest extends FlatSpec with Matchers {
+
+
+  import Range._
+
+  import cats.syntax.all._
+
+  import cats.std.int._
+
+
   "a range" should "contain items within [start, end]" in {
     val range = Range(1, 100)
 
@@ -95,14 +104,14 @@ class RangeTest extends FlatSpec with Matchers {
   }
 
   it should "be convertible to string in math form when empty" in {
-    val range = Range.empty()
+    val range = Range.empty[Int]
 
-    range.toString should be ("[]")
+    range.show should be ("[]")
   }
 
   it should "be convertible to string in math form" in {
     val range = Range(10, 20)
 
-    range.toString should be ("[10, 20]")
+    range.show should be ("[10, 20]")
   }
 }

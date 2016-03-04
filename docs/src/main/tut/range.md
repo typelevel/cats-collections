@@ -19,7 +19,7 @@ source: "core/src/main/scala/Range.scala"
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
 	- It basically calculates what is to the *left* of `other` that is in `Range` and what is to the *right* of `other` that is in `Range` (in both cases it does not include elements in `other`)
-- toString: returns string representing the range in math notation. `Range(x, y)` is represented by **[x, y]** and `Range.empty` is represented by **[]**
+- toString: returns 
 	
 ## Inverted Range
 
@@ -27,12 +27,15 @@ Note that if x > y and we create the range [x, y] it will be treated as the **in
 	
 ## Using Range
 
-We can get the values from a range using **generate** or **toList** functions
+We can get the values from a range using **generate** or **toList** functions. 
+We can also get the string representing the range in math notation. `Range(x, y)` is represented by **[x, y]** and `Range.empty` is represented by **[]** by using
+`cats.Show`
 
 ```tut
- import dogs._, dogs.Predef._, cats.std.int._, dogs.syntax.all._
-
+import dogs._, dogs.Predef._, cats.std.int._, dogs.syntax.all._, dogs.Range._, cats.implicits._                                                             
+                                                                                                                                  
 val range = Range(1, 10)
+range.show
 
 range.generate
 range.toList
@@ -41,7 +44,7 @@ range.toList
 We can get the inverted range using the **reverse** functions
 
 ```tut
-range.reverse
+range.reverse.show
 ```
 
 Asking for **start** and **end** on a Range
@@ -67,12 +70,23 @@ Asking for the difference to another Range
 
 ```tut
 val range = Range(10, 20)
+range.show
 
-range - Range(5, 9)
-range - Range(30, 40)
-range - Range(15, 18)
-range - Range (5, 30)
+val (l, r) = (range - Range(5, 9))
+l.show
+r.show
 
+val (l, r) = range - Range(30, 40)
+l.show
+r.show
+
+val (l, r) = range - Range(15, 18)
+l.show
+r.show
+
+val (l, r) = range - Range (5, 30)
+l.show
+r.show
 ```
 
 Creating an **inverted** range
@@ -87,7 +101,10 @@ The reverse of a range should be its inverted range
 
 ```tut
 val range = Range(20, 30)
+range.show
+
 val other = Range(30, 20)
+other.show
 
 range.reverse.toList == other.toList
 ```

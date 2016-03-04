@@ -1,5 +1,6 @@
 package dogs
 
+import cats.Show
 import dogs.Predef._
 import algebra.Order
 import scala.annotation.tailrec
@@ -130,7 +131,7 @@ sealed class Range[A](val start: A, val end: A) {
 
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
 
-  override def toString: String = if (isEmpty) s"[]" else s"[$start, $end]"
+  //override def toString: String = if (isEmpty) s"[]" else s"[$start, $end]"
 
 }
 
@@ -145,5 +146,20 @@ object Range {
     def unapply[A](r: Range[A]) = r.isEmpty
 
     override def isEmpty = true
+  }
+
+  implicit def rangeShowable[A](implicit s: Show[A]): Show[Range[A]] = new Show[Range[A]] {
+    override def show(f: Range[A]): Predef.String =
+    if (f.isEmpty) {
+      "[]"
+    }
+    else {
+      val (a, b) = (s.show(f.start), s.show(f.end))
+      s"[$a, $b]"
+    }
+  }
+
+  implicit val emptyShowableRange = new Show[Option[Nothing]] {
+    override def show(f: Option[Nothing]): Predef.String = ""
   }
 }
