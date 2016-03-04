@@ -373,7 +373,6 @@ object Diet {
         val m = Show[Range[A]]
 
         f.intervals match {
-          case El() =>  "{}"
           case Nel(h, t)  =>
             t.foldLeft("{" + m.show(h))((acc, r) => acc + ", " + m.show(r)) + "}"
         }
