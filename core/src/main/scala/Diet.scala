@@ -1,7 +1,9 @@
 package dogs
 
+import cats.Show
 import dogs.Predef._
 import algebra.Order
+
 
 /**
  * Discrete Interval Encoding Tree (Diet).
@@ -362,4 +364,19 @@ object Diet {
       case None()       =>  false
       case Some(a)      =>  order.gt(r.end, a)
     }
+
+  implicit def dietShowable[A](implicit s: Show[A]): Show[Diet[A]] = new Show[Diet[A]] {
+    override def show(f: Diet[A]): Predef.String =
+      if (f.isEmpty)
+        "{}"
+      else {
+        val m = Show[Range[A]]
+
+        f.intervals match {
+          case El() =>  "{}"
+          case Nel(h, t)  =>
+            t.foldLeft("{" + m.show(h))((acc, r) => acc + ", " + m.show(r)) + "}"
+        }
+    }
+  }
 }
