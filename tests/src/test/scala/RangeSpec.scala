@@ -93,4 +93,16 @@ class RangeTest extends FlatSpec with Matchers {
 
     range.reverse.toList.toScalaList should be (other.toList.toScalaList)
   }
+
+  it should "be convertible to string in math form when empty" in {
+    val range = Range.empty()
+
+    range.toString should be ("[]")
+  }
+
+  it should "be convertible to string in math form" in {
+    val range = Range(10, 20)
+
+    range.toString should be ("[10, 20]")
+  }
 }

@@ -30,7 +30,7 @@ Note that if x > y and we create the range [x, y] it will be treated as the **in
 We can get the values from a range using **generate** or **toList** functions
 
 ```tut
- import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+ import dogs._, dogs.Predef._, cats.std.int._, dogs.syntax.all._
 
 val range = Range(1, 10)
 

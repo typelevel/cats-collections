@@ -39,7 +39,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 Start by creating an empty Diet:
 
 ```tut
-import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._
 
 val d: Diet[Int] = Diet.empty
 d.isEmpty
@@ -96,8 +96,6 @@ val d2 = Diet.empty[Int] + (7 to 12)
 Asking to remove non existing range yields the same diet
 
 ```tut
-import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
-
 val d = Diet.empty[Int].addRange((5 to 20))
 
 val d1 = d.removeRange((1 to 4))
