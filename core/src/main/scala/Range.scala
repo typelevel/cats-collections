@@ -2,7 +2,6 @@ package dogs
 
 import dogs.Predef._
 import algebra.Order
-
 import scala.annotation.tailrec
 
 /**
@@ -131,14 +130,14 @@ sealed class Range[A](val start: A, val end: A) {
 
   def apply(start: A, end: A): Range[A] = Range.apply(start, end)
 
-  override def toString: String = if (isEmpty) s"[]" else s"[$start,$end]"
+  override def toString: String = if (isEmpty) s"[]" else s"[$start, $end]"
+
 }
 
 object Range {
   def apply[A](x: A, y: A) = new Range[A](x, y)
 
   def empty[A](): Range[A] = EmptyRange()
-
 
   private [dogs] case object EmptyRange extends Range[Option[Nothing]](None(), None()) {
     def apply[A]() = this.asInstanceOf[A]

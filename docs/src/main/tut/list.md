@@ -90,7 +90,7 @@ Many of the expected methods on `List` exist. We are still missing
 many other useful methods, please feel free to contribute!
 
 ```tut
-import std.{intEq,intOrder}
+import algebra.std.int._
 
 val x: List[Int] = List(1,2,3)
 
