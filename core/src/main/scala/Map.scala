@@ -40,6 +40,13 @@ class Map[K,V](val set: Set[(K,V)]) {
   def +(kv: (K,V))(implicit K: Order[K]): Map[K,V] = new Map(set + kv)
 
   /**
+   * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist.
+   * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
+   */
+  def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): Map[K, V] =
+    f(get(k)) map { v => this + (k -> v) } getOrElse this
+
+  /**
    * Get the value for the given key, if it exists.
    * O(log n)
    */
@@ -57,10 +64,10 @@ class Map[K,V](val set: Set[(K,V)]) {
    */
   def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
 
-  // 
+  //
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)
-  // 
+  //
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
     set.dothestupidthingbecausesetisnotamapdotbiz(_._1,  key)
 
