@@ -6,21 +6,13 @@ import dogs.tests.arbitrary.all._
 import cats._
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
-import org.typelevel.discipline.scalatest.Discipline
-import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
-import org.scalatest.{FunSuite, PropSpec, Matchers}
 import algebra.Eq
 import algebra.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
 
-object ListSpec extends FunSuite
-    with Matchers
-    with Configuration
-    with GeneratorDrivenPropertyChecks
-    with Discipline {
-
+object ListSpec extends DogsSuite {
   checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
   checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
 

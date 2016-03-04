@@ -4,78 +4,88 @@ package tests
 import Predef._
 import syntax.birds._
 import dogs.tests.arbitrary.all._
-import algebra.Eq
-import algebra.std.int._
-import cats.Eval
+import cats._
+import cats.std.int._
+import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 
-object DListSpec extends Properties("DList") {
+object DListSpec extends DogsSuite {
+  import DList._
   import List._
   import arbitrary.list._
   import arbitrary.dlist._
 
-  property("sanity check") = forAll { (ls: List[List[Int]]) =>
+  implicit def eqTuple3[A: Eq, B: Eq, C: Eq]: Eq[(A,B,C)] = new Eq[(A,B,C)] {
+    def eqv(l: (A,B,C), r: (A,B,C)) = l._1 == r._1 && l._2 == r._2 && l._3 == r._3
+  }
+
+  checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
+  checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))
+  checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
+  checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
+
+  test("sanity check")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    Eq[List[Int]].eqv(dl.toList, l)
-  }
+    dl.toList should matchTo(l)
+  })
 
-  property("headOption") = forAll { (ls: List[List[Int]]) =>
+  test("headOption")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    dl.headOption == l.headOption
-  }
+    dl.headOption should be(l.headOption)
+  })
 
-  property("tailOption") = forAll { (ls: List[List[Int]]) =>
+  test("tailOption")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    dl.tailOption.map(_.toList) == l.tailOption
-  }
+    dl.tailOption.map(_.toList) should be (l.tailOption)
+  })
 
-  property("isEmpty") = forAll { (ls: List[List[Int]]) =>
+  test("isEmpty")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    dl.isEmpty == l.isEmpty
-  }
+    dl.isEmpty should be(l.isEmpty)
+  })
 
-  property("foldr") = forAll { (ls: List[List[Int]]) =>
+  test("foldr")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    dl.foldr[List[Int]](Eval.now(List.empty))((l,a) => a.map(l :: _)).value == l
-  }
+    dl.foldr[List[Int]](Eval.now(List.empty))((l,a) => a.map(l :: _)).value should be (l)
+  })
 
-  property("flatMap") = forAll { (ls: List[List[Int]]) =>
-    DList(ls.map(DList.apply)).flatMap(identity).toList == ls.flatMap(identity)
-  }
+  test("flatMap")(forAll { (ls: List[List[Int]]) =>
+    DList(ls.map(DList.apply)).flatMap(identity).toList should be (ls.flatMap(identity))
+  })
 
-  property("map") = forAll { (ls: List[List[Int]]) =>
+  test("map")(forAll { (ls: List[List[Int]]) =>
     val dl = fromLL(ls)
     val l = ls.flatMap(identity)
 
-    dl.map(_ + 1).toList == l.map(_ + 1)
-  }
+    dl.map(_ + 1).toList should be (l.map(_ + 1))
+  })
 
-  property("stack safe append") = secure {
+  test("stack safe append"){
     val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)((dl,i) =>
       dl ++ DList(List(i))
     )
 
-    dl.headOption == Some(1)
+    dl.headOption should be (Some(1))
   }
 
-  property("stack safe post") = secure {
+  test("stack safe post"){
     val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)(_ :+ _)
-    dl.headOption == Some(1)
+    dl.headOption should be (Some(1))
   }
 
-  property("stack safe pre") = secure {
+  test("stack safe pre") {
     val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)((dl,a) => a +: dl)
-    dl.headOption == Some(1)
+    dl.headOption should be(Some(1))
   }
 }
