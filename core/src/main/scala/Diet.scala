@@ -366,15 +366,12 @@ object Diet {
     }
 
   implicit def dietShowable[A](implicit s: Show[A]): Show[Diet[A]] = new Show[Diet[A]] {
-    override def show(f: Diet[A]): Predef.String =
-      if (f.isEmpty)
-        "{}"
-      else {
+    override def show(f: Diet[A]): Predef.String = {
         val m = Show[Range[A]]
 
         f.intervals match {
-          case Nel(h, t)  =>
-            t.foldLeft("{" + m.show(h))((acc, r) => acc + ", " + m.show(r)) + "}"
+          case El()       =>  "{}"
+          case Nel(h, t)  =>  t.foldLeft("{" + m.show(h))((acc, r) => acc + ", " + m.show(r)) + "}"
         }
     }
   }
