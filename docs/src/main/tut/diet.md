@@ -133,3 +133,11 @@ val d3 = d.removeRange((10 to 15))
 (5 to 9).toList.forall {i => d3.contains(i) }
 (16 to 20).toList.forall {i => d3.contains(i) }
 ```
+
+Adding a inverted range
+
+```tut
+val d = Diet.empty[Int] + Range(20, 10)
+
+d.show
+```

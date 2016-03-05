@@ -355,8 +355,8 @@ object Diet {
 
   private [dogs] def isBestLeft[A](r: Range[A], dietNode: DietNode[A])(implicit order: Order[A]): Boolean =
     dietNode.min match {
-      case None() => false
-      case Some(a) => order.lt(r.start, a)
+      case None()   => false
+      case Some(a)  => order.lt(r.start, a)
     }
 
   private [dogs] def isBestRight[A](r: Range[A], dietNode: DietNode[A])(implicit order: Order[A]): Boolean =
@@ -365,14 +365,10 @@ object Diet {
       case Some(a)      =>  order.gt(r.end, a)
     }
 
-  implicit def dietShowable[A](implicit s: Show[A]): Show[Diet[A]] = new Show[Diet[A]] {
-    override def show(f: Diet[A]): Predef.String = {
-        val m = Show[Range[A]]
-
-        f.intervals match {
-          case El()       =>  "{}"
-          case Nel(h, t)  =>  t.foldLeft("{" + m.show(h))((acc, r) => acc + ", " + m.show(r)) + "}"
-        }
-    }
+  implicit def dietShowable[A](implicit s: Show[Range[A]]): Show[Diet[A]] = new Show[Diet[A]] {
+    override def show(f: Diet[A]): Predef.String = f.intervals match {
+        case El()       => "{}"
+        case Nel(h, t)  => t.foldLeft("{" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "}"
+      }
   }
 }
