@@ -39,8 +39,9 @@ import cats.data.OneAnd
 import cats.syntax.eq._
 
 import scala.Array
-import scala.annotation.tailrec
 import scala.math.{max, min}
+
+import scala.collection.immutable.{Vector => SVector}
 
 import java.lang.IndexOutOfBoundsException
 
@@ -604,8 +605,13 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
           (acc, this drop index)
       }
     }
-
-    inner(0, Vector.empty)
+    try
+      inner(0, Vector.empty)
+    catch {
+      case e: java.lang.Throwable =>
+        e.printStackTrace
+        null
+    }
   }
 
   def startsWith(that: Vector[A])(implicit ev: Eq[A]): Boolean =
@@ -675,6 +681,8 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
     inner(0, Vector.empty)
   }
+
+  def toScalaVector: SVector[A] = foldRight[SVector[A]](SVector.empty)(_ +: _)
 
   def toList: List[A] = foldRight(El[A]) { _ :: _ }
 
@@ -1352,7 +1360,7 @@ private object VectorCases {
 
 sealed abstract class VectorInstance0 {
 
-  implicit def equal[A: Eq]: Eq[Vector[A]] =
+  implicit def vectorEqual[A: Eq]: Eq[Vector[A]] =
     new VectorEq[A]
 }
 
@@ -1422,7 +1430,7 @@ sealed abstract class VectorInstances extends VectorInstance0 {
         }
       }
 
-      loop(0, "")
+      "Vector(" + loop(0, "")+")"
     }
   }
 }

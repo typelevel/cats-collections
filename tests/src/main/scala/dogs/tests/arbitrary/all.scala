@@ -5,3 +5,4 @@ trait AllArbitrary
     with ArbitraryList
     with ArbitraryOption
     with ArbitraryStreaming
+    with ArbitraryVector

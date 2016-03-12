@@ -1,10 +1,10 @@
 package dogs
 
 import Predef._
-import algebra.Order
 import algebra.std.int._
 import scala.annotation.tailrec
 import scala.math
+import cats.{Eval,Order,Semigroup}
 
 /**
  * An immutable, ordered, extesntional Set
@@ -90,6 +90,16 @@ sealed abstract class Set[A] {
   def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
     case BTNil() => z
     case Branch(v, l, r) => r.foldLeft(f(l.foldLeft(z)(f), v))(f)
+  }
+
+  /**
+   * fold the elements together from min to max, using the passed
+   * seed, and accumulator function.
+   * O(n)
+   */
+  def foldRight[B](z: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = this match {
+    case BTNil() => z
+    case Branch(v, l, r) => l.foldRight(f(v, r.foldRight(z)(f)))(f)
   }
 
   /**
@@ -254,7 +264,7 @@ sealed abstract class Set[A] {
   // based on a Key, when the set is really storing a Key value pair.
   // The name was chosen so that it would be convenient for nobody to
   // remember.
-  private[dogs] def dothestupidthingbecausesetisnotamapdotbiz[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
+  private[dogs] def _getkv[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
     @tailrec def go(t: Set[A]): Option[A] = t match {
       case BTNil() => None()
       case Branch(v,l,r) =>
@@ -267,6 +277,18 @@ sealed abstract class Set[A] {
     go(this)
   }
 
+  private[dogs] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): Set[A] = {
+    (this match {
+      case BTNil() =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
+      case branch @ Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
+        case 0 =>
+          val (k,v) = ev(a)
+          Branch((k -> V.combine(v,value)).asInstanceOf[A], l, r)
+        case o if o < 0 => Branch(a, l.updateKey(key, value), r)
+        case _ => Branch(a, l, r.updateKey(key,value))
+      }
+    }).balance
+  }
 
   private[dogs] val height: Int
 }

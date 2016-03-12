@@ -5,7 +5,7 @@ object Predef {
   import scala.{deprecated, inline}
 
   @inline def identity[A](a: A): A = a
-  @inline def implicitly[A](implicit a: A): A = a
+  def implicitly[A](implicit a: A): A = a
 
   type Any = scala.Any
   type AnyRef = scala.AnyRef

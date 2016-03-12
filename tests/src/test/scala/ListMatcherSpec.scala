@@ -6,7 +6,7 @@ package dogs
 package tests
 
 import dogs.Predef._
-import algebra.Order
+import cats.Order
 import algebra.std.int._
 import org.scalatest.{FlatSpec, Matchers} 
 

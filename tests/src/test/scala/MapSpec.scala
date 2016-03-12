@@ -7,7 +7,7 @@ import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
 import org.scalatest._
 import dogs.tests.arbitrary._
-import algebra.Order
+import cats.Order
 import algebra.std.int._
 import algebra.std.string._
 

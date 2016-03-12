@@ -9,16 +9,16 @@ import cats.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
+import algebra.laws.{GroupLaws, OrderLaws}
 
-object DListSpec extends DogsSuite {
+class DListSpec extends DogsSuite {
   import DList._
   import List._
   import arbitrary.list._
   import arbitrary.dlist._
 
-  implicit def eqTuple3[A: Eq, B: Eq, C: Eq]: Eq[(A,B,C)] = new Eq[(A,B,C)] {
-    def eqv(l: (A,B,C), r: (A,B,C)) = l._1 == r._1 && l._2 == r._2 && l._3 == r._3
-  }
+  checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
+  checkAll("DList[Int]", OrderLaws[DList[Int]].eqv)
 
   checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
   checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))

@@ -3,11 +3,12 @@ import ScoverageSbtPlugin.ScoverageKeys._
 name := "dogs-tests"
 
 libraryDependencies ++= Seq (
-  "org.typelevel"  %%% "cats-laws"  % "0.4.1",
-  "org.scalactic"  %%% "scalactic"  % "2.2.6",
-  "org.scalacheck" %%% "scalacheck" % "1.12.4",
-  "org.scalatest"  %%% "scalatest"  % "3.0.0-M7" % "test",
-  "org.typelevel"  %%% "discipline" % "0.4"      % "test",
+  "org.typelevel"  %%% "cats-laws"          % "0.4.1",
+  "org.scalactic"  %%% "scalactic"          % "2.2.6",
+  "org.scalacheck" %%% "scalacheck"         % "1.12.4",
+  "org.scalatest"  %%% "scalatest"          % "3.0.0-M7" % "test",
+  "org.typelevel"  %%% "catalysts-platform" % "0.0.2"    % "test",
+  "org.typelevel"  %%% "discipline"         % "0.4"      % "test",
   compilerPlugin("org.spire-math" %% "kind-projector" % "0.6.3")
 )
 
@@ -36,3 +37,5 @@ scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
 
 
 coverageExcludedPackages := "dogs\\.tests\\.arbitrary\\..*"
+
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")

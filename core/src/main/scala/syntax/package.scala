@@ -3,6 +3,7 @@ package dogs
 package object syntax {
   object all extends
       BedazzleBirds   with
+      FoldableSyntax  with
       ListBedazzle    with
       OptionSyntax    with
       RangeSyntax     with
@@ -13,4 +14,5 @@ package object syntax {
   object option    extends OptionSyntax
   object range     extends RangeSyntax
   object streaming extends StreamingSyntax
+  object foldable    extends FoldableSyntax
 }

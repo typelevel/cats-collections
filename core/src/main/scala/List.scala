@@ -7,6 +7,10 @@ import scala.annotation.{tailrec}
 import dogs.syntax.birds._
 import cats._
 
+import org.scalacheck.Prop
+import Prop._
+
+
 /**
  * Immutable, singly-linked list implementation.
  *
@@ -392,14 +396,15 @@ trait ListInstances {
     override def combine(l: List[A], r: List[A]) = l ::: r
   }
 
+
   implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
     new Traverse[List] with MonadCombine[List] with CoflatMap[List] {
 
-      def empty[A]: List[A] = empty
+      def empty[A]: List[A] = List.empty
 
       def combineK[A](x: List[A], y: List[A]): List[A] = x ++ y
 
-      def pure[A](x: A): List[A] = x :: empty
+      def pure[A](x: A): List[A] = x :: List.empty
 
       override def map[A, B](fa: List[A])(f: A => B): List[B] =
         fa.map(f)
@@ -410,32 +415,18 @@ trait ListInstances {
       override def map2[A, B, Z](fa: List[A], fb: List[B])(f: (A, B) => Z): List[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
 
-      def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = {
-        @tailrec def loop(buf: ListBuilder[B], as: List[A]): List[B] =
-          as match {
-            case El() => buf.run
-            case Nel(_,rest) => loop(buf += f(as), rest)
-          }
-        loop(new ListBuilder[B], fa)
-      }
+      def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = fa coflatMap f
 
       def foldLeft[A, B](fa: List[A], b: B)(f: (B, A) => B): B =
         fa.foldLeft(b)(f)
 
-      def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
-        def loop(as: List[A]): Eval[B] =
-          as match {
-            case El() => lb
-            case Nel(h, t) => f(h, Eval.defer(loop(t)))
-          }
-        Eval.defer(loop(fa))
-      }
+      def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldr(lb)(f)
 
-      def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = {
-        val gba = G.pure(new ListBuilder[B])
-        val gbb = fa.foldLeft(gba)((buf, a) => G.map2(buf, f(a)){(lb,a) => lb += a; lb })
-        G.map(gbb)(_.run)
-      }
+     def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = {
+       val gba = G.pure(Vector.empty[B])
+       val gbb = fa.foldLeft(gba)((buf, a) => G.map2(buf, f(a))(_ :+ _))
+       G.map(gbb)(_.toList)
+     }
 
       override def exists[A](fa: List[A])(p: A => Boolean): Boolean =
         fa.exists(p)
@@ -466,6 +457,22 @@ trait ListInstances {
     }
   }
 }
+
+object Nel extends NelInstances
+
+trait NelInstances {
+  implicit def nelCmp[A](implicit A: Order[A]): Order[Nel[A]] =
+    new Order[Nel[A]] {
+      override def compare(a: Nel[A], b: Nel[A]): Int = {
+        val cmp = A.compare(a.head, b.head)
+        if(cmp == 0) {
+          return List.listCmp[A].compare(a.tail, b.tail)
+        } else cmp
+      }
+    }
+}
+
+
 
 final private[dogs] class ListBuilder[A] {
   import List.empty

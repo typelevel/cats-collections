@@ -4,7 +4,7 @@
 package dogs
 package tests
 
-import algebra.Order
+import cats.Order
 import algebra.std.int._
 import org.scalatest.matchers.{MatchResult, Matcher}
 import dogs.Predef._

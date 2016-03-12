@@ -2,8 +2,7 @@ package dogs
 
 import Predef._
 import scala.{annotation,unchecked}
-import algebra.Eq
-import cats.Eval
+import cats.{Eq,Eval}
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
@@ -211,7 +210,6 @@ private[dogs] case object EmptyDequeue extends Dequeue[Nothing] { self =>
 
 private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
   implicit def A: Eq[A]
-
   final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
     Eq[Streaming[A]].eqv(a.toStreaming, b.toStreaming)
 }

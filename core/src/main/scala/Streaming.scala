@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import Option._
 import cats.data.Ior
-import algebra.Eq
+import cats.Eq
 import cats.Eval, cats.Eval._
 
 /**

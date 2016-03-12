@@ -7,4 +7,5 @@ package object arbitrary {
   object list extends ArbitraryList
   object option extends ArbitraryOption
   object streaming extends ArbitraryStreaming
+  object vector extends ArbitraryVector
 }
