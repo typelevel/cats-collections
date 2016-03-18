@@ -34,15 +34,19 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - intervals:				the list of all intervals (sets) in the tree. The sets are disjoint sets.
 - toList: 				list of sorted values in the tree
 
+## `Diet` is *showable* so we can call `show` on it.
+
 ## Example usage:
 
 Start by creating an empty Diet:
 
 ```tut
-import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._
+import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._
 
 val d: Diet[Int] = Diet.empty
 d.isEmpty
+
+d.show
 ```
 
 And we can add an item:
@@ -50,6 +54,8 @@ And we can add an item:
 ```tut
 val d2 = d.add(12)
 d2.isEmpty
+
+d2.show
 ```
 
 And now we can check that it thinks 12 is in the set, but not other numbers
@@ -69,7 +75,9 @@ d3.isEmpty
 Asking to remove an element not in the set is a noop:
 
 ```tut
-Diet.empty[Int].remove(10)
+val s = Diet.empty[Int].remove(10)
+
+s.show
 ```
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
@@ -79,7 +87,11 @@ val d = Diet.empty[Int].addRange(1 to 20)
 d.contains(21)
 d.contains(20)
 d.contains(10)
+
 val d2 = d - (10 to 12)
+
+d2.show
+
 d2.contains(10)
 d2.containsRange(1 to 5)
 d2.containsRange(11 to 15) // fails since not the entire range is contained
@@ -90,8 +102,8 @@ Given two Diets, we can find the union or the intersection:
 ```tut
 val d1 = Diet.empty[Int] + (5 to 10)
 val d2 = Diet.empty[Int] + (7 to 12)
-(d1 & d2).intervals
-(d1 | d2).intervals
+(d1 & d2).show
+(d1 | d2).show
 ```
 Asking to remove non existing range yields the same diet
 
@@ -99,7 +111,7 @@ Asking to remove non existing range yields the same diet
 val d = Diet.empty[Int].addRange((5 to 20))
 
 val d1 = d.removeRange((1 to 4))
-d1.intervals
+d1.show
 ```
 
 Asking to remove a range yields a new Diet without the range
@@ -108,7 +120,7 @@ Asking to remove a range yields a new Diet without the range
 val d = Diet.empty[Int].addRange((5 to 20)).addRange(22 to 30)
 val d2 = d.removeRange((5 to 20))
 
-d2.intervals
+d2.show
 ```
 
 Asking to remove a subrange splits the Diet
@@ -120,4 +132,12 @@ val d3 = d.removeRange((10 to 15))
 (10 to 15).toList.forall { i => d3.contains(i) }
 (5 to 9).toList.forall {i => d3.contains(i) }
 (16 to 20).toList.forall {i => d3.contains(i) }
+```
+
+Adding a inverted range
+
+```tut
+val d = Diet.empty[Int] + Range(20, 10)
+
+d.show
 ```

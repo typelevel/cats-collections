@@ -9,6 +9,8 @@ import syntax.range._
 import algebra.Order
 import algebra.std.int._
 
+import scala.Predef
+
 
 object DietSpec extends Properties("Diet")  with DogMatcher {
 
@@ -357,6 +359,25 @@ class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
       - Range(25, 60))
 
     diet.toList() should matchTo(List(9, 10, 12, 13, 14, 20, 21, 23, 24))
+  }
+}
+
+class DietTestShow extends FlatSpec with Matchers {
+
+  import Diet._
+  import cats.std.int._
+  import cats.syntax.all._
+
+  "Diet" should "shown empty" in {
+    val diet = Diet.empty[Int]
+
+    diet.show should be ("{}")
+  }
+
+  it should "shown all intervals" in {
+    val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
+
+    diet.show should be ("{[1, 10], [20, 100]}")
   }
 }
 
