@@ -66,55 +66,66 @@ sealed abstract class Diet[A] {
   def toList()(implicit discrete: Enum[A], order: Order[A]): List[A] =
     intervals.flatMap(lst => lst.generate)
 
-  /**
-   * Add new value range [x, y] to the Diet.
-   */
-  def addRange(range: Range[A])(implicit discrete: Enum[A], order: Order[A]): Diet[A] = (this, range) match {
-   // Cases:
-   //  Trivial:
-   //    (1) [x, y] is a subrange of an existing range
-   //    (2) [x, y] extends diet to the left st x < min(diet) => left(diet) is not needed
-   //    (3) same as (2) but to the right
-   //  Non-Trivial:
-   //    (4) [x, y] extends diet to the left st x > min(diet) => extend diet and re-insert ranges in left(diet)
-   //    (5) [x, y] does not extend diet, [x, y] has to be insert into left(diet)
-   //    (6) same as (4) to the right
-   //    (7) same as (5) to the right
-   // 
-    case (_, EmptyRange())                =>  this
-    case (EmptyDiet(), r)                 =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
-    case (d @ DietNode(x, y, l, r), rng)  => {
+  private [dogs] def insertRange(range: Range[A])(implicit discrete: Enum[A], order: Order[A]): Diet[A] =
+    (this, range) match {
+      // Cases:
+      //  Trivial:
+      //    (1) [x, y] is a subrange of an existing range
+      //    (2) [x, y] extends diet to the left st x < min(diet) => left(diet) is not needed
+      //    (3) same as (2) but to the right
+      //  Non-Trivial:
+      //    (4) [x, y] extends diet to the left st x > min(diet) => extend diet and re-insert ranges in left(diet)
+      //    (5) [x, y] does not extend diet, [x, y] has to be insert into left(diet)
+      //    (6) same as (4) to the right
+      //    (7) same as (5) to the right
+      //
+      case (_, EmptyRange())                =>  this
+      case (EmptyDiet(), r)                 =>  DietNode(r.start, r.end, EmptyDiet(), EmptyDiet())
+      case (d @ DietNode(x, y, l, r), rng)  => {
 
-      val (m, n) = rng - (Range(x, y))
+        val (m, n) = rng - (Range(x, y))
 
-      if (Range(x, y).contains(rng)) {                                      //(1)
-        this
-      } else if (isBestLeft(rng, d) && discrete.adj(m.end, x)) {            //(2)
-        DietNode(rng.start, y, EmptyDiet(), r) + n
-      } else if (isBestRight(rng, d) && discrete.adj(y, n.start)){          //(3)
-        DietNode(x, rng.end, l, EmptyDiet()) + m
-      } else {                                                              //More complex cases
+        if (Range(x, y).contains(rng)) {                                      //(1)
+          this
+        } else if (isBestLeft(rng, d) && discrete.adj(m.end, x)) {            //(2)
+          DietNode(rng.start, y, EmptyDiet(), r) + n
+        } else if (isBestRight(rng, d) && discrete.adj(y, n.start)){          //(3)
+          DietNode(x, rng.end, l, EmptyDiet()) + m
+        } else {                                                              //More complex cases
         val root = {
           if (!m.isEmpty && discrete.adj(m.end, x)) {                       //(4)
-            val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
-            val t = l.intervals.foldLeft[Diet[A]](li)((d, r) => d.addRange(r))
+          val li = DietNode(m.start, y, EmptyDiet(), EmptyDiet())
+            val t = l.intervals.foldLeft[Diet[A]](li)((d, r) => d.insertRange(r))
 
             t.asInstanceOf[DietNode[A]]
           }
           else {
-            DietNode(x, y, l.addRange(m), r)                                //(5)
+            DietNode(x, y, l.insertRange(m), r)                                //(5)
           }
         }
 
-        if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
+          if (!n.isEmpty && discrete.adj(y, n.start)) {                       //(6)
           val ri = DietNode(root.x, n.end, root.left, EmptyDiet())
 
-          r.intervals.foldLeft[Diet[A]](ri)((d, r) => d.addRange(r))
-        }
-        else {
-          DietNode(root.x, y, root.left, r.addRange(n))                     //(7)
+            r.intervals.foldLeft[Diet[A]](ri)((d, r) => d.insertRange(r))
+          }
+          else {
+            DietNode(root.x, y, root.left, r.insertRange(n))                     //(7)
+          }
         }
       }
+    }
+
+  /**
+   * Add new value range [x, y] to the Diet.
+   */
+  def addRange(range: Range[A])(implicit discrete: Enum[A], order: Order[A]): Diet[A] = range match {
+    case EmptyRange() => this
+    case _ => {
+      if (order.lteqv(range.start, range.end))
+        insertRange(range)
+      else
+        insertRange(range.reverse)
     }
   }
 
