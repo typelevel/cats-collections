@@ -16,3 +16,9 @@ library.
 This project is in its infancy, it should be considered pre-alpha, it
 might never go anywhere, it could change drastically along the way if
 it does go somewhere.
+
+### CONTRIBUTING
+
+Contributions in all forms (including discussion, suggestions, bug reports, usage reports, pull requests, patches, etc) are welcome and encouraged from everyone!
+
+The dogs project demands that all activities surrourding the project follow the [Typelevel Code of Coduct](http://typelevel.org/conduct.html). If you witness any behavior from any individual which you feel might be harmful in any way or might not be a violation of the code of conduct, please speak up. Please contact any individual named in the Typelevel Code of Conduct so that it can be addresses as soon as possible. 
