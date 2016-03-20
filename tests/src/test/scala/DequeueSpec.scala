@@ -80,8 +80,8 @@ object DequeueSpec extends Properties("Dequeue") with ArbitraryList {
   property("foldLeft") = forAll { (q: Dequeue[Int]) =>
     q.foldLeft[List[Int]](List.empty)((xs,x) => Nel(x, xs)) == q.toBackStream.toList
   }
-  property("foldr") = forAll { (q: Dequeue[Int]) =>
-    q.foldr[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => Nel(x,xs))).value == q.toStreaming.toList
+  property("foldRight") = forAll { (q: Dequeue[Int]) =>
+    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => Nel(x,xs))).value == q.toStreaming.toList
   }
 }
 

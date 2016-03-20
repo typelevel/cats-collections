@@ -1,7 +1,8 @@
 package dogs
 
 import Predef._
-import algebra.Order
+import cats.{Eq,Eval,Order,Semigroup}
+import scala.collection.immutable.{Map=>SMap}
 
 /**
  * A tree based immutable Map.
@@ -20,12 +21,26 @@ class Map[K,V](val set: Set[(K,V)]) {
   def flatMap[B](f: V => Map[K,V])(implicit K: Order[K]): Map[K,V] =
     new Map(set.flatMap(kv => f(kv._2).set))
 
+   /**
+   * Fold across all the key/value pairs, associating maximum keys
+   * first.
+   */
+  def foldRight[B](b: Eval[B])(f: ((K,V),Eval[B]) => Eval[B]): Eval[B] =
+    set.foldRight(b)(f)
+
   /**
    * Fold across all the key/value pairs, associating minumum keys
    * first.
    */
   def foldLeft[B](b: B)(f: (B,(K,V)) => B): B =
     set.foldLeft(b)(f)
+
+   /**
+   * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist.
+   * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
+   */
+  def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): Map[K, V] =
+    f(get(k)) map { v => this + (k -> v) } getOrElse this
 
   /**
    * Check if we have the given key in the map.
@@ -57,17 +72,52 @@ class Map[K,V](val set: Set[(K,V)]) {
    */
   def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
 
+  /**
+   * Return a list of Key,Value pairs
+   * O(N)
+   */
+  def toList: List[(K,V)] = {
+    val lb = new ListBuilder[(K,V)]
+    this.foldLeft(()){(_,kv) => val _ = lb += kv}
+    lb.run
+  }
+
+  /**
+   * Return a stream of Key,Value pairs
+   * O(N)
+   */
+  def toStreaming: Streaming[(K,V)] =
+    foldRight(Eval.now(Streaming.empty[(K,V)])){ (a, ls) =>
+      Eval.now(Streaming.cons(a, ls))
+    }.value
+              
+  /**
+   * Return a scala.collection.immutable.map
+   */
+  def toScalaMap: scala.collection.immutable.Map[K,V] = 
+    foldLeft(scala.collection.immutable.Map.empty[K,V])((m,kv) => m + kv)
+
+
+  /**
+   * Update this map with the given key,value, if the Key is already
+   * present, the value is combined with the already present value
+   * using the provided Semigroup.
+   * O(log n)
+   */
+  def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): Map[K,V] =
+    new Map(set.updateKey(key, value))
+
   // 
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)
   // 
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
-    set.dothestupidthingbecausesetisnotamapdotbiz(_._1,  key)
+    set._getkv(_._1,  key)
 
   private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
 }
 
-object Map {
+object Map extends MapInstances {
   /**
    * Construct a map containing the given key/value pairs.
    * O(n log n)
@@ -79,4 +129,17 @@ object Map {
    * Return an empty map.
    */
   def empty[K,V]: Map[K,V] = new Map(Set.empty)
+}
+
+trait MapInstances {
+  implicit def eqMap[K: Eq, V: Eq](implicit K: Eq[K], V: Eq[V]): Eq[Map[K,V]] = new Eq[Map[K,V]] {
+    // TODO get rid of this once cats has it:
+    implicit val tupleEq: Eq[(K,V)] = new Eq[(K,V)] {
+      override def eqv(l: (K,V), r: (K,V)): Boolean =
+        K.eqv(l._1, r._1) && V.eqv(l._2, r._2)
+    }
+
+    override def eqv(l: Map[K,V], r: Map[K,V]): Boolean =
+      Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
+  }
 }

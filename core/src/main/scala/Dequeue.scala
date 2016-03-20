@@ -2,8 +2,7 @@ package dogs
 
 import Predef._
 import scala.{annotation,unchecked}
-import algebra.Eq
-import cats.Eval
+import cats.{Eq,Eval}
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
@@ -123,7 +122,7 @@ sealed abstract class Dequeue[A] {
     }
   }
 
-  def foldr[B](b: Eval[B])(f: (A,Eval[B]) => Eval[B]): Eval[B] = this match {
+  def foldRight[B](b: Eval[B])(f: (A,Eval[B]) => Eval[B]): Eval[B] = this match {
     case EmptyDequeue() => b
     case SingletonDequeue(a) => f(a, b)
     case FullDequeue(front,_,back,_) => {
@@ -132,17 +131,6 @@ sealed abstract class Dequeue[A] {
       f(front.head, frontb)
     }
   }
-
-  def foldRight[B](b: B)(f: (A,B) => B): B = this match {
-    case EmptyDequeue() => b
-    case SingletonDequeue(a) => f(a, b)
-    case FullDequeue(front,_,back,_) => {
-      val backb = back.tail.foldLeft(f(back.head, b))((b,a) => f(a,b))
-      val frontb = front.tail.foldRight(backb)(f)
-      f(front.head, frontb)
-    }
-  }
-
 
   def map[B](f: A => B): Dequeue[B] = {
     this match {

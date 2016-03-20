@@ -2,7 +2,7 @@ package dogs
 
 import cats.Show
 import dogs.Predef._
-import algebra.Order
+import cats.Order
 import scala.annotation.tailrec
 
 /**

@@ -68,7 +68,7 @@ class AppendThenToList {
   @Benchmark def dequeue(): Unit = {
     listOfLists.foldLeft[Dequeue[Int]](Dequeue.empty)((dq,li) =>
       li.foldLeft(dq)(_ :+ _)
-    ).foldRight[List[Int]](List.empty)(_ :: _)
+    ).foldRight[List[Int]](Eval.now(List.empty))((a,las) => las.map(_.::(a)))
   }
 }
 
