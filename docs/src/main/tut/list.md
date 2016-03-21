@@ -90,7 +90,8 @@ Many of the expected methods on `List` exist. We are still missing
 many other useful methods, please feel free to contribute!
 
 ```tut
-import algebra.std.int._
+import cats.std.int._
+import cats.Eval
 
 val x: List[Int] = List(1,2,3)
 
@@ -98,7 +99,7 @@ x.map(_.toString)
 x.flatMap(x => List(x, x+1))
 x.filter(_ % 2 == 0)
 x.foldLeft(0)(_ + _)
-x.foldRight(scala.Vector.empty[Int])(_ +: _)
+x.foldRight(Eval.now(scala.Vector.empty[Int]))((a,la) => la.map(a +: _))
 x.foreach(println)
 x.headOption
 x ++ List(6,7,8)
