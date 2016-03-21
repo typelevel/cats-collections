@@ -142,19 +142,63 @@ sealed abstract class Dequeue[A] {
     }
   }
 
-  def flatMap[B](f: A => Dequeue[B]): Dequeue[B] =
+  def flatMap[B](f: A => Dequeue[B]): Dequeue[B] = {
+    def go(n: Nel[A]): (ListBuilder[B], Int, Option[B]) = {
+      val lb = new ListBuilder[B]
+      var s = 0
+      var o: Option[B] = None()
+
+      n.foreach { a =>
+        f(a) match {
+          case SingletonDequeue(b) =>
+            s = s + 1
+            o.foreach{x =>  val _ = lb += x }
+            o = Some(b)
+
+          case FullDequeue(f, _, b, _) =>
+            f.foreach{ b =>
+              s = s + 1
+              o.foreach{x =>  val _ = lb += x }
+              o = Some(b)
+            }
+            b.reverse.foreach { b =>
+              s = s +1
+              o.foreach{ x => val _ = lb += x }
+              o = Some(b)
+            }
+          case _ =>
+        }
+      }
+
+      (lb, s, o)
+    }
+
     this match {
       case EmptyDequeue() => EmptyDequeue()
       case SingletonDequeue(a) => f(a)
-      case FullDequeue(front, _, back, bs) =>
-        val nfront = front.foldLeft[Dequeue[B]](EmptyDequeue())((dq, a) =>
-          dq ++ f(a)
-        )
-        val nback = back.foldLeft[Dequeue[B]](EmptyDequeue())((dq, a) =>
-          f(a) ++ dq
-        )
-        nfront ++ nback
+      case FullDequeue(front, _, back, _) =>
+        val (fl,fs,fo) = go(front)
+        val (bl,bs,bo) = go(back.reverse)
+
+        (fo,bo) match {
+          case (None(),None()) => EmptyDequeue()
+          case (Some(a), None()) =>
+            if(fs == 1)
+              SingletonDequeue(a)
+            else
+              FullDequeue(fl.run.asInstanceOf[Nel[B]], fs-1, Nel(a, List.empty), 1)
+          case (None(), Some(a)) =>
+            if(bs == 1)
+              SingletonDequeue(a)
+            else
+              FullDequeue(Nel(a, List.empty), 1, bl.run.asInstanceOf[Nel[B]], bs -1)
+          case (Some(f), Some(b)) =>
+            fl += f
+            bl += b
+            FullDequeue(fl.run.asInstanceOf[Nel[B]], fs, bl.run.reverse.asInstanceOf[Nel[B]], bs)
+        }
     }
+  }
 
   def coflatMap[B](f: Dequeue[A] => B): Dequeue[B] = {
     def loop(op: Option[(A, Dequeue[A])], last: Dequeue[A], acc: Dequeue[B]): Dequeue[B] =
