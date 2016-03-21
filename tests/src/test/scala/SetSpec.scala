@@ -10,7 +10,7 @@ import scala.Array
 import scala.Predef.intArrayOps
 import algebra.std.int._
 
-object SetSpec extends Properties("Set") with ArbitraryList {
+class SetSpec extends Properties("Set") with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   property("set is always sorted") = forAll { (xs: List[Int]) =>

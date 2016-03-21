@@ -12,13 +12,8 @@ import org.scalacheck.Prop.{forAll,secure}
 
 object DListSpec extends DogsSuite {
   import DList._
-  import List._
   import arbitrary.list._
   import arbitrary.dlist._
-
-  implicit def eqTuple3[A: Eq, B: Eq, C: Eq]: Eq[(A,B,C)] = new Eq[(A,B,C)] {
-    def eqv(l: (A,B,C), r: (A,B,C)) = l._1 == r._1 && l._2 == r._2 && l._3 == r._3
-  }
 
   checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
   checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))

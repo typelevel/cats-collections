@@ -1,8 +1,8 @@
 package dogs
 
 import Predef._
+import cats._
 import scala.{annotation,unchecked}
-import cats.{Eq,Eval}
 
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
@@ -142,6 +142,31 @@ sealed abstract class Dequeue[A] {
     }
   }
 
+  def flatMap[B](f: A => Dequeue[B]): Dequeue[B] =
+    this match {
+      case EmptyDequeue() => EmptyDequeue()
+      case SingletonDequeue(a) => f(a)
+      case FullDequeue(front, _, back, bs) =>
+        val nfront = front.foldLeft[Dequeue[B]](EmptyDequeue())((dq, a) =>
+          dq ++ f(a)
+        )
+        val nback = back.foldLeft[Dequeue[B]](EmptyDequeue())((dq, a) =>
+          f(a) ++ dq
+        )
+        nfront ++ nback
+    }
+
+  def coflatMap[B](f: Dequeue[A] => B): Dequeue[B] = {
+    def loop(op: Option[(A, Dequeue[A])], last: Dequeue[A], acc: Dequeue[B]): Dequeue[B] =
+      op match {
+        case None() => acc
+        case Some((_, rest)) => loop(rest.uncons, rest, acc :+ f(last))
+      }
+
+    loop(this.uncons, this, EmptyDequeue())
+  }
+
+
   def size: Int = this match {
     case EmptyDequeue() => 0
     case SingletonDequeue(_) => 1
@@ -154,15 +179,6 @@ sealed abstract class Dequeue[A] {
   }
 }
 
-object Dequeue {
-  def apply[A](as: A*) = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
-
-/*
-  def fromFoldable[F[_],A](fa: F[A])(implicit F: Foldable[F]): Dequeue[A] =
-    F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) ⇒ q :+ a)
-*/
-  def empty[A]: Dequeue[A] = EmptyDequeue()
-}
 
 /**
   * special case of the queue when it contains just a single element
@@ -197,9 +213,63 @@ private[dogs] case object EmptyDequeue extends Dequeue[Nothing] { self =>
   def unapply[A](q: Dequeue[A]) = q.isEmpty
 }
 
+
 private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
   implicit def A: Eq[A]
 
   final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
     Eq[Streaming[A]].eqv(a.toStreaming, b.toStreaming)
+}
+
+object Dequeue extends DequeueInstances {
+  def apply[A](as: A*) = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
+
+  def fromFoldable[F[_],A](fa: F[A])(implicit F: Foldable[F]): Dequeue[A] =
+    F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) ⇒ q :+ a)
+
+  def empty[A]: Dequeue[A] = EmptyDequeue()
+}
+
+sealed trait DequeueInstances {
+  implicit def dequeueEqual[A](implicit eqA: Eq[A]): Eq[Dequeue[A]] = new DequeueEqual[A] {
+    implicit def A = eqA
+  }
+
+  implicit def dequeueMonoid[A]: Monoid[Dequeue[A]] = new Monoid[Dequeue[A]] {
+    override val empty: Dequeue[A] = Dequeue.empty
+    override def combine(l: Dequeue[A], r: Dequeue[A]) = l ++ r
+  }
+
+  implicit val dequeueInstance: Traverse[Dequeue] with MonadCombine[Dequeue] with CoflatMap[Dequeue] = new Traverse[Dequeue] with MonadCombine[Dequeue] with CoflatMap[Dequeue] {
+    override def empty[A]: Dequeue[A] = Dequeue.empty
+
+    override def combineK[A](l: Dequeue[A], r: Dequeue[A]): Dequeue[A] = l ++ r
+
+    override def pure[A](a: A): Dequeue[A] = SingletonDequeue(a)
+
+    override def map[A,B](fa: Dequeue[A])(f: A => B) = fa map f
+
+    override def flatMap[A,B](fa: Dequeue[A])(f: A => Dequeue[B]): Dequeue[B] =
+      fa flatMap f
+
+    override def map2[A,B,Z](fa: Dequeue[A], fb: Dequeue[B])(f: (A,B) => Z): Dequeue[Z] =
+      fa.flatMap(a => fb.map(b => f(a,b)))
+
+    override def coflatMap[A,B](fa: Dequeue[A])(f: Dequeue[A] => B): Dequeue[B] = fa coflatMap f
+
+    override def foldLeft[A,B](fa: Dequeue[A], b: B)(f: (B,A) => B): B =
+      fa.foldLeft(b)(f)
+
+    override def foldRight[A,B](fa: Dequeue[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(lb)(f)
+
+    override def traverse[G[_], A, B](fa: Dequeue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Dequeue[B]] = {
+      val gba = G.pure(EmptyDequeue[B]())
+      fa.foldLeft(gba)((bs, a) => G.map2(bs, f(a))(_ :+ _))
+    }
+
+    override def isEmpty[A](fa: Dequeue[A]): Boolean = fa match {
+      case EmptyDequeue() => true
+      case _ => false
+    }
+  }
 }

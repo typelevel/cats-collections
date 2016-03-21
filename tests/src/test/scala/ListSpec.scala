@@ -10,9 +10,8 @@ import algebra.Eq
 import algebra.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
 
-object ListSpec extends DogsSuite {
+class ListSpec extends DogsSuite {
   checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
   checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
 
@@ -24,10 +23,6 @@ object ListSpec extends DogsSuite {
 
   checkAll("List[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
   checkAll("Traverse[List]", SerializableTests.serializable(Traverse[List]))
-
-  implicit def eqTuple2[A: Eq, B: Eq]: Eq[(A,B)] = new Eq[(A,B)] {
-    def eqv(l: (A,B), r: (A,B)) = l._1 == r._1 && l._2 == r._2
-  }
 
   implicit class IterableOps[A](as: Iterable[A]) {
     def toScalaList: List[A] = List.fromIterable(as)

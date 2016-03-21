@@ -364,9 +364,7 @@ object List extends ListInstances {
   }
 }
 
-trait ListInstances {
-  import List._
-
+sealed trait ListInstances {
   implicit def listCmp[A](implicit A: Order[A]): Order[List[A]] = new Order[List[A]] {
     override def compare(a: List[A], b: List[A]): Int = (a,b) match {
       case (El(), El()) =>  0
@@ -390,29 +388,29 @@ trait ListInstances {
   implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
     new Traverse[List] with MonadCombine[List] with CoflatMap[List] {
 
-      def empty[A]: List[A] = List.empty
+      override def empty[A]: List[A] = List.empty
 
-      def combineK[A](x: List[A], y: List[A]): List[A] = x ++ y
+      override def combineK[A](l: List[A], r: List[A]): List[A] = l ++ r
 
-      def pure[A](x: A): List[A] = x :: List.empty
+      override def pure[A](a: A): List[A] = a :: List.empty
 
       override def map[A, B](fa: List[A])(f: A => B): List[B] =
         fa.map(f)
 
-      def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] =
+      override def flatMap[A, B](fa: List[A])(f: A => List[B]): List[B] =
         fa.flatMap(f)
 
       override def map2[A, B, Z](fa: List[A], fb: List[B])(f: (A, B) => Z): List[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
 
-      def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = fa coflatMap f
+      override def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = fa coflatMap f
 
-      def foldLeft[A, B](fa: List[A], b: B)(f: (B, A) => B): B =
+      override def foldLeft[A, B](fa: List[A], b: B)(f: (B, A) => B): B =
         fa.foldLeft(b)(f)
 
-      def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(lb)(f)
+      override def foldRight[A, B](fa: List[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(lb)(f)
 
-      def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = {
+      override def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = {
         import scala.collection.immutable.Vector
         val gba = G.pure(Vector.empty[B])
         val gbb = fa.foldLeft(gba)((buf, a) => G.map2(buf, f(a))(_ :+ _))
