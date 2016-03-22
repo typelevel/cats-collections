@@ -1,24 +1,39 @@
 package dogs
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
+import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.collection.immutable.{List => SList, Nil => SNil}
 import scalaz.{DList => SZDList, IList}
 import cats.Eval
 
+trait Lists {
+  @Param(Array("10", "100", "1000", "10000"))
+  var n: Int = _
+
+  var listOfLists: SList[SList[Int]] = _
+  var listOfListsDogs: SList[List[Int]] = _
+  var listOfDLists: SList[DList[Int]] = _
+  var listOfSZDLists: SList[SZDList[Int]] = _
+  var dogsdl: DList[Int] = _
+  var scaalzdl: SZDList[Int] = _
+  var dequeuel: Dequeue[Int] = _
+
+  @Setup
+  def setup: Unit = {
+    listOfLists = (1 to n).toList.grouped(10).toList
+    listOfListsDogs = (1 to n).toList.grouped(10).toList.map(List.fromIterable)
+    listOfDLists = (1 to n).toList.grouped(10).toList.map(x => DList(List.fromIterable(x)))
+    listOfSZDLists = (1 to n).toList.grouped(10).toList.map(SZDList.apply)
+    dogsdl = listOfDLists.foldLeft[DList[Int]](DList.empty)(_ ++ _)
+    scaalzdl = listOfSZDLists.foldLeft[SZDList[Int]](SZDList(1))(_ ++ _)
+    dequeuel = listOfLists.foldLeft[Dequeue[Int]](Dequeue.empty)((dq,li) =>
+      li.foldLeft(dq)(_ :+ _)
+    )
+  }
+}
+
 @State(Scope.Thread)
-class Append {
-  val listOfLists: SList[SList[Int]] =
-    (1 to 10000).toList.grouped(10).toList
-
-  val listOfListsDogs: SList[List[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(List.fromIterable)
-
-  val listOfDLists: SList[DList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(x => DList(List.fromIterable(x)))
-
-  val listOfSZDLists: SList[SZDList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(SZDList.apply)
+class Append extends Lists {
 
   @Benchmark def dogsListAppend(): Unit = {
     listOfListsDogs.foldLeft[List[Int]](List.empty)(_ ++ _)
@@ -40,19 +55,7 @@ class Append {
 }
 
 @State(Scope.Thread)
-class AppendThenToList {
-  val listOfLists: SList[SList[Int]] =
-    (1 to 10000).toList.grouped(10).toList
-
-  val listOfListsDogs: SList[List[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(List.fromIterable)
-
-  val listOfDLists: SList[DList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(x => DList(List.fromIterable(x)))
-
-  val listOfSZDLists: SList[SZDList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(SZDList.apply)
-
+class AppendThenToList extends Lists {
   @Benchmark def dogsList(): Unit = {
     listOfListsDogs.foldLeft[List[Int]](List.empty)(_ ++ _)
   }
@@ -73,19 +76,7 @@ class AppendThenToList {
 }
 
 @State(Scope.Thread)
-class AppendThenIterate {
-  val listOfLists: SList[SList[Int]] =
-    (1 to 10000).toList.grouped(10).toList
-
-  val listOfListsDogs: SList[List[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(List.fromIterable)
-
-  val listOfDLists: SList[DList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(x => DList(List.fromIterable(x)))
-
-  val listOfSZDLists: SList[SZDList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(SZDList.apply)
-
+class AppendThenIterate extends Lists {
   @Benchmark def dogsList(): Unit = {
     val l = listOfListsDogs.foldLeft[List[Int]](List.empty)(_ ++ _)
     l.foldLeft(())((x, y) => ())
@@ -121,26 +112,7 @@ class AppendThenIterate {
 
 
 @State(Scope.Thread)
-class AppendThenHeadOption {
-
-  val listOfLists: SList[SList[Int]] =
-    (1 to 10000).toList.grouped(10).toList
-
-  val listOfDLists: SList[DList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(x => DList(List.fromIterable(x)))
-
-  val dogsdl = listOfDLists.foldLeft[DList[Int]](DList.empty)(_ ++ _)
-
-  val listOfSZDLists: SList[SZDList[Int]] =
-    (1 to 10000).toList.grouped(10).toList.map(SZDList.apply)
-
-  val scaalzdl = listOfSZDLists.foldLeft[SZDList[Int]](SZDList(1))(_ ++ _)
-
-  val dequeue = listOfLists.foldLeft[Dequeue[Int]](Dequeue.empty)((dq,li) =>
-      li.foldLeft(dq)(_ :+ _)
-    )
-
-
+class AppendThenHeadOption extends Lists {
   @Benchmark def dogsDListHeadOption(): Unit = {
     dogsdl.headOption
   }
@@ -150,7 +122,7 @@ class AppendThenHeadOption {
   }
 
   @Benchmark def dequeueHeadOption(): Unit = {
-    dequeue.frontOption
+    dequeuel.frontOption
   }
 }
 
