@@ -25,5 +25,5 @@ scala>  implicit val intEnum: Enum[Int] = new Enum[Int] {
      |     override def succ(x: Int): Int = x + 1
      |     override def pred(x: Int): Int = x - 1
      |   }
-intEnum: dogs.Enum[dogs.Predef.Int] = $anon$1@29dabb3
+intEnum: dogs.Enum[dogs.Predef.Int] = $anon$1@7ed01b03
 ```

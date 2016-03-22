@@ -41,7 +41,7 @@ import dogs.Range._
 import cats.implicits._
 
 scala> val range = Range(1, 10)
-range: dogs.Range[Int] = dogs.Range@37cfdc17
+range: dogs.Range[Int] = dogs.Range@7a9a847b
 
 scala> range.show
 res0: String = [1, 10]
@@ -88,14 +88,14 @@ Asking for the difference to another Range
 
 ```scala
 scala> val range = Range(10, 20)
-range: dogs.Range[Int] = dogs.Range@bed14bd
+range: dogs.Range[Int] = dogs.Range@30a5c06e
 
 scala> range.show
 res8: String = [10, 20]
 
 scala> val (l, r) = (range - Range(5, 9))
 l: dogs.Range[Int] = EmptyRange
-r: dogs.Range[Int] = dogs.Range@bed14bd
+r: dogs.Range[Int] = dogs.Range@30a5c06e
 
 scala> l.show
 res9: String = []
@@ -104,7 +104,7 @@ scala> r.show
 res10: String = [10, 20]
 
 scala> val (l, r) = range - Range(30, 40)
-l: dogs.Range[Int] = dogs.Range@bed14bd
+l: dogs.Range[Int] = dogs.Range@30a5c06e
 r: dogs.Range[Int] = EmptyRange
 
 scala> l.show
@@ -114,8 +114,8 @@ scala> r.show
 res12: String = []
 
 scala> val (l, r) = range - Range(15, 18)
-l: dogs.Range[Int] = dogs.Range@4707a8d6
-r: dogs.Range[Int] = dogs.Range@32ccc82a
+l: dogs.Range[Int] = dogs.Range@6fe39658
+r: dogs.Range[Int] = dogs.Range@6271c210
 
 scala> l.show
 res13: String = [10, 14]
@@ -138,7 +138,7 @@ Creating an **inverted** range
 
 ```scala
 scala> val range = Range(50, 20)
-range: dogs.Range[Int] = dogs.Range@5de5b1d8
+range: dogs.Range[Int] = dogs.Range@4a7fa219
 
 scala> range.toList
 res17: dogs.List[Int] = List(50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20)
@@ -148,13 +148,13 @@ The reverse of a range should be its inverted range
 
 ```scala
 scala> val range = Range(20, 30)
-range: dogs.Range[Int] = dogs.Range@6b84fdf0
+range: dogs.Range[Int] = dogs.Range@4f9c6e67
 
 scala> range.show
 res18: String = [20, 30]
 
 scala> val other = Range(30, 20)
-other: dogs.Range[Int] = dogs.Range@52604aef
+other: dogs.Range[Int] = dogs.Range@3998f52f
 
 scala> other.show
 res19: String = [30, 20]
