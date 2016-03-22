@@ -111,8 +111,11 @@ Many of the expected methods on `List` exist. We are still missing
 many other useful methods, please feel free to contribute!
 
 ```scala
-scala> import std.{intEq,intOrder}
-import std.{intEq, intOrder}
+scala> import cats.std.int._
+import cats.std.int._
+
+scala> import cats.Eval
+import cats.Eval
 
 scala> val x: List[Int] = List(1,2,3)
 x: dogs.List[dogs.Predef.Int] = List(1, 2, 3)
@@ -129,8 +132,8 @@ res5: dogs.List[dogs.Predef.Int] = List(2)
 scala> x.foldLeft(0)(_ + _)
 res6: Int = 6
 
-scala> x.foldRight(scala.Vector.empty[Int])(_ +: _)
-res7: scala.collection.immutable.Vector[dogs.Predef.Int] = Vector(1, 2, 3)
+scala> x.foldRight(Eval.now(scala.Vector.empty[Int]))((a,la) => la.map(a +: _))
+res7: cats.Eval[scala.collection.immutable.Vector[dogs.Predef.Int]] = cats.Eval$$anon$7@7e5ed65c
 
 scala> x.foreach(println)
 1

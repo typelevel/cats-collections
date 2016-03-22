@@ -23,6 +23,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - add:						add a value to the tree
 - addRange:				add the entire range to the tree
 - remove:					remove a value from the tree
+- removeRange:          remove a range from the tree
 - contains:				verify is a value is on the tree
 - containsRange:			verify that an interval is on the tree
 - (`-`) operator:		remove a range from the tree
@@ -33,15 +34,21 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 - intervals:				the list of all intervals (sets) in the tree. The sets are disjoint sets.
 - toList: 				list of sorted values in the tree
 
+## `Diet` is *showable* so we can call `show` on it.
+
 ## Example usage:
 
 Start by creating an empty Diet:
 
 ```scala
-scala> import dogs._, dogs.Predef._, dogs.std._, dogs.syntax.all._
+scala> import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._
 import dogs._
 import dogs.Predef._
-import dogs.std._
+import cats._
+import dogs.syntax.all._
+import algebra.std.int._
+import cats.implicits._
+import cats.std.int._
 import dogs.syntax.all._
 
 scala> val d: Diet[Int] = Diet.empty
@@ -49,6 +56,9 @@ d: dogs.Diet[dogs.Predef.Int] = EmptyDiet
 
 scala> d.isEmpty
 res0: dogs.Predef.Boolean = true
+
+scala> d.show
+res1: String = {}
 ```
 
 And we can add an item:
@@ -58,17 +68,20 @@ scala> val d2 = d.add(12)
 d2: dogs.Diet[dogs.Predef.Int] = DietNode(12,12,EmptyDiet,EmptyDiet)
 
 scala> d2.isEmpty
-res1: dogs.Predef.Boolean = false
+res2: dogs.Predef.Boolean = false
+
+scala> d2.show
+res3: String = {[12, 12]}
 ```
 
 And now we can check that it thinks 12 is in the set, but not other numbers
 
 ```scala
 scala> d2.contains(1)
-res2: dogs.Predef.Boolean = false
+res4: dogs.Predef.Boolean = false
 
 scala> d2.contains(12)
-res3: dogs.Predef.Boolean = true
+res5: dogs.Predef.Boolean = true
 ```
 
 If we remove our only element, we get back to the empty Diet:
@@ -78,14 +91,17 @@ scala> val d3 = d2.remove(12)
 d3: dogs.Diet[dogs.Predef.Int] = EmptyDiet
 
 scala> d3.isEmpty
-res4: dogs.Predef.Boolean = true
+res6: dogs.Predef.Boolean = true
 ```
 
 Asking to remove an element not in the set is a noop:
 
 ```scala
-scala> Diet.empty[Int].remove(10)
-res5: dogs.Diet[dogs.Predef.Int] = EmptyDiet
+scala> val s = Diet.empty[Int].remove(10)
+s: dogs.Diet[dogs.Predef.Int] = EmptyDiet
+
+scala> s.show
+res7: String = {}
 ```
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
@@ -95,25 +111,28 @@ scala> val d = Diet.empty[Int].addRange(1 to 20)
 d: dogs.Diet[dogs.Predef.Int] = DietNode(1,20,EmptyDiet,EmptyDiet)
 
 scala> d.contains(21)
-res6: dogs.Predef.Boolean = false
+res8: dogs.Predef.Boolean = false
 
 scala> d.contains(20)
-res7: dogs.Predef.Boolean = true
+res9: dogs.Predef.Boolean = true
 
 scala> d.contains(10)
-res8: dogs.Predef.Boolean = true
+res10: dogs.Predef.Boolean = true
 
 scala> val d2 = d - (10 to 12)
 d2: dogs.Diet[dogs.Predef.Int] = DietNode(1,9,EmptyDiet,DietNode(13,20,EmptyDiet,EmptyDiet))
 
+scala> d2.show
+res11: String = {[1, 9], [13, 20]}
+
 scala> d2.contains(10)
-res9: dogs.Predef.Boolean = false
+res12: dogs.Predef.Boolean = false
 
 scala> d2.containsRange(1 to 5)
-res10: dogs.Predef.Boolean = true
+res13: dogs.Predef.Boolean = true
 
 scala> d2.containsRange(11 to 15) // fails since not the entire range is contained
-res11: dogs.Predef.Boolean = false
+res14: dogs.Predef.Boolean = false
 ```
 
 Given two Diets, we can find the union or the intersection:
@@ -125,9 +144,63 @@ d1: dogs.Diet[dogs.Predef.Int] = DietNode(5,10,EmptyDiet,EmptyDiet)
 scala> val d2 = Diet.empty[Int] + (7 to 12)
 d2: dogs.Diet[dogs.Predef.Int] = DietNode(7,12,EmptyDiet,EmptyDiet)
 
-scala> (d1 & d2).intervals
-res12: dogs.List[dogs.Range[dogs.Predef.Int]] = List(Range(7,10))
+scala> (d1 & d2).show
+res15: String = {[7, 10]}
 
-scala> (d1 | d2).intervals
-res13: dogs.List[dogs.Range[dogs.Predef.Int]] = List(Range(5,12))
+scala> (d1 | d2).show
+res16: String = {[5, 12]}
+```
+Asking to remove non existing range yields the same diet
+
+```scala
+scala> val d = Diet.empty[Int].addRange((5 to 20))
+d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+
+scala> val d1 = d.removeRange((1 to 4))
+d1: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+
+scala> d1.show
+res17: String = {[5, 20]}
+```
+
+Asking to remove a range yields a new Diet without the range
+
+```scala
+scala> val d = Diet.empty[Int].addRange((5 to 20)).addRange(22 to 30)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,DietNode(22,30,EmptyDiet,EmptyDiet))
+
+scala> val d2 = d.removeRange((5 to 20))
+d2: dogs.Diet[dogs.Predef.Int] = DietNode(22,30,EmptyDiet,EmptyDiet)
+
+scala> d2.show
+res18: String = {[22, 30]}
+```
+
+Asking to remove a subrange splits the Diet
+
+```scala
+scala> val d = Diet.empty[Int].addRange((5 to 20))
+d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+
+scala> val d3 = d.removeRange((10 to 15)) 
+d3: dogs.Diet[dogs.Predef.Int] = DietNode(5,9,EmptyDiet,DietNode(16,20,EmptyDiet,EmptyDiet))
+
+scala> (10 to 15).toList.forall { i => d3.contains(i) }
+res19: dogs.Predef.Boolean = false
+
+scala> (5 to 9).toList.forall {i => d3.contains(i) }
+res20: dogs.Predef.Boolean = true
+
+scala> (16 to 20).toList.forall {i => d3.contains(i) }
+res21: dogs.Predef.Boolean = true
+```
+
+Adding a inverted range
+
+```scala
+scala> val d = Diet.empty[Int] + Range(20, 10)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(10,20,EmptyDiet,EmptyDiet)
+
+scala> d.show
+res22: String = {[10, 20]}
 ```
