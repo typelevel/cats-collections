@@ -10,7 +10,7 @@ import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, S
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 
-class DListSpec extends DogsSuite {
+class DListSpec extends SlowDogsSuite {
   import DList._
   import arbitrary.list._
   import arbitrary.dlist._

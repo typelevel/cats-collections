@@ -1,15 +1,31 @@
 package dogs
 package tests
 
+import catalysts.Platform
+
 import cats.Eq
+import org.scalactic.anyvals.{PosZDouble, PosInt}
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 import org.typelevel.discipline.scalatest.Discipline
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
+
+trait TestSettings extends Configuration with Matchers {
+
+  lazy val checkConfiguration: PropertyCheckConfiguration =
+    PropertyCheckConfiguration(
+      minSuccessful = if (Platform.isJvm) PosInt(100) else PosInt(1),
+      maxDiscardedFactor = if (Platform.isJvm) PosZDouble(5.0) else PosZDouble(50.0))
+
+  lazy val slowCheckConfiguration: PropertyCheckConfiguration =
+    if (Platform.isJvm) checkConfiguration
+    else PropertyCheckConfig(maxSize = 1, minSuccessful = 1)
+}
 
 trait DogsSuite extends FunSuite
     with Matchers
     with Configuration
     with GeneratorDrivenPropertyChecks
+    with TestSettings
     with Discipline
     with DogMatcher {
 
@@ -25,4 +41,9 @@ trait DogsSuite extends FunSuite
       A.eqv(l._1, r._1) &&
       B.eqv(l._2, r._2)
   }
+}
+
+trait SlowDogsSuite extends DogsSuite {
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    slowCheckConfiguration
 }
