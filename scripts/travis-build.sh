@@ -9,5 +9,3 @@ scala_jvm="$sbt_cmd validateJVM"
 
 run_cmd="$coverage && $scala_js && $scala_jvm $publish_cmd"
 eval $run_cmd
-
-eval $coverage
