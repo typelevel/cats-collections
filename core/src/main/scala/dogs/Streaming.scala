@@ -1,13 +1,15 @@
 package dogs
 
 import Predef._
+import scala.NoSuchElementException
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
 import scala.collection.mutable
 import Option._
 import cats.data.Ior
 import algebra.Eq
-import cats.Eval, cats.Eval._
+import cats._, cats.Eval._
+import cats.implicits._
 
 /**
  * `Streaming[A]` represents a stream of values. A stream can be
@@ -367,7 +369,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * The streams are assumed to already be sorted. If they are not,
    * the resulting order is not defined.
    */
-/*
+
   def merge(rhs: Streaming[A])(implicit ev: Order[A]): Streaming[A] =
     (lhs, rhs) match {
       case (Cons(a0, lt0), Cons(a1, lt1)) =>
@@ -381,7 +383,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       case (Empty(), s) =>
         s
     }
- */
+
   /**
    * Interleave the elements of two streams.
    *
@@ -551,12 +553,12 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       case Empty() => Cons(this, always(Streaming.empty))
     }
 
-/*
+
   /**
    * Provide an iterator over the elements in the stream.
    */
-  def iterator: Iterator[A] =
-    new Iterator[A] {
+  def iterator: scala.collection.Iterator[A] =
+    new scala.collection.Iterator[A] {
       var ls: Eval[Streaming[A]] = null
       var s: Streaming[A] = lhs
 
@@ -573,7 +575,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
         s.fold(emptyCase, consCase)
       }
     }
-*/
+
   /**
    * Provide a list of elements in the stream.
    *
@@ -581,6 +583,16 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * case of infinite streams.
    */
   def toList: List[A] = foldLeft[List[A]](List.empty)((as,a) => Nel(a,as)).reverse
+
+  /**
+   * Provide a scala.collection.immutable.List of elements in the
+   * stream.
+   *
+   * This will evaluate the stream immediately, and will hang in the
+   * case of infinite streams.
+   */
+  def toScalaList: scala.collection.immutable.List[A] =
+    foldLeft(scala.collection.immutable.List.empty[A])((as,a) => a :: as).reverse
 
   /**
    * Basic string representation of a stream.
@@ -725,13 +737,13 @@ object Streaming extends StreamingInstances {
   def cons[A](a: A, ls: Eval[Streaming[A]]): Streaming[A] =
     Cons(a, ls)
 
-/*
+
   /**
    * Create a stream from two or more values.
    */
   def apply[A](a1: A, a2: A, as: A*): Streaming[A] =
     cons(a1, cons(a2, fromVector(as.toVector)))
- */
+
   /**
    * Defer stream creation.
    *
@@ -783,10 +795,10 @@ object Streaming extends StreamingInstances {
    *
    * The stream will be eagerly evaluated.
    */
-/*
-  def fromIterable[A](as: Iterable[A]): Streaming[A] =
+
+  def fromIterable[A](as: scala.collection.Iterable[A]): Streaming[A] =
     fromIteratorUnsafe(as.iterator)
-*/
+
   /**
    * Create a stream from an iterator.
    *
@@ -798,10 +810,10 @@ object Streaming extends StreamingInstances {
    * creates an iterator for the express purpose of calling this
    * method.
    */
-/*
-  def fromIteratorUnsafe[A](it: Iterator[A]): Streaming[A] =
+
+  def fromIteratorUnsafe[A](it: scala.collection.Iterator[A]): Streaming[A] =
     if (it.hasNext) Cons(it.next, Later(fromIteratorUnsafe(it))) else Empty()
-*/ 
+
 
   /**
    * Create a self-referential stream.
@@ -860,11 +872,84 @@ object Streaming extends StreamingInstances {
     }
 }
 
-trait StreamingInstances {
-  implicit def streamEq[A: Eq](implicit A: Eq[A]): Eq[Streaming[A]] =
+private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
+
+  implicit val streamInstance: Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] =
+    new Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] {
+      def pure[A](a: A): Streaming[A] =
+        Streaming(a)
+      override def map[A, B](as: Streaming[A])(f: A => B): Streaming[B] =
+        as.map(f)
+      def flatMap[A, B](as: Streaming[A])(f: A => Streaming[B]): Streaming[B] =
+        as.flatMap(f)
+      def empty[A]: Streaming[A] =
+        Streaming.empty
+      def combineK[A](xs: Streaming[A], ys: Streaming[A]): Streaming[A] =
+        xs ++ ys
+
+      override def map2[A, B, Z](fa: Streaming[A], fb: Streaming[B])(f: (A, B) => Z): Streaming[Z] =
+        fa.flatMap(a => fb.map(b => f(a, b)))
+
+      def coflatMap[A, B](fa: Streaming[A])(f: Streaming[A] => B): Streaming[B] =
+        fa.tails.filter(_.nonEmpty).map(f)
+
+      def foldLeft[A, B](fa: Streaming[A], b: B)(f: (B, A) => B): B =
+        fa.foldLeft(b)(f)
+
+      def foldRight[A, B](fa: Streaming[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+        fa.foldRight(lb)(f)
+
+      def traverse[G[_]: Applicative, A, B](fa: Streaming[A])(f: A => G[B]): G[Streaming[B]] = {
+        val G = Applicative[G]
+        def init: G[Streaming[B]] = G.pure(Streaming.empty[B])
+
+        // We use foldRight to avoid possible stack overflows. Since
+        // we don't want to return a Eval[_] instance, we call .value
+        // at the end.
+        //
+        // (We don't worry about internal laziness because traverse
+        // has to evaluate the entire stream anyway.)
+        foldRight(fa, Later(init)) { (a, lgsb) =>
+          lgsb.map(gsb => G.map2(f(a), gsb) { (a, s) => Streaming.cons(a, s) })
+        }.value
+      }
+
+      override def exists[A](fa: Streaming[A])(p: A => Boolean): Boolean =
+        fa.exists(p)
+
+      override def forall[A](fa: Streaming[A])(p: A => Boolean): Boolean =
+        fa.forall(p)
+
+      override def isEmpty[A](fa: Streaming[A]): Boolean =
+        fa.isEmpty
+
+// uncomment once we have a new build of cats without streaming
+//      override def toStreaming[A](fa: Streaming[A]): Streaming[A] =
+//        fa
+    }
+
+  implicit def streamOrder[A: Order]: Order[Streaming[A]] =
+    new Order[Streaming[A]] {
+      def compare(x: Streaming[A], y: Streaming[A]): Int =
+        (x izipMap y)(_ compare _, _ => 1, _ => -1)
+          .find(_ != 0).getOrElse(0)
+    }
+}
+
+private[dogs] sealed trait StreamingInstances1 extends StreamingInstances2 {
+  implicit def streamPartialOrder[A: PartialOrder]: PartialOrder[Streaming[A]] =
+    new PartialOrder[Streaming[A]] {
+      def partialCompare(x: Streaming[A], y: Streaming[A]): Double =
+        (x izipMap y)(_ partialCompare _, _ => 1.0, _ => -1.0)
+          .find(_ != 0.0).getOrElse(0.0)
+    }
+}
+
+private[dogs] sealed trait StreamingInstances2 {
+  implicit def streamEq[A: Eq]: Eq[Streaming[A]] =
     new Eq[Streaming[A]] {
       def eqv(x: Streaming[A], y: Streaming[A]): Boolean =
-        (x izipMap y)(A.eqv, _ => false, _ => false)
+        (x izipMap y)(_ === _, _ => false, _ => false)
           .forall(_ == true)
     }
 }

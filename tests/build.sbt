@@ -34,5 +34,4 @@ scalacOptions := Seq(
 scalacOptions in (Compile, console) ~= (_.filterNot(Set("-Ywarn-unused-import","-Yno-imports")))
 scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
 
-
 coverageExcludedPackages := "dogs\\.tests\\.arbitrary\\..*"

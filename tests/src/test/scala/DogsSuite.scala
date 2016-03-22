@@ -3,7 +3,7 @@ package tests
 
 import catalysts.Platform
 
-import cats.Eq
+import cats._
 import org.scalactic.anyvals.{PosZDouble, PosInt}
 import org.scalatest.{FunSuite, PropSpec, Matchers}
 import org.typelevel.discipline.scalatest.Discipline
@@ -23,11 +23,11 @@ trait TestSettings extends Configuration with Matchers {
 
 trait DogsSuite extends FunSuite
     with Matchers
-    with Configuration
     with GeneratorDrivenPropertyChecks
     with TestSettings
     with Discipline
-    with DogMatcher {
+    with DogMatcher
+    with StrictDogsEquality {
 
   implicit def eqTuple3[A: Eq, B: Eq, C: Eq](implicit A: Eq[A], B: Eq[B], C: Eq[C]): Eq[(A,B,C)] = new Eq[(A,B,C)] {
     def eqv(l: (A,B,C), r: (A,B,C)) =
