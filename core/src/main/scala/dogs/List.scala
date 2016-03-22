@@ -510,10 +510,11 @@ sealed trait ListInstances extends ListInstances1 {
 
       override def isEmpty[A](fa: List[A]): Boolean = fa.isEmpty
 
-      /** not until we have streaming in dogs
-      override def toStreaming[A](fa: List[A]): Streaming[A] =
-        Streaming.fromList(fa)
-       */
+
+// not until we have cats without streaming      
+//      override def toStreaming[A](fa: List[A]): Streaming[A] =
+//        Streaming.fromList(fa)
+//
     }
 
   implicit def listShow[A](implicit A: Show[A]): Show[List[A]] =
