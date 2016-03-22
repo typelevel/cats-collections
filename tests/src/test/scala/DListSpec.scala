@@ -15,51 +15,49 @@ class DListSpec extends DogsSuite {
   import arbitrary.list._
   import arbitrary.dlist._
 
-  // TODO: this test is currently throwing SOE in flatMap
-  // see issue #48: https://github.com/stew/dogs/issues/48
-  //  checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
+  checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
   checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))
   checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
   checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
 
-  test("sanity check")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("sanity check")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.toList should matchTo(l)
   })
 
-  test("headOption")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("headOption")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.headOption should be(l.headOption)
   })
 
-  test("tailOption")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("tailOption")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.tailOption.map(_.toList) should be (l.tailOption)
   })
 
-  test("isEmpty")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("isEmpty")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.isEmpty should be(l.isEmpty)
   })
 
-  test("foldRight")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("foldRight")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.foldRight[List[Int]](Eval.now(List.empty))((l,a) => a.map(l :: _)).value should be (l)
   })
 
-  test("map")(forAll { (l1: List[Int], l2: List[Int], l3: List[Int], l4: List[Int]) =>
-    val dl = fromLL(l1, l2, l3, l4)
-    val l = l1 ++ l2 ++ l3 ++ l4
+  test("map")(forAll { (l1: List[Int], l2: List[Int]) =>
+    val dl = fromLL(l1, l2)
+    val l = l1 ++ l2
 
     dl.map(_ + 1).toList should be (l.map(_ + 1))
   })
@@ -71,11 +69,11 @@ class DListSpec extends DogsSuite {
 
     dl.headOption should be (Some(1))
   }
-
   test("stack safe post"){
     val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)(_ :+ _)
     dl.headOption should be (Some(1))
   }
+
 
   test("stack safe pre") {
     val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)((dl,a) => a +: dl)

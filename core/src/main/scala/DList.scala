@@ -1,8 +1,6 @@
 package dogs
 
 import Predef._
-import List._
-import Option._
 import cats._, cats.Eval._
 
 /**
@@ -20,20 +18,20 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
    * Prepend a single element to this DList
    * O(1)
    */
-  def +:(a: A): DList[A] = new DList(t => defer(apply(t)) map (a :: _))
+  def +:(a: A): DList[A] = new DList(t => Eval.defer(run(t)) map (a :: _))
 
   /**
    * append a single element to this DList
    * O(1)
    */
-  def :+(a: A): DList[A] = this ++ DList(List(a))
+  def :+(a: A): DList[A] = new DList(t => Eval.defer(run(a :: t)))
 
   /**
    * Append a list to this DList
    * O(1)
    */
   def ++(as: DList[A]): DList[A] =
-    new DList(tail => as(tail) flatMap apply)
+    new DList(tail => Eval.defer(as(tail) flatMap run))
 
   /**
    * Destructure the DList into a head and a tail, and pass both to a
@@ -49,20 +47,20 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
   /**
    * O(n)
    */
-  def toList: List[A] = run(empty).value
+  def toList: List[A] = run(List.empty).value
 
   /** 
    * Get the first element of the list, if any. 
    * O(n) where n is the number of append operations in this DList
    */
-  def headOption: Option[A] = uncons[Option[A]](now(none),(x, _) => now(Some(x))).value
+  def headOption: Option[A] = uncons[Option[A]](now(Option.none),(x, _) => now(Some(x))).value
 
   /** 
    * Get the tail of the list, if any. 
    * O(n) where n is the number of append operations in this DList
    */
   def tailOption: Option[DList[A]] =
-    uncons[Option[DList[A]]](now(none), (_, y) => now(Some(y))).value
+    uncons[Option[DList[A]]](now(Option.none), (_, y) => now(Some(y))).value
 
   /** 
    * Tests whether list is empty.
@@ -72,17 +70,18 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
   def isEmpty: Boolean = headOption.isNone
 
   def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-    run(empty).flatMap( _.foldRight(b)(f))
+    run(List.empty).flatMap( _.foldRight(b)(f))
 
   def map[B](f: A => B): DList[B] =
-    new DList(t => run(empty).flatMap(x => (x map f).foldRight(now(t))((a,as) => as.map(a :: _))))
+    new DList(t => run(List.empty).flatMap(x => (x map f).foldRight(now(t))((a,as) => as.map(a :: _))))
 
   def flatMap[B](f: A => DList[B]): DList[B] =
-    foldRight(now(DList.empty[B]))((a,bs) => defer(bs.map(bs => f(a) ++ bs))).value
+    foldRight(now(DList.empty[B]))((a,bs) => bs.map(bs => f(a) ++ bs)).value
 }
 
 object DList extends DListInstances{
   def empty[A]: DList[A] = new DList(t => now(t))
+  def apply[A](a: A): DList[A] = new DList(tail => Eval.now(a :: tail))
   def apply[A](as: List[A]): DList[A] = new DList(tail => as.foldRight(now(tail))((a,as) => as.map(a :: _)))
 }
 
@@ -119,7 +118,7 @@ trait DListInstances {
       override def foldLeft[A, B](fa: dogs.DList[A],b: B)(f: (B, A) => B): B =
         fa.toList.foldLeft(b)(f)
 
-      override def foldRight[A, B](fa: dogs.DList[A],lb: cats.Eval[B])(f: (A, cats.Eval[B]) => cats.Eval[B]): cats.Eval[B] = fa.foldRight(lb)(f)
+      override def foldRight[A, B](fa: dogs.DList[A],lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(lb)(f)
 
       override def empty[A]: dogs.DList[A] = DList.empty
 
