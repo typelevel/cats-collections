@@ -646,7 +646,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * There are two calls to .memoize here -- one is a recursive call
    * to this method (on the tail) and the other is a call to memoize
    * the Eval instance holding the tail. For more information on how
-   * this works see [[dogs.Eval.memoize]].
+   * this works see cats.Eval.memoize.
    */
   def memoize: Streaming[A] =
     this match {
