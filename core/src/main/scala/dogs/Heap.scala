@@ -8,23 +8,48 @@ import algebra.Order
 import dogs.Predef._
 import dogs.Heap._
 
+
+
+/**
+ * Binary Heap
+ *
+ * Normally, binary heaps are not common the functional environments since they implementationis based on mutable
+ * arrays. However, this implementation is purely functional, based on the VLADIMIR KOSTYUKOV paper.
+ *
+ * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the function
+ * `heapify`.
+ */
 sealed abstract class Heap[A] {
 
-
+  /**
+   * Returns min value on the heap.
+   */
   def min: A
 
-  def left: Heap[A]
+  private [dogs] def left: Heap[A]
 
-  def right: Heap[A]
+  private [dogs] def right: Heap[A]
 
+  /**
+   * Returns the size of the heap.
+   */
   def size: Int
 
+  /**
+   * Returns the height of the heap.
+   */
   def height: Int
 
+  /**
+   * Verfies if the heap is empty.
+   */
   def isEmpty: Boolean
 
 
-  /// O(log n)
+  /**
+   * Insert a new element into the heap.
+   * Order O(log n)
+   */
   def insert(x: A)(implicit order: Order[A]): Heap[A] =
     if (isEmpty)
       Heap(x, Leaf(), Leaf())
@@ -37,7 +62,10 @@ sealed abstract class Heap[A] {
     else
       bubbleUp(min, left.insert(x), right)
 
-  /// Build heap in O(n)
+  /**
+   * Build a heap using a list.
+   * Order O(n)
+   */
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] = {
     def loop(i: Int, xs: scala.List[A]): Heap[A] =
       if (i < xs.length) {
@@ -50,20 +78,35 @@ sealed abstract class Heap[A] {
     loop(0, a.toScalaList)
   }
 
+  /**
+   * Remove the min element from the heap (the root).
+   * Order O(log n)
+   */
   def remove(implicit order: Order[A]): Heap[A] = this match {
     case Leaf()                 =>  Leaf()
     case Branch(_, l, r, _, _)  =>  bubbleRootDown(mergeChildren(l, r))
   }
+
+  /**
+   * Returns a sorted list of the elements within the heap.
+   */
+  def toList()(implicit order: Order[A]): List[A] = this match {
+    case Leaf()                       =>  El[A]
+    case Branch(m, l, r, _, _)        =>  Nel(m, remove.toList)
+  }
+
+  /**
+   * Alias for insert
+   */
+  def +(x: A)(implicit order: Order[A]): Heap[A] = insert(x)
+
 }
 
 object Heap {
 
-//  def apply[A](x: A): Heap[A] = {
-//    val l = Leaf()
-//    val r = Leaf()
-//
-//    Branch(x, l, r, l.size + r.size + 1, math.max(l.height, r.height) + 1)
-////  }
+  def empty[A]: Heap[A] = Leaf()
+
+  def apply[A](x: A): Heap[A] = Branch(x, empty, empty, 1, 1)
 
   def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
     Branch(x, l, r, l.size + r.size + 1, scala.math.max(l.height, r.height) + 1)
@@ -91,9 +134,11 @@ object Heap {
   }
 
   private [dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, lt, rt, _, _), _)   if order.gt(x, y)     =>  Heap(y, Heap(x, lt, rt), r)
-    case (_, Branch(z, lt, rt, _, _))   if order.gt(x, z)     =>  Heap(z, Heap(x, lt, rt), Leaf())
-    case (_, _)                                               =>  Heap(x, l, r)
+    case (Branch(y, lt, rt, _, _), _) if order.gt(x , y) =>
+      Heap(y, Heap(x, lt, rt), r)
+    case (_, Branch(z, lt, rt, _, _)) if order.gt(x , z) =>
+      Heap(z, l, Heap(x, lt, rt))
+    case (_, _) => Heap(x, l, r)
   }
 
   private [dogs] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {

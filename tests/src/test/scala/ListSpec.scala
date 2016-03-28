@@ -76,12 +76,12 @@ class ListSpec extends DogsSuite {
       xs.contains(x) should be(xs.toScalaList.contains(x))
     })
 
-    test("reverse")(
+  test("reverse")(
     forAll { (xs: SList[Int]) =>
       xs.reverse.toScalaList should be(xs.toScalaList.reverse)
     })
 
-      test("take/drop")(
+  test("take/drop")(
     forAll { (xs: List[Int], n: Int) =>
       xs.take(n).toScalaList should be (xs.toScalaList.take(n))
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
