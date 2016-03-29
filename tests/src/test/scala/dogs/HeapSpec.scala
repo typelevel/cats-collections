@@ -24,7 +24,7 @@ class HeapSpec extends DogsSuite with Matchers with DogMatcher {
 
       val set = xs.toSet
 
-      var heap = set.foldLeft(Heap.empty[Int])((h, i) => h.insert(i))
+      var heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
 
       val exp = dogs.List.fromIterable(set)

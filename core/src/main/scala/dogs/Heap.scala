@@ -5,10 +5,8 @@
 package dogs
 
 import algebra.Order
+import cats.Show
 import dogs.Predef._
-import dogs.Heap._
-
-
 
 /**
  * Binary Heap
@@ -21,10 +19,17 @@ import dogs.Heap._
  */
 sealed abstract class Heap[A] {
 
+  import Heap._
+
+  /**
+   * Internal representation of the min value to avoid deconstruction of `min: Option[A]` since min is heavily used.
+   */
+  private [dogs] val min: A
+
   /**
    * Returns min value on the heap.
    */
-  def min: A
+  def getMin: Option[A]
 
   private [dogs] def left: Heap[A]
 
@@ -50,17 +55,17 @@ sealed abstract class Heap[A] {
    * Insert a new element into the heap.
    * Order O(log n)
    */
-  def insert(x: A)(implicit order: Order[A]): Heap[A] =
+  def add(x: A)(implicit order: Order[A]): Heap[A] =
     if (isEmpty)
       Heap(x, Leaf(), Leaf())
     else if (left.size < scala.math.pow(2, left.height) - 1)
-      bubbleUp(min, left.insert(x), right)
+      bubbleUp(min, left.add(x), right)
     else if (right.size < scala.math.pow(2, right.height) - 1)
-      bubbleUp(min, left, right.insert(x))
+      bubbleUp(min, left, right.add(x))
     else if (right.height < left.height)
-      bubbleUp(min, left, right.insert(x))
+      bubbleUp(min, left, right.add(x))
     else
-      bubbleUp(min, left.insert(x), right)
+      bubbleUp(min, left.add(x), right)
 
   /**
    * Build a heap using a list.
@@ -82,7 +87,7 @@ sealed abstract class Heap[A] {
    * Remove the min element from the heap (the root).
    * Order O(log n)
    */
-  def remove(implicit order: Order[A]): Heap[A] = this match {
+  def remove()(implicit order: Order[A]): Heap[A] = this match {
     case Leaf()                 =>  Leaf()
     case Branch(_, l, r, _, _)  =>  bubbleRootDown(mergeChildren(l, r))
   }
@@ -96,9 +101,14 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * Alias for insert
+   * Alias for add
    */
-  def +(x: A)(implicit order: Order[A]): Heap[A] = insert(x)
+  def +(x: A)(implicit order: Order[A]): Heap[A] = add(x)
+
+  /**
+   * Alias for remove
+   */
+  def --(implicit order: Order[A]): Heap[A] = remove()
 
 }
 
@@ -113,14 +123,14 @@ object Heap {
 
   private [dogs] case class Branch[A](min: A, left: Heap[A], right: Heap[A], size: Int, height: Int) extends Heap[A] {
     override def isEmpty: Boolean = false
+
+    override def getMin: Option[A] = Some(min)
   }
 
   private [dogs] case object Leaf extends Heap[Option[Nothing]] {
     def apply[A](): Heap[A] = this.asInstanceOf[Heap[A]]
 
     def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
-
-    override def min: Option[Nothing] = None()
 
     override def size: Int = 0
 
@@ -131,6 +141,10 @@ object Heap {
     override def right: Heap[Option[Nothing]] = Leaf
 
     override def isEmpty: Boolean = true
+
+    override def getMin: Option[Option[Nothing]] = None()
+
+    override private[dogs] val min: Option[Nothing] = None()
   }
 
   private [dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
@@ -182,5 +196,12 @@ object Heap {
   private [dogs] def floatRight[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = r match {
     case Branch(y, lt, rt, _, _) => Heap(y, l, Heap(x, lt, rt))
     case _ => Heap(x, l, r)
+  }
+
+  implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {
+    override def show(f: Heap[A]): Predef.String = f.toList() match {
+      case El()       => "[]"
+      case Nel(h, t)  => t.foldLeft("[" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "]"
+    }
   }
 }
