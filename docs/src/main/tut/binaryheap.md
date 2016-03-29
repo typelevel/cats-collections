@@ -31,6 +31,12 @@ h.isEmpty
 h.show
 ```
 
+Asking for the min value of a empty heap
+
+```tut
+h.getMin
+```
+
 And we can add an item:
 
 ```tut
