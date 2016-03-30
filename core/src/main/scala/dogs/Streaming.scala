@@ -3,6 +3,7 @@ package dogs
 import Predef._
 import scala.NoSuchElementException
 import scala.reflect.ClassTag
+import scala.annotation.tailrec
 import scala.collection.mutable
 import Option._
 import cats.data.Ior
@@ -934,7 +935,7 @@ private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
     }
 }
 
-private[dogs] sealed trait StreamingInstances1/* extends StreamingInstances2*/ {
+private[dogs] sealed trait StreamingInstances1 extends StreamingInstances2 {
   implicit def streamPartialOrder[A: PartialOrder]: PartialOrder[Streaming[A]] =
     new PartialOrder[Streaming[A]] {
       def partialCompare(x: Streaming[A], y: Streaming[A]): Double =
@@ -942,7 +943,7 @@ private[dogs] sealed trait StreamingInstances1/* extends StreamingInstances2*/ {
           .find(_ != 0.0).getOrElse(0.0)
     }
 }
-/* 
+
 private[dogs] sealed trait StreamingInstances2 {
   implicit def streamEq[A: Eq]: Eq[Streaming[A]] =
     new Eq[Streaming[A]] {
@@ -951,4 +952,3 @@ private[dogs] sealed trait StreamingInstances2 {
           .forall(_ == true)
     }
 }
- */
