@@ -41,5 +41,5 @@ doctestSettings
 
 (initialCommands in console) := """
 import cats._, cats.implicits._
-import dogs._, dogs.Predef._
+import left.cats._, left.cats.implicits._
 """

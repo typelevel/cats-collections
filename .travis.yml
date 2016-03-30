@@ -2,17 +2,29 @@ sudo: false
 
 cache:
   directories:
-    - $HOME/.sbt
+    - $HOME/.sbt/0.13/dependency
+    - $HOME/.sbt/boot/scala*
+    - $HOME/.sbt/launchers
     - $HOME/.ivy2/cache
+    - $HOME/.nvm
 
 language: scala
 
 scala:
   - 2.10.6
-  - 2.11.7
+  - 2.11.8
 
 jdk:
   - oraclejdk8
 
+env:
+  global:
+  - TRAVIS_NODE_VERSION="4"
+  - CATS_BOT_BUILD=true
+
 script:
   - scripts/travis-build.sh
+
+install:
+  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+  
