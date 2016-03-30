@@ -2,13 +2,13 @@ name := "dogs-core"
 
 libraryDependencies ++= Seq(
   "org.typelevel"                  %%% "cats-core"  % "0.4.1",
-  "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",
+  "com.github.mpilquist"           %%% "simulacrum" % "0.7.0",
   "org.typelevel"                  %%% "machinist"  % "0.4.1",
   "com.github.mpilquist"           %%% "simulacrum" % "0.5.0",
   "org.scalacheck"                 %%% "scalacheck" % "1.12.5",
 
   compilerPlugin("org.spire-math"  %% "kind-projector" % "0.6.3"),
-  compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0-M5" cross CrossVersion.full)
+  compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)
 )
 
 scalacOptions := Seq(
@@ -41,5 +41,5 @@ doctestSettings
 
 (initialCommands in console) := """
 import cats._, cats.implicits._
-import dogs._, dogs.Predef._
+import left.cats._, left.cats.implicits._
 """
