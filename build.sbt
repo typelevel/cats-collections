@@ -6,27 +6,32 @@ scalaVersion in Global := "2.11.7"
 
 resolvers in Global += Resolver.sonatypeRepo("snapshots")
 
+(licenses in Global) += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+
+scmInfo := Some(ScmInfo(url("https://github.com/stew/dogs"),
+  "https://github.com/stew/dogs.git"))
+
 lazy val dogs = project.in(file(".")).aggregate(dogsJVM, dogsJS).settings(publish := {})
 
-lazy val dogsJVM = project.aggregate(coreJVM, docs, testsJVM, bench)
-lazy val dogsJS = project.aggregate(coreJS, testsJS)
+lazy val dogsJVM = project.aggregate(coreJVM, docs, testsJVM, bench).settings(publish := {})
+lazy val dogsJS = project.aggregate(coreJS, testsJS).settings(publish := {})
 
 lazy val core = crossProject.crossType(CrossType.Pure)
   .jsSettings(commonJsSettings:_*)
 
 
-lazy val coreJVM = core.jvm
-lazy val coreJS = core.js
+lazy val coreJVM = core.jvm.settings(publishSettings)
+lazy val coreJS = core.js.settings(publishSettings)
 
 lazy val tests = crossProject.crossType(CrossType.Pure) dependsOn core
   .jsSettings(commonJsSettings:_*)
 
-lazy val testsJVM = tests.jvm
-lazy val testsJS = tests.js
+lazy val testsJVM = tests.jvm.settings(publish := {})
+lazy val testsJS = tests.js.settings(publish := {})
 
-lazy val docs = project dependsOn coreJVM
+lazy val docs = project.dependsOn(coreJVM).settings(publish := {})
 
-lazy val bench = project dependsOn coreJVM
+lazy val bench = project.dependsOn(coreJVM).settings(publish := {})
 
 lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
 
@@ -50,3 +55,21 @@ addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
 addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
 
 addCommandAlias("validate", ";validateJS;validateJVM")
+
+
+lazy val tagName = Def.setting{
+ s"v${if (releaseUseGlobalVersion.value) (version in ThisBuild).value else version.value}"
+}
+
+lazy val publishSettings = Seq(
+  bintrayRepository := {
+    if (isSnapshot.value)
+      "snapshots"
+    else
+      "releases"
+  },
+  releaseCrossBuild := true,
+  releaseTagName := tagName.value,
+  publishArtifact in Test := false,
+  pomIncludeRepository := Function.const(false)
+)
