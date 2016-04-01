@@ -73,3 +73,4 @@ lazy val publishSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := Function.const(false)
 )
+

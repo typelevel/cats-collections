@@ -1,31 +1,27 @@
 sudo: false
-
 cache:
   directories:
-    - $HOME/.sbt/0.13/dependency
-    - $HOME/.sbt/boot/scala*
-    - $HOME/.sbt/launchers
-    - $HOME/.ivy2/cache
-    - $HOME/.nvm
-
+  - "$HOME/.sbt/0.13/dependency"
+  - "$HOME/.sbt/boot/scala*"
+  - "$HOME/.sbt/launchers"
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.nvm"
 language: scala
-
 scala:
-  - 2.11.8
-
+- 2.11.8
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 env:
   global:
-    - TRAVIS_NODE_VERSION="4"
-    - CATS_BOT_BUILD=true
-
+  - TRAVIS_NODE_VERSION="4"
+  - CATS_BOT_BUILD=true
+  - secure: Z6uqf0D80QFmboJenlEUSPOzXTjSp4xb4+Uv1KAJJxsru9FVXmoLsYHLUebk31/gFVv8aPsTO1yiSBd+BTQUuCar0lYsqV8phWlW9vwB01o25zUcqLCoYmpzBwnNRaR6VhZn9ZrlNQyTKG+OmLiUAGfaRNLDf5kz75JEZZqBcB/C907FvPzwt2TCMom0nj4hoa2d04U89OAsPIyyJItnTzogczTdpY8fG1vDQYCyYRBYq3IEpZxIKDxlUjPnVN+VCsJTFQV2K6SbqxUdQbCNjmG5G0SD3YE3I2OLb9lrOOkRrzdpBot4XOy82cziO5Ze6c7ZZGhoYQhL1f3VXGD364H/lfOSrNXyEMd1swJD4J+n2HGrmIQVpdO8nN/wThM6zfsAybNiCrhM+3Bp55m027ekJ29k8KrDnx6jH0SBCXcdalkh9r6P/oRzBlrS3/2cYoKe2mpXyWGhOWegEFAw2SankE1pd0xY3/J1kc7MnLC+4VQqeIaOIByFSifAgz5ebcFHct+V6hKSuvCAZTa0vC2dZCDZj2Wq9PadwkRu438DiIj6xPiKXLhbZHWMNCLQa4woEJktGAsJYq01ERrfvxlDyxODPOWzhb8q26HnflDD51G2jpmD9ekR5ukEBqx80x7V0XaQeDRw61jsL24G1pv/T1l8JZ49lwwbAiokaU0=
+  - secure: SnUV4LtnR0trdeZ6FE3Vo+r9qrQkWGAy2918a/bhEWrTpuIiyt+JH3kJStUbOBcwruti9Cn2wKfJhtXAEwFk54RNiSMrfW+REmhoOaLbv9GpehRP3LMGzPWuXoLvMNMgZIR/xGRYP08Ws7AK1lLC9i11ymbftTRgbTykf9C/gXX+Jd4X8q1XAoUMBE7lphiYOR7aRaV49rP6IQhsWtvOwOolmm49KomAqnzkn7BfyHyldDYIUctcVl5h3m9vZ/6SslhgCoQ5+6pRTwUnLuE30zu7c8nS0cy9wPRwOt7tnnnfYx8cTLRo1xbiSnIRwJZSVQcYKyRNKvEysfXWQSJswtoll9DAP0ti6cD1UC3iIKCyD+Q1zdwY64nNSU5R5TWwMlSzkJu6kvcXRj0V0QIoN0izC5wWzPrvj9Oy3529eGYqmwa/ORCq/l+77IvoSSS7fEoEFYyfkVMANPlVjysx2vVVWJOth8y94YDhqrszRH+iF4Xo5gFdAeefp95LPbtKF3iFm979BQaM77EEoq/8PkrDUOUxEUpK6uDKViOaaxtzD382i7EWcJF/TbL20EGzEL7hSBTEj3CwBV6fZpTMxTAHOsbYAV6D9pCvK68BVEn5/GLeuJM3n1X9od4UgdfSFyxekvDF3gi8Z347X94KV7S6vfIzRLuNGDuntM+A4Rk=
 before_install:
-  - scripts/bintray.sh
-
+- scripts/bintray.sh
 script:
-  - scripts/travis-build.sh
-
+- scripts/travis-build.sh
 install:
-  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+- rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm
+  && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm
+  install $TRAVIS_NODE_VERSION

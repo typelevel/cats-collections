@@ -1,5 +1,13 @@
 #!/bin/sh
 
-openssl aes-256-cbc -K $encrypted_78d67e04f03e_key -iv $encrypted_78d67e04f03e_iv -in scripts/bintray.tar.gz.enc -out bintray.tar.gz -d
-
-tar xzf -C $HOME bintray.tar.gz
+mkdir ~/.bintray/
+FILE=$HOME/.bintray/.credentials
+cat <<EOF >$FILE
+realm = Bintray API Realm
+host = api.bintray.com
+user = $BINTRAY_USER
+password = $BINTRAY_API_KEY
+EOF
+echo $BINTRAY_USER
+echo "Created ~/.bintray/.credentials file: Here it is: "
+ls -la $FILE
