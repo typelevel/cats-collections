@@ -18,12 +18,11 @@ jdk:
 
 env:
   global:
-  - TRAVIS_NODE_VERSION="4"
-  - CATS_BOT_BUILD=true
+    - TRAVIS_NODE_VERSION="4"
+    - CATS_BOT_BUILD=true
 
 before_install:
-    - openssl aes-256-cbc -K $encrypted_78d67e04f03e_key -iv $encrypted_78d67e04f03e_iv -in scripts/bintray.tar.gz.enc -out bintray.tar.gz -d
-    - tar xzf bintray.tar.gz
+  - scripts/bintray.sh
 
 script:
   - scripts/travis-build.sh
