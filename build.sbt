@@ -70,6 +70,12 @@ lazy val publishSettings = Seq(
   },
   releaseCrossBuild := true,
   releaseTagName := tagName.value,
+  (publishArtifact in Global) := {
+    if (isSnapshot.value)
+      false
+    else
+      true
+  },
   publishArtifact in Test := false,
   pomIncludeRepository := Function.const(false)
 )
