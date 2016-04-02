@@ -62,7 +62,7 @@ lazy val tagName = Def.setting{
 }
 
 lazy val publishSettings = Seq(
-  bintrayRepository := "releases"
+  bintrayRepository := "releases",
   releaseCrossBuild := true,
   releaseTagName := tagName.value,
   publishArtifact in Test := false,
