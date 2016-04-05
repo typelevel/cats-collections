@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/stew/dogs](https://badges.gitter.im/stew/dogs.svg)](https://gitter.im/stew/dogs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://api.travis-ci.org/stew/dogs.png)](https://travis-ci.org/stew/dogs)
 [![codecov.io](http://codecov.io/github/stew/dogs/coverage.svg?branch=master)](http://codecov.io/github/stew/dogs?branch=master)
+[ ![Download](https://api.bintray.com/packages/stew/releases/dogs-core/images/download.svg) ](https://bintray.com/stew/releases/dogs-core/_latestVersion)
 
 It intends to be a library containing data structures which facilitate
 pure functional programming in the Scala programming language. Some of
@@ -16,6 +17,19 @@ library.
 This project is in its infancy, it should be considered pre-alpha, it
 might never go anywhere, it could change drastically along the way if
 it does go somewhere.
+
+### Getting Started
+
+Dogs is currently available for Scala 2.11.
+
+To get started with SBT, simply add the following to your `build.sbt`
+file:
+
+```scala
+resolvers += "dogs-releases" at "https://dl.bintray.com/stew/releases"
+
+libraryDependencies += "org.typelevel" %% "dogs-core" % "0.2.1"
+```
 
 ### CONTRIBUTING
 
