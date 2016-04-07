@@ -4,7 +4,7 @@ sbt_cmd="sbt ++$TRAVIS_SCALA_VERSION"
 export publish_cmd="publishLocal"
 
 if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]] && grep -v -q SNAPSHOT version.sbt; then
-  export publish_cmd="publish"
+  export publish_cmd="publish gitSnapshots publish"
 fi
 
 coverage="$sbt_cmd coverage validateJVM coverageReport && bash <(curl -s https://codecov.io/bash)"
