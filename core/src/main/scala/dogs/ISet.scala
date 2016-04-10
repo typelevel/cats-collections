@@ -1,6 +1,8 @@
 package dogs
 import Predef._
 
+import cats._
+
 /**
  * An intensional set, which is a set which instead of enumerating its
  * elements as a extensional set does, it is defined by a predicate
@@ -53,8 +55,22 @@ abstract class ISet[A] extends scala.Function1[A, Boolean] { self =>
   def unary_!(): ISet[A] = ISet(a => !self(a))
 }
 
-object ISet {
+object ISet extends ISetInstances {
   def apply[A](f: A => Boolean) = new ISet[A] {
     def apply(a: A) = f(a)
+  }
+
+  def empty[A] = apply((a: A) => false)
+}
+
+trait ISetInstances {
+  implicit def isetMonoid[A]: Monoid[ISet[A]] = new Monoid[ISet[A]] {
+    override def empty: ISet[A] = ISet.empty[A]
+    override def combine(l: ISet[A], r: ISet[A]): ISet[A] = l union r
+  }
+
+  implicit val isetInstance: MonoidK[ISet] = new MonoidK[ISet] {
+    override def empty[A]: ISet[A] = ISet.empty[A]
+    override def combineK[A](l: ISet[A], r: ISet[A]): ISet[A] = l union r
   }
 }

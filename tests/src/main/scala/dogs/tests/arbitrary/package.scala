@@ -5,6 +5,8 @@ package object arbitrary {
 
   object dlist extends ArbitraryDList
   object list extends ArbitraryList
+  object set extends ArbitrarySet
+  object iset extends ArbitraryISet
   object option extends ArbitraryOption
   object streaming extends ArbitraryStreaming
 }
