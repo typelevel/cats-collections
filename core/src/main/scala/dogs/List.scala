@@ -555,9 +555,9 @@ trait ListInstances1 {
     }
 }
 
-object Nel extends NelInstances
+object Nel extends NelInstances with Serializable
 
-trait NelInstances {
+trait NelInstances extends NelInstances1 {
   implicit def nelCmp[A](implicit A: Order[A]): Order[Nel[A]] =
     new Order[Nel[A]] {
       override def compare(a: Nel[A], b: Nel[A]): Int = {
@@ -567,9 +567,75 @@ trait NelInstances {
         } else cmp
       }
     }
+
+  implicit def nelSemigroup[A]: Semigroup[Nel[A]] = new Semigroup[Nel[A]] {
+    override def combine(l: Nel[A], r: Nel[A]): Nel[A] = l ::: r
+  }
+
+  implicit val nelInstances: Monad[Nel] with SemigroupK[Nel] with Reducible[Nel] = new Monad[Nel] with SemigroupK[Nel] with Reducible[Nel] {
+    override def combineK[A](l: Nel[A], r: Nel[A]): Nel[A] = l ::: r
+
+    override def map[A, B](fa: Nel[A])(f: A => B): Nel[B] =
+      fa map f
+
+    def pure[A](x: A): Nel[A] = Nel(x, List.empty)
+
+    def flatMap[A, B](fa: Nel[A])(f: A => Nel[B]): Nel[B] = {
+      val h = f(fa.head)
+      val t = fa.tail flatMap f
+      Nel(h.head, h.tail ::: t)
+    }
+
+    def foldLeft[A, B](fa: dogs.Nel[A],b: B)(f: (B, A) => B): B = fa.foldLeft(b)(f)
+    def foldRight[A, B](fa: dogs.Nel[A],lb: cats.Eval[B])(f: (A, cats.Eval[B]) => cats.Eval[B]): cats.Eval[B] = fa.foldRight(lb)(f)
+
+    override def reduceLeft[A](fa: Nel[A])(f: (A,A) => A): A =
+      fa reduceLeft f
+
+    def reduceLeftTo[A, B](fa: Nel[A])(f: A => B)(g: (B, A) => B): B = {
+      fa.tail.foldLeft(f(fa.head))((b, a) => g(b, a))
+    }
+
+    def reduceRightTo[A, B](fa: Nel[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
+      fa.foldRight(Eval.now(f(fa.head)))((a,lb) => g(a,lb))
+  }
+
+  implicit def partialOrderNel[A](implicit A: PartialOrder[A]): PartialOrder[Nel[A]] =
+    new PartialOrder[Nel[A]] {
+      def partialCompare(x: Nel[A], y: Nel[A]): Double = {
+        val n = A.partialCompare(x.head, x.head)
+        if (n != 0.0) n else PartialOrder[List[A]].partialCompare(x.tail, y.tail)
+      }
+    }
 }
 
+trait NelInstances1 {
+  implicit def nelEq[A](implicit A: Eq[A]): Eq[Nel[A]] =
+    new Eq[Nel[A]] {
+      def eqv(x: Nel[A], y: Nel[A]): Boolean = {
+        A.eqv(x.head,y.head) && Eq[List[A]].eqv(x.tail, y.tail)
+      }
+    }
 
+  implicit val nelComonad: Comonad[Nel] =
+    new Comonad[Nel] {
+      def coflatMap[A, B](fa: Nel[A])(f: Nel[A] => B): Nel[B] = {
+        @tailrec def consume(as: List[A], buf: ListBuilder[B]): List[B] =
+          as match {
+            case El() => buf.run
+            case a Nel as => consume(as, buf += f(Nel(a, as)))
+          }
+        Nel(f(fa), consume(fa.tail, new ListBuilder))
+      }
+
+      def extract[A](fa: Nel[A]): A =
+        fa.head
+
+      def map[A, B](fa: Nel[A])(f: A => B): Nel[B] =
+        fa map f
+    }
+
+}
 
 final private[dogs] class ListBuilder[A] {
   import List.empty

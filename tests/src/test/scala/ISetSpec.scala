@@ -1,58 +1,67 @@
 package dogs
+package tests
 
 import dogs.Predef._
-import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.all._
 import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
-import algebra.std.int._
+import cats.laws.discipline.SerializableTests
+import cats._
+import cats.std.int._
+import cats.laws.discipline.arbitrary._
 
-object ISetSpec extends Properties("ISet") with ArbitraryList {
+class ISetSpec extends DogsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
-  property("intersection works") = forAll { (as: List[Int], bs: List[Int]) =>
-    val setA: ISet[Int] = Set.fromList(as).iset
-    val setEven: ISet[Int] = ISet(_ % 2 == 0)
+  checkAll("MonoidK[ISet]", SerializableTests.serializable(MonoidK[ISet]))
 
-    val s1 = setA & setEven
-    val s2 = setA intersection setEven
+  test("intersection works")(
+    forAll { (as: List[Int], bs: List[Int]) =>
 
-    bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
-                   (s2(b) == (as.contains(b) && (b % 2 == 0))))
+      val setA: ISet[Int] = Set.fromList(as).iset
+      val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
-  }
+      val s1 = setA & setEven
+      val s2 = setA intersection setEven
 
-  property("union works") = forAll { (as: List[Int], bs: List[Int]) =>
-    val setA: ISet[Int] = Set.fromList(as).iset
-    val setEven: ISet[Int] = ISet(_ % 2 == 0)
+      bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
+                  (s2(b) == (as.contains(b) && (b % 2 == 0)))) should be(true)
 
-    val s1 = setA | setEven
-    val s2 = setA union setEven
+    })
 
-    bs.forall(b => (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
-                   (s2(b) == (as.contains(b) || (b % 2 == 0))))
+  test("union works")(
+    forAll { (as: List[Int], bs: List[Int]) =>
+      val setA: ISet[Int] = Set.fromList(as).iset
+      val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
-  }
+      val s1 = setA | setEven
+      val s2 = setA union setEven
 
-  property("difference works") = forAll { (as: List[Int], bs: List[Int]) =>
-    val setA: ISet[Int] = Set.fromList(as).iset
-    val setEven: ISet[Int] = ISet(_ % 2 == 0)
+      bs.forall(b => (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
+                  (s2(b) == (as.contains(b) || (b % 2 == 0)))) should be (true)
 
-    val s1 = setA - setEven
-    val s2 = setA diff setEven
+    })
 
-    bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
-                   (s2(b) == (as.contains(b) && (b % 2 != 0))))
+  test("difference works") (
+    forAll { (as: List[Int], bs: List[Int]) =>
+      val setA: ISet[Int] = Set.fromList(as).iset
+      val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
-  }
+      val s1 = setA - setEven
+      val s2 = setA diff setEven
 
-  property("negation works") = forAll { (as: List[Int], bs: List[Int]) =>
-    val setA: ISet[Int] = Set.fromList(as).iset
-    val setEven: ISet[Int] = ISet(_ % 2 == 0)
+      bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
+                  (s2(b) == (as.contains(b) && (b % 2 != 0)))) should be (true)
 
-    val s1 = !(setA - setEven)
+    })
 
-    bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0))))
+  test("negation works")(
+    forAll { (as: List[Int], bs: List[Int]) =>
+      val setA: ISet[Int] = Set.fromList(as).iset
+      val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
-  }
+      val s1 = !(setA - setEven)
+
+      bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))) should be(true)
+
+    })
 }

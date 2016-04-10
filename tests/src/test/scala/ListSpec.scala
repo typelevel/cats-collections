@@ -6,9 +6,8 @@ import dogs.tests.arbitrary.all._
 import cats._
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
-import algebra.Eq
-import algebra.std.int._
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
+import cats.std.int._
+import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadCombineTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
 
 class ListSpec extends DogsSuite {
@@ -23,6 +22,22 @@ class ListSpec extends DogsSuite {
 
   checkAll("List[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
   checkAll("Traverse[List]", SerializableTests.serializable(Traverse[List]))
+
+
+  checkAll("Nel[Int]", CartesianTests[Nel].cartesian[Int, Int, Int])
+// HELP I don't know why this isn't workign:  checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[Nel]))
+  checkAll("Nel[Int]", ComonadTests[Nel].comonad[Int, Int, Int])
+  checkAll("ComonadMap[Nel]", SerializableTests.serializable(CoflatMap[Nel]))
+  checkAll("Nel[Int]", FoldableTests[Nel].foldable[Int, Int])
+  checkAll("MonadCombine[Nel]", SerializableTests.serializable(Foldable[Nel]))
+
+// when we get a new cats release
+//  checkAll("Nel[Int]", ReducibleTests[Nel].reducible[Int, Int])
+//  checkAll("MonadCombine[Nel]", SerializableTests.serializable(MonadCombine[List]))
+
+  checkAll("Nel[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
+  checkAll("Traverse[Nel]", SerializableTests.serializable(Traverse[List]))
+
 
   implicit class IterableOps[A](as: Iterable[A]) {
     def toScalaList: List[A] = List.fromIterable(as)
