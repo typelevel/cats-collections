@@ -1,6 +1,7 @@
 package dogs
 
 import Predef._
+import simulacrum.typeclass
 import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
@@ -419,6 +420,7 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     loop(n, this)
     lb.run
   }
+
 }
 
 final case object El extends List[Nothing] {
@@ -447,6 +449,13 @@ object List extends ListInstances {
 
     go(n, a, List.empty[A])
   }
+
+
+
+
+  implicit def toSorted[A](a: List[A])(implicit order: Order[A]): Sorted[A] = Sorted(a)
+
+
 }
 
 sealed trait ListInstances extends ListInstances1 {
@@ -531,7 +540,23 @@ sealed trait ListInstances extends ListInstances1 {
         if(A.eqv(ha, hb)) eqv(ta,tb) else false
     }
   }
+
+
+
 }
+
+//
+//object Nel {
+//  implicit def toSorted[A](implicit order: Order[A]): Sorted[A] = new Sorted[A] {
+//    override def sorted(aList: Nel[A]): List[A] = aList
+//  }
+//
+//  trait Sorted[A] {
+//    def sorted(aList: Nel[A]): List[A]
+//  }
+//}
+
+
 
 trait ListInstances1 {
   implicit def partialOrderList[A](implicit A: PartialOrder[A]): PartialOrder[List[A]] =
@@ -556,6 +581,8 @@ trait ListInstances1 {
 }
 
 object Nel extends NelInstances
+
+
 
 trait NelInstances {
   implicit def nelCmp[A](implicit A: Order[A]): Order[Nel[A]] =
@@ -590,3 +617,6 @@ final private[dogs] class ListBuilder[A] {
     }
   }
 }
+
+
+

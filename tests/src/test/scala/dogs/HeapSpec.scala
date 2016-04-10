@@ -1,3 +1,7 @@
+/**
+  * Created by nperez on 3/28/16.
+  */
+
 package dogs
 
 import dogs.Predef._
@@ -8,9 +12,6 @@ import org.scalatest.Matchers
 import scala.collection.{SortedSet, Iterable}
 import scala.collection.immutable.{List => SList}
 
-/**
- * Created by nperez on 3/28/16.
- */
 class HeapSpec extends DogsSuite with Matchers with DogMatcher {
 
   import cats.std.int._
