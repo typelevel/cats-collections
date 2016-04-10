@@ -53,6 +53,8 @@ addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
 
 addCommandAlias("validate", ";validateJS;validateJVM")
 
+addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVersion.value.get + \"-SNAPSHOT\"")
+
 lazy val noPublishSettings = Seq(
   publish := (),
   publishLocal := (),
