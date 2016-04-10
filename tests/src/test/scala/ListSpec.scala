@@ -2,8 +2,13 @@ package dogs
 package tests
 
 import Predef._
+import com.oracle.webservices.internal.api.message.PropertySet.Property
+import dogs.tests.DietSpec._
 import dogs.tests.arbitrary.all._
 import cats._
+import org.scalacheck.Prop._
+import org.scalacheck.Properties
+import org.scalatest.{Matchers, FlatSpec}
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
 import algebra.Eq
@@ -11,7 +16,10 @@ import algebra.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
 
+
+
 class ListSpec extends DogsSuite {
+
   checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
   checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
 
@@ -64,13 +72,6 @@ class ListSpec extends DogsSuite {
       xs.forall(_ != x) should be(xs.toScalaList.forall(_ != x))
     })
 
-//   property("find") =
-//     forAll { (xs: List[Int], x: Int) =>
-//       xs.find(_ > x) == xs.toScalaList.find(_ > x)
-//       xs.find(_ == x) == xs.toScalaList.find(_ == x)
-//       xs.find(_ != x) == xs.toScalaList.find(_ != x)
-//     }
-
   test("contains")(
     forAll { (xs: SList[Int], x: Int) =>
       xs.contains(x) should be(xs.toScalaList.contains(x))
@@ -87,4 +88,14 @@ class ListSpec extends DogsSuite {
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
     })
 
+  test("sorted")(
+    forAll { xs: List[Int] =>
+      val sorted = xs.sorted
+
+      sorted.toScalaList should be(xs.toScalaList.sortWith((x,y) => x <= y))
+    })
 }
+
+
+
+
