@@ -32,6 +32,7 @@ Here is a list of the current structures present in dogs:
 - [Set](tut/set)       - A tree based, ordered, extensional set
 - Streaming - A stream of values with a lazily evaluated tail
 - [Sorted](tut/sorted)  - Type class for sorting lists
+- [Partition](tut/partition) - Type class for partitioning a list
 
 ## Predef
 

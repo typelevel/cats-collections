@@ -1,8 +1,8 @@
 ---
 layout: default
 title:  "Sorted"
-source: "core/src/main/scala/Diet.scala"
----
+source: "core/src/main/scala/sorted.scala"
+------------------------------------------
 # Sorted
 
 `Sorted` is a type class for adding sorting functionality to `List[A]`

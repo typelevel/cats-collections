@@ -29,7 +29,11 @@ object Sorted {
     override def sorted(implicit order: Order[A]): List[A] = {
       def quickSort(xs: List[A], order: Order[A]): List[A] = xs match {
         case El()       => El[A]
-        case Nel(h, t)  => quickSort(t.filter(i => order.lt(i, h)), order) ::: (h :: quickSort(t.filter(i => order.gteqv(i, h)), order))
+        case Nel(h, t)  => {
+          val (l, r) = t.partition(order.lt(_,h))
+
+          quickSort(l, order) ::: (h :: quickSort(r, order))
+        }
       }
 
       quickSort(aList, order)
