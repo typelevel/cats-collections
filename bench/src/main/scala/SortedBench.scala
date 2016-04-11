@@ -5,6 +5,8 @@
 import dogs.{Sorted, El}
 import org.openjdk.jmh.annotations.{Benchmark, Setup, Scope, State}
 import scala.util.Random
+import cats.implicits._
+import dogs.Predef._
 
 
 @State(Scope.Benchmark)
