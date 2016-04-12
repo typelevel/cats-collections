@@ -310,7 +310,7 @@ object Set {
    */
   def empty[A]: Set[A] = BTNil()
 
-  implicit def toPartition[A](set: Set[A]): Partition[A] = Partition(set)
+  implicit def toPartition[A](implicit order: Order[A]): Partition[A] = Partition.apply[A](order)
 
   private[dogs] case class Branch[A](value: A,
                                      left: Set[A],
@@ -370,10 +370,5 @@ object Set {
     override val height: Int = 0
   }
 }
-
-
-
-
-
 
 

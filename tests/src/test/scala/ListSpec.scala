@@ -102,13 +102,6 @@ class ListSpec extends DogsSuite {
       xs.take(n).toScalaList should be (xs.toScalaList.take(n))
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
     })
-
-  test("sorted")(
-    forAll { xs: List[Int] =>
-      val sorted = xs.sorted
-
-      sorted.toScalaList should be(xs.toScalaList.sortWith((x,y) => x <= y))
-    })
 }
 
 

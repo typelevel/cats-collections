@@ -18,19 +18,19 @@ members.
 Let's see how we can use `Set`
 
 ```tut
-import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._
+import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._, cats.Order
 
 ```
 
 The empty set
 
-```tut
+```
 val empty = Set.empty[Int]
 ```
 
 Adding elements to the set
 
-```tut
+```
 
 val s = empty + 5 + 6 + 10
 
@@ -39,19 +39,19 @@ val s = empty + 5 + 6 + 10
 An important functionality of `Set` is the ability to be partitioned into equivalence classes based of a property `p` of
 function `f`. 
 
-```tut
+```
 
-import dogs.Partition._
+import dogs.Partition._, dogs.Partition
 
 val s = Set.fromList(List(1,2,3,4,5,6,7,8,9,10))
 
 s.partition(x => x % 3)
 ```
-We partitioned the set into three equivalence classes, in this case the once that correspond to congruence mod 3.
+We partitioned the set into three equivalence classes, in this case each one corresponds to congruence mod 3.
 
 Let's see a different partition of the same set based on a more complicated property (function)
 
-```tut
+```
 
 val s = Set.fromList(List(1,2,3,4,5,6,7,8,9,10))
 
@@ -62,4 +62,7 @@ s.partition(f)
 ```
 
 Note that the result is of type `List[(B, List[A])]` where `B` is the value of `f` on all element of the class `B`. In
-other words, each value of the class `B` represents the same within the `Set` under the function `f`
+other words, each value of the class `B` represents the same (`B`) within the `Set` under the function `f`. 
+
+It is also important that all elements on the original `Set` will be included in one of the equivalence classes since
+the union of these classes will conform the original `Set`.  

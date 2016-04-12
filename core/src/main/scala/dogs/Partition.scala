@@ -19,18 +19,18 @@ import cats._
   /**
    * Returns the equivalent classes based on the function (property) f of the set
    */
-  def partition[B](f: A => B)(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])]
+  def partition[B](set: Set[A])(f: A => B)(implicit order: Order[B]): List[(B, List[A])]
 }
 
 object Partition {
-  def apply[A](set: Set[A]): Partition[A] = new EquivalentClass[A](set)
+  def apply[A](implicit order: Order[A]): Partition[A] = new EquivalentClass[A]
 
-  final class EquivalentClass[A](set: Set[A]) extends Partition [A]{
+  final class EquivalentClass[A](implicit orderA: Order[A]) extends Partition [A] {
     /**
       * Returns the equivalent classes based on the function (property) f of the set
      */
-    override def partition[B](f: (A) => B)(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])] = {
-      def loop(aList: List[A], map: Map[B, List[A]])(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])] = aList match {
+    override def partition[B](set: Set[A])(f: (A) => B)(implicit order: Order[B]): List[(B, List[A])] = {
+      def loop(aList: List[A], map: Map[B, List[A]]): List[(B, List[A])] = aList match {
         case El()       =>  map.toList
         case Nel(h, t)  =>  {
 

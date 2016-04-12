@@ -1,3 +1,7 @@
+/**
+ * Created by anicolaspp on 4/10/16.
+ */
+
 package dogs
 
 import Predef._
@@ -8,25 +12,21 @@ import scala.annotation.{tailrec}
 import dogs.syntax.birds._
 import cats._
 
-/**
-  * Created by anicolaspp on 4/10/16.
-  */
 
 @typeclass trait Sorted[A] {
-  def sorted(implicit order: Order[A]): List[A]
+  def sorted(xs: List[A]): List[A]
 }
 
 object Sorted {
 
-  def apply[A](aList: List[A])(implicit order: Order[A]): Sorted[A] = new QuickSorted[A](aList)
+  def apply[A](implicit order: Order[A]): Sorted[A] = new QuickSorted[A]
 
-  def quickSort[A](aList: List[A])(implicit order: Order[A]): Sorted[A] = new QuickSorted[A](aList)
+  def quickSort[A](implicit order: Order[A]): Sorted[A] = new QuickSorted[A]
 
-  def heapSort[A](aList: List[A])(implicit order: Order[A]): Sorted[A] = new HeapSorted[A](aList)
+  def heapSort[A](implicit order: Order[A]): Sorted[A] = new HeapSorted[A]
 
-
-  sealed class QuickSorted[A](aList: List[A]) extends Sorted[A] {
-    override def sorted(implicit order: Order[A]): List[A] = {
+  sealed class QuickSorted[A](implicit order: Order[A]) extends Sorted[A] {
+    override def sorted(xs: List[A]): List[A] = {
       def quickSort(xs: List[A], order: Order[A]): List[A] = xs match {
         case El()       => El[A]
         case Nel(h, t)  => {
@@ -36,13 +36,13 @@ object Sorted {
         }
       }
 
-      quickSort(aList, order)
+      quickSort(xs, order)
     }
   }
 
-  sealed class HeapSorted[A](aList: List[A]) extends Sorted[A]{
-    override def sorted(implicit order: Order[A]): List[A] = {
-      val heap = Heap.heapify(aList)
+  sealed class HeapSorted[A](implicit order: Order[A]) extends Sorted[A]{
+    override def sorted(xs: List[A]): List[A] = {
+      val heap = Heap.heapify(xs)
 
       heap.toList()
     }

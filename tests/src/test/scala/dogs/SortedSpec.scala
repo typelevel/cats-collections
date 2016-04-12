@@ -23,7 +23,7 @@ import cats.laws.discipline.arbitrary._
 class SortedSpec extends DogsSuite {
   test("quicksort")(
     forAll{ xs: List[Int] =>
-      val sorted = Sorted.quickSort(xs).sorted
+      val sorted = Sorted.quickSort.sorted(xs)
 
       sorted.toScalaList should be(xs.toScalaList.sortWith((x,y) => x <= y))
     }
@@ -31,7 +31,7 @@ class SortedSpec extends DogsSuite {
 
   test("heapsort")(
     forAll{ xs: List[Int] =>
-      val sorted = Sorted.heapSort(xs).sorted
+      val sorted = Sorted.heapSort.sorted(xs)
 
       sorted.toScalaList should be(xs.toScalaList.sortWith((x,y) => x <= y))
     }
