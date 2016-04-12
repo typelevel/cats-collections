@@ -3,6 +3,7 @@ package dogs
 import Predef._
 import cats.{Eval,Order,Semigroup}
 import cats.std.int._
+import simulacrum.typeclass
 import scala.annotation.tailrec
 import scala.math
 
@@ -309,6 +310,8 @@ object Set {
    */
   def empty[A]: Set[A] = BTNil()
 
+  implicit def toPartition[A](set: Set[A]): Partition[A] = Partition(set)
+
   private[dogs] case class Branch[A](value: A,
                                      left: Set[A],
                                      right: Set[A]) extends Set[A] {
@@ -366,6 +369,11 @@ object Set {
     override val size: Int = 0
     override val height: Int = 0
   }
-
 }
+
+
+
+
+
+
 

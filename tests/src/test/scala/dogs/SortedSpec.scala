@@ -41,7 +41,7 @@ class SortedSpec extends DogsSuite {
 class PartitionerSpec extends DogsSuite {
   test("partitions")(
     forAll { xs: List[Int] =>
-      val (x, y) = Partition(xs).partition(i => i % 2 == 0)
+      val (x, y) = BiPartition(xs).partition(i => i % 2 == 0)
 
       xs.foreach(i => {
         if (i % 2 == 0) x.contains(i) should be(true)

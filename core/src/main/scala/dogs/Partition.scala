@@ -1,8 +1,9 @@
 /**
-  * Created by anicolaspp on 4/10/16.
-  */
+ * Created by nperez on 4/12/16.
+ */
 
 package dogs
+
 
 import Predef._
 import simulacrum.typeclass
@@ -14,23 +15,35 @@ import cats._
 
 
 @typeclass trait Partition[A] {
-  def partition(predicate: A => Boolean): (List[A], List[A])
+
+  /**
+   * Returns the equivalent classes based on the function (property) f of the set
+   */
+  def partition[B](f: A => B)(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])]
 }
 
 object Partition {
+  def apply[A](set: Set[A]): Partition[A] = new EquivalentClass[A](set)
 
-  def apply[A](aList: List[A]): Partition[A] = new Partition[A] {
-    override def partition(f: (A) => Boolean): (List[A], List[A]) = {
-      var lbuilder = new ListBuilder[A]
-      var rbuilder = new ListBuilder[A]
+  final class EquivalentClass[A](set: Set[A]) extends Partition [A]{
+    /**
+      * Returns the equivalent classes based on the function (property) f of the set
+     */
+    override def partition[B](f: (A) => B)(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])] = {
+      def loop(aList: List[A], map: Map[B, List[A]])(implicit orderA: Order[A], order: Order[B]): List[(B, List[A])] = aList match {
+        case El()       =>  map.toList
+        case Nel(h, t)  =>  {
 
-      aList.foreach { x =>
-        if (f(x)) lbuilder = lbuilder += x
-        else
-          rbuilder = rbuilder += x
+          val k = f(h)
+          val v = map.get(k).getOrElse(El[A])
+          val m = map.updateAppend(k,  h :: v)
+
+          loop(t, m)
+        }
       }
 
-      (lbuilder.run, rbuilder.run)
+      loop(set.toList(), Map.empty)
+        .map { case (k, l) => (k, Set.fromList(l).toList()) }
     }
   }
 }
