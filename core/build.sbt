@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   "org.scalacheck"                 %%% "scalacheck" % "1.12.5",
 
   compilerPlugin("org.spire-math"  %% "kind-projector" % "0.6.3"),
-  compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0-M5" cross CrossVersion.full)
+  compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)
 )
 
 scalacOptions := Seq(

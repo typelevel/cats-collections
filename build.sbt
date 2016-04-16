@@ -2,9 +2,7 @@ name := "dogs"
 
 organization in Global := "org.typelevel"
 
-scalaVersion in Global := "2.11.7"
-
-crossScalaVersions in Global := Seq("2.10.6", "2.11.7")
+scalaVersion in Global := "2.11.8"
 
 resolvers in Global += Resolver.sonatypeRepo("snapshots")
 

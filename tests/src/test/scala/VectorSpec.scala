@@ -100,14 +100,6 @@ class VectorTest extends DogsSuite {
     }
   }
 
-  test(":\\"){ 
-    forAll {
-       (ns: Vector[Int], s: String, f: (Int, String) => String) =>
-      ((ns :\ s)(f) ===((ns.toScalaVector :\ s)(f))) should be(true)
-    }
-  }
-
-
   test("collect"){ 
     forAll {
        (ns: Vector[Int]) =>

@@ -105,7 +105,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   def +:(obj: A): Vector[A] = Vector(obj) ++ this
 
   /* alias for foldRight */
-  def :\[B](b: B)(f: (A, B) => B): B = foldRight(b)(f)
+  def :\[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = foldRight(b)(f)
 
   /* alias for foldLeft */
   def /:[B](b: B)(f: (B, A) => B): B = foldLeft(b)(f)
@@ -236,17 +236,15 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     inner(0, seed)
   }
 
-  // uses constant stack, because VECTOR POWAAAAAAAH!
-  def foldRight[B](seed: B)(f: (A, B) => B): B = {
-    @tailrec
-    def inner(i: Int, seed: B): B = {
-      if (i > 0)
-        inner(i - 1, f(apply(i - 1), seed))
+  def foldRight[B](seed: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
+    def inner(i: Int): Eval[B] = {
+      if (i < length)
+        f(apply(i), Eval.defer(inner(i+1)))
       else
         seed
     }
 
-    inner(length, seed)
+    Eval.defer(inner(0))
   }
 
   /**
@@ -682,9 +680,9 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     inner(0, Vector.empty)
   }
 
-  def toScalaVector: SVector[A] = foldRight[SVector[A]](SVector.empty)(_ +: _)
+  def toScalaVector: SVector[A] = foldRight[SVector[A]](Eval.now(SVector.empty))((a,fa) => fa.map(a +: _)).value
 
-  def toList: List[A] = foldRight(El[A]) { _ :: _ }
+  def toList: List[A] = foldRight(Eval.now(El[A]))((a,fa) => fa.map( a :: _ )).value
 
   def toNel: Option[Nel[A]] = toList.toNel
 
