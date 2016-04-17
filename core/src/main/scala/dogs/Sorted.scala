@@ -13,20 +13,20 @@ import dogs.syntax.birds._
 import cats._
 
 
-@typeclass trait Sorted[A] {
-  def sorted(xs: List[A]): List[A]
+@typeclass trait Sorted[M[_]] {
+  def sorted[A](xs: M[A])(implicit order: Order[A]): List[A]
 }
 
 object Sorted {
 
-  def apply[A](implicit order: Order[A]): Sorted[A] = new QuickSorted[A]
+  def apply: Sorted[List] = new QuickSorted
 
-  def quickSort[A](implicit order: Order[A]): Sorted[A] = new QuickSorted[A]
+  def quickSort: Sorted[List] = new QuickSorted
 
-  def heapSort[A](implicit order: Order[A]): Sorted[A] = new HeapSorted[A]
+  def heapSort: Sorted[List] = new HeapSorted
 
-  sealed class QuickSorted[A](implicit order: Order[A]) extends Sorted[A] {
-    override def sorted(xs: List[A]): List[A] = {
+  sealed class QuickSorted extends Sorted[List] {
+    override def sorted[A](xs: List[A])(implicit order: Order[A]): List[A] = {
       def quickSort(xs: List[A], order: Order[A]): List[A] = xs match {
         case El()       => El[A]
         case Nel(h, t)  => {
@@ -40,8 +40,8 @@ object Sorted {
     }
   }
 
-  sealed class HeapSorted[A](implicit order: Order[A]) extends Sorted[A]{
-    override def sorted(xs: List[A]): List[A] = {
+  sealed class HeapSorted extends Sorted[List]{
+    override def sorted[A](xs: List[A])(implicit order: Order[A]): List[A] = {
       val heap = Heap.heapify(xs)
 
       heap.toList()

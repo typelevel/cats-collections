@@ -453,7 +453,7 @@ object List extends ListInstances {
 
   implicit def toPartition[A](aList: List[A]): BiPartition[A] = BiPartition(aList)
 
-  implicit def toSorted[A](implicit order: Order[A]): Sorted[A] = Sorted(order)
+  implicit def toSorted[A]: Sorted[List] = Sorted.quickSort
 }
 
 sealed trait ListInstances extends ListInstances1 {

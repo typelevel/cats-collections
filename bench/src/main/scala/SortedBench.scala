@@ -28,11 +28,11 @@ class SortedBench {
 
   @Benchmark
   def quicksort: Unit = {
-    Sorted.quickSort[Int].sorted(l)
+    Sorted.quickSort.sorted(l)
   }
 
   @Benchmark
   def heapsort: Unit = {
-    Sorted.heapSort[Int].sorted(l)
+    Sorted.heapSort.sorted(l)
   }
 }
