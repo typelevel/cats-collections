@@ -7,6 +7,10 @@ import scala.annotation.{tailrec}
 import dogs.syntax.birds._
 import cats._
 
+import org.scalacheck.Prop
+import Prop._
+
+
 /**
  * Immutable, singly-linked list implementation.
  *
@@ -469,6 +473,7 @@ sealed trait ListInstances extends ListInstances1 {
     override val empty: List[A] = List.empty
     override def combine(l: List[A], r: List[A]) = l ::: r
   }
+
 
   implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
     new Traverse[List] with MonadCombine[List] with CoflatMap[List] {

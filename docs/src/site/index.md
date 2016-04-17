@@ -13,9 +13,9 @@ standard library.
 
 ### EXPERIMENTAL
 
-This project is in its infancy, it should be considered pre-alpha, it
-might never go anywhere, it could change drastically along the way if
-it does go somewhere.
+This project is in its infancy, it should be considered beta
+
+### DATA STRUCTURES
 
 Here is a list of the current structures present in dogs:
 

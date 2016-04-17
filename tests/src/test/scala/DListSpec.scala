@@ -9,11 +9,15 @@ import cats.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
+import algebra.laws.{GroupLaws, OrderLaws}
 
 class DListSpec extends SlowDogsSuite {
   import DList._
   import arbitrary.list._
   import arbitrary.dlist._
+
+  checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
+  checkAll("DList[Int]", OrderLaws[DList[Int]].eqv)
 
   checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
   checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))

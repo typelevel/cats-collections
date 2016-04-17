@@ -6,7 +6,7 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck._
 import org.scalatest.{FlatSpec, Matchers}
 import syntax.range._
-import algebra.Order
+import cats.Order
 import algebra.std.int._
 
 import scala.Predef

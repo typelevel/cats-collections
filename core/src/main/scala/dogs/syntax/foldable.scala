@@ -17,6 +17,9 @@ final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
     lb.run
   }
 
+  def toDogsVector: Vector[A] = 
+    F.foldLeft[A, Vector[A]](fa, Vector.empty)(_ :+ _)
+
   def toDogsMap[K,V](implicit K: Order[K], ev: A =:= (K,V)): Map[K,V] = {
     F.foldLeft(fa, Map.empty[K,V])(_ + _)
   }

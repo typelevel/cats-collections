@@ -9,4 +9,5 @@ package object arbitrary {
   object iset extends ArbitraryISet
   object option extends ArbitraryOption
   object streaming extends ArbitraryStreaming
+  object vector extends ArbitraryVector
 }
