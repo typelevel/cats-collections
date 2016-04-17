@@ -67,22 +67,6 @@ sealed abstract class Heap[A] {
     else
       bubbleUp(min, left.add(x), right)
 
-//  /**
-//   * Build a heap using a list.
-//   * Order O(n)
-//   */
-//  def heapify(a: List[A])(implicit order: Order[A]): Heap[A] = {
-//    def loop(i: Int, xs: scala.List[A]): Heap[A] =
-//      if (i < xs.length) {
-//        bubbleDown(xs(i), loop(2 * i + 1, xs), loop(2 * i + 2, xs))
-//      }
-//      else {
-//        Leaf()
-//      }
-//
-//    loop(0, a.toScalaList)
-//  }
-
   /**
    * Remove the min element from the heap (the root).
    * Order O(log n)
