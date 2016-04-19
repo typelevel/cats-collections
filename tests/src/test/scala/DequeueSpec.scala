@@ -11,15 +11,12 @@ import scala.{annotation}
 import cats._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
 
-class DequeueSpec extends DogsSuite with ArbitraryList with ArbitraryOption {
+class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption {
   import Option._
   import Dequeue._
 
-
-
   checkAll("Dequeue[Int]", CartesianTests[Dequeue].cartesian[Int, Int, Int])
   checkAll("Cartesian[Dequeue]", SerializableTests.serializable(Cartesian[Dequeue]))
-/*
 
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Dequeue]", SerializableTests.serializable(CoflatMap[Dequeue]))
@@ -29,7 +26,7 @@ class DequeueSpec extends DogsSuite with ArbitraryList with ArbitraryOption {
 
   checkAll("Dequeue[Int] with Option", TraverseTests[Dequeue].traverse[Int, Int, Int, Dequeue[Int], Option, Option])
   checkAll("Traverse[Dequeue]", SerializableTests.serializable(Traverse[Dequeue]))
- */
+
    @annotation.tailrec
    final def consL[A](l: List[A], q: Dequeue[A]): Dequeue[A] = l match {
      case El() => q
