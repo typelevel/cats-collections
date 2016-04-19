@@ -20,9 +20,9 @@ trait TestSettings extends Configuration with Matchers {
   lazy val checkConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
       if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 100)
-      else
         PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 10)
+      else
+        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 100)
     else
       PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 50F, minSize = 0, sizeRange =  10)
 
