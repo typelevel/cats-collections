@@ -10,6 +10,7 @@ import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, M
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 import algebra.laws.{GroupLaws, OrderLaws}
+import catalysts.Platform
 
 class DListSpec extends SlowDogsSuite {
   import DList._
@@ -68,20 +69,23 @@ class DListSpec extends SlowDogsSuite {
   })
 
   test("stack safe append"){
-    val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)((dl,i) =>
+    val fill = if(Platform.isJvm) 100000 else 1000
+    val dl = List.fill(fill)(1).foldLeft[DList[Int]](DList.empty)((dl,i) =>
       dl ++ DList(List(i))
     )
 
     dl.headOption should be (Some(1))
   }
   test("stack safe post"){
-    val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)(_ :+ _)
+    val fill = if(Platform.isJvm) 100000 else 1000
+    val dl = List.fill(fill)(1).foldLeft[DList[Int]](DList.empty)(_ :+ _)
     dl.headOption should be (Some(1))
   }
 
 
   test("stack safe pre") {
-    val dl = List.fill(100000)(1).foldLeft[DList[Int]](DList.empty)((dl,a) => a +: dl)
+    val fill = if(Platform.isJvm) 100000 else 1000
+    val dl = List.fill(fill)(1).foldLeft[DList[Int]](DList.empty)((dl,a) => a +: dl)
     dl.headOption should be(Some(1))
   }
 
