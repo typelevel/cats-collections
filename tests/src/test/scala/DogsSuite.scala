@@ -24,7 +24,7 @@ trait TestSettings extends Configuration with Matchers {
       maxDiscardedFactor = if (Platform.isJvm) PosZDouble(5.0) else PosZDouble(50.0))
 
   lazy val slowCheckConfiguration: PropertyCheckConfiguration =
-    if (Platform.isJvm) checkConfiguration
+    if (Platform.isJvm) PropertyCheckConfig(maxSize = 5, minSuccessful = 5)
     else PropertyCheckConfig(maxSize = 1, minSuccessful = 1)
 }
 

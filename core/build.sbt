@@ -39,7 +39,3 @@ doctestWithDependencies := false
 
 doctestSettings
 
-(initialCommands in console) := """
-import cats._, cats.implicits._
-import left.cats._, left.cats.implicits._
-"""

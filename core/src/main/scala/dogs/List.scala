@@ -642,12 +642,19 @@ trait NelInstances1 {
 
 }
 
-final private[dogs] class ListBuilder[A] {
+final private[dogs] class ListBuilder[A] extends scala.collection.mutable.Builder[A,List[A]] {
   import List.empty
-  var run: List[A] = List.empty
+
+  var run: List[A] = empty
   var end: Nel[A] = _
 
-  def +=(a: A): ListBuilder[A] = {
+  override def clear(): Unit = {
+    run = List.empty
+    end = null
+  }
+  override def result() = run
+
+  override def +=(a: A) = {
     run match {
       case El() =>
         end = Nel(a, empty[A])

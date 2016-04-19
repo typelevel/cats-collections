@@ -6,7 +6,7 @@ import syntax.birds._
 import dogs.tests.arbitrary.all._
 import cats._
 import cats.std.int._
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
+import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, MonadTests, MonoidKTests, SerializableTests}
 import org.scalacheck._
 import org.scalacheck.Prop.{forAll,secure}
 import algebra.laws.{GroupLaws, OrderLaws}
@@ -21,6 +21,7 @@ class DListSpec extends SlowDogsSuite {
 
   checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
   checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))
+
   checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
   checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
 
