@@ -2,11 +2,8 @@ package dogs
 package tests
 
 import dogs.Predef._
-import org.scalatest.{FlatSpec, Matchers}
 
-
-class RangeTest extends FlatSpec with Matchers {
-
+class RangeTest  extends DogsSpec {
 
   import Range._
 

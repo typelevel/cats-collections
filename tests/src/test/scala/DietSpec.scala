@@ -4,7 +4,6 @@ package tests
 import dogs.Predef._
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
-import org.scalatest.{FlatSpec, Matchers}
 import syntax.range._
 import cats.Order
 import algebra.std.int._
@@ -112,7 +111,7 @@ object DietSpec extends Properties("Diet")  with DogMatcher {
 //  }
 }
 
-class DietTest extends FlatSpec with Matchers with DogMatcher {
+class DietTest extends DogsSpec {
   import Diet._
   import dogs.Predef._
 
@@ -239,7 +238,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
+class DietTestJoin extends DogsSpec {
 
   import dogs.Predef._
 
@@ -326,7 +325,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
+class DietTestRemove extends DogsSpec { //extends FlatSpec with Matchers with DogMatcher {
   import Diet._
 
   "diet" should "remove empty range" in {
@@ -362,7 +361,7 @@ class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestShow extends FlatSpec with Matchers {
+class DietTestShow  extends DogsSpec {
 
   import Diet._
   import cats.std.int._

@@ -8,11 +8,10 @@ package tests
 import dogs.Predef._
 import cats.Order
 import algebra.std.int._
-import org.scalatest.{FlatSpec, Matchers} 
 
 //forcing rebuild
 
-class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
+class ListMatcherSpec extends DogsSpec {
 
   "ListMatchWithScalaList" should "match lists" in {
 
@@ -46,7 +45,7 @@ class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietMatcherSpec extends FlatSpec with Matchers with DogMatcher {
+class DietMatcherSpec  extends DogsSpec {
 
   "Diet" should "match to another empty diet" in {
     val diet = Diet.empty[Int]

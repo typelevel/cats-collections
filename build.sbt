@@ -20,7 +20,8 @@ lazy val core = crossProject.crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm.settings(publishSettings)
 lazy val coreJS = core.js.settings(publishSettings)
 
-lazy val tests = crossProject.crossType(CrossType.Pure) dependsOn core
+lazy val tests = crossProject.crossType(CrossType.Pure)
+  .dependsOn(core)
   .jsSettings(commonJsSettings:_*)
 
 lazy val testsJVM = tests.jvm.settings(noPublishSettings)
@@ -42,7 +43,10 @@ lazy val commonJsSettings = Seq(
   // Only used for scala.js for now
   botBuild := sys.props.getOrElse("CATS_BOT_BUILD", default="false") == "true",
   // batch mode decreases the amount of memory needed to compile scala.js code
-  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
+  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value),
+
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "5", "-minSuccessfulTests", "5", "-workers", "1")
+
 )
 
 addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")

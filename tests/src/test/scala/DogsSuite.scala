@@ -7,7 +7,7 @@ import catalysts.Platform
 
 import cats._
 
-import org.scalatest.{FunSuite, PropSpec, Matchers}
+import org.scalatest.{FlatSpec, FunSuite, PropSpec, Matchers}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -20,28 +20,27 @@ trait TestSettings extends Configuration with Matchers {
   lazy val checkConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
       if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 3, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 100)
       else
-        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 100)
     else
-      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange =  3, workers = 4)
+      PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 50F, minSize = 0, sizeRange =  10)
 
   lazy val slowCheckConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
       if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 3, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 10)
       else
-        PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 10)
     else
-      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 4)
+      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 5F, minSize = 0, sizeRange = 3)
 }
 
-trait DogsSuite extends FunSuite
-    with Matchers
+trait DogsBaseSuite extends Matchers
     with DogMatcher
     with GeneratorDrivenPropertyChecks
     with TestSettings
-    with Discipline
+  // with  org.scalatest.prop.Checkers
     with StrictDogsEquality {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
@@ -61,7 +60,13 @@ trait DogsSuite extends FunSuite
   }
 }
 
-trait SlowDogsSuite extends DogsSuite {
+trait DogsSuite extends FunSuite with DogsBaseSuite with Discipline
+trait SlowDogsSuite extends DogsSuite with SlowDogsBaseSuite
+
+trait DogsSpec extends FlatSpec with DogsBaseSuite
+trait SlowDogsSpec extends DogsSpec with SlowDogsBaseSuite
+
+trait SlowDogsBaseSuite extends DogsBaseSuite {
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     slowCheckConfiguration
 }

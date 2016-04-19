@@ -144,14 +144,6 @@ class VectorTest extends DogsSuite {
     }
   }
 
-  test("dropRight"){ 
-    forAll {
-       (ns: Vector[Int], n: Int) =>
-      ns.dropRight(n).toScalaVector should ===(ns.toScalaVector.dropRight(n))
-    }
-  }
-
-
   test("dropRightWhile"){ 
     forAll {
        (ns: Vector[Int], p: Int => Boolean) =>
@@ -403,13 +395,6 @@ class VectorTest extends DogsSuite {
     }
   }
 
-  test("slice"){
-    forAll {
-      (ns: Vector[Int], a: Int, b: Int) =>
-      ns.slice(a, b).toScalaVector should ===(ns.toScalaVector.slice(a, b))
-    }
-  }
-
 /*
   test("sortBy"){
     forAll {
@@ -537,6 +522,27 @@ class VectorTest extends DogsSuite {
     forAll {
       ns: Vector[Int] =>
       ns.zipWithIndex.toScalaVector should ===(ns.toScalaVector.zipWithIndex)
+    }
+  }
+
+}
+
+
+class VectorTestSlow extends SlowDogsSuite {
+  import scala.collection.immutable.{Vector=>SVector, Map=>SMap}
+  import dogs.syntax.foldable._
+
+  test("dropRight"){
+    forAll {
+       (ns: Vector[Int], n: Int) =>
+      ns.dropRight(n).toScalaVector should ===(ns.toScalaVector.dropRight(n))
+    }
+  }
+
+  test("slice"){
+    forAll {
+      (ns: Vector[Int], a: Int, b: Int) =>
+      ns.slice(a, b).toScalaVector should ===(ns.toScalaVector.slice(a, b))
     }
   }
 
