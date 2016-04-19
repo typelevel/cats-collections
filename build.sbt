@@ -22,6 +22,7 @@ lazy val coreJS = core.js.settings(publishSettings)
 
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
+  .jvmSettings(commonJvmSettings:_*)
   .jsSettings(commonJsSettings:_*)
 
 lazy val testsJVM = tests.jvm.settings(noPublishSettings)
@@ -33,6 +34,16 @@ lazy val bench = project.dependsOn(coreJVM).settings(noPublishSettings)
 
 lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
 
+lazy val commonJvmSettings = Seq(
+   botBuild := scala.sys.env.getOrElse("CATS_BOT_BUILD", default="false") == "true",
+   testOptions in Test += {
+     if(botBuild.value)
+        Tests.Argument(TestFrameworks.ScalaCheck, "-maxSize", "5", "-minSuccessfulTests", "5", "-workers", "1")
+     else
+       Tests.Argument()
+   }
+)
+
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false,
@@ -41,7 +52,7 @@ lazy val commonJsSettings = Seq(
   requiresDOM := false,
   jsEnv := NodeJSEnv().value,
   // Only used for scala.js for now
-  botBuild := sys.props.getOrElse("CATS_BOT_BUILD", default="false") == "true",
+  botBuild := scala.sys.env.getOrElse("CATS_BOT_BUILD", default="false") == "true",
   // batch mode decreases the amount of memory needed to compile scala.js code
   scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value),
 
