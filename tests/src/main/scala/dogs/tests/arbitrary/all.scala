@@ -7,3 +7,4 @@ trait AllArbitrary
     with ArbitraryISet
     with ArbitraryOption
     with ArbitraryStreaming
+    with ArbitraryVector

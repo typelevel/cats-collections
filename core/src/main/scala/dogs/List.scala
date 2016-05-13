@@ -8,6 +8,10 @@ import scala.annotation.{tailrec}
 import dogs.syntax.birds._
 import cats._
 
+import org.scalacheck.Prop
+import Prop._
+
+
 /**
  * Immutable, singly-linked list implementation.
  *
@@ -474,6 +478,7 @@ sealed trait ListInstances extends ListInstances1 {
     override def combine(l: List[A], r: List[A]) = l ::: r
   }
 
+
   implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
     new Traverse[List] with MonadCombine[List] with CoflatMap[List] {
 
@@ -641,12 +646,19 @@ trait NelInstances1 {
 
 }
 
-final private[dogs] class ListBuilder[A] {
+final private[dogs] class ListBuilder[A] extends scala.collection.mutable.Builder[A,List[A]] {
   import List.empty
-  var run: List[A] = List.empty
+
+  var run: List[A] = empty
   var end: Nel[A] = _
 
-  def +=(a: A): ListBuilder[A] = {
+  override def clear(): Unit = {
+    run = List.empty
+    end = null
+  }
+  override def result() = run
+
+  override def +=(a: A) = {
     run match {
       case El() =>
         end = Nel(a, empty[A])

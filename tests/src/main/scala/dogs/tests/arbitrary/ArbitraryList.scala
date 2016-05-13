@@ -3,11 +3,16 @@ package tests.arbitrary
 
 import Predef._
 import org.scalacheck.{Gen, Arbitrary, Shrink}, Arbitrary.arbitrary
+import org.scalacheck.util.Buildable
 
 trait ArbitraryList {
+  implicit def listBuildable[A]: Buildable[A,List[A]] = new Buildable[A,List[A]] {
+    override def builder = new ListBuilder
+  }
+
   def listGen[A](implicit arbA: Arbitrary[A]): Gen[List[A]] =
-    Gen.listOf[A](arbitrary(arbA)).map(_.foldRight[List[A]](List.empty)(Nel.apply))
-                              
+    Gen.containerOf[List,A](arbA.arbitrary)(implicitly, l => l.toScalaList)
+
   implicit def arbitraryList[A: Arbitrary]: Arbitrary[List[A]] =
     Arbitrary(listGen)
 

@@ -217,10 +217,10 @@ trait OptionInstances extends OptionInstances1 {
       override def pure[A](x: A): Option[A] = Some(x)
 
       override def map[A, B](fa: Option[A])(f: A => B): Option[B] =
-        fa.map(f)
+        fa map f
 
       override def flatMap[A, B](fa: Option[A])(f: A => Option[B]): Option[B] =
-        fa.flatMap(f)
+        fa flatMap f
 
       override def map2[A, B, Z](fa: Option[A], fb: Option[B])(f: (A, B) => Z): Option[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))

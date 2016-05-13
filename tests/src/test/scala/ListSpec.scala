@@ -2,31 +2,37 @@ package dogs
 package tests
 
 import Predef._
-import dogs.tests.DietSpec._
 import dogs.tests.arbitrary.all._
 import cats._
-import org.scalacheck.Prop._
-import org.scalacheck.Properties
-import org.scalatest.{Matchers, FlatSpec}
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
 import cats.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadCombineTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
-
-
+import cats.laws.discipline.eq._
+import algebra.laws.{GroupLaws, OrderLaws}
 
 class ListSpec extends DogsSuite {
+  import List._
 
+  implicit val xx: Eq[Int] = implicitly[Eq[Int]]
+
+  implicit val yy: Eq[(Int,Int,Int)] = eqTuple3
+
+  implicit val zz: Eq[List[(Int,Int,Int)]] = List.listEq
+
+  checkAll("Monoid[List[Int]]", GroupLaws[List[Int]].monoid)
+  checkAll("List[Int]", OrderLaws[List[Int]].eqv)
+  
   checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
   checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
-
+  
   checkAll("List[Int]", CoflatMapTests[List].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[List]", SerializableTests.serializable(CoflatMap[List]))
 
   checkAll("List[Int]", MonadCombineTests[List].monadCombine[Int, Int, Int])
   checkAll("MonadCombine[List]", SerializableTests.serializable(MonadCombine[List]))
-
+  
   checkAll("List[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
   checkAll("Traverse[List]", SerializableTests.serializable(Traverse[List]))
 
@@ -86,6 +92,13 @@ class ListSpec extends DogsSuite {
       xs.forall(_ != x) should be(xs.toScalaList.forall(_ != x))
     })
 
+//   property("find") =
+//     forAll { (xs: List[Int], x: Int) =>
+//       xs.find(_ > x) == xs.toScalaList.find(_ > x)
+//       xs.find(_ == x) == xs.toScalaList.find(_ == x)
+//       xs.find(_ != x) == xs.toScalaList.find(_ != x)
+//     }
+
   test("contains")(
     forAll { (xs: SList[Int], x: Int) =>
       xs.contains(x) should be(xs.toScalaList.contains(x))
@@ -101,8 +114,5 @@ class ListSpec extends DogsSuite {
       xs.take(n).toScalaList should be (xs.toScalaList.take(n))
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
     })
+
 }
-
-
-
-
