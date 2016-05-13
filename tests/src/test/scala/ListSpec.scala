@@ -2,7 +2,6 @@ package dogs
 package tests
 
 import Predef._
-import com.oracle.webservices.internal.api.message.PropertySet.Property
 import dogs.tests.DietSpec._
 import dogs.tests.arbitrary.all._
 import cats._

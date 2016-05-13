@@ -39,13 +39,26 @@ class SortedSpec extends DogsSuite {
 }
 
 class PartitionerSpec extends DogsSuite {
-  test("partitions")(
-    forAll { xs: List[Int] =>
-      val (x, y) = BiPartition(xs).partition(i => i % 2 == 0)
 
-      xs.foreach(i => {
-        if (i % 2 == 0) x.contains(i) should be(true)
-        else y.contains(i) should be (true)
+  implicit val orderBoolean = new Order[Boolean] {
+    override def compare(x: Boolean, y: Boolean): Int = if (x == y) 0 else if (!x & y) -1 else 1
+  }
+
+  test("partitions")(
+    forAll { xs: Set[Int] =>
+
+      val partitions = Set.toPartition.partitions(xs)(i => i % 2 == 0)
+
+      val xT = partitions.filter {case (b, i) => b}.flatMap(_._2)
+      val xF = partitions.filter {case (b, i) => !b}.flatMap(_._2)
+
+
+
+//      val (x, y) = xs.toPartition(i => i % 2 == 0)
+
+      xs.toList.foreach(i => {
+        if (i % 2 == 0) xT.contains(i) should be(true)
+        else xF.contains(i) should be (true)
       })
     }
   )

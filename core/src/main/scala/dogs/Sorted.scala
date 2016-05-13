@@ -19,6 +19,29 @@ import cats._
 
 object Sorted {
 
+
+  private trait BiPartition[A] {
+      def partition(predicate: A => Boolean): (List[A], List[A])
+    }
+
+  private object BiPartition {
+
+      def apply[A](aList: List[A]): BiPartition[A] = new BiPartition[A] {
+        override def partition(f: (A) => Boolean): (List[A], List[A]) = {
+          var lbuilder = new ListBuilder[A]
+          var rbuilder = new ListBuilder[A]
+
+          aList.foreach { x =>
+            if (f(x)) lbuilder = lbuilder += x
+            else
+              rbuilder = rbuilder += x
+          }
+
+          (lbuilder.run, rbuilder.run)
+        }
+      }
+    }
+
   def apply: Sorted[List] = new QuickSorted
 
   def quickSort: Sorted[List] = new QuickSorted
@@ -30,7 +53,7 @@ object Sorted {
       def quickSort(xs: List[A], order: Order[A]): List[A] = xs match {
         case El()       => El[A]
         case Nel(h, t)  => {
-          val (l, r) = t.partition(order.lt(_,h))
+          val (l, r) = BiPartition(t).partition(order.lt(_,h))
 
           quickSort(l, order) ::: (h :: quickSort(r, order))
         }
