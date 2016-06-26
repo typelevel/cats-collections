@@ -76,8 +76,8 @@ sealed class Range[A](val start: A, val end: A) {
     val ignore = gen(start, end, List.empty)(f)
   }
 
-  def map[B](f: A => B)(implicit discrete: Enum[A], order: Order[A]): List[B] =
-    genMap[B](start, end, List.empty)(f)
+  def map[B](f: A => B): Range[B] = Range[B](f(start), f(end))
+    //genMap[B](start, end, List.empty)(f)
 
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A], order: Order[A]): B =
     generate.foldLeft(s)(f)
