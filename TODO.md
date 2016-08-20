@@ -6,7 +6,5 @@
 
 ## Missing Data Structures ##
 
-* DList
 * Zipper
 * FingerTree
-* Map
