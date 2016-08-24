@@ -52,7 +52,7 @@ class StreamingTests extends DogsSuite {
   }
 }
 
-class AdHocStreamingTests extends DogsSuite {
+class AdHocStreamingTests extends SlowDogsSuite {
   implicit val ex0: Eq[(Int,Int)] = eqTuple2[Int,Int]
   implicit val ex1: Eq[(List[Int],List[Int])] = eqTuple2[List[Int],List[Int]]
 
