@@ -8,23 +8,23 @@ scalaVersion in Global := "2.11.8"
 
 resolvers in Global += Resolver.sonatypeRepo("snapshots")
 
-lazy val dogs = project.in(file(".")).aggregate(dogsJVM, dogsJS).settings(noPublishSettings)
+lazy val dogs = project.in(file(".")).aggregate(dogsJVM/*, dogsJS*/).settings(noPublishSettings)
 
 lazy val dogsJVM = project.aggregate(coreJVM, docs, testsJVM, bench).settings(noPublishSettings)
-lazy val dogsJS = project.aggregate(coreJS, testsJS).settings(noPublishSettings)
+// lazy val dogsJS = project.aggregate(coreJS, testsJS).settings(noPublishSettings)
 
 lazy val core = crossProject.crossType(CrossType.Pure)
-  .jsSettings(commonJsSettings:_*)
+//  .jsSettings(commonJsSettings:_*)
 
 
 lazy val coreJVM = core.jvm.settings(publishSettings)
-lazy val coreJS = core.js.settings(publishSettings)
+// lazy val coreJS = core.js.settings(noPublishSettings)
 
 lazy val tests = crossProject.crossType(CrossType.Pure) dependsOn core
-  .jsSettings(commonJsSettings:_*)
+//  .jsSettings(commonJsSettings:_*)
 
 lazy val testsJVM = tests.jvm.settings(noPublishSettings)
-lazy val testsJS = tests.js.settings(noPublishSettings)
+// lazy val testsJS = tests.js.settings(noPublishSettings)
 
 lazy val docs = project.dependsOn(coreJVM).settings(noPublishSettings)
 
@@ -32,6 +32,7 @@ lazy val bench = project.dependsOn(coreJVM).settings(noPublishSettings)
 
 lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
 
+/*
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false,
@@ -44,14 +45,16 @@ lazy val commonJsSettings = Seq(
   // batch mode decreases the amount of memory needed to compile scala.js code
   scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
 )
+ */
 
 addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
 
 addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
 
-addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
+//addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
 
-addCommandAlias("validate", ";validateJS;validateJVM")
+//addCommandAlias("validate", ";validateJS;validateJVM")
+addCommandAlias("validate", ";validateJVM")
 
 addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVersion.value.get + \"-SNAPSHOT\"")
 
