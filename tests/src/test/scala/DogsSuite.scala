@@ -7,7 +7,7 @@ import catalysts.Platform
 
 import cats._
 
-import org.scalatest.{BeforeAndAfterAll, FunSuite, PropSpec, Matchers}
+import org.scalatest.{FunSuite, PropSpec, Matchers}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -18,25 +18,22 @@ import scala.util.{Failure, Success, Try}
 trait TestSettings extends Configuration with Matchers {
 
   lazy val checkConfiguration: PropertyCheckConfiguration =
-/*    if (Platform.isJvm)
+    if (Platform.isJvm)
       if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 10, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 50, workers = 4)
       else
         PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
     else
- */
       PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange =  3, workers = 4)
 
   lazy val slowCheckConfiguration: PropertyCheckConfiguration =
-/*
     if (Platform.isJvm)
       if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 5, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 5, workers = 4)
       else
         PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
     else
- */
-      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 8)
+      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 4)
 }
 
 trait DogsSuite extends FunSuite
