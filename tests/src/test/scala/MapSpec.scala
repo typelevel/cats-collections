@@ -69,3 +69,23 @@ class MapSpec extends DogsSuite with ArbitraryList {
     toSet(m map f) should contain theSameElementsAs (sm map f2).to[SSet]
   })
 }
+
+class MapShow extends FlatSpec with Matchers {
+
+  import cats.Show
+  import cats.implicits._
+  import cats.Order
+
+  "Map" should "show empty" in {
+    val map = Map.empty[Int, Int]
+
+    map.show should be("{}")
+  }
+
+  it should "show mappings" in {
+    val map = Map.empty[Int, Int].+((1,2)).+((2,3))
+
+    map.show should be("{[1-->2]\n[2-->3]\n}")
+  }
+}
+
