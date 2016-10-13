@@ -1,11 +1,9 @@
 package dogs
 
 import Predef._
-import cats.{Eval,Order,Semigroup}
-import cats.std.int._
+import cats._
+import cats.implicits._
 import scala.annotation.tailrec
-import scala.math
-import cats.{Eval,Order,Semigroup}
 
 /**
  * An immutable, ordered, extesntional Set

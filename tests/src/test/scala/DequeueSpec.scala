@@ -6,10 +6,10 @@ import dogs.tests.arbitrary._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import org.scalacheck.Prop._
-import cats.std.int._
 import scala.{annotation}
 import cats._
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
+import cats.implicits._
+import cats.laws.discipline._
 
 class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption {
   import Option._

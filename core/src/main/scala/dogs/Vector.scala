@@ -218,7 +218,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   // but...but...CanBuildFrom!
-  def flatMap[B](f: A => Vector[B]): Vector[B] =
+   def flatMap[B](f: A => Vector[B]): Vector[B] =
     foldLeft(Vector.empty[B]) { _ ++ f(_) }
 
   def flatten[B](implicit ev: A =:= Vector[B]): Vector[B] = flatMap(ev)
@@ -1373,6 +1373,21 @@ sealed abstract class VectorInstances extends VectorInstance0 {
         fa flatMap f
 
       // not tail recursive.  the alternative involves reverse.  eww?
+      override def tailRecM[A, B](a: A)(f: A => Vector[scala.Either[A, B]]): Vector[B] = {
+        @tailrec def go(res: Vector[B], lists: Vector[Vector[scala.Either[A, B]]]): Vector[B] =
+          if(lists.isEmpty) res
+          else {
+            val head = lists(0)
+            if(head.isEmpty) go(res, lists.drop(1))
+            else head(0) match {
+              case scala.Right(b) => go(res :+ b, head.drop(1) +: lists.drop(1))
+              case scala.Left(a) => go(res, f(a) +: (head.drop(1) +: lists.drop(1)))
+            }
+          }
+
+        go(Vector.empty, Vector(f(a)))
+      }
+
       def coflatMap[A, B](fa: Vector[A])(f: Vector[A] => B): Vector[B] = {
         if (fa.isEmpty)
           Vector.empty

@@ -6,7 +6,7 @@ import dogs.tests.arbitrary.all._
 import org.scalacheck._
 import cats.laws.discipline.SerializableTests
 import cats._
-import cats.std.int._
+import cats.implicits._
 import cats.laws.discipline.arbitrary._
 
 class ISetSpec extends DogsSuite {

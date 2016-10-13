@@ -101,13 +101,17 @@ trait DListInstances {
 
       override def map[A,B](fa: DList[A])(f: A => B): DList[B] = fa map f
 
-      override def flatMap[A,B](fa: DList[A])(f: A => DList[B]): DList[B] = 
+      override def flatMap[A,B](fa: DList[A])(f: A => DList[B]): DList[B] =
         fa flatMap f
- 
-     override def product[A, B](fa: DList[A], fb: DList[B]): DList[(A, B)] =
-       fa flatMap(a => fb map (a->_))
-//        DList(implicitly[Cartesian[List]].product(fa.toList, fb.toList))
-//        ap(map(fa)(a => (b: B) => (a, b)))(fb)
+      
+      override def product[A, B](fa: DList[A], fb: DList[B]): DList[(A, B)] =
+        fa flatMap(a => fb map (a->_))
+
+      override def tailRecM[A, B](a: A)(f: A => DList[scala.Either[A, B]]): DList[B] =
+        f(a).flatMap {
+          case scala.Left(a) => tailRecM(a)(f)
+          case scala.Right(b) => DList(b)
+        }
 
       override def traverse[G[_], A, B](fa: DList[A])(f: A => G[B])(implicit G: Applicative[G]): G[DList[B]] =
         foldLeft[A, G[DList[B]]](fa,G.pure(DList.empty))((res, a) =>

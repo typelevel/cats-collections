@@ -4,7 +4,6 @@ package tests
 import Predef._
 import cats._
 import cats.data.OneAnd
-import cats.laws.discipline.arbitrary.oneAndArbitrary
 import arbitrary.all._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{arbitrary => scarbitrary}
@@ -79,6 +78,9 @@ object ListWrapper {
 
       def flatMap[A, B](fa: ListWrapper[A])(f: A => ListWrapper[B]): ListWrapper[B] =
         ListWrapper(M.flatMap(fa.list)(a => f(a).list))
+
+      def tailRecM[A, B](a: A)(f: A => dogs.tests.ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
+        defaultTailRecM(a)(f)
 
       def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
 

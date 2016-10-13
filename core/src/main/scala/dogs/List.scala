@@ -115,6 +115,15 @@ sealed abstract class List[A] {
    * Append a list to this list. 
    * O(n) on the size of this list
    */
+  def :::(as: Nel[A]): Nel[A] = this match {
+    case El() => as
+    case x: Nel[A] => foldRight(Eval.now(as))((a,las) => las.map(_.::(a))).value
+  }
+
+  /**
+   * Append a list to this list. 
+   * O(n) on the size of this list
+   */
   def ++(as: List[A]): List[A] = this match {
     case El() => as
     case x: Nel[A] => foldRight(Eval.now(as))((a,las) => las.map(_.::(a))).value
@@ -386,7 +395,7 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
   override final def :::(as: List[A]): Nel[A] =
     as.foldRight(Eval.now(this))((a, lbs) => lbs.map(a :: _)).value
 
-  final def :::(as: Nel[A]): Nel[A] =
+  override final def :::(as: Nel[A]): Nel[A] =
     as.foldRight(Eval.now(this))((a, lbs) => lbs.map(a :: _)).value
 
   override final def map[B](f: A => B): Nel[B] = {
@@ -493,6 +502,20 @@ sealed trait ListInstances extends ListInstances1 {
       override def map2[A, B, Z](fa: List[A], fb: List[B])(f: (A, B) => Z): List[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
 
+      override def tailRecM[A, B](a: A)(f: A => List[scala.Either[A, B]]): List[B] = {
+        val buf = new ListBuilder[B]
+        @tailrec def go(lists: List[List[scala.Either[A, B]]]): Unit = lists match {
+          case (ab Nel abs) Nel tail => ab match {
+            case scala.Right(b) => buf += b; go(Nel(abs,tail))
+            case scala.Left(a) => go(f(a) :: Nel(abs, tail))
+          }
+          case El() Nel tail => go(tail)
+          case El() => ()
+        }
+        go(Nel(f(a), empty))
+        buf.result
+      }
+
       override def coflatMap[A, B](fa: List[A])(f: List[A] => B): List[B] = fa coflatMap f
 
       override def foldLeft[A, B](fa: List[A], b: B)(f: (B, A) => B): B =
@@ -589,6 +612,28 @@ trait NelInstances extends NelInstances1 {
       val h = f(fa.head)
       val t = fa.tail flatMap f
       Nel(h.head, h.tail ::: t)
+    }
+
+    override def tailRecM[A, B](a: A)(f: A => Nel[scala.Either[A,B]]): Nel[B] = {
+      @tailrec
+      def head(eab: Nel[scala.Either[A,B]]): (B, List[scala.Either[A,B]]) = eab match {
+        case scala.Right(b) Nel tail => b -> tail
+        case scala.Left(a) Nel tail => head(f(a) ::: tail)
+      }
+
+      val buf = new ListBuilder[B]
+      @tailrec def tail(lists: List[List[scala.Either[A, B]]]): Unit = lists match {
+        case (ab Nel abs) Nel rest => ab match {
+          case scala.Right(b) => buf += b; tail(Nel(abs,rest))
+          case scala.Left(a) => tail(f(a) :: Nel(abs, rest))
+        }
+        case El() Nel rest => tail(rest)
+        case El() => ()
+      }
+
+      val (b,rest) = head(f(a))
+      tail(Nel(rest, List.empty))
+      Nel(b, buf.result)
     }
 
     def foldLeft[A, B](fa: dogs.Nel[A],b: B)(f: (B, A) => B): B = fa.foldLeft(b)(f)

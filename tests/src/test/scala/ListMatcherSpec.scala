@@ -6,15 +6,15 @@ package dogs
 package tests
 
 import dogs.Predef._
-import cats.Order
-import algebra.std.int._
+import cats._
+import cats.implicits._
 import org.scalatest.{FlatSpec, Matchers} 
 
 //forcing rebuild
 
-class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
+class ListMatcherSpec extends DogsSuite {
 
-  "ListMatchWithScalaList" should "match lists" in {
+  test("match lists"){
 
     val a = List(1, 2, 3, 4, 5, 6)
     val matcher = matchTo(a)
@@ -24,7 +24,7 @@ class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
     result.matches should be (true)
   }
 
-  it should "not match with a different list" in {
+  test("not match with a different list"){
     val a = List(1, 3, 4, 5)
     val matcher = matchTo(a)
 
@@ -35,7 +35,7 @@ class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
     result.failureMessage should be (s"Lists don't match. Expected: $other Received: $a")
   }
 
-  it should "match nested list" in {
+  test("match nested list"){
     val a: List[List[Int]] = List(List(1), List(2))
 
     val matcher = matchTo(a)
@@ -46,9 +46,9 @@ class ListMatcherSpec extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietMatcherSpec extends FlatSpec with Matchers with DogMatcher {
+class DietMatcherSpec extends DogsSuite {
 
-  "Diet" should "match to another empty diet" in {
+  test("match to another empty diet"){
     val diet = Diet.empty[Int]
     val matcher = matchTo(diet)
 
@@ -57,7 +57,7 @@ class DietMatcherSpec extends FlatSpec with Matchers with DogMatcher {
     result.matches should be (true)
   }
 
-  it should "match equal diets" in {
+  test("match equal diets"){
     val a = Diet.empty[Int] + 2 + 5 + 7
     val matcher = matchTo(a)
 
@@ -66,7 +66,7 @@ class DietMatcherSpec extends FlatSpec with Matchers with DogMatcher {
     result.matches should be (true)
   }
 
-  it should "not match different diets" in {
+  test("not match different diets"){
     val a = Diet.empty[Int] + 2 + 5 + 7
     val matcher = matchTo(a)
 

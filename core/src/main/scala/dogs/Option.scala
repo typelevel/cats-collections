@@ -225,6 +225,17 @@ trait OptionInstances extends OptionInstances1 {
       override def map2[A, B, Z](fa: Option[A], fb: Option[B])(f: (A, B) => Z): Option[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
 
+      override def tailRecM[A, B](a: A)(f: A => Option[scala.Either[A, B]]): Option[B] = {
+        @tailrec
+        def go(o: Option[scala.Either[A,B]]): Option[B] = o match {
+          case None() => None()
+          case Some(scala.Left(a)) => go(f(a))
+          case Some(scala.Right(b)) => Some(b)
+        }
+
+        go(f(a))
+      }
+
       override def coflatMap[A, B](fa: Option[A])(f: Option[A] => B): Option[B] = fa coflatMap f
 
       def foldLeft[A, B](fa: Option[A], b: B)(f: (B, A) => B): B = fa.foldLeft(b)(f)

@@ -30,7 +30,7 @@ sealed abstract class Dequeue[A] {
   def backOption: Option[A]
 
   /**
-    * dequeue from the front of the queue
+    * destructure from the front of the queue
     */
   def uncons: Option[(A, Dequeue[A])] = this match {
     case EmptyDequeue() => Option.none
@@ -44,8 +44,8 @@ sealed abstract class Dequeue[A] {
   }
 
   /**
-    * dequeue from the back of the queue
-    */
+   * destructure from the back of the queue
+   */
   def unsnoc: Option[(A, Dequeue[A])] = this match {
     case EmptyDequeue() => Option.none
     case SingletonDequeue(a) => Some((a, EmptyDequeue()))
@@ -208,7 +208,6 @@ sealed abstract class Dequeue[A] {
     loop(this.uncons, this, EmptyDequeue())
   }
 
-
   def size: Int = this match {
     case EmptyDequeue() => 0
     case SingletonDequeue(_) => 1
@@ -295,6 +294,12 @@ sealed trait DequeueInstances {
 
     override def map2[A,B,Z](fa: Dequeue[A], fb: Dequeue[B])(f: (A,B) => Z): Dequeue[Z] =
       fa.flatMap(a => fb.map(b => f(a,b)))
+
+    override def tailRecM[A, B](a: A)(f: A => Dequeue[scala.Either[A, B]]): Dequeue[B] = 
+      f(a).flatMap {
+        case scala.Left(a) => tailRecM(a)(f)
+        case scala.Right(b) => SingletonDequeue(b)
+      }
 
     override def coflatMap[A,B](fa: Dequeue[A])(f: Dequeue[A] => B): Dequeue[B] = fa coflatMap f
 

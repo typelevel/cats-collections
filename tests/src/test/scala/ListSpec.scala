@@ -4,22 +4,22 @@ package tests
 import Predef._
 import dogs.tests.arbitrary.all._
 import cats._
+import cats.implicits._
 import scala.collection.Iterable
 import scala.collection.immutable.{Nil,List=>SList,::}
-import cats.std.int._
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadCombineTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
 import cats.laws.discipline.arbitrary._
 import cats.laws.discipline.eq._
-import algebra.laws.{GroupLaws, OrderLaws}
+import cats.kernel.laws.{GroupLaws, OrderLaws}
 
 class ListSpec extends DogsSuite {
   import List._
 
-  implicit val xx: Eq[Int] = implicitly[Eq[Int]]
+//  implicit val xx: Eq[Int] = implicitly[Eq[Int]]
 
-  implicit val yy: Eq[(Int,Int,Int)] = eqTuple3
+//  implicit val yy: Eq[(Int,Int,Int)] = eqTuple3
 
-  implicit val zz: Eq[List[(Int,Int,Int)]] = List.listEq
+//  implicit val zz: Eq[List[(Int,Int,Int)]] = List.listEq[(Int,Int,Int)]
 
   checkAll("Monoid[List[Int]]", GroupLaws[List[Int]].monoid)
   checkAll("List[Int]", OrderLaws[List[Int]].eqv)

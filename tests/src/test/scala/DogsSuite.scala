@@ -2,12 +2,13 @@ package dogs
 package tests
 
 import Predef._
+import java.lang.System
 
 import catalysts.Platform
 
 import cats._
 
-import org.scalatest.{FunSuite, PropSpec, Matchers}
+import org.scalatest.{FunSuite, PropSpec, Matchers, BeforeAndAfterAll}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -37,12 +38,25 @@ trait TestSettings extends Configuration with Matchers {
 }
 
 trait DogsSuite extends FunSuite
+    with BeforeAndAfterAll
     with Matchers
     with DogMatcher
     with GeneratorDrivenPropertyChecks
     with TestSettings
     with Discipline
     with StrictDogsEquality {
+
+  var startTime: Long = System.currentTimeMillis
+
+  override def beforeAll: Unit = {
+    startTime = System.currentTimeMillis
+    System.err.println(s"-------------------- ${this.getClass.getName} begins")
+  }
+
+  override def afterAll: Unit = {
+    val elapsed: Long = System.currentTimeMillis - startTime
+    System.err.println(s"-------------------- ${this.getClass.getName} finished. elapsed time: $elapsed ms.")
+  }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration

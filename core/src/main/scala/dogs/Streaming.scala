@@ -877,17 +877,27 @@ private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
     new Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] {
       def pure[A](a: A): Streaming[A] =
         Streaming(a)
+
       override def map[A, B](as: Streaming[A])(f: A => B): Streaming[B] =
         as.map(f)
+
       def flatMap[A, B](as: Streaming[A])(f: A => Streaming[B]): Streaming[B] =
         as.flatMap(f)
+
       def empty[A]: Streaming[A] =
         Streaming.empty
+
       def combineK[A](xs: Streaming[A], ys: Streaming[A]): Streaming[A] =
         xs ++ ys
 
       override def map2[A, B, Z](fa: Streaming[A], fb: Streaming[B])(f: (A, B) => Z): Streaming[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
+
+      override def tailRecM[A, B](a: A)(f: A => dogs.Streaming[scala.Either[A,B]]): dogs.Streaming[B] =
+        f(a).flatMap {
+          case scala.Left(a) => tailRecM(a)(f)
+          case scala.Right(b) => Streaming(b)
+        }
 
       def coflatMap[A, B](fa: Streaming[A])(f: Streaming[A] => B): Streaming[B] =
         fa.tails.filter(_.nonEmpty).map(f)

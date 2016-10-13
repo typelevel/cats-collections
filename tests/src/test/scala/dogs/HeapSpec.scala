@@ -1,9 +1,11 @@
 package dogs
+package tests
 
 import dogs.Predef._
 import dogs.tests.arbitrary.all._
-import dogs.tests.{DogMatcher, DogsSuite}
 import org.scalatest.Matchers
+import cats._
+import cats.implicits._
 
 import scala.collection.{SortedSet, Iterable}
 import scala.collection.immutable.{List => SList}
@@ -11,10 +13,7 @@ import scala.collection.immutable.{List => SList}
 /**
  * Created by nperez on 3/28/16.
  */
-class HeapSpec extends DogsSuite with Matchers with DogMatcher {
-
-  import cats.std.int._
-
+class HeapSpec extends DogsSuite {
   implicit class IterableOps[A](as: Iterable[A]) {
     def toScalaList: List[A] = List.fromIterable(as)
   }

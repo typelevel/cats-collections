@@ -1,16 +1,13 @@
 package dogs
 package tests
 
-import dogs.Predef._
-import org.scalacheck.Prop.forAll
+import Predef._
+import dogs.tests.arbitrary.all._
+import dogs.syntax.range._
+import cats._
+import cats.implicits._
 import org.scalacheck._
-import org.scalatest.{FlatSpec, Matchers}
-import syntax.range._
-import cats.Order
-import algebra.std.int._
-
-import scala.Predef
-
+import org.scalacheck.Prop.forAll
 
 object DietSpec extends Properties("Diet")  with DogMatcher {
 
@@ -112,11 +109,10 @@ object DietSpec extends Properties("Diet")  with DogMatcher {
 //  }
 }
 
-class DietTest extends FlatSpec with Matchers with DogMatcher {
+class DietTest extends DogsSuite {
   import Diet._
-  import dogs.Predef._
 
-  "diet" should "return node with value range when inserting into empty" in {
+  test("return node with value range when inserting into empty"){
 
     val diet = Diet.empty[Int]
 
@@ -126,14 +122,14 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     result.max should be (Some(5))
   }
 
-  it should "have min and max" in {
+  test("have min and max"){
     val diet = Diet.empty[Int].add(5).add(3).add(7)
 
     diet.min should be(Some(3))
     diet.max should be(Some(7))
   }
 
-  it should "create a new node when add not adj item" in {
+  test("create a new node when add not adj item"){
     val diet = Diet.empty[Int].add(5).add(3).add(7)
 
     val result = diet.intervals.map(l => l.generate)
@@ -142,7 +138,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     result should matchTo(List[List[Int]](List(3), List(5), List(7)))
   }
 
-  it should "join nodes when item adj to existing seq" in {
+  test("join nodes when item adj to existing seq"){
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
 
     val result = diet.intervals.map(l => l.generate)
@@ -150,7 +146,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     result should matchTo(List[List[Int]](List(1, 2, 3), List(5, 6), List(8)))
   }
 
-  it should "be always sorted" in {
+  test("be always sorted"){
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
 
     val sorted = diet.toList()
@@ -158,7 +154,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     sorted should matchTo(List(1, 2, 3, 5, 6, 8))
   }
 
-  it should "add disjoint range" in {
+  test("add disjoint range"){
     val diet = Diet.empty[Int]
 
     val result = diet.addRange(Range(0, 100))
@@ -168,7 +164,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     other should matchTo(List(Range(0, 100).toList))
   }
 
-  it should "join disjoint range" in {
+  test("join disjoint range"){
     val diet = Diet.empty[Int] + 5 + 6 + 7 + 1 + 2
 
     val other = diet + 3 + 4
@@ -176,7 +172,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     other.toList should matchTo(List(1, 2, 3, 4, 5, 6, 7))
   }
 
-  it should "contain items from range" in {
+  test("contain items from range"){
     val diet = Diet.empty[Int].addRange(Range(5, 10)).addRange(Range(1, 3)).addRange(Range(12, 20))
 
     diet.contains(1) should be (true)
@@ -190,18 +186,18 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     diet.contains(15) should be (true)
   }
 
-  it should "return empty when removing from empty" in {
+  test("return empty when removing from empty"){
     Diet.empty[Int].remove(1) should be (EmptyDiet())
   }
 
-  it should "not be modified when removing non existed item" in {
+  test("not be modified when removing non existed item"){
 
     val diet = Diet.empty[Int] + 1 +2 + 3 + 5
 
     diet.remove(4) should be (diet)
   }
 
-  it should "be split when removing from range" in {
+  test("be spl"){
     val diet = Diet.empty[Int] + 1 +2 + 3 + 5
 
     val other = diet.remove(2).intervals.map(x => x.generate.toScalaList).toScalaList
@@ -209,7 +205,7 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
   }
 
-  it should "map" in {
+  test("map"){
     val diet = Diet.empty[Int] + 1 +2 + 8 + 5
 
     val other = diet.map(x => x + 2).intervals.map(x => x.generate)
@@ -217,14 +213,14 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
     other should matchTo(List[List[Int]](List(3,4), List(7), List(10)))
   }
 
-  it should "foldLeft" in {
+  test("foldLeft"){
     val diet = Diet.empty[Int] + 1 +2 + 8 + 5
 
     diet.foldLeft(10)(_ + _) should be (26)
     diet.foldRight(10)(_ + _) should be (26)
   }
 
-  it should "contain range" in {
+  test("contain range"){
     val x = Diet.empty[Int] + Range(20, 30)
 
     x.containsRange(Range(20, 30)) should be (true)
@@ -239,11 +235,8 @@ class DietTest extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
-
-  import dogs.Predef._
-
-  "diet" should "return the same diet when join to empty range" in {
+class DietTestJoin extends DogsSuite {
+  test("return the same diet when join to empty range"){
     val diet = Diet.empty[Int] + 20 + 30
 
     val range = Range.empty[Int]
@@ -251,7 +244,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     diet.addRange(range) should be (diet)
   }
 
-  it should "return a diet with range when added to empty diet" in {
+  test("return a diet with range when added to empty diet"){
     val diet = Diet.empty[Int]
 
     val range = Range(20, 30)
@@ -262,7 +255,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     other.max should be (Some(30))
   }
 
-  it should "increase range to the left" in {
+  test("increase range to the left"){
     val diet = Diet.empty[Int] + 20 + 21
     val range = Range(15, 19)
 
@@ -271,7 +264,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     other.intervals.toScalaList(0).generate should matchTo(List(15, 16, 17, 18, 19, 20, 21))
   }
 
-  it should "create disjoint range to the left" in {
+  test("create disjoint range to the left"){
     val diet = Diet.empty[Int] + 20 + 21
     val range = Range(15, 18)
 
@@ -281,7 +274,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     sets(1) should matchTo(List(20, 21))
   }
 
-  it should "increase range to the right" in {
+  test("increase range to the right"){
     val diet = Diet.empty[Int] + 20 + 22
     val range = Range(21, 30)
 
@@ -290,7 +283,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     other should matchTo(List(Range(20, 30).toList))
   }
 
-  it should "join to an empty diet" in {
+  test("join to an empty diet"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
     val other = diet ++ Diet.empty[Int]
@@ -298,7 +291,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     other should be (diet)
   }
 
-  it should "join to another diet" in {
+  test("join to another diet"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
     val other = diet ++ (Diet.empty[Int] + Range(25, 35) + Range(5, 10) + Range(15, 22))
@@ -312,7 +305,7 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
     otherSets.intervals.map(r => r.generate) should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
   }
 
-  it should "interset with another diet" in {
+  test("interset with another diet"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
     (diet & Diet.empty[Int]).intervals.toScalaList.length should be (0)
@@ -326,27 +319,27 @@ class DietTestJoin extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
+class DietTestRemove extends DogsSuite {
   import Diet._
 
-  "diet" should "remove empty range" in {
+  test("remove empty range"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
     (diet - Range.empty[Int]) should be(diet)
   }
 
-  it should "return empty when removing from empty" in {
+  test("return empty when removing from empty"){
 
     (Diet.empty[Int] - Range(10, 100)) should be (EmptyDiet())
   }
 
-  it should "remove inner range" in {
+  test("remove inner range"){
     val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
 
     diet.toList() should matchTo(List(20, 21, 28, 29, 30))
   }
 
-  it should "remove side ranges" in {
+  test("remove side ranges"){
     val diet = ((Diet.empty[Int]
       + Range(20, 21)
       + Range(9,10)
@@ -362,23 +355,20 @@ class DietTestRemove extends FlatSpec with Matchers with DogMatcher {
   }
 }
 
-class DietTestShow extends FlatSpec with Matchers {
+class DietTestShow extends DogsSuite {
 
   import Diet._
-  import cats.std.int._
-  import cats.syntax.all._
+  import cats.implicits._
 
-  "Diet" should "shown empty" in {
+  test("shown empty"){
     val diet = Diet.empty[Int]
 
     diet.show should be ("{}")
   }
 
-  it should "shown all intervals" in {
+  test("shown all intervals"){
     val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
 
     diet.show should be ("{[1, 10], [20, 100]}")
   }
 }
-
-
