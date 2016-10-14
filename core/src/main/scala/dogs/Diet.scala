@@ -294,6 +294,7 @@ sealed abstract class Diet[A] {
   }
 }
 
+//noinspection ScalaStyle
 object Diet {
   def empty[A]: Diet[A] = EmptyDiet()
 

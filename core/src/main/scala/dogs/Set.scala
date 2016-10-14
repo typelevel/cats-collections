@@ -3,13 +3,14 @@ package dogs
 import Predef._
 import cats.{Eval,Order,Semigroup}
 import cats.std.int._
+import simulacrum.typeclass
 import scala.annotation.tailrec
 import scala.math
-import cats.{Eval,Order,Semigroup}
+import cats._
 
 /**
  * An immutable, ordered, extesntional Set
- * 
+ *
  * This datastructure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
  */
@@ -297,7 +298,7 @@ sealed abstract class Set[A] {
 object Set {
 
   /**
-   * Create a set with the given elements. 
+   * Create a set with the given elements.
    */
   def apply[A: Order](as: A*): Set[A] =
     as.foldLeft[Set[A]](empty)(_ + _)
@@ -309,6 +310,27 @@ object Set {
    * The empty Set.
    */
   def empty[A]: Set[A] = BTNil()
+
+  implicit def toPartition: Partition[Set] = new Partition[Set] {
+    /**
+     * Returns the equivalent classes based on the function (property) f of the set
+     */
+    override def partitions[A: Order, B: Order](xs: Set[A])(f: A => B): List[(B, List[A])] = {
+      def loop(aList: List[A], map: Map[B, List[A]]): List[(B, List[A])] = aList match {
+        case El() => map.toList
+        case Nel(h, t) => {
+
+          val k = f(h)
+          val v = map.get(k).getOrElse(El[A])
+
+          loop(t, map.updateAppend(k, h :: v))
+        }
+      }
+
+      loop(xs.toList(), Map.empty)
+        .map { case (k, l) => (k, Set.fromList(l).toList()) }
+    }
+  }
 
   private[dogs] case class Branch[A](value: A,
                                      left: Set[A],
@@ -367,6 +389,6 @@ object Set {
     override val size: Int = 0
     override val height: Int = 0
   }
-
 }
+
 

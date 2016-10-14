@@ -1,6 +1,7 @@
 package dogs
 
 import Predef._
+import simulacrum.typeclass
 import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
@@ -423,6 +424,7 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     loop(n, this)
     lb.run
   }
+
 }
 
 final case object El extends List[Nothing] {
@@ -451,6 +453,8 @@ object List extends ListInstances {
 
     go(n, a, List.empty[A])
   }
+
+  implicit def toSorted[A]: Sorted[List] = Sorted.quickSort
 }
 
 sealed trait ListInstances extends ListInstances1 {
@@ -668,3 +672,6 @@ final private[dogs] class ListBuilder[A] extends scala.collection.mutable.Builde
     }
   }
 }
+
+
+
