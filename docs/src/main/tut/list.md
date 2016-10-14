@@ -90,8 +90,8 @@ Many of the expected methods on `List` exist. We are still missing
 many other useful methods, please feel free to contribute!
 
 ```tut
-import cats.std.int._
-import cats.Eval
+import cats._
+import cats.implicits._
 
 val x: List[Int] = List(1,2,3)
 
