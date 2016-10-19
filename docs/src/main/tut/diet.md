@@ -48,6 +48,7 @@ d.isEmpty
 
 d.show
 ```
+![empty]({{ site.url }}/dogs/img/empty.png)
 
 And we can add an item:
 
@@ -57,6 +58,7 @@ d2.isEmpty
 
 d2.show
 ```
+![empty]({{ site.url }}/dogs/img/d2.png)
 
 And now we can check that it thinks 12 is in the set, but not other numbers
 
@@ -71,6 +73,7 @@ If we remove our only element, we get back to the empty Diet:
 val d3 = d2.remove(12)
 d3.isEmpty
 ```
+![empty]({{ site.url }}/dogs/img/empty.png)
 
 Asking to remove an element not in the set is a noop:
 
@@ -79,6 +82,7 @@ val s = Diet.empty[Int].remove(10)
 
 s.show
 ```
+![empty]({{ site.url }}/dogs/img/empty.png)
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
 
@@ -96,6 +100,7 @@ d2.contains(10)
 d2.containsRange(1 to 5)
 d2.containsRange(11 to 15) // fails since not the entire range is contained
 ```
+![d3]({{ site.url }}/dogs/img/d3.gif)
 
 Given two Diets, we can find the union or the intersection:
 
@@ -105,6 +110,18 @@ val d2 = Diet.empty[Int] + (7 to 12)
 (d1 & d2).show
 (d1 | d2).show
 ```
+Having 
+
+![d3]({{ site.url }}/dogs/img/d4-05.png)  AND  ![d3]({{ site.url }}/dogs/img/d4-09.png)
+
+The intersection will be as follows:
+
+![d3]({{ site.url }}/dogs/img/d4-13.png)
+
+And the union:
+
+![d3]({{ site.url }}/dogs/img/d5-13.png)
+
 Asking to remove non existing range yields the same diet
 
 ```tut
@@ -122,6 +139,7 @@ val d2 = d.removeRange((5 to 20))
 
 d2.show
 ```
+![d3]({{ site.url }}/dogs/img/d6.gif)
 
 Asking to remove a subrange splits the Diet
 
@@ -133,6 +151,18 @@ val d3 = d.removeRange((10 to 15))
 (5 to 9).toList.forall {i => d3.contains(i) }
 (16 to 20).toList.forall {i => d3.contains(i) }
 ```
+![d3]({{ site.url }}/dogs/img/d7.gif)
+
+A more interesting example could be the following:
+
+```tut
+ val d = Diet.empty[Int]
+ 
+ val result = d + (20 to 30) + (0 to 10) + (13 to 18) - 14 - 5 - 3
+ 
+ result.show
+```
+![d3]({{ site.url }}/dogs/img/d8.gif)
 
 Adding a inverted range
 
@@ -141,3 +171,7 @@ val d = Diet.empty[Int] + Range(20, 10)
 
 d.show
 ```
+
+## Visual Representation of Diet
+
+The `Diet` visual representation were built using [RefTree](https://github.com/stanch/reftree)

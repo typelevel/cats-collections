@@ -14,7 +14,7 @@ ghpages.settings
 
 ghpagesNoJekyll := false
 
-includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.yml" | "*.md"
+includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.yml" | "*.md" | "*.png"
 
 git.remoteRepo := "git@github.com:stew/dogs.git"
 
@@ -36,4 +36,6 @@ scalacOptions := Seq(
   "-Ywarn-value-discard",
   "-Xfuture",
   "-Yno-predef")
+  
+  
 
