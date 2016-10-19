@@ -280,26 +280,12 @@ sealed trait DequeueInstances {
     override def combine(l: Dequeue[A], r: Dequeue[A]) = l ++ r
   }
 
-  implicit val dequeueInstance: Traverse[Dequeue] with MonadCombine[Dequeue] with CoflatMap[Dequeue] = new Traverse[Dequeue] with MonadCombine[Dequeue] with CoflatMap[Dequeue] {
+  implicit val dequeueInstance: Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] = new Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] {
     override def empty[A]: Dequeue[A] = Dequeue.empty
 
     override def combineK[A](l: Dequeue[A], r: Dequeue[A]): Dequeue[A] = l ++ r
 
-    override def pure[A](a: A): Dequeue[A] = SingletonDequeue(a)
-
     override def map[A,B](fa: Dequeue[A])(f: A => B) = fa map f
-
-    override def flatMap[A,B](fa: Dequeue[A])(f: A => Dequeue[B]): Dequeue[B] =
-      fa flatMap f
-
-    override def map2[A,B,Z](fa: Dequeue[A], fb: Dequeue[B])(f: (A,B) => Z): Dequeue[Z] =
-      fa.flatMap(a => fb.map(b => f(a,b)))
-
-    override def tailRecM[A, B](a: A)(f: A => Dequeue[scala.Either[A, B]]): Dequeue[B] = 
-      f(a).flatMap {
-        case scala.Left(a) => tailRecM(a)(f)
-        case scala.Right(b) => SingletonDequeue(b)
-      }
 
     override def coflatMap[A,B](fa: Dequeue[A])(f: Dequeue[A] => B): Dequeue[B] = fa coflatMap f
 
@@ -311,11 +297,6 @@ sealed trait DequeueInstances {
     override def traverse[G[_], A, B](fa: Dequeue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Dequeue[B]] = {
       val gba = G.pure(EmptyDequeue[B]())
       fa.foldLeft(gba)((bs, a) => G.map2(bs, f(a))(_ :+ _))
-    }
-
-    override def isEmpty[A](fa: Dequeue[A]): Boolean = fa match {
-      case EmptyDequeue() => true
-      case _ => false
     }
   }
 }

@@ -16,9 +16,6 @@ class DListSpec extends SlowDogsSuite with ArbitraryList with ArbitraryDList wit
   checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
   checkAll("DList[Int]", OrderLaws[DList[Int]].eqv)
 
-  checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
-  checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))
-
   checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
   checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
 
