@@ -4,9 +4,8 @@ libraryDependencies ++= Seq(
   "org.typelevel"                  %%% "cats-core"  % "0.7.2",
   "com.github.mpilquist"           %%% "simulacrum" % "0.8.0",
   "org.typelevel"                  %%% "machinist"  % "0.5.0",
-  "org.scalacheck"                 %%% "scalacheck" % "1.12.5",
 
-  compilerPlugin("org.spire-math"  %% "kind-projector" % "0.8.0"),
+  compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.0"),
   compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)
 )
 

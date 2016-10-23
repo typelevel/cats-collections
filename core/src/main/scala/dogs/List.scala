@@ -7,10 +7,6 @@ import scala.annotation.{tailrec}
 import dogs.syntax.birds._
 import cats._
 
-import org.scalacheck.Prop
-import Prop._
-
-
 /**
  * Immutable, singly-linked list implementation.
  *
