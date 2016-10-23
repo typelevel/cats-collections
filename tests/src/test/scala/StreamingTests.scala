@@ -3,16 +3,13 @@ package tests
 
 import Predef._
 
-import dogs.syntax.range._
 import dogs.syntax.streaming._
 import dogs.tests.arbitrary.all._
 import cats._
 import cats.implicits._
 import cats.laws.discipline._
-import cats.laws.discipline.eq._
 import cats.kernel.laws.OrderLaws
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalactic.CanEqual
 import scala.collection.immutable.{List => SList}
 import scala.collection.immutable.Vector
 

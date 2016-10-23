@@ -5,7 +5,6 @@ import Predef._
 import dogs.tests.arbitrary._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
 import scala.{annotation}
 import cats._
 import cats.implicits._

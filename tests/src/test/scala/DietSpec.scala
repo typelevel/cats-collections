@@ -2,12 +2,10 @@ package dogs
 package tests
 
 import Predef._
-import dogs.tests.arbitrary.all._
 import dogs.syntax.range._
 import cats._
 import cats.implicits._
 import org.scalacheck._
-import org.scalacheck.Prop.forAll
 
 class DietSpec extends DogsSuite {
 

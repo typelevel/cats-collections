@@ -6,10 +6,8 @@ import dogs.tests.arbitrary.all._
 import cats._
 import cats.implicits._
 import scala.collection.Iterable
-import scala.collection.immutable.{Nil,List=>SList,::}
+import scala.collection.immutable.{List=>SList}
 import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadCombineTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
-import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
 import cats.kernel.laws.{GroupLaws, OrderLaws}
 
 class ListSpec extends DogsSuite {

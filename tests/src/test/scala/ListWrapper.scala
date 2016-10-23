@@ -3,7 +3,6 @@ package tests
 
 import Predef._
 import cats._
-import cats.data.OneAnd
 import arbitrary.all._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{arbitrary => scarbitrary}

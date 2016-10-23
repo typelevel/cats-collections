@@ -8,19 +8,17 @@ import catalysts.Platform
 
 import cats._
 
-import org.scalatest.{FunSuite, PropSpec, Matchers, BeforeAndAfterAll}
+import org.scalatest.{FunSuite, Matchers, BeforeAndAfterAll}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
 import org.typelevel.discipline.scalatest.Discipline
-
-import org.scalacheck.{Arbitrary, Gen}
-
-import scala.util.{Failure, Success, Try}
 
 trait TestSettings extends Configuration with Matchers {
 
   lazy val checkConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
-      if(scala.sys.env.get("TRAVIS").isDefined)
+      if(scala.sys.env.get("SCOVERAGEON").isDefined)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
+      else if(scala.sys.env.get("TRAVIS").isDefined)
         PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 50, workers = 1)
       else
         PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
@@ -29,7 +27,9 @@ trait TestSettings extends Configuration with Matchers {
 
   lazy val slowCheckConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
-      if(scala.sys.env.get("TRAVIS").isDefined)
+      if(scala.sys.env.get("SCOVERAGEON").isDefined)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
+      else if(scala.sys.env.get("TRAVIS").isDefined)
         PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 5, workers = 1)
       else
         PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)

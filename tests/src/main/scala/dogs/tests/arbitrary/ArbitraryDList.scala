@@ -1,8 +1,7 @@
 package dogs
 package tests.arbitrary
 
-import org.scalacheck.{Gen, Arbitrary}
-import Arbitrary.arbitrary
+import org.scalacheck.Arbitrary
 
 trait ArbitraryDList {
   import dogs.tests.arbitrary.list._

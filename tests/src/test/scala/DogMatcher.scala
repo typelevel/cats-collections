@@ -5,7 +5,6 @@ package dogs
 package tests
 
 import cats._
-import cats.implicits._
 import org.scalatest.matchers.{MatchResult, Matcher}
 import dogs.Predef._
 

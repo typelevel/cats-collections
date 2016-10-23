@@ -3,15 +3,11 @@ package tests
 
 import Predef._
 import dogs.tests.arbitrary.all._
-import cats._
 import cats.data._
 import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
 import cats.kernel.laws.{GroupLaws, OrderLaws}
-
-import org.scalactic._
 
 class VectorTest extends SlowDogsSuite {
   import scala.collection.immutable.{Vector=>SVector, Map=>SMap}

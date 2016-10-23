@@ -2,7 +2,6 @@ package dogs
 
 import Predef._
 import cats._
-import scala.{annotation,unchecked}
 import cats.{Eq,Eval}
 
 /**
@@ -22,7 +21,6 @@ import cats.{Eq,Eval}
   * resulting queue by taking elements from the opposite side
   */
 sealed abstract class Dequeue[A] {
-  import Option._
 
   def isEmpty: Boolean
 

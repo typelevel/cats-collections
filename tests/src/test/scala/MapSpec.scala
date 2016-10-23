@@ -4,10 +4,6 @@ package tests
 import Predef._
 import cats._
 import cats.implicits._
-import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
-import org.scalatest._
 import dogs.tests.arbitrary._
 
 class MapSpec extends DogsSuite with ArbitraryList {

@@ -2,7 +2,6 @@ package dogs
 
 import Predef._
 import cats.{Eq,Eval,Order,Semigroup}
-import scala.collection.immutable.{Map=>SMap}
 
 /**
  * A tree based immutable Map.
