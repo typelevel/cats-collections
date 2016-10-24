@@ -4,12 +4,7 @@ import Predef._
 import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
-import dogs.syntax.birds._
 import cats._
-
-import org.scalacheck.Prop
-import Prop._
-
 
 /**
  * Immutable, singly-linked list implementation.
@@ -32,7 +27,6 @@ import Prop._
  * provides a decent number of them. 
  */
 sealed abstract class List[A] {
-  import Option._
 
   def isEmpty: Boolean
 

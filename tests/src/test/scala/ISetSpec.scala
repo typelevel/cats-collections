@@ -3,15 +3,12 @@ package tests
 
 import dogs.Predef._
 import dogs.tests.arbitrary.all._
-import org.scalacheck._
 import cats.laws.discipline.SerializableTests
 import cats._
 import cats.implicits._
-import cats.laws.discipline.arbitrary._
 
 class ISetSpec extends DogsSuite {
-  import scala.collection.immutable.{Set => SSet, Map => MMap}
-
+ 
   checkAll("MonoidK[ISet]", SerializableTests.serializable(MonoidK[ISet]))
 
   test("intersection works")(

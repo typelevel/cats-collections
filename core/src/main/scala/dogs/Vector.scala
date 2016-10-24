@@ -73,8 +73,6 @@ import Predef._
  */
 final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Array[AnyRef]) extends scala.Product with java.io.Serializable { outer =>
 
-  import VectorCases._
-
   private val tailOff = length - tail.length
 
   /*

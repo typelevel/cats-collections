@@ -5,7 +5,6 @@ import scala.NoSuchElementException
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
 import scala.collection.mutable
-import Option._
 import cats.data.Ior
 import cats._, cats.Eval._
 import cats.implicits._

@@ -6,9 +6,7 @@ package dogs
 package tests
 
 import dogs.Predef._
-import cats._
 import cats.implicits._
-import org.scalatest.{FlatSpec, Matchers} 
 
 //forcing rebuild
 
