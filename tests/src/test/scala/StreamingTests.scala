@@ -3,27 +3,19 @@ package tests
 
 import Predef._
 
-import dogs.syntax.range._
 import dogs.syntax.streaming._
 import dogs.tests.arbitrary.all._
 import cats._
-import cats.std.all._
+import cats.implicits._
 import cats.laws.discipline._
-import cats.laws.discipline.eq._
-import algebra.laws.OrderLaws
+import cats.kernel.laws.OrderLaws
 import org.scalacheck.{Arbitrary, Gen}
-import Streaming._
-import org.scalactic.CanEqual
 import scala.collection.immutable.{List => SList}
 import scala.collection.immutable.Vector
 
 class StreamingTests extends DogsSuite {
-  import List.listEq
+  import Streaming._
   // who oh why do these need to be here?
-  implicit val ex0: Eq[(Int,Int)] = eqTuple2[Int,Int]
-  implicit val ex1: Eq[(Int,Int,Int)] = eqTuple3[Int,Int,Int]
-  implicit val ex2: Eq[(Streaming[Int], Streaming[Int])] = eqTuple2
-
   checkAll("Streaming[Int]", CartesianTests[Streaming].cartesian[Int, Int, Int])
   checkAll("Cartesian[Streaming]", SerializableTests.serializable(Cartesian[Streaming]))
 
@@ -53,8 +45,8 @@ class StreamingTests extends DogsSuite {
 }
 
 class AdHocStreamingTests extends DogsSuite {
-  implicit val ex0: Eq[(Int,Int)] = eqTuple2[Int,Int]
-  implicit val ex1: Eq[(List[Int],List[Int])] = eqTuple2[List[Int],List[Int]]
+  import Streaming._
+
 
   test("results aren't reevaluated after memoize") {
     forAll { (orig: Streaming[Int]) =>
@@ -136,7 +128,10 @@ class AdHocStreamingTests extends DogsSuite {
   test("unzip") {
     forAll { (xys: Streaming[(Int, Int)]) =>
       val (xs, ys): (Streaming[Int], Streaming[Int]) = xys.unzip
-      (xs.toList, ys.toList) should === (xys.toList.unzip)
+      val (ps, qs): (List[Int], List[Int]) = (xys.toList.unzip)
+
+      xs.toList should === (ps)
+      ys.toList should === (qs)
     }
   }
 
@@ -195,14 +190,6 @@ class AdHocStreamingTests extends DogsSuite {
     }
   }
 
-// TODO: uncomment when we get a new cats build without streaming
-/*
-  test("fromFoldable consistent with fromList") {
-    forAll { (xs: List[Int]) =>
-      Streaming.fromFoldable(xs) should === (Streaming.fromList(xs))
-    }
-  }
- */
   test("fromIterable consistent with fromList") {
     forAll { (xs: SList[Int]) =>
       Streaming.fromIterable(xs) should === (Streaming.fromList(List.fromIterable(xs)))
@@ -262,7 +249,7 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("peekEmpty consistent with isEmpty") {
     forAll { (s: Streaming[Int]) =>
-      s.peekEmpty.foreach(_ should === (s.isEmpty))
+      s.peekEmpty.foreach(v => {v should  === (s.isEmpty) ;()} )
     }
   }
 
@@ -291,7 +278,7 @@ class AdHocStreamingTests extends DogsSuite {
   test("uncons tail consistent with drop(1)"){
     forAll { (s: Streaming[Int]) =>
       val tail: Option[Streaming[Int]] = s.uncons.map(_._2.value)
-      tail.foreach(_.toList should === (s.toList.drop(1)))
+      tail.foreach(v => { v.toList should === (s.toList.drop(1));()} )
     }
   }
 
@@ -374,7 +361,7 @@ class AdHocStreamingTests extends DogsSuite {
     veryDangerous.uncons.map(_._1) shouldBe Some(1)
   }
 
-  def isok[U](body: => U): Unit =
+  def isok[U](body: => U) =
     Try(body).isSuccess shouldBe true
 
   test("lazy map") {

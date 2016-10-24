@@ -3,29 +3,25 @@ package tests
 
 import Predef._
 import dogs.tests.arbitrary.all._
-import cats._
 import cats.data._
-import cats.std.all._
+import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
-import cats.laws.discipline.eq._
-import algebra.laws.{GroupLaws, OrderLaws}
+import cats.kernel.laws.{GroupLaws, OrderLaws}
 
-import org.scalactic._
-
-class VectorTest extends DogsSuite {
+class VectorTest extends SlowDogsSuite {
   import scala.collection.immutable.{Vector=>SVector, Map=>SMap}
   import dogs.syntax.foldable._
   import Vector._
   import Nel._
 
   // who oh why do these need to be here?
-  implicit val ex0: Eq[(Int,Int)] = eqTuple2[Int,Int]
-  implicit val ex1: Eq[(Int,Int,Int)] = eqTuple3[Int,Int,Int]
-  implicit val ex2: Eq[(Vector[Int], Vector[Int])] = eqTuple2
-  implicit val ex3: Eq[(SVector[Int],SVector[Int])] = eqTuple2
-  implicit val ex4: Eq[(SVector[Int],SVector[String])] = eqTuple2
-  implicit val ex5: Eq[(SVector[Int],SVector[Int],SVector[Int])] = eqTuple3
+//    implicit val ex0: Eq[(Int,Int)] = eqTuple2[Int,Int]
+//    implicit val ex1: Eq[(Int,Int,Int)] = eqTuple3[Int,Int,Int]
+//    implicit val ex2: Eq[(Vector[Int], Vector[Int])] = eqTuple2
+//    implicit val ex3: Eq[(SVector[Int],SVector[Int])] = eqTuple2
+//    implicit val ex4: Eq[(SVector[Int],SVector[String])] = eqTuple2
+//    implicit val ex5: Eq[(SVector[Int],SVector[Int],SVector[Int])] = eqTuple3
 
   checkAll("Monoid[Vector[Int]]", GroupLaws[Vector[Int]].monoid)
   checkAll("Vector[Int]", MonadCombineTests[Vector].monadCombine[Int, Int, Int])
@@ -64,7 +60,7 @@ class VectorTest extends DogsSuite {
   test("catamorphism") {
     forAll {
       (ns: Vector[Int]) =>
-      (ns.foldLeft(Vector.empty[Int]) { _ :+ _ } ===(ns)) should be(true)
+      ns.foldLeft(Vector.empty[Int])(_ :+ _) should ===(ns)
     }
   }
 

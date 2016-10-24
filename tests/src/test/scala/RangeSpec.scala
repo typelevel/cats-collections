@@ -2,26 +2,20 @@ package dogs
 package tests
 
 import dogs.Predef._
-import org.scalatest.{FlatSpec, Matchers}
 
-
-class RangeTest extends FlatSpec with Matchers {
-
+class RangeTest extends DogsSuite {
 
   import Range._
 
-  import cats.syntax.all._
+  import cats.implicits._
 
-  import cats.std.int._
-
-
-  "a range" should "contain items within [start, end]" in {
+  test("contain items within [start, end]"){
     val range = Range(1, 100)
 
     scala.Range(1,100).foreach(i => range.contains(i) should be (true))
   }
 
-  it should "not contain items outside [start, end]" in {
+  test("not contain items outside [start, end]"){
     val range = Range(1, 100)
 
     range.contains(0) should be (false)
@@ -29,13 +23,13 @@ class RangeTest extends FlatSpec with Matchers {
     range.contains(101) should be (false)
   }
 
-  it should "contain sub range" in {
+  test("contain sub range"){
     val range = Range(1, 10)
 
     range.contains(Range(2,9)) should be (true)
   }
 
-  it should "apply function to each element" in {
+  test("apply function to each element"){
     var s = 0
 
     val range = Range(1, 100)
@@ -45,20 +39,20 @@ class RangeTest extends FlatSpec with Matchers {
     scala.Range(1,101).sum should be (s)
   }
 
-  it should "map" in {
+  test("map"){
     val range = Range(1, 100)
     val result = range.map(i => i.toString)
 
     scala.Range(1,101).map(i => i.toString).toList should be (result.toScalaList)
   }
 
-  it should "fold" in {
+  test("fold"){
     val range = Range(1, 100)
 
     range.foldLeft[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
   }
 
-  it should "be able to diff (-)" in {
+  test("be able to diff (-)"){
     val range = Range(1, 10)
 
     val (l, r) = range - Range(2,9)
@@ -82,13 +76,13 @@ class RangeTest extends FlatSpec with Matchers {
     r3 should be (Range.empty())
   }
 
-  it should "generate inverted range" in {
+  test("generate inverted range"){
     val range = Range(5, 1)
 
     range.generate.toScalaList should contain inOrderOnly(5, 4, 3, 2, 1)
   }
 
-  it should "map inverted range" in {
+  test("map inverted range"){
     val range = Range(5, 1)
 
     val result = range.map(i => i.toString)
@@ -96,20 +90,20 @@ class RangeTest extends FlatSpec with Matchers {
     result.toScalaList should contain inOrderOnly ("5", "4", "3", "2", "1")
   }
 
-  it should "the reverse be equals to the reverted range" in {
+  test("the reverse be equals to the reverted range"){
     val range = Range (20, 50)
     val other = Range (50, 20)
 
     range.reverse.toList.toScalaList should be (other.toList.toScalaList)
   }
 
-  it should "be convertible to string in math form when empty" in {
+  test("be convertible to string in math form when empty"){
     val range = Range.empty[Int]
 
     range.show should be ("[]")
   }
 
-  it should "be convertible to string in math form" in {
+  test("be convertible to string in math form"){
     val range = Range(10, 20)
 
     range.show should be ("[10, 20]")

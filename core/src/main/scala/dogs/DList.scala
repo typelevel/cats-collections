@@ -94,20 +94,9 @@ trait DListInstances {
   implicit def dlistEq[A](implicit A: Eq[A]): Eq[DList[A]] =
     Eq[List[A]].on[DList[A]](_.toList)
 
-  implicit val dlistInstance: MonadCombine[DList] with Traverse[DList] =
-    new MonadCombine[DList] with Traverse[DList] {
-      override def pure[A](a: A): DList[A] =
-        DList.empty :+ a
-
+  implicit val dlistInstance: Traverse[DList] with MonoidK[DList] = // TODO coflatmap?
+    new Traverse[DList] with MonoidK[DList] {
       override def map[A,B](fa: DList[A])(f: A => B): DList[B] = fa map f
-
-      override def flatMap[A,B](fa: DList[A])(f: A => DList[B]): DList[B] = 
-        fa flatMap f
- 
-     override def product[A, B](fa: DList[A], fb: DList[B]): DList[(A, B)] =
-       fa flatMap(a => fb map (a->_))
-//        DList(implicitly[Cartesian[List]].product(fa.toList, fb.toList))
-//        ap(map(fa)(a => (b: B) => (a, b)))(fb)
 
       override def traverse[G[_], A, B](fa: DList[A])(f: A => G[B])(implicit G: Applicative[G]): G[DList[B]] =
         foldLeft[A, G[DList[B]]](fa,G.pure(DList.empty))((res, a) =>
