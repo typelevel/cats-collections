@@ -1370,7 +1370,6 @@ sealed abstract class VectorInstances extends VectorInstance0 {
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] =
         fa flatMap f
 
-      // not tail recursive.  the alternative involves reverse.  eww?
       override def tailRecM[A, B](a: A)(f: A => Vector[scala.Either[A, B]]): Vector[B] = {
         @tailrec def go(res: Vector[B], lists: Vector[Vector[scala.Either[A, B]]]): Vector[B] =
           if(lists.isEmpty) res
@@ -1386,6 +1385,7 @@ sealed abstract class VectorInstances extends VectorInstance0 {
         go(Vector.empty, Vector(f(a)))
       }
 
+      // not tail recursive.  the alternative involves reverse.  eww?
       def coflatMap[A, B](fa: Vector[A])(f: Vector[A] => B): Vector[B] = {
         if (fa.isEmpty)
           Vector.empty

@@ -785,9 +785,6 @@ object Streaming extends StreamingInstances {
     loop(Empty(), as.reverse)
   }
 
-/*  def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F]): Streaming[A] =
-    F.toStreaming(fa)
- */
   /**
    * Create a stream from an iterable.
    *

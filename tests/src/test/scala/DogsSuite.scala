@@ -17,20 +17,20 @@ trait TestSettings extends Configuration with Matchers {
   lazy val checkConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
       if(scala.sys.env.get("SCOVERAGEON").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
+        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
       else if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 50, workers = 1)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 50, workers = 1)
       else
-        PropertyCheckConfiguration(minSuccessful = 100, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
+        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
     else
-      PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange =  3, workers = 1)
+      PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 10F, minSize = 0, sizeRange =  3, workers = 1)
 
   lazy val slowCheckConfiguration: PropertyCheckConfiguration =
     if (Platform.isJvm)
       if(scala.sys.env.get("SCOVERAGEON").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
+        PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 10F, minSize = 0, sizeRange = 3, workers = 1)
       else if(scala.sys.env.get("TRAVIS").isDefined)
-        PropertyCheckConfiguration(minSuccessful = 3, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 5, workers = 1)
+        PropertyCheckConfiguration(minSuccessful = 1, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 5, workers = 1)
       else
         PropertyCheckConfiguration(minSuccessful = 10, maxDiscardedFactor = 500F, minSize = 0, sizeRange = 100, workers = 4)
     else
@@ -50,12 +50,12 @@ trait DogsSuite extends FunSuite
 
   override def beforeAll: Unit = {
     startTime = System.currentTimeMillis
-    System.out.println(s"[info]-------------------- ${this.getClass.getName} begins")
+    println(s"[info]-------------------- ${this.getClass.getName} begins")
   }
 
   override def afterAll: Unit = {
     val elapsed: Long = System.currentTimeMillis - startTime
-    System.out.println(s"[info]-------------------- ${this.getClass.getName} finished. elapsed time: $elapsed ms.")
+    println(s"[info]-------------------- ${this.getClass.getName} finished. elapsed time: $elapsed ms.")
   }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =

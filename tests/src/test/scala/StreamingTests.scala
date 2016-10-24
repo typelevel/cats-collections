@@ -15,7 +15,6 @@ import scala.collection.immutable.Vector
 
 class StreamingTests extends DogsSuite {
   import Streaming._
-//  import List.listEq
   // who oh why do these need to be here?
   checkAll("Streaming[Int]", CartesianTests[Streaming].cartesian[Int, Int, Int])
   checkAll("Cartesian[Streaming]", SerializableTests.serializable(Cartesian[Streaming]))
@@ -191,14 +190,6 @@ class AdHocStreamingTests extends DogsSuite {
     }
   }
 
-// TODO: uncomment when we get a new cats build without streaming
-/*
-  test("fromFoldable consistent with fromList") {
-    forAll { (xs: List[Int]) =>
-      Streaming.fromFoldable(xs) should === (Streaming.fromList(xs))
-    }
-  }
- */
   test("fromIterable consistent with fromList") {
     forAll { (xs: SList[Int]) =>
       Streaming.fromIterable(xs) should === (Streaming.fromList(List.fromIterable(xs)))
@@ -297,13 +288,12 @@ class AdHocStreamingTests extends DogsSuite {
     }
   }
 
-  /*
   test("foldStreaming consistent with fold"){
     forAll { (ints: Streaming[Int], longs: Streaming[Long], f: (Int, Eval[Streaming[Int]]) => Streaming[Long]) =>
       ints.foldStreaming(longs, f) should === (ints.fold(Now(longs), f))
     }
   }
-   */
+
   test("interval") {
     // we don't want this test to take a really long time
     implicit val arbInt: Arbitrary[Int] = Arbitrary(Gen.choose(-10, 20))

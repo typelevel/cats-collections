@@ -4,8 +4,7 @@ package tests
 import dogs.Predef._
 import cats.implicits._
 
-import scala.collection.{ Iterable}
-//import scala.collection.immutable.{List => SList}
+import scala.collection.Iterable
 
 /**
  * Created by nperez on 3/28/16.
@@ -22,13 +21,9 @@ class HeapSpec extends DogsSuite {
 
       var heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-
       val exp = dogs.List.fromIterable(set)
 
       heap.toList should matchToSorted(exp)
 
     })
-
-  /// I need to verify the shape of the heap.
-//  test("shape") {}
 }
