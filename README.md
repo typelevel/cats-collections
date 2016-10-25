@@ -20,7 +20,7 @@ To get started with SBT, simply add the following to your `build.sbt`
 file:
 
 ```scala
-libraryDependencies += "org.typelevel" %% "dogs-core" % "0.3.1
+libraryDependencies += "org.typelevel" %% "dogs-core" % "0.4.0
 ```
 
 ### CONTRIBUTING
