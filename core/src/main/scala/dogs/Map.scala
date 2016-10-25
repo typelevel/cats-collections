@@ -131,17 +131,6 @@ object Map extends MapInstances {
    * Return an empty map.
    */
   def empty[K,V]: Map[K,V] = new Map(Set.empty)
-
-  implicit def toShow[K, V](implicit sk: Show[K], sv: Show[V]): Show[Map[K, V]] = new Show[Map[K, V]] {
-    override def show(f: Map[K, V]): scala.Predef.String = {
-      val pairs = f.toList
-
-      val result = pairs.foldLeft("{"){(b, p) => b + "[" + sk.show(p._1) + "-->" + sv.show(p._2) + "]\n"} + "}"
-
-      result
-    }
-  }
-
 }
 
 trait MapInstances {
@@ -154,5 +143,15 @@ trait MapInstances {
 
     override def eqv(l: Map[K,V], r: Map[K,V]): Boolean =
       Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
+  }
+
+  implicit def toShow[K, V](implicit sk: Show[K], sv: Show[V]): Show[Map[K, V]] = new Show[Map[K, V]] {
+    override def show(f: Map[K, V]): scala.Predef.String = {
+      val pairs = f.toList
+
+      val result = pairs.foldLeft("{"){(b, p) => b + "[" + sk.show(p._1) + "-->" + sv.show(p._2) + "]\n"} + "}"
+
+      result
+    }
   }
 }
