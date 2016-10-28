@@ -19,4 +19,17 @@ class OptionSpec extends DogsSuite {
     }
   }
 
+  test("nothing to find in none") {
+    forAll { (x: String) =>
+      none[String].find(_.length >= 0) shouldBe none[String]
+    }
+  }
+
+  test("find in some(x)") {
+    forAll { (x: String) =>
+      some(x).find(_.length >= 0) shouldBe some(x)
+      some(x).find(_.length < 0) shouldBe none[String]
+    }
+  }
+
 }
