@@ -168,6 +168,10 @@ sealed abstract class Option[A] {
     case _ => None()
 
   }
+
+  final def collectFirst[B](f: PartialFunction[A,B]): Option[B] =
+    collect(f)
+
   final def toScalaOption: scala.Option[A] = cata(scala.Some.apply,scala.None)
 
 /*

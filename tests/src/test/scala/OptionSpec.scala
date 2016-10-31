@@ -56,4 +56,20 @@ class OptionSpec extends DogsSuite {
     }
   }
 
+  test("collect"){
+    forAll { (x: Int) =>
+    val pf: PartialFunction[Int, Int] = { case n if n % 2 == 0 => n + 1 }
+      some(x).collect(pf).toScalaOption shouldBe scala.Some(x).collect(pf)
+      none[Int].collect(pf).toScalaOption shouldBe scala.None
+    }
+  }
+
+  test("collectFirst"){
+    forAll { (x: Int) =>
+    val pf: PartialFunction[Int, Int] = { case n if n % 2 == 0 => n + 1 }
+      some(x).collectFirst(pf).toScalaOption shouldBe scala.Some(x).collectFirst(pf)
+      none[Int].collectFirst(pf).toScalaOption shouldBe scala.None
+    }
+  }
+
 }
