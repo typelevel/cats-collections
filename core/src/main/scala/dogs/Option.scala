@@ -152,6 +152,14 @@ sealed abstract class Option[A] {
   final def find(f: A => Boolean): Option[A] =
     filter(f)
 
+  /** Return the element */
+  final def headOption: Option[A] =
+    this
+
+  /** Return the element */
+  final def lastOption: Option[A] =
+    this
+
   final def isDefined: Boolean = this != None()
   final def isEmpty: Boolean = this == None()
 
@@ -311,5 +319,3 @@ private[dogs] sealed trait OptionInstances2 {
         x.cata(a => y.cata(ev.eqv(_, a), false), y == None)
     }
 }
-
-
