@@ -51,21 +51,13 @@ sealed abstract class Option[A] {
 
   /** Turn the underlying value into a left disjunction if present, otherwise
    * return a right disjunction with the provided fallback value */
-  final def toLeft[B](b: => B): A Xor B =
-    cata(Xor.left(_), Xor.right(b))
-
-  /** alias for [[toLeft]] */
-  final def <\/[B](b: => B): A Xor B =
-    toLeft(b)
+  final def toLeft[B](b: => B): scala.Either[A, B] =
+    cata(scala.Left(_), scala.Right(b))
 
   /** Turn the underlying value into a right disjunction if present, otherwise
    * return a left disjunction with the provided fallback value */
-  final def toRight[B](b: => B): B Xor A =
-    cata(Xor.right(_), Xor.left(b))
-
-  /** alias for [[toRight]] */
-  final def \/>[B](b: => B): B Xor A =
-    toRight(b)
+  final def toRight[B](b: => B): scala.Either[B, A] =
+    cata(scala.Right(_), scala.Left(b))
 
   /** True if an underlying value is present */
   final def isSome: Boolean =

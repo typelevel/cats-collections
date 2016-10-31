@@ -12,12 +12,12 @@ lazy val dogs = project.in(file("."))
   .settings(noPublishSettings)
   .aggregate(dogsJVM, dogsJS)
 
-lazy val dogsJVM = project.in(file(".catsJVM"))
+lazy val dogsJVM = project.in(file(".dogsJVM"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJVM, docs, testsJVM, bench)
 
-lazy val dogsJS = project.in(file(".catsJS"))
+lazy val dogsJS = project.in(file(".dogsJS"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJS, testsJS)
@@ -39,11 +39,11 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %%% "cats-laws"          % "0.7.2",
-      "org.scalacheck" %%% "scalacheck"         % "1.12.5",
-      "org.scalatest"  %%% "scalatest"          % "3.0.0-M7" % "test",
-      "org.typelevel"  %%% "catalysts-platform" % "0.0.2"    % "test",
-      "org.typelevel"  %%% "discipline"         % "0.4"      % "test"
+      "org.typelevel"  %%% "cats-laws"          % "0.8.0",
+      "org.scalacheck" %%% "scalacheck"         % "1.13.2",
+      "org.scalatest"  %%% "scalatest"          % "3.0.0"    % "test",
+      "org.typelevel"  %%% "catalysts-platform" % "0.0.4"    % "test",
+      "org.typelevel"  %%% "discipline"         % "0.7.1"    % "test"
     )
   )
   .jsSettings(commonJsSettings:_*)
@@ -78,9 +78,9 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %%% "cats-core"  % "0.7.2",
-    "com.github.mpilquist"           %%% "simulacrum" % "0.8.0",
-    "org.typelevel"                  %%% "machinist"  % "0.5.0",
+    "org.typelevel"                  %%% "cats-core"  % "0.8.0",
+    "com.github.mpilquist"           %%% "simulacrum" % "0.10.0",
+    "org.typelevel"                  %%% "machinist"  % "0.6.0",
 
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.0"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)

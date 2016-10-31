@@ -2,7 +2,7 @@ package dogs
 package syntax
 
 import Predef._
-import cats.data.{Validated,ValidatedNel,Xor}
+import cats.data.{Validated,ValidatedNel}
 
 trait OptionSyntax {
   def none[A] = None()
@@ -15,8 +15,8 @@ final class OptionIdOps[A](val a: A) extends AnyVal {
 }
 
 final class OptionOps[A](val oa: Option[A]) extends AnyVal {
-  def toLeftXor[B](b: => B): A Xor B = oa.cata(Xor.left, Xor.right(b))
-  def toRightXor[B](b: => B): B Xor A = oa.cata(Xor.right, Xor.left(b))
+  def toLeft[B](b: => B): scala.Either[A, B] = oa.cata(scala.Left(_), scala.Right(b))
+  def toRight[B](b: => B): scala.Either[B, A] = oa.cata(scala.Right(_), scala.Left(b))
   def toInvalid[B](b: => B): Validated[A, B] = oa.cata(Validated.invalid, Validated.valid(b))
   def toInvalidNel[B](b: => B): ValidatedNel[A, B] = oa.cata(Validated.invalidNel, Validated.Valid(b))
   def toValid[B](b: => B): Validated[B, A] = oa.cata(Validated.valid, Validated.Invalid(b))

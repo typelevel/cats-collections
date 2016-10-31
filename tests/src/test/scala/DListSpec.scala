@@ -3,11 +3,13 @@ package tests
 
 import Predef._
 import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.cogen._
 import cats._
 import cats.implicits._
 import cats.laws.discipline._
 import cats.kernel.laws._
 import org.scalacheck._
+import Cogen._
 import catalysts.Platform
 
 class DListSpec extends SlowDogsSuite with ArbitraryList with ArbitraryDList with ArbitraryOption {
