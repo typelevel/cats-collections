@@ -79,7 +79,7 @@ object ListWrapper {
         ListWrapper(M.flatMap(fa.list)(a => f(a).list))
 
       def tailRecM[A, B](a: A)(f: A => dogs.tests.ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
-        defaultTailRecM(a)(f)
+        ListWrapper(List.listInstance.tailRecM(a)(f andThen (_.list)))
 
       def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
 

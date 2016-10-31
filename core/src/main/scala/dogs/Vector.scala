@@ -501,7 +501,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
       if (index < 0)
         a
       else
-        inner(index - 1, f(a, this(index)))
+        inner(index - 1, f(this(index), a))
     }
 
     if (length <= 0)

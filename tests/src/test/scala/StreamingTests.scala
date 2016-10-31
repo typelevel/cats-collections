@@ -8,14 +8,24 @@ import dogs.tests.arbitrary.all._
 import cats._
 import cats.implicits._
 import cats.laws.discipline._
+import cats.laws.discipline.arbitrary._
 import cats.kernel.laws.OrderLaws
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck._
+import org.scalacheck.Cogen._
 import scala.collection.immutable.{List => SList}
 import scala.collection.immutable.Vector
 
 class StreamingTests extends DogsSuite {
   import Streaming._
+  import ListWrapper._
   // who oh why do these need to be here?
+  implicit val ilive: Cogen[ListWrapper[Int]] =
+    cogenFoldable[ListWrapper,Int](ListWrapper.foldable, implicitly)
+  implicit val ina: Cogen[Streaming[Int]] =
+    dogs.tests.arbitrary.cogen.cogenFoldable[Streaming,Int]
+  implicit val utopia: Cogen[Streaming[ListWrapper[Int]]] =
+    dogs.tests.arbitrary.cogen.cogenFoldable[Streaming, ListWrapper[Int]](Streaming.streamInstance, implicitly)
+
   checkAll("Streaming[Int]", CartesianTests[Streaming].cartesian[Int, Int, Int])
   checkAll("Cartesian[Streaming]", SerializableTests.serializable(Cartesian[Streaming]))
 
@@ -47,6 +57,12 @@ class StreamingTests extends DogsSuite {
 class AdHocStreamingTests extends DogsSuite {
   import Streaming._
 
+  implicit val ilive: Cogen[ListWrapper[Int]] =
+    cogenFoldable[ListWrapper,Int](ListWrapper.foldable, implicitly)
+  implicit val ina: Cogen[Streaming[Int]] =
+    dogs.tests.arbitrary.cogen.cogenFoldable[Streaming,Int]
+  implicit val utopia: Cogen[Streaming[ListWrapper[Int]]] =
+    dogs.tests.arbitrary.cogen.cogenFoldable[Streaming, ListWrapper[Int]](Streaming.streamInstance, implicitly)
 
   test("results aren't reevaluated after memoize") {
     forAll { (orig: Streaming[Int]) =>
@@ -287,6 +303,13 @@ class AdHocStreamingTests extends DogsSuite {
       s.isEmpty should === (s.fold(Now(true), (_, _) => false))
     }
   }
+
+  implicitly[Arbitrary[(dogs.Predef.Int, cats.Eval[dogs.Streaming[dogs.Predef.Int]]) => dogs.Streaming[dogs.Predef.Long]]]
+
+  implicitly[Arbitrary[(Int,Streaming[Int])]]
+  implicitly[Cogen[Streaming[Int]]]
+  implicitly[Cogen[Eval[Streaming[Int]]]]
+  implicitly[Arbitrary[Eval[Int]]]
 
   test("foldStreaming consistent with fold"){
     forAll { (ints: Streaming[Int], longs: Streaming[Long], f: (Int, Eval[Streaming[Int]]) => Streaming[Long]) =>

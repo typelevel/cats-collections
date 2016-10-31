@@ -534,7 +534,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     this match {
       case Empty() => Empty()
       case Wait(lt) => Wait(lt.map(_.dropWhile(f)))
-      case Cons(a, lt) => if (f(a)) Empty() else Cons(a, lt.map(_.dropWhile(f)))
+      case Cons(a, lt) => if (f(a)) Wait(lt.map(_.dropWhile(f))) else this
     }
 
   /**
@@ -889,11 +889,24 @@ private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
       override def map2[A, B, Z](fa: Streaming[A], fb: Streaming[B])(f: (A, B) => Z): Streaming[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
 
-      override def tailRecM[A, B](a: A)(f: A => dogs.Streaming[scala.Either[A,B]]): dogs.Streaming[B] =
-        f(a).flatMap {
-          case scala.Left(a) => tailRecM(a)(f)
-          case scala.Right(b) => Streaming(b)
+      override def tailRecM[A, B](a: A)(f: A => dogs.Streaming[scala.Either[A,B]]): Streaming[B] = {
+        import Streaming._
+          @tailrec def go(res: Streaming[B], stuff: Streaming[Streaming[scala.Either[A, B]]]): Streaming[B] =
+            stuff match {
+              case Empty() => res
+              case Wait(lt) => go(res, lt.value)
+              case Cons(work, tail) => work match {
+                case Empty() => go(res, tail.value)
+                case Wait(lt) => go(res, Cons(lt.value,tail))
+                case Cons(ab, abs) =>  ab match {
+                  case scala.Left(a) => go(res, Cons(f(a) ++ abs, tail))
+                  case scala.Right(b) => go(res ++ Streaming(b), Cons(abs.value, tail))
+                }
+              }
+            }
+        go(Streaming.empty, Streaming(f(a)))
         }
+
 
       def coflatMap[A, B](fa: Streaming[A])(f: Streaming[A] => B): Streaming[B] =
         fa.tails.filter(_.nonEmpty).map(f)

@@ -3,6 +3,7 @@ package tests
 
 import Predef._
 import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.cogen._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import scala.{annotation}

@@ -10,4 +10,5 @@ package object arbitrary {
   object option extends ArbitraryOption
   object streaming extends ArbitraryStreaming
   object vector extends ArbitraryVector
+  object cogen extends CogenInstances
 }
