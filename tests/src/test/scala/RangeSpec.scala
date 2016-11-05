@@ -40,10 +40,11 @@ class RangeTest extends DogsSuite {
   }
 
   test("map"){
-    val range = Range(1, 100)
-    val result = range.map(i => i.toString)
+    val range = Range(1, 10)
 
-    scala.Range(1,101).map(i => i.toString).toList should be (result.toScalaList)
+    val result = range.map(_ * 2).toList
+
+    scala.Range(2, 21).toList should be (result.toScalaList)
   }
 
   test("fold"){
@@ -85,9 +86,9 @@ class RangeTest extends DogsSuite {
   test("map inverted range"){
     val range = Range(5, 1)
 
-    val result = range.map(i => i.toString)
+    val result = range.map(_ * 2).toList
 
-    result.toScalaList should contain inOrderOnly ("5", "4", "3", "2", "1")
+    result.toScalaList should contain inOrderOnly (10, 9, 8, 7, 6, 5, 4, 3, 2)
   }
 
   test("the reverse be equals to the reverted range"){

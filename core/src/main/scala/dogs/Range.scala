@@ -11,6 +11,11 @@ import scala.annotation.tailrec
 sealed class Range[A](val start: A, val end: A) {
 
   /**
+    * Used for internal memoization
+    */
+  private var values = List.empty[A]
+
+  /**
     * Calculate the difference with range.
     *
     * It returns a tuple with the difference to the right and to the left of range.
@@ -42,8 +47,8 @@ sealed class Range[A](val start: A, val end: A) {
   /**
     * Verify that the passed range is within
     */
-  def contains(range: Range[A])(implicit order: Order[A]) =
-     order.lteqv(start, range.start) && order.gteqv(end, range.end)
+  def contains(range: Range[A])(implicit order: Order[A]): Boolean =
+  order.lteqv(start, range.start) && order.gteqv(end, range.end)
 
   /**
     * Generates the elements of the range [start, end] base of the discrete operations
@@ -61,11 +66,11 @@ sealed class Range[A](val start: A, val end: A) {
   def contains(x: A)(implicit A: Order[A]) = A.gteqv(x, start) && A.lteqv(x, end)
 
   /**
-   * Return all the values in the Range as a List
-   */
+    * Return all the values in the Range as a List
+    */
   def toList(implicit eA: Enum[A], oA: Order[A]): List[A] = {
     val lb = new ListBuilder[A]
-   foreach{a => val _ = lb += a}
+    foreach { a => val _ = lb += a }
     lb.run
   }
 
@@ -76,34 +81,16 @@ sealed class Range[A](val start: A, val end: A) {
     val ignore = gen(start, end, List.empty)(f)
   }
 
-  def map[B](f: A => B)(implicit discrete: Enum[A], order: Order[A]): List[B] =
-    genMap[B](start, end, List.empty)(f)
+  def map[B](f: A => B): Range[B] = Range[B](f(start), f(end))
 
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A], order: Order[A]): B =
     generate.foldLeft(s)(f)
 
-  private def genMap[B](x: A, y: A, xs: List[B])(f: A => B)(implicit discrete: Enum[A], order: Order[A]): List[B] = {
-    @tailrec def traverse(a: A, b: A, xs: List[B])(f: A => B)(discrete: Enum[A], order: Order[A]): List[B] = {
-      if (order.compare(a, b) == 0) {
-        xs ::: Nel(f(a), List.empty)
-      } else if (discrete.adj(a, b)) {
-        xs ::: Nel(f(a), Nel(f(b), List.empty))
-      } else {
-        traverse(discrete.succ(a), b, xs ::: (Nel(f(a), List.empty)))(f)(discrete,order)
-      }
-    }
-
-    if(order.lt(x,y))
-      traverse(x, y, xs)(f)(discrete,order)
-    else
-      traverse(x, y, xs)(f)(new Enum[A] {
-        override def pred(x: A): A = discrete.succ(x)
-        override def succ(x: A): A = discrete.pred(x)
-      }, order.reverse)
-  }
-
-  private def gen(x: A, y: A, xs: List[A])(f: A=>Unit)(implicit discrete: Enum[A], order: Order[A]): List[A] = {
-  @tailrec def traverse(a: A, b: A, xs: List[A])(f: A => Unit)(discrete: Enum[A], order: Order[A]): List[A] = {
+  /**
+    * Verify that the values is not empty, avoiding recalculation of the range
+    */
+  private def gen(x: A, y: A, xs: List[A])(f: A => Unit)(implicit discrete: Enum[A], order: Order[A]): List[A] = {
+    @tailrec def traverse(a: A, b: A, xs: List[A])(f: A => Unit)(discrete: Enum[A], order: Order[A]): List[A] = {
       if (order.compare(a, b) == 0) {
         f(a)
         xs ::: Nel(a, List.empty)
@@ -118,13 +105,21 @@ sealed class Range[A](val start: A, val end: A) {
       }
     }
 
-    if(order.lt(x,y))
-      traverse(x, y, xs)(f)(discrete,order)
-    else
-      traverse(x, y, xs)(f)(new Enum[A] {
-        override def pred(x: A): A = discrete.succ(x)
-        override def succ(x: A): A = discrete.pred(x)
-      }, order.reverse)
+    if (!values.isEmpty) {
+      values.foreach(f)
+    }
+    else {
+      values = if (order.lt(x, y))
+        traverse(x, y, xs)(f)(discrete, order)
+      else
+        traverse(x, y, xs)(f)(new Enum[A] {
+          override def pred(x: A): A = discrete.succ(x)
+
+          override def succ(x: A): A = discrete.pred(x)
+        }, order.reverse)
+    }
+
+    values
   }
 
   private [dogs] def isEmpty: Boolean = false
@@ -150,13 +145,13 @@ object Range {
 
   implicit def rangeShowable[A](implicit s: Show[A]): Show[Range[A]] = new Show[Range[A]] {
     override def show(f: Range[A]): Predef.String =
-    if (f.isEmpty) {
-      "[]"
-    }
-    else {
-      val (a, b) = (s.show(f.start), s.show(f.end))
-      s"[$a, $b]"
-    }
+      if (f.isEmpty) {
+        "[]"
+      }
+      else {
+        val (a, b) = (s.show(f.start), s.show(f.end))
+        s"[$a, $b]"
+      }
   }
 
   implicit val emptyShowableRange = new Show[Option[Nothing]] {
