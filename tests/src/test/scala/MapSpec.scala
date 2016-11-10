@@ -64,3 +64,18 @@ class MapSpec extends DogsSuite with ArbitraryList {
     toSet(m map f) should contain theSameElementsAs (sm map f2).to[SSet]
   })
 }
+
+class MapShow extends DogsSuite {
+
+  test("show empty") {
+    val map = Map.empty[Int, Int]
+
+    map.show should be("{}")
+  }
+
+  test("show mappings") {
+    val map = Map.empty[Int, Int].+((1, 2)).+((2, 3))
+
+    map.show should be("{[1-->2]\n[2-->3]\n}")
+  }
+}
