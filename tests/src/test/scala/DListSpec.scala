@@ -2,69 +2,47 @@ package dogs
 package tests
 
 import Predef._
-import syntax.birds._
-import dogs.tests.arbitrary.all._
+import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.cogen._
 import cats._
-import cats.std.int._
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, MonadTests, MonoidKTests, SerializableTests}
+import cats.implicits._
+import cats.laws.discipline._
+import cats.kernel.laws._
 import org.scalacheck._
-import org.scalacheck.Prop.{forAll,secure}
-import algebra.laws.{GroupLaws, OrderLaws}
+import Cogen._
 import catalysts.Platform
 
-class DListSpec extends SlowDogsSuite {
+class DListSpec extends SlowDogsSuite with ArbitraryList with ArbitraryDList with ArbitraryOption {
   import DList._
-  import arbitrary.list._
-  import arbitrary.dlist._
 
   checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
   checkAll("DList[Int]", OrderLaws[DList[Int]].eqv)
 
-  checkAll("MonadCombine[DList]", MonadCombineTests[DList].monadCombine[Int,Int,Int])
-  checkAll("MonadCombine[DList]", SerializableTests.serializable(MonadCombine[DList]))
-
   checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
   checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
 
-  test("sanity check")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
-    dl.toList should matchTo(l)
-  })
-
-  test("headOption")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
+  test("headOption")(forAll {(l: List[Int]) =>
+    val dl = DList(l)
     dl.headOption should be(l.headOption)
   })
 
-  test("tailOption")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
+  test("tailOption")(forAll {(l: List[Int]) =>
+    val dl = DList(l)
     dl.tailOption.map(_.toList) should be (l.tailOption)
   })
 
-  test("isEmpty")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
+  test("isEmpty")(forAll {(l: List[Int]) =>
+    val dl = DList(l)
     dl.isEmpty should be(l.isEmpty)
   })
 
-  test("foldRight")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
+  test("foldRight")(forAll {(l: List[Int]) =>
+    val dl = DList(l)
     dl.foldRight[List[Int]](Eval.now(List.empty))((l,a) => a.map(l :: _)).value should be (l)
   })
 
-  test("map")(forAll { (l1: List[Int], l2: List[Int]) =>
-    val dl = fromLL(l1, l2)
-    val l = l1 ++ l2
-
+  test("map")(forAll {(l: List[Int]) =>
+    val dl = DList(l)
     dl.map(_ + 1).toList should be (l.map(_ + 1))
   })
 

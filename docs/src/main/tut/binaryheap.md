@@ -23,7 +23,7 @@ source: "core/src/main/scala/Diet.scala"
 Start by creating an empty `Heap`:
 
 ```tut
-import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._
+import dogs._, dogs.Predef._, cats._, cats.implicits._, dogs.syntax.all._
 
 val h = Heap.empty[Int]
 h.isEmpty

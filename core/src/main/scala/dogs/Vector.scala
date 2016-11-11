@@ -73,8 +73,6 @@ import Predef._
  */
 final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Array[AnyRef]) extends scala.Product with java.io.Serializable { outer =>
 
-  import VectorCases._
-
   private val tailOff = length - tail.length
 
   /*
@@ -218,7 +216,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   // but...but...CanBuildFrom!
-  def flatMap[B](f: A => Vector[B]): Vector[B] =
+   def flatMap[B](f: A => Vector[B]): Vector[B] =
     foldLeft(Vector.empty[B]) { _ ++ f(_) }
 
   def flatten[B](implicit ev: A =:= Vector[B]): Vector[B] = flatMap(ev)
@@ -503,7 +501,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
       if (index < 0)
         a
       else
-        inner(index - 1, f(a, this(index)))
+        inner(index - 1, f(this(index), a))
     }
 
     if (length <= 0)
@@ -1371,6 +1369,21 @@ sealed abstract class VectorInstances extends VectorInstance0 {
 
       def flatMap[A, B](fa: Vector[A])(f: A => Vector[B]): Vector[B] =
         fa flatMap f
+
+      override def tailRecM[A, B](a: A)(f: A => Vector[scala.Either[A, B]]): Vector[B] = {
+        @tailrec def go(res: Vector[B], lists: Vector[Vector[scala.Either[A, B]]]): Vector[B] =
+          if(lists.isEmpty) res
+          else {
+            val head = lists(0)
+            if(head.isEmpty) go(res, lists.drop(1))
+            else head(0) match {
+              case scala.Right(b) => go(res :+ b, head.drop(1) +: lists.drop(1))
+              case scala.Left(a) => go(res, f(a) +: (head.drop(1) +: lists.drop(1)))
+            }
+          }
+
+        go(Vector.empty, Vector(f(a)))
+      }
 
       // not tail recursive.  the alternative involves reverse.  eww?
       def coflatMap[A, B](fa: Vector[A])(f: Vector[A] => B): Vector[B] = {

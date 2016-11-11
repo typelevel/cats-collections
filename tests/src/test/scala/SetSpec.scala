@@ -3,13 +3,9 @@ package tests
 
 import dogs.Predef._
 import dogs.tests.arbitrary._
-import dogs.syntax.birds._
-import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
 import scala.Array
 import scala.Predef.intArrayOps
-import algebra.std.int._
+import cats.implicits._
 
 class SetSpec extends DogsSuite with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}

@@ -51,21 +51,13 @@ sealed abstract class Option[A] {
 
   /** Turn the underlying value into a left disjunction if present, otherwise
    * return a right disjunction with the provided fallback value */
-  final def toLeft[B](b: => B): A Xor B =
-    cata(Xor.left(_), Xor.right(b))
-
-  /** alias for [[toLeft]] */
-  final def <\/[B](b: => B): A Xor B =
-    toLeft(b)
+  final def toLeft[B](b: => B): scala.Either[A, B] =
+    cata(scala.Left(_), scala.Right(b))
 
   /** Turn the underlying value into a right disjunction if present, otherwise
    * return a left disjunction with the provided fallback value */
-  final def toRight[B](b: => B): B Xor A =
-    cata(Xor.right(_), Xor.left(b))
-
-  /** alias for [[toRight]] */
-  final def \/>[B](b: => B): B Xor A =
-    toRight(b)
+  final def toRight[B](b: => B): scala.Either[B, A] =
+    cata(scala.Right(_), scala.Left(b))
 
   /** True if an underlying value is present */
   final def isSome: Boolean =
@@ -150,6 +142,11 @@ sealed abstract class Option[A] {
   final def exists(f: A => Boolean): Boolean =
     cata(f, false)
 
+  /** Return `true` if this is a [[Some]] and the underlying value equals the provided value
+   * otherwise return `false` */
+  final def contains(a: A): Boolean =
+    cata(_ == a, false)
+
   final def isDefined: Boolean = this != None()
   final def isEmpty: Boolean = this == None()
 
@@ -224,6 +221,17 @@ trait OptionInstances extends OptionInstances1 {
 
       override def map2[A, B, Z](fa: Option[A], fb: Option[B])(f: (A, B) => Z): Option[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
+
+      override def tailRecM[A, B](a: A)(f: A => Option[scala.Either[A, B]]): Option[B] = {
+        @tailrec
+        def go(o: Option[scala.Either[A,B]]): Option[B] = o match {
+          case None() => None()
+          case Some(scala.Left(a)) => go(f(a))
+          case Some(scala.Right(b)) => Some(b)
+        }
+
+        go(f(a))
+      }
 
       override def coflatMap[A, B](fa: Option[A])(f: Option[A] => B): Option[B] = fa coflatMap f
 

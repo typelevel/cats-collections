@@ -1,7 +1,6 @@
 package dogs
 
 import Predef._
-import algebra.Order
 
 /**
  * Represent discrete operations that can be performed on A

@@ -1,9 +1,7 @@
 package dogs
 
-import cats.Show
+import cats._
 import dogs.Predef._
-import algebra.Order
-
 
 /**
  * Discrete Interval Encoding Tree (Diet).

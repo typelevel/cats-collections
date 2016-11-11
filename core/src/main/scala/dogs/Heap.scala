@@ -4,8 +4,7 @@
 
 package dogs
 
-import algebra.Order
-import cats.Show
+import cats._
 import dogs.Predef._
 
 /**

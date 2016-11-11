@@ -7,7 +7,7 @@ source: "core/src/main/scala/List.scala"
 
 `List` is a singly linked list, just as `scala.List` with some key differences:
 
-- `dogs.List` isn't insn't part of [an insane subtype heirarchy](https://tpolecat.github.io/2013/11/13/list.html)
+- `dogs.List` isn't part of [an insane subtype heirarchy](https://tpolecat.github.io/2013/11/13/list.html)
 - `dogs.List` is invariant instead of covariant,
 
 ## Using List
@@ -90,8 +90,8 @@ Many of the expected methods on `List` exist. We are still missing
 many other useful methods, please feel free to contribute!
 
 ```tut
-import cats.std.int._
-import cats.Eval
+import cats._
+import cats.implicits._
 
 val x: List[Int] = List(1,2,3)
 

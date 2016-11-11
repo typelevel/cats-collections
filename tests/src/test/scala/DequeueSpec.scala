@@ -3,26 +3,20 @@ package tests
 
 import Predef._
 import dogs.tests.arbitrary._
+import dogs.tests.arbitrary.cogen._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
-import cats.std.int._
 import scala.{annotation}
 import cats._
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, MonadCombineTests, SerializableTests, CartesianTests}
+import cats.implicits._
+import cats.laws.discipline._
 
 class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption {
   import Option._
   import Dequeue._
 
-  checkAll("Dequeue[Int]", CartesianTests[Dequeue].cartesian[Int, Int, Int])
-  checkAll("Cartesian[Dequeue]", SerializableTests.serializable(Cartesian[Dequeue]))
-
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Dequeue]", SerializableTests.serializable(CoflatMap[Dequeue]))
-
-  checkAll("Dequeue[Int]", MonadCombineTests[Dequeue].monadCombine[Int, Int, Int])
-  checkAll("MonadCombine[Dequeue]", SerializableTests.serializable(MonadCombine[Dequeue]))
 
   checkAll("Dequeue[Int] with Option", TraverseTests[Dequeue].traverse[Int, Int, Int, Dequeue[Int], Option, Option])
   checkAll("Traverse[Dequeue]", SerializableTests.serializable(Traverse[Dequeue]))

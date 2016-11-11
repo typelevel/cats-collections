@@ -2,14 +2,9 @@ package dogs
 package tests
 
 import Predef._
-import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import org.scalacheck.Prop._
-import org.scalatest._
+import cats._
+import cats.implicits._
 import dogs.tests.arbitrary._
-import cats.Order
-import algebra.std.int._
-import algebra.std.string._
 
 class MapSpec extends DogsSuite with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
@@ -68,4 +63,19 @@ class MapSpec extends DogsSuite with ArbitraryList {
 
     toSet(m map f) should contain theSameElementsAs (sm map f2).to[SSet]
   })
+}
+
+class MapShow extends DogsSuite {
+
+  test("show empty") {
+    val map = Map.empty[Int, Int]
+
+    map.show should be("{}")
+  }
+
+  test("show mappings") {
+    val map = Map.empty[Int, Int].+((1, 2)).+((2, 3))
+
+    map.show should be("{[1-->2]\n[2-->3]\n}")
+  }
 }

@@ -5,7 +5,6 @@ import scala.NoSuchElementException
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
 import scala.collection.mutable
-import Option._
 import cats.data.Ior
 import cats._, cats.Eval._
 import cats.implicits._
@@ -535,7 +534,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     this match {
       case Empty() => Empty()
       case Wait(lt) => Wait(lt.map(_.dropWhile(f)))
-      case Cons(a, lt) => if (f(a)) Empty() else Cons(a, lt.map(_.dropWhile(f)))
+      case Cons(a, lt) => if (f(a)) Wait(lt.map(_.dropWhile(f))) else this
     }
 
   /**
@@ -786,9 +785,6 @@ object Streaming extends StreamingInstances {
     loop(Empty(), as.reverse)
   }
 
-/*  def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F]): Streaming[A] =
-    F.toStreaming(fa)
- */
   /**
    * Create a stream from an iterable.
    *
@@ -877,17 +873,40 @@ private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
     new Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] {
       def pure[A](a: A): Streaming[A] =
         Streaming(a)
+
       override def map[A, B](as: Streaming[A])(f: A => B): Streaming[B] =
         as.map(f)
+
       def flatMap[A, B](as: Streaming[A])(f: A => Streaming[B]): Streaming[B] =
         as.flatMap(f)
+
       def empty[A]: Streaming[A] =
         Streaming.empty
+
       def combineK[A](xs: Streaming[A], ys: Streaming[A]): Streaming[A] =
         xs ++ ys
 
       override def map2[A, B, Z](fa: Streaming[A], fb: Streaming[B])(f: (A, B) => Z): Streaming[Z] =
         fa.flatMap(a => fb.map(b => f(a, b)))
+
+      override def tailRecM[A, B](a: A)(f: A => dogs.Streaming[scala.Either[A,B]]): Streaming[B] = {
+        import Streaming._
+          @tailrec def go(res: Streaming[B], stuff: Streaming[Streaming[scala.Either[A, B]]]): Streaming[B] =
+            stuff match {
+              case Empty() => res
+              case Wait(lt) => go(res, lt.value)
+              case Cons(work, tail) => work match {
+                case Empty() => go(res, tail.value)
+                case Wait(lt) => go(res, Cons(lt.value,tail))
+                case Cons(ab, abs) =>  ab match {
+                  case scala.Left(a) => go(res, Cons(f(a) ++ abs, tail))
+                  case scala.Right(b) => go(res ++ Streaming(b), Cons(abs.value, tail))
+                }
+              }
+            }
+        go(Streaming.empty, Streaming(f(a)))
+        }
+
 
       def coflatMap[A, B](fa: Streaming[A])(f: Streaming[A] => B): Streaming[B] =
         fa.tails.filter(_.nonEmpty).map(f)

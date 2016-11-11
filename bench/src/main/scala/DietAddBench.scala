@@ -9,7 +9,8 @@ import dogs.Predef._
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.util.Random
 import scalaz.{IList, Diev}
-import algebra.std.int._
+import cats._
+import cats.implicits._
 
 @State(Scope.Thread)
 class BestCaseRangesList {

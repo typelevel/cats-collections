@@ -8,3 +8,4 @@ trait AllArbitrary
     with ArbitraryOption
     with ArbitraryStreaming
     with ArbitraryVector
+    with CogenInstances
