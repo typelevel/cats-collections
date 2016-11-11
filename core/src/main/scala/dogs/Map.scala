@@ -17,7 +17,7 @@ class Map[K,V](val set: Set[(K,V)]) {
   /**
    * Map a function on all the values in the Map.
    */
-  def flatMap[B](f: V => Map[K,V])(implicit K: Order[K]): Map[K,V] =
+  def flatMap[B](f: V => Map[K,B])(implicit K: Order[K]): Map[K,B] =
     new Map(set.flatMap(kv => f(kv._2).set))
 
    /**
