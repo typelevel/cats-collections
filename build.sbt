@@ -3,7 +3,8 @@ import ReleaseTransformations._
 lazy val buildSettings = Seq(
   name := "dogs",
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.11.8"
+  scalaVersion in Global := "2.12.1",
+  crossScalaVersions := Seq("2.11.7", scalaVersion.value)
   //resolvers in Global += Resolver.sonatypeRepo("snapshots")
 )
 
@@ -25,29 +26,25 @@ lazy val dogsJS = project.in(file(".dogsJS"))
 lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "dogs-core")
   .settings(dogsSettings:_*)
-  .jsSettings(commonJsSettings:_*)
-  .jvmSettings(commonJvmSettings:_*)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
+  .settings(moduleName := "dogs-tests")
   .settings(dogsSettings:_*)
-  .settings(noPublishSettings:_*)
   .settings(
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %%% "cats-laws"          % "0.8.0",
-      "org.scalacheck" %%% "scalacheck"         % "1.13.2",
+      "org.typelevel"  %%% "cats-laws"          % "0.8.1",
+      "org.scalacheck" %%% "scalacheck"         % "1.13.4",
       "org.scalatest"  %%% "scalatest"          % "3.0.0"    % "test",
-      "org.typelevel"  %%% "catalysts-platform" % "0.0.4"    % "test",
+      "org.typelevel"  %%% "catalysts-platform" % "0.0.5"    % "test",
       "org.typelevel"  %%% "discipline"         % "0.7.1"    % "test"
     )
   )
-  .jsSettings(commonJsSettings:_*)
-  .jvmSettings(commonJvmSettings:_*)
 
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
@@ -55,19 +52,17 @@ lazy val testsJS = tests.js
 lazy val docs = project
   .dependsOn(coreJVM)
   .settings(dogsSettings:_*)
-  .settings(commonJvmSettings)
   .settings(noPublishSettings)
 
 lazy val bench = project
   .settings(moduleName := "dogs-bench")
   .dependsOn(coreJVM)
   //.settings(dogsSettings:_*)
-  .settings(commonJvmSettings)
   .settings(noPublishSettings)
   .settings(
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.0"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8"
   )
   .enablePlugins(JmhPlugin)
 
@@ -78,19 +73,17 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %%% "cats-core"  % "0.8.0",
+    "org.typelevel"                  %%% "cats-core"  % "0.8.1",
     "com.github.mpilquist"           %%% "simulacrum" % "0.10.0",
     "org.typelevel"                  %%% "machinist"  % "0.6.0",
 
-    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.0"),
+    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.3"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)
   ),
   fork in test := true,
   // parallelExecution in Test := false,
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings")
 ) ++ warnUnusedImport
-
-lazy val commonJvmSettings = commonDoctestSettings
 
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
@@ -102,9 +95,7 @@ lazy val commonJsSettings = Seq(
   // Only used for scala.js for now
   botBuild := scala.sys.env.get("TRAVIS").isDefined,
   // batch mode decreases the amount of memory needed to compile scala.js code
-  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value),
-   doctestGenTests := Seq.empty,
-  doctestWithDependencies := false
+  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
 )
 
 addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
@@ -196,7 +187,6 @@ lazy val commonScalacOptions = Seq(
   "-language:postfixOps",
   "-language:higherKinds",
   "-language:implicitConversions",
-  "-target:jvm-1.7",
   "-unchecked",
   "-Xcheckinit",
   "-Xfuture",
@@ -220,8 +210,4 @@ lazy val warnUnusedImport = Seq(
   },
   scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
   scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
-)
-
-lazy val commonDoctestSettings = Seq(
-  doctestWithDependencies := false
 )
