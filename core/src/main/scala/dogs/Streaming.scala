@@ -35,7 +35,7 @@ import cats.implicits._
  * worth noting some key differences between the two types:
  *
  *  1. When the entire stream is known ahead of time, `Streaming[A]`
- *     can represent it more efficiencly, using `now[A]`, rather than
+ *     can represent it more efficiently, using `now[A]`, rather than
  *     allocating a list of closures.
  *
  *  2. `Streaming[A]` does not memoize by default. This protects
@@ -221,7 +221,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * empty.
    *
    * Unlike .isEmpty/.nonEmpty, this method will not force the
-   * calculationg of a deferred stream. Instead, None will be
+   * calculation of a deferred stream. Instead, None will be
    * returned.
    */
   def peekEmpty: Option[Boolean] =
@@ -706,7 +706,7 @@ object Streaming extends StreamingInstances {
   final case class Wait[A](next: Eval[Streaming[A]]) extends Streaming[A]
   final case class Cons[A](a: A, tail: Eval[Streaming[A]]) extends Streaming[A]
 
- def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
+  def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
     case None()   => Streaming.empty
     case Some((a,b)) => Streaming.cons(a, defer(unfold(b)(f)))
   }
@@ -836,7 +836,7 @@ object Streaming extends StreamingInstances {
 
   /**
    * Produce an infinite stream of values given an initial value and a
-   * tranformation function.
+   * transformation function.
    */
   def infinite[A](a: A)(f: A => A): Streaming[A] =
     Cons(a, always(infinite(f(a))(f)))
@@ -857,7 +857,7 @@ object Streaming extends StreamingInstances {
   /**
    * Produce a stream given an "unfolding" function.
    *
-   * None represents an empty stream. Some(a) reprsents an initial
+   * None represents an empty stream. Some(a) represents an initial
    * element, and we can compute the tail (if any) via f(a).
    */
   def unfold[A](o: Option[A])(f: A => Option[A]): Streaming[A] =

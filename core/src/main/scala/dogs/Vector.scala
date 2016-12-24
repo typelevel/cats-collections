@@ -76,7 +76,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   private val tailOff = length - tail.length
 
   /*
-   * The design of this data structure inherantly requires heterogenous arrays.
+   * The design of this data structure inherently requires heterogeneous arrays.
    * It is *possible* to design around this, but the result is comparatively
    * quite inefficient.  With respect to this fact, I have left the original
    * (somewhat dynamically-typed) implementation in place.

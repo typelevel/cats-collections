@@ -15,9 +15,9 @@ these terms first:
 - unsnoc: to pop a value off the right of the list.
 
 It is also worth spending some time discussing what we mean by
-"anortized constant time". Internally, the `Dequeue` uses Lists as
+"amortized constant time". Internally, the `Dequeue` uses Lists as
 stacks to store items which are pushed onto either side. Lets say we
-currently have a Dequeue conataining the numbers 1 through 8, this
+currently have a Dequeue containing the numbers 1 through 8, this
 might be stored like this:
 
      left stack:                     right stack:

@@ -5,7 +5,7 @@ import cats.Eval
 /**
  * Contains various Stream-specific syntax.
  *
- * To eanble this, do one of the following:
+ * To enable this, do one of the following:
  *
  *   import dogs.implicits._
  *   import dogs.bedazzle.all._

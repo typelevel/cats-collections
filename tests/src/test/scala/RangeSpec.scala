@@ -40,10 +40,11 @@ class RangeTest extends DogsSuite {
   }
 
   test("map"){
-    val range = Range(1, 100)
-    val result = range.map(i => i.toString)
+    val range = Range(1, 10)
 
-    scala.Range(1,101).map(i => i.toString).toList should be (result.toScalaList)
+    val result = range.map(_ * 2).toList
+
+    scala.Range(2, 21).toList should be (result.toScalaList)
   }
 
   test("fold"){
@@ -55,39 +56,36 @@ class RangeTest extends DogsSuite {
   test("be able to diff (-)"){
     val range = Range(1, 10)
 
-    val (l, r) = range - Range(2,9)
+    val Some((l, Some(r))) = range - Range(2,9)
 
-    l.generate.toScalaList should be(scala.List(1))
-    r.generate.toScalaList should be(scala.List(10))
+    l.toStreaming.toList should matchTo (List(1))
+    r.toStreaming.toList should matchTo (List(10))
 
-    val (l1, r1) = range - range
+    val x1 = range - range
 
-    l1 should be (Range.empty())
-    r1 should be (Range.empty())
+    x1.isDefined should be (false)
 
-    val (l2, r2) = range - Range(-1, 5)
+    val Some((x2, None())) = range - Range(-1, 5)
 
-    l2 should be (Range.empty())
-    r2.generate.toScalaList should contain inOrderOnly (6, 7, 8, 9, 10)
+    x2.toStreaming.toScalaList should contain inOrderOnly (6, 7, 8, 9, 10)
 
-    val (l3, r3) = range - Range(3, 12)
+    val Some((x3, None())) = range - Range(3, 12)
 
-    l3.generate.toScalaList should contain inOrderOnly(1, 2)
-    r3 should be (Range.empty())
+    x3.toStreaming.toScalaList should contain inOrderOnly(1, 2)
   }
 
   test("generate inverted range"){
     val range = Range(5, 1)
 
-    range.generate.toScalaList should contain inOrderOnly(5, 4, 3, 2, 1)
+    range.toStreaming.toScalaList should contain inOrderOnly(5, 4, 3, 2, 1)
   }
 
   test("map inverted range"){
     val range = Range(5, 1)
 
-    val result = range.map(i => i.toString)
+    val result = range.map(_ * 2).toList
 
-    result.toScalaList should contain inOrderOnly ("5", "4", "3", "2", "1")
+    result.toScalaList should contain inOrderOnly (10, 9, 8, 7, 6, 5, 4, 3, 2)
   }
 
   test("the reverse be equals to the reverted range"){
@@ -95,12 +93,6 @@ class RangeTest extends DogsSuite {
     val other = Range (50, 20)
 
     range.reverse.toList.toScalaList should be (other.toList.toScalaList)
-  }
-
-  test("be convertible to string in math form when empty"){
-    val range = Range.empty[Int]
-
-    range.show should be ("[]")
   }
 
   test("be convertible to string in math form"){

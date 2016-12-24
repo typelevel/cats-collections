@@ -65,7 +65,7 @@ x match {
 
 ### Interoperating with scala.Option
 
-There are convenience mathods for translating between `dogs.Option` and `scala.Option`:
+There are convenience methods for translating between `dogs.Option` and `scala.Option`:
 
 ```tut
 val x = some(1)
