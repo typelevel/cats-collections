@@ -28,8 +28,8 @@ trait DogMatcher {
 
   private [tests] class DietMatcher[A](aDiet: Diet[A])(implicit eq: Enum[A], order: Order[A]) extends Matcher[Diet[A]] {
     override def apply(left: Diet[A]): MatchResult = {
-      val leftList = left.intervals.map(r => r.generate)
-      val rightList = aDiet.intervals.map(r => r.generate)
+      val leftList = left.toStreaming.toList
+      val rightList = aDiet.toStreaming.toList
 
       val s = matchTo(rightList)
       val result = s.apply(leftList)
@@ -38,7 +38,7 @@ trait DogMatcher {
         result
       }
       else {
-        MatchResult(false, "The intervals don't match. " + result.failureMessage, "")
+        MatchResult(false, "The DIETs don't match. " + result.failureMessage, "")
       }
     }
   }

@@ -706,7 +706,7 @@ object Streaming extends StreamingInstances {
   final case class Wait[A](next: Eval[Streaming[A]]) extends Streaming[A]
   final case class Cons[A](a: A, tail: Eval[Streaming[A]]) extends Streaming[A]
 
- def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
+  def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
     case None()   => Streaming.empty
     case Some((a,b)) => Streaming.cons(a, defer(unfold(b)(f)))
   }

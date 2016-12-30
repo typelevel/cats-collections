@@ -29,6 +29,33 @@ class DietSpec extends DogsSuite {
       val f = in(i) _
       (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1) | f(r2) | f(r3))
     }
+
+  def render: dogs.List[(Int,Int)] = {
+    val adds = List(a1,a2,a3,a4,a5)
+    val removes = List(r1,r2,r3)
+
+    for {
+      a <- adds
+      r <- removes
+      l <- (Range(a._1, a._2) - Range(r._1, r._2)) match {
+        case None() => List.empty
+        case Some((l, None())) => List((l.start, l.end))
+        case Some((l, Some(r))) => List((l.start, l.end),(r.start, r.end))
+      }
+    } yield l
+  }
+
+  def min: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+    b match {
+      case None() => Some(a._1)
+      case Some(x) => Some(x min a._1)
+    })
+
+  def max: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+    b match {
+      case None() => Some(a._2)
+      case Some(x) => Some(x max a._2)
+    })
   }
 
   def orderedTuple(x: Int, y: Int): (Int, Int) =
@@ -91,6 +118,9 @@ class DietSpec extends DogsSuite {
     ()
   })
 
+  test("min")(forAll(arbNine)(rs => rs.min ==  fromRanges(rs).min))
+  test("max")(forAll(arbNine)(rs => rs.max ==  fromRanges(rs).max))
+
   test("merge")(forAll(arbNine, arbNine)  { (r1, r2) =>
     val d = Diet.empty[Int] ++ fromRanges(r1) ++ fromRanges(r2)
 
@@ -103,6 +133,7 @@ class DietSpec extends DogsSuite {
     ()
   })
 
+
 //  property("match") = forAll{ (r: Ranges) =>
 //    val d = fromRanges(r)
 //
@@ -111,35 +142,9 @@ class DietSpec extends DogsSuite {
 //    matcher.apply(d).matches == true
 //  }
 }
-
+/*
 class DietTest extends DogsSuite {
   import Diet._
-
-  test("return node with value range when inserting into empty"){
-
-    val diet = Diet.empty[Int]
-
-    val result = diet.add(5)
-
-    result.min should be (Some(5))
-    result.max should be (Some(5))
-  }
-
-  test("have min and max"){
-    val diet = Diet.empty[Int].add(5).add(3).add(7)
-
-    diet.min should be(Some(3))
-    diet.max should be(Some(7))
-  }
-
-  test("create a new node when add not adj item"){
-    val diet = Diet.empty[Int].add(5).add(3).add(7)
-
-    val result = diet.intervals.map(l => l.generate)
-
-
-    result should matchTo(List[List[Int]](List(3), List(5), List(7)))
-  }
 
   test("join nodes when item adj to existing seq"){
     val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
@@ -325,12 +330,6 @@ class DietTestJoin extends DogsSuite {
 class DietTestRemove extends DogsSuite {
   import Diet._
 
-  test("remove empty range"){
-    val diet = Diet.empty[Int] + Range(20, 30)
-
-    (diet - Range.empty[Int]) should be(diet)
-  }
-
   test("return empty when removing from empty"){
 
     (Diet.empty[Int] - Range(10, 100)) should be (EmptyDiet())
@@ -375,3 +374,4 @@ class DietTestShow extends DogsSuite {
     diet.show should be ("{[1, 10], [20, 100]}")
   }
 }
+ */

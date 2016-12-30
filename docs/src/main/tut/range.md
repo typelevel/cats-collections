@@ -14,7 +14,7 @@ source: "core/src/main/scala/Range.scala"
 - `toList`: returns all the values in the `Range` as a `List`.
 - `contains(value)`: verifies `value` is within the `Range`.
 - `contains(range)`: verifies `range` is within the `Range`.
-- `generate`: returns all the values in the `Range [start, end]`
+- `toStreaming`: returns all the values in the `Range [start, end]`
 - `reverse`: returns the reverted range `Range [end, start]`
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
@@ -37,8 +37,7 @@ import dogs._, dogs.Predef._, cats._, cats.implicits._, dogs.syntax.all._, dogs.
 val range = Range(1, 10)
 range.show
 
-range.generate
-range.toList
+range.toStreaming.toList
 ```
 
 We can get the inverted range using the **reverse** functions
@@ -66,27 +65,14 @@ Asking for a value that is not within Range
 range.contains(20)
 ```
 
-Asking for the difference to another Range
+Asking for the difference between two Ranges returns 0, 1, or 2 result ranges
 
 ```tut
-val range = Range(10, 20)
-range.show
-
-val (l, r) = (range - Range(5, 9))
-l.show
-r.show
-
-val (l, r) = range - Range(30, 40)
-l.show
-r.show
-
-val (l, r) = range - Range(15, 18)
-l.show
-r.show
-
-val (l, r) = range - Range (5, 30)
-l.show
-r.show
+Range(10, 20).show
+(range - Range(5, 9)).show
+(range - Range(30, 40)).show
+(range - Range(15, 18)).show
+(range - Range (5, 30)).show
 ```
 
 Creating an **inverted** range
@@ -94,7 +80,7 @@ Creating an **inverted** range
 ```tut
 val range = Range(50, 20)
 
-range.toList
+range.toStreaming.toList
 ```
 
 The reverse of a range should be its inverted range
