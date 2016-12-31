@@ -36,31 +36,7 @@ constructors directly, the types will be inferred differently:
 
 ```tut
 val x = Some(1)
-val y = None()
-```
-
-One thing worth noting in the above example, is that unlike the None
-from the standard library, we had to use `None()` instead of `None` in
-order to get the None instances. This is an unfortunate consequence of
-having `Option` be invariant instead of covariant. This will allow the
-correct type to be returned when it can be inferred:
-
-```tut
-val x = None()
-val x: Option[Int] = None()
-```
-
-### Pattern Matching
-
-Pattern matching on `Option` should work the same as it does with the standard library `Option`, however, again we will have to use `None()` instead of `None`:
-
-```tut
-val x = Option(1)
-
-x match {
-  case Some(x) => println(s"Some($x)")
-  case None() => println("None")
-}
+val y = None
 ```
 
 ### Interoperating with scala.Option

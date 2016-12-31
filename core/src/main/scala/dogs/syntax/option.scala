@@ -5,7 +5,7 @@ import Predef._
 import cats.data.{Validated,ValidatedNel}
 
 trait OptionSyntax {
-  def none[A] = None()
+  def none[A]: Option[A] = None
   implicit def optionIdSyntax[A](a: A): OptionIdOps[A] = new OptionIdOps(a)
   implicit def optionSyntax[A](oa: Option[A]): OptionOps[A] = new OptionOps(oa)
 }

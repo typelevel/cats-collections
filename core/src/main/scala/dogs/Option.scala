@@ -19,7 +19,7 @@ import cats.data._
  * implicit conversion to `Iterable` (a trait with over a dozen super
  * types).
  */
-sealed abstract class Option[A] {
+sealed abstract class Option[+A] {
   import Option._
 
   /** Catamorphism.
@@ -28,15 +28,15 @@ sealed abstract class Option[A] {
   final def cata[B](f: A => B, b: => B): B =
     this match {
       case Some(a) => f(a)
-      case None() => b
+      case None => b
     }
 
   /** Return the underlying value if present, otherwise the provided fallback value */
-  final def getOrElse(a: => A): A =
+  final def getOrElse[B >: A](a: => B): B =
     cata(identity, a)
 
   /** alias for [[getOrElse]] */
-  final def |(a: => A): A =
+  final def |[B >: A](a: => B): B =
     getOrElse(a)
 
   /** Turn the underlying value into a failure validation if present, otherwise
@@ -106,8 +106,8 @@ sealed abstract class Option[A] {
     cata(scala.Some(_), scala.None)
 
   /** Return this instance if it is a [[Some]], otherwise the provided fallback */
-  final def orElse(oa: => Option[A]): Option[A] =
-    cata(_ => this, oa)
+  final def orElse[B >: A](ob: => Option[B]): Option[B] =
+    cata(_ => this, ob)
 
   final def coflatten: Option[Option[A]] = map(some)
 
@@ -130,7 +130,7 @@ sealed abstract class Option[A] {
     flatMap(a => if (f(a)) this else none)
 
   final def filterNot(f: A => Boolean): Option[A] =
-    filter(f.andThen(!_))
+    filter(!f(_))
 
   /** Return `true` if this is a [[None]] or if this is a [[Some]]
    * and the underlying value satisfies the provided predicate */
@@ -144,15 +144,15 @@ sealed abstract class Option[A] {
 
   /** Return `true` if this is a [[Some]] and the underlying value equals the provided value
    * otherwise return `false` */
-  final def contains(a: A): Boolean =
-    cata(_ == a, false)
+  final def contains[B >: A](b: B)(implicit eq: Eq[B]): Boolean =
+    cata(eq.eqv(_,b), false)
 
-  final def isDefined: Boolean = this != None()
-  final def isEmpty: Boolean = this == None()
+  final def isDefined: Boolean = this != None
+  final def isEmpty: Boolean = this == None
 
-  final def collect[B](f: PartialFunction[A,B]): Option[B] = this match {
+  final def collect[AA >: A, B](f: PartialFunction[AA,B]): Option[B] = this match {
     case Some(a) if f.isDefinedAt(a) => Some(f(a))
-    case _ => None()
+    case _ => None
 
   }
   final def toScalaOption: scala.Option[A] = cata(scala.Some.apply,scala.None)
@@ -175,10 +175,7 @@ sealed abstract class Option[A] {
  */
 }
 
-case object None extends Option[Nothing] {
-  def unapply[A](l: Option[A]) = l == None
-  def apply[A]() = this.asInstanceOf[Option[A]] // YOLO
-}
+case object None extends Option[Nothing]
 
 final case class Some[A](a: A) extends Option[A]
 
@@ -188,7 +185,7 @@ sealed trait OptionFunctions {
 
   final def apply[A](a: A): Option[A] = if(a == null) none else some(a)
 
-  final def none[A]: Option[A] = None()
+  final def none[A]: Option[A] = None
   final def some[A](a: A): Option[A] = Some(a)
 
   final def fromScalaOption[A](oa: scala.Option[A]): Option[A] =
@@ -207,7 +204,7 @@ trait OptionInstances extends OptionInstances1 {
   implicit val optionInstance: Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] =
     new Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] {
 
-      override def empty[A]: Option[A] = None()
+      override def empty[A]: Option[A] = None
 
       override def combineK[A](x: Option[A], y: Option[A]): Option[A] = x orElse y
 
@@ -225,7 +222,7 @@ trait OptionInstances extends OptionInstances1 {
       override def tailRecM[A, B](a: A)(f: A => Option[scala.Either[A, B]]): Option[B] = {
         @tailrec
         def go(o: Option[scala.Either[A,B]]): Option[B] = o match {
-          case None() => None()
+          case None => None
           case Some(scala.Left(a)) => go(f(a))
           case Some(scala.Right(b)) => Some(b)
         }
@@ -241,7 +238,7 @@ trait OptionInstances extends OptionInstances1 {
 
       override def traverse[G[_]: Applicative, A, B](fa: Option[A])(f: A => G[B]): G[Option[B]] =
         fa match {
-          case None() => Applicative[G].pure(None())
+          case None => Applicative[G].pure(None)
           case Some(a) => Applicative[G].map(f(a))(Some(_))
         }
 
@@ -257,12 +254,12 @@ trait OptionInstances extends OptionInstances1 {
 
   implicit def optionMonoid[A](implicit ev: Semigroup[A]): Monoid[Option[A]] =
     new Monoid[Option[A]] {
-      def empty: Option[A] = None()
+      def empty: Option[A] = None
       def combine(x: Option[A], y: Option[A]): Option[A] =
         x match {
-          case None() => y
+          case None => y
           case Some(xx) => y match {
-            case None() => x
+            case None => x
             case Some(yy) => Some(ev.combine(xx,yy))
           }
         }

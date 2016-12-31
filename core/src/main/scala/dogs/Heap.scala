@@ -141,9 +141,9 @@ object Heap {
 
     override def isEmpty: Boolean = true
 
-    override def getMin: Option[Option[Nothing]] = None()
+    override def getMin: Option[Option[Nothing]] = None
 
-    override private[dogs] val min: Option[Nothing] = None()
+    override private[dogs] val min: Option[Nothing] = None
   }
 
   private [dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {

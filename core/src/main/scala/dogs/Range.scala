@@ -47,7 +47,7 @@ final case class Range[A](val start: A, val end: A) {
   def &(other: Range[A])(implicit order: Order[A]): Option[Range[A]] = {
     val start = order.max(this.start, other.start)
     val end = order.min(this.end, other.end)
-    if(order.lteqv(start,end)) Some(Range(start,end)) else None()
+    if(order.lteqv(start,end)) Some(Range(start,end)) else None
   }
 
   /**

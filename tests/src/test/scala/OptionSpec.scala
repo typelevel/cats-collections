@@ -1,6 +1,7 @@
 package dogs
 package tests
 
+import cats.implicits._
 import Predef._
 
 class OptionSpec extends DogsSuite {
