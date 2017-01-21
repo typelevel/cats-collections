@@ -103,7 +103,7 @@ sealed abstract class Set[A] {
 
   /**
    * Find the minimum element matching the given predicate. Returns
-   * None if there is no element matching the predicte.
+   * None if there is no element matching the predicate.
    * O(log n)
    */
   def find(pred: A => Boolean): Option[A] = this match {
