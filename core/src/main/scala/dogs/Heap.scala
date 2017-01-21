@@ -45,7 +45,7 @@ sealed abstract class Heap[A] {
   def height: Int
 
   /**
-   * Verfies if the heap is empty.
+   * Verifies if the heap is empty.
    */
   def isEmpty: Boolean
 

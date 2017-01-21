@@ -313,7 +313,7 @@ class DietTestJoin extends DogsSuite {
     otherSets.intervals.map(r => r.generate) should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
   }
 
-  test("interset with another diet"){
+  test("intersect with another diet"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
     (diet & Diet.empty[Int]).intervals.toScalaList.length should be (0)

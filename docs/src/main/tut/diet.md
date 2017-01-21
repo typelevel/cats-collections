@@ -9,7 +9,7 @@ source: "core/src/main/scala/Diet.scala"
 
 The discrete interval encoding tree is based on the observation that the set of integers { i \| a<=i<=b } can be perfectly represented by the closed interval [a, b].
 
-`Diet` is a binary search tree where each node contains a set of continuos values. If a value is inserted and it fills the hole between to nodes (sets) then the two set become one since all value in the new set are consecutive.
+`Diet` is a binary search tree where each node contains a set of continuous values. If a value is inserted and it fills the hole between to nodes (sets) then the two set become one since all value in the new set are consecutive.
 
 ## Best and Worst Case Analysis.
 
@@ -123,7 +123,7 @@ val d2 = d.removeRange((5 to 20))
 d2.show
 ```
 
-Asking to remove a subrange splits the Diet
+Asking to remove a sub-range splits the Diet
 
 ```tut
 val d = Diet.empty[Int].addRange((5 to 20))

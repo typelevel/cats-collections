@@ -28,7 +28,7 @@ class Map[K,V](val set: Set[(K,V)]) {
     set.foldRight(b)(f)
 
   /**
-   * Fold across all the key/value pairs, associating minumum keys
+   * Fold across all the key/value pairs, associating minimum keys
    * first.
    */
   def foldLeft[B](b: B)(f: (B,(K,V)) => B): B =
@@ -66,7 +66,7 @@ class Map[K,V](val set: Set[(K,V)]) {
   def remove(key: K)(implicit K: Order[K]): Map[K,V] = new Map(set.removef(key, _._1))
 
   /**
-   * Merge this Map with anohter Map.
+   * Merge this Map with another Map.
    * O(n log n)
    */
   def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
@@ -93,7 +93,7 @@ class Map[K,V](val set: Set[(K,V)]) {
   /**
    * Return a scala.collection.immutable.map
    */
-  def toScalaMap: scala.collection.immutable.Map[K,V] = 
+  def toScalaMap: scala.collection.immutable.Map[K,V] =
     foldLeft(scala.collection.immutable.Map.empty[K,V])((m,kv) => m + kv)
 
 
@@ -106,10 +106,10 @@ class Map[K,V](val set: Set[(K,V)]) {
   def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): Map[K,V] =
     new Map(set.updateKey(key, value))
 
-  // 
+  //
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)
-  // 
+  //
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
     set._getkv(_._1,  key)
 

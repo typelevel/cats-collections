@@ -8,7 +8,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{arbitrary => scarbitrary}
 
 /** This data type exists purely for testing.  STU: this is lifted
- *  straight out of cats, which is a shame, we whould put it somewhere
+ *  straight out of cats, which is a shame, we would put it somewhere
  *  that it can be shared by both projects
   *
   * The problem this type solves is to assist in picking up type class

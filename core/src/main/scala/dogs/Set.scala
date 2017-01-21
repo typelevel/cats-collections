@@ -6,9 +6,9 @@ import cats.implicits._
 import scala.annotation.tailrec
 
 /**
- * An immutable, ordered, extesntional Set
- * 
- * This datastructure maintains balance using the
+ * An immutable, ordered, extensional Set
+ *
+ * This data-structure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
  */
 sealed abstract class Set[A] {
@@ -48,7 +48,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Retruns None if the Set is empty, otherwise returns the minumum
+   * Returns None if the Set is empty, otherwise returns the minimum
    * element.
    * O(log n)
    */
@@ -65,7 +65,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Retruns `None` if the Set is empty, otherwise returns the maximum
+   * Returns `None` if the Set is empty, otherwise returns the maximum
    * element.
    * O(log n)
    */
@@ -206,7 +206,7 @@ sealed abstract class Set[A] {
 
     if(Order[Int].compare(this.size, another.size) < 0)
       _intersect(this, another)
-    else 
+    else
       _intersect(another,this)
   }
 
@@ -245,7 +245,7 @@ sealed abstract class Set[A] {
   def iset(implicit order: Order[A]): ISet[A] = ISet(contains)
 
   /**
-   * Return a scala set containing the elments in the Set
+   * Return a scala set containing the elements in the Set
    * O(n)
    */
   def toScalaSet: scala.collection.immutable.Set[A] = {
@@ -295,7 +295,7 @@ sealed abstract class Set[A] {
 object Set {
 
   /**
-   * Create a set with the given elements. 
+   * Create a set with the given elements.
    */
   def apply[A: Order](as: A*): Set[A] =
     as.foldLeft[Set[A]](empty)(_ + _)

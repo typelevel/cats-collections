@@ -14,9 +14,9 @@ final case class Range[A](val start: A, val end: A) {
    * Subtract a Range from this range.
    * The result will be 0, 1 or 2 ranges
    */
-  def -(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] = 
+  def -(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
     if(order.lteqv(range.start, start)) {
-      if(order.lt(range.end, start)) 
+      if(order.lt(range.end, start))
         some((this, none))  // they are completely to the left of us
       else if(order.gteqv(range.end, end))
         // we are completely removed
