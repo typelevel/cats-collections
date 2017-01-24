@@ -44,37 +44,8 @@ constructors directly, the types will be inferred differently:
 scala> val x = Some(1)
 x: dogs.Some[Int] = Some(1)
 
-scala> val y = None()
-y: dogs.Option[Nothing] = None
-```
-
-One thing worth noting in the above example, is that unlike the None
-from the standard library, we had to use `None()` instead of `None` in
-order to get the None instances. This is an unfortunate consequence of
-having `Option` be invariant instead of covariant. This will allow the
-correct type to be returned when it can be inferred:
-
-```scala
-scala> val x = None()
-x: dogs.Option[Nothing] = None
-
-scala> val x: Option[Int] = None()
-x: dogs.Option[dogs.Predef.Int] = None
-```
-
-### Pattern Matching
-
-Pattern matching on `Option` should work the same as it does with the standard library `Option`, however, again we will have to use `None()` instead of `None`:
-
-```scala
-scala> val x = Option(1)
-x: dogs.Option[Int] = Some(1)
-
-scala> x match {
-     |   case Some(x) => println(s"Some($x)")
-     |   case None() => println("None")
-     | }
-Some(1)
+scala> val y = None
+y: dogs.None.type = None
 ```
 
 ### Interoperating with scala.Option
@@ -106,33 +77,33 @@ scala> val s = some(1)
 s: dogs.Option[Int] = Some(1)
 
 scala> n getOrElse 2
-res1: dogs.Predef.Int = 2
+res0: Int = 2
 
 scala> s getOrElse 2
-res2: Int = 1
+res1: Int = 1
 
 scala> n orElse some(2)
-res3: dogs.Option[dogs.Predef.Int] = Some(2)
+res2: dogs.Option[dogs.Predef.Int] = Some(2)
 
 scala> s orElse some(2)
-res4: dogs.Option[Int] = Some(1)
+res3: dogs.Option[Int] = Some(1)
 
 scala> n foreach println
-res5: dogs.Predef.Unit = ()
+res4: dogs.Predef.Unit = ()
 
 scala> s foreach println
 1
-res6: dogs.Predef.Unit = ()
+res5: dogs.Predef.Unit = ()
 
 scala> n map (_ + 1)
-res7: dogs.Option[Int] = None
+res6: dogs.Option[Int] = None
 
 scala> s map (_ + 1)
-res8: dogs.Option[Int] = Some(2)
+res7: dogs.Option[Int] = Some(2)
 
 scala> s flatMap (x => Some(x+1))
-res9: dogs.Option[Int] = Some(2)
+res8: dogs.Option[Int] = Some(2)
 
 scala> s zip s.map(_ + 1)
-res10: dogs.Option[(Int, Int)] = Some((1,2))
+res9: dogs.Option[(Int, Int)] = Some((1,2))
 ```

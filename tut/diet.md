@@ -41,14 +41,11 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 Start by creating an empty Diet:
 
 ```scala
-scala> import dogs._, dogs.Predef._, cats._, dogs.syntax.all._, algebra.std.int._, cats.implicits._, cats.std.int._, dogs.syntax.all._
+scala> import dogs._, dogs.Predef._, cats._, cats.implicits._, dogs.syntax.all._
 import dogs._
 import dogs.Predef._
 import cats._
-import dogs.syntax.all._
-import algebra.std.int._
 import cats.implicits._
-import cats.std.int._
 import dogs.syntax.all._
 
 scala> val d: Diet[Int] = Diet.empty
@@ -58,20 +55,20 @@ scala> d.isEmpty
 res0: dogs.Predef.Boolean = true
 
 scala> d.show
-res1: String = {}
+res1: String = { }
 ```
 
 And we can add an item:
 
 ```scala
 scala> val d2 = d.add(12)
-d2: dogs.Diet[dogs.Predef.Int] = DietNode(12,12,EmptyDiet,EmptyDiet)
+d2: dogs.Diet[dogs.Predef.Int] = DietNode(Range(12,12),EmptyDiet,EmptyDiet)
 
 scala> d2.isEmpty
 res2: dogs.Predef.Boolean = false
 
 scala> d2.show
-res3: String = {[12, 12]}
+res3: String = { [12, 12] }
 ```
 
 And now we can check that it thinks 12 is in the set, but not other numbers
@@ -101,14 +98,14 @@ scala> val s = Diet.empty[Int].remove(10)
 s: dogs.Diet[dogs.Predef.Int] = EmptyDiet
 
 scala> s.show
-res7: String = {}
+res7: String = { }
 ```
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
 
 ```scala
 scala> val d = Diet.empty[Int].addRange(1 to 20)
-d: dogs.Diet[dogs.Predef.Int] = DietNode(1,20,EmptyDiet,EmptyDiet)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(Range(1,20),EmptyDiet,EmptyDiet)
 
 scala> d.contains(21)
 res8: dogs.Predef.Boolean = false
@@ -120,10 +117,10 @@ scala> d.contains(10)
 res10: dogs.Predef.Boolean = true
 
 scala> val d2 = d - (10 to 12)
-d2: dogs.Diet[dogs.Predef.Int] = DietNode(1,9,EmptyDiet,DietNode(13,20,EmptyDiet,EmptyDiet))
+d2: dogs.Diet[dogs.Predef.Int] = DietNode(Range(1,9),EmptyDiet,DietNode(Range(13,20),EmptyDiet,EmptyDiet))
 
 scala> d2.show
-res11: String = {[1, 9], [13, 20]}
+res11: String = { [1, 9] [13, 20] }
 
 scala> d2.contains(10)
 res12: dogs.Predef.Boolean = false
@@ -139,51 +136,51 @@ Given two Diets, we can find the union or the intersection:
 
 ```scala
 scala> val d1 = Diet.empty[Int] + (5 to 10)
-d1: dogs.Diet[dogs.Predef.Int] = DietNode(5,10,EmptyDiet,EmptyDiet)
+d1: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,10),EmptyDiet,EmptyDiet)
 
 scala> val d2 = Diet.empty[Int] + (7 to 12)
-d2: dogs.Diet[dogs.Predef.Int] = DietNode(7,12,EmptyDiet,EmptyDiet)
+d2: dogs.Diet[dogs.Predef.Int] = DietNode(Range(7,12),EmptyDiet,EmptyDiet)
 
 scala> (d1 & d2).show
-res15: String = {[7, 10]}
+res15: String = { [7, 10] }
 
 scala> (d1 | d2).show
-res16: String = {[5, 12]}
+res16: String = { [5, 12] }
 ```
 Asking to remove non existing range yields the same diet
 
 ```scala
 scala> val d = Diet.empty[Int].addRange((5 to 20))
-d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,20),EmptyDiet,EmptyDiet)
 
 scala> val d1 = d.removeRange((1 to 4))
-d1: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+d1: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,20),EmptyDiet,EmptyDiet)
 
 scala> d1.show
-res17: String = {[5, 20]}
+res17: String = { [5, 20] }
 ```
 
 Asking to remove a range yields a new Diet without the range
 
 ```scala
 scala> val d = Diet.empty[Int].addRange((5 to 20)).addRange(22 to 30)
-d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,DietNode(22,30,EmptyDiet,EmptyDiet))
+d: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,20),EmptyDiet,DietNode(Range(22,30),EmptyDiet,EmptyDiet))
 
 scala> val d2 = d.removeRange((5 to 20))
-d2: dogs.Diet[dogs.Predef.Int] = DietNode(22,30,EmptyDiet,EmptyDiet)
+d2: dogs.Diet[dogs.Predef.Int] = DietNode(Range(22,30),EmptyDiet,EmptyDiet)
 
 scala> d2.show
-res18: String = {[22, 30]}
+res18: String = { [22, 30] }
 ```
 
 Asking to remove a subrange splits the Diet
 
 ```scala
 scala> val d = Diet.empty[Int].addRange((5 to 20))
-d: dogs.Diet[dogs.Predef.Int] = DietNode(5,20,EmptyDiet,EmptyDiet)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,20),EmptyDiet,EmptyDiet)
 
 scala> val d3 = d.removeRange((10 to 15)) 
-d3: dogs.Diet[dogs.Predef.Int] = DietNode(5,9,EmptyDiet,DietNode(16,20,EmptyDiet,EmptyDiet))
+d3: dogs.Diet[dogs.Predef.Int] = DietNode(Range(5,9),EmptyDiet,DietNode(Range(16,20),EmptyDiet,EmptyDiet))
 
 scala> (10 to 15).toList.forall { i => d3.contains(i) }
 res19: dogs.Predef.Boolean = false
@@ -199,8 +196,8 @@ Adding a inverted range
 
 ```scala
 scala> val d = Diet.empty[Int] + Range(20, 10)
-d: dogs.Diet[dogs.Predef.Int] = DietNode(10,20,EmptyDiet,EmptyDiet)
+d: dogs.Diet[dogs.Predef.Int] = DietNode(Range(10,20),EmptyDiet,EmptyDiet)
 
 scala> d.show
-res22: String = {[10, 20]}
+res22: String = { [10, 20] }
 ```

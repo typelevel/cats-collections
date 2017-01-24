@@ -13,14 +13,15 @@ standard library.
 
 ### EXPERIMENTAL
 
-This project is in its infancy, it should be considered pre-alpha, it
-might never go anywhere, it could change drastically along the way if
-it does go somewhere.
+This project is in its infancy, it should be considered beta
+
+### DATA STRUCTURES
 
 Here is a list of the current structures present in dogs:
 
 - [Dequeue](tut/dequeue)   - A double-ended queue
-- [Diet](tut/diet)      - Efficient storage of ranges of values
+- [Diet](tut/diet)      - Efficient storage of ragnes of values
+- [Heap](tut/binaryheap)    - Purelely Functional Binary Heap
 - DList     - A list that supports constant-time append
 - [Enum](tut/enum)      - An enumeration of values
 - ISet      - An intensional Set
