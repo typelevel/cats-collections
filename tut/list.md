@@ -132,7 +132,7 @@ scala> x.foldLeft(0)(_ + _)
 res6: Int = 6
 
 scala> x.foldRight(Eval.now(scala.Vector.empty[Int]))((a,la) => la.map(a +: _))
-res7: cats.Eval[scala.collection.immutable.Vector[Int]] = cats.Eval$$anon$7@7b047dbc
+res7: cats.Eval[scala.collection.immutable.Vector[Int]] = cats.Eval$$anon$7@feb607b
 
 scala> x.foreach(println)
 1

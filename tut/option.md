@@ -9,7 +9,6 @@ source: "core/src/main/scala/Option.scala"
 
 - There is no `get` method.  This method is not total, if the value is
   None, .get in the stdlib throws an exception.
-- `Option` in dogs is invariant instead of covariant.
 - There aren't implicit conversions from Option to any other type. In
   the standard library, there are implicit conversions for Option to
   Iterable, which sometimes are convenient, but sometimes unexpected
