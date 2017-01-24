@@ -78,7 +78,7 @@ sealed abstract class Diet[A] {
       case x => (x,a)
     }
 
-  // helper method for addRange whic hdoes the actual insertion
+  // helper method for addRange which does the actual insertion
   private [dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
     this match {
       case EmptyDiet() =>  DietNode(range, EmptyDiet(), EmptyDiet())

@@ -11,7 +11,7 @@ These operations are presented by the following functions.
 
 - `def succ(x)`:		Returns the successor value of `x`
 - `def pred(x)`: 	Returns the predecessor value of `x`
-- `def adj(i, j)`:	Returns if `i` and `j` are consecutives ( `succ(i) is j`)
+- `def adj(i, j)`:	Returns if `i` and `j` are consecutive ( `succ(i) is j`)
 
 An example of the discrete operation on integer values could be: 
 

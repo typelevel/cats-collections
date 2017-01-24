@@ -30,17 +30,17 @@ abstract class ISet[A] extends scala.Function1[A, Boolean] { self =>
   def &(other: ISet[A]): ISet[A] = ISet(a => self(a) && other(a))
 
   /**
-   * Returns true if the value is a emmeber of the set.
+   * Returns true if the value is a member of the set.
    */
   def contains(a: A): Boolean = self(a)
 
   /**
-   * Returns the set which is the the differece of another set removed from this set
+   * Returns the set which is the the difference of another set removed from this set
    */
   def diff(remove: ISet[A]): ISet[A] = ISet(a => self(a) && !remove(a))
 
   /**
-   * Returns the set which is the the differece of another set removed from this set
+   * Returns the set which is the the difference of another set removed from this set
    */
   def -(remove: ISet[A]): ISet[A] = ISet(a => self(a) && !remove(a))
 

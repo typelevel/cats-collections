@@ -128,7 +128,7 @@ val Z1 = BigInt(1)
 
 Our first implementation will be a simple recursive method. While this
 doesn't use `Streaming`, its definition is very close to one a
-mathematian might write.
+mathematician might write.
 
 ```tut:silent
 def fib(n: Int): Z =
@@ -259,7 +259,7 @@ val qs = pairs.filter { case (n, d) => (n gcd d) == Z1 }
 val rats = Q0 %:: qs.flatMap { case q @ (n, d) => Streaming(q, (-n, d)) }
 ```
 
-First we define `zs`, an infinte stream of all the positive numbers
+First we define `zs`, an infinite stream of all the positive numbers
 (beginning with one). Next we use the `product` method to create the
 Cartesian product of `zs` with itself (every possible pairing of two
 values from `zs`). Here are the first few terms of `pairs` to give you
