@@ -7,7 +7,7 @@ source: "core/src/main/scala/Diet.scala"
 
 `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
  their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based on
- VLADIMIR KOSTYUKOV paper and it does support the basic operations on a heap without compromising performance. 
+ Vladimir Kostyukov's paper and it does support the basic operations on a heap without compromising performance.
 
 ## Supported Operations
 

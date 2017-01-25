@@ -49,20 +49,20 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
    */
   def toList: List[A] = run(List.empty).value
 
-  /** 
-   * Get the first element of the list, if any. 
+  /**
+   * Get the first element of the list, if any.
    * O(n) where n is the number of append operations in this DList
    */
   def headOption: Option[A] = uncons[Option[A]](now(Option.none),(x, _) => now(Some(x))).value
 
-  /** 
-   * Get the tail of the list, if any. 
+  /**
+   * Get the tail of the list, if any.
    * O(n) where n is the number of append operations in this DList
    */
   def tailOption: Option[DList[A]] =
     uncons[Option[DList[A]]](now(Option.none), (_, y) => now(Some(y))).value
 
-  /** 
+  /**
    * Tests whether list is empty.
    * O(n) where n is the number of append operations in this DList
    * which is a bit weirdly expensive

@@ -58,35 +58,35 @@ class VectorTest extends SlowDogsSuite {
   // Functionality borrowed from Vector is tested in terms of Vector. Is this ethical?
   // Should they be collapsed into fewer cases?
 
-  test("++"){ 
+  test("++"){
     forAll {
        (ns: Vector[Int], ms: Vector[Int]) =>
       (ns ++ ms).toList should === (ns.toList ++ ms.toList)
     }
   }
 
-  test("+:"){ 
+  test("+:"){
     forAll {
       (n: Int, ns: Vector[Int]) =>
       (n +: ns).toScalaVector should ===(n +: ns.toScalaVector)
     }
   }
 
-  test("/:"){ 
+  test("/:"){
     forAll {
        (ns: Vector[Int], s: String, f: (String, Int) => String) =>
       (s /: ns)(f) should ===((s /: ns.toScalaVector)(f))
     }
   }
 
-  test(":+"){ 
+  test(":+"){
     forAll {
        (n: Int, ns: Vector[Int]) =>
       (ns :+ n).toScalaVector should ===(ns.toScalaVector :+ n)
     }
   }
 
-  test("collect"){ 
+  test("collect"){
     forAll {
        (ns: Vector[Int]) =>
     val pf: PartialFunction[Int, Int] = { case n if n % 2 == 0 => n + 1 }
@@ -94,7 +94,7 @@ class VectorTest extends SlowDogsSuite {
     }
   }
 
-  test("collectFirst"){ 
+  test("collectFirst"){
     forAll {
        (ns: Vector[Int]) =>
     val pf: PartialFunction[Int, Int] = { case n if n % 2 == 0 => n + 1 }
@@ -102,35 +102,35 @@ class VectorTest extends SlowDogsSuite {
     }
   }
 
-  test("concat"){ 
+  test("concat"){
     forAll {
       (ns: Vector[Int], ms: Vector[Int]) =>
       (ns concat ms).toScalaVector should ===(ns.toScalaVector ++ ms.toScalaVector)
     }
   }
 
-  test("containsSlice"){ 
+  test("containsSlice"){
     forAll {
        (ns: Vector[Int], ms: Vector[Int]) =>
       ns.containsSlice(ms) should ===(ns.toScalaVector.containsSlice(ms.toScalaVector))
     }
   }
 
-  test("count"){ 
+  test("count"){
     forAll {
        (ns: Vector[Int], p: Int => Boolean) =>
       ns.count(p) should ===(ns.toScalaVector.count(p))
     }
   }
 
-  test("drop"){ 
+  test("drop"){
     forAll {
        (ns: Vector[Int], n: Int) =>
       ns.drop(n).toScalaVector should ===(ns.toScalaVector.drop(n))
     }
   }
 
-  test("dropRight"){ 
+  test("dropRight"){
     forAll {
        (ns: Vector[Int], n: Int) =>
       ns.dropRight(n).toScalaVector should ===(ns.toScalaVector.dropRight(n))
@@ -138,49 +138,49 @@ class VectorTest extends SlowDogsSuite {
   }
 
 
-  test("dropRightWhile"){ 
+  test("dropRightWhile"){
     forAll {
        (ns: Vector[Int], p: Int => Boolean) =>
       ns.dropRightWhile(p).toScalaVector should ===(ns.toScalaVector.reverse.dropWhile(p).reverse)
     }
   }
 
-  test("dropWhile"){ 
+  test("dropWhile"){
     forAll {
        (ns: Vector[Int], p: Int => Boolean) =>
       ns.dropWhile(p).toScalaVector should ===(ns.toScalaVector.dropWhile(p))
     }
   }
 
-  test("endsWith"){ 
+  test("endsWith"){
     forAll {
        (ns: Vector[Int], ms: Vector[Int]) =>
       ns.endsWith(ms) should ===(ns.toScalaVector.endsWith(ms.toScalaVector))
     }
   }
 
-  test("fill"){ 
+  test("fill"){
     forAll {
        (a: Byte, b: Int) =>
       Vector.fill(a)(b).toScalaVector should ===(SVector.fill(a)(b))
     }
   }
 
-  test("filter"){ 
+  test("filter"){
     forAll {
       (ns: Vector[Int], p: Int => Boolean) =>
       ns.filter(p).toScalaVector should ===(ns.toScalaVector.filter(p))
     }
   }
 
-  test("filterNot"){ 
+  test("filterNot"){
     forAll {
       (ns: Vector[Int], f: Int => Boolean) =>
       ns.filterNot(f).toScalaVector should ===(ns.toScalaVector.filterNot(f))
     }
   }
 
-  test("find"){ 
+  test("find"){
     forAll {
       (ns: Vector[Int], f: Int => Boolean) =>
       ns.find(f).toScalaOption should ===(ns.toScalaVector.find(f))
@@ -190,7 +190,7 @@ class VectorTest extends SlowDogsSuite {
   // flatMap and folds are covered by laws
 
   // test get in terms of foldLeft, optionally modded into vector space
-  test("get"){ 
+  test("get"){
     forAll {
       (ns: Vector[Int], i: Int, mod: Boolean) =>
       val index = if (mod && ns.length == 0) 0 else if (mod) i % ns.length else i

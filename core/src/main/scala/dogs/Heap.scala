@@ -8,13 +8,12 @@ import cats._
 import dogs.Predef._
 
 /**
- * Binary Heap
+ * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
+ * their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based
+ * on Vladimir Kostyukov's paper and it does support the basic operations on a heap without compromising performance.
  *
- * Normally, binary heaps are not common the functional environments since they implementationis based on mutable
- * arrays. However, this implementation is purely functional, based on the VLADIMIR KOSTYUKOV paper.
- *
- * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the function
- * `heapify`.
+ * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the
+ * function `heapify`.
  */
 sealed abstract class Heap[A] {
 
@@ -45,7 +44,7 @@ sealed abstract class Heap[A] {
   def height: Int
 
   /**
-   * Verfies if the heap is empty.
+   * Verifies if the heap is empty.
    */
   def isEmpty: Boolean
 
