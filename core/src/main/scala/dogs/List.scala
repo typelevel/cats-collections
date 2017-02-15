@@ -5,6 +5,7 @@ import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
 import cats._
+import cats.kernel.Comparison
 
 /**
  * Immutable, singly-linked list implementation.
@@ -242,6 +243,22 @@ sealed abstract class List[A] {
   def reverse: List[A] = foldLeft[List[A]](List.empty)((l,a) => a :: l)
 
   /**
+    * Return a List which contains all of the same elements as this List,
+    * but in order of smallest to largest according to the implicit `Order`
+    */
+  def sorted(implicit ord: Order[A]): List[A] =
+    toNel.cata(_.sorted1, List.empty)
+
+  /**
+    * Return a List which contains all of the same elements as this List,
+    * but in order of smallest to largest according to the implicit `Order`
+    * of the type that is being mapped to
+    */
+  def sortBy[B](f: A => B)(implicit ord: Order[B]): List[A] =
+    toNel.cata(_.sortBy1(f), List.empty)
+
+
+  /**
    * Returns a List containing the first n elements of this List, if n
    * < the length of this list, the result will be a copy of this
    * list.
@@ -381,6 +398,8 @@ sealed abstract class List[A] {
 final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[A] {
   def tail = _tail
 
+  def last: A = tail.toNel.cata(_.last, head)
+
   override final def isEmpty: Boolean = false
 
   final def reduceLeft(f: (A, A) => A): A =
@@ -426,6 +445,55 @@ final case class Nel[A](head: A, private[dogs] var _tail: List[A]) extends List[
     loop(n, this)
     lb.run
   }
+
+  /**
+    * Return a List which contains all of the same elements as this List,
+    * but in order of smallest to largest according to the implicit `Order`
+    */
+  def sorted1(implicit ord: Order[A]): Nel[A] = {
+    val sorted = toScalaList.sorted(ord.toOrdering)
+    Nel(sorted.head, List.fromIterable(sorted.tail))
+  }
+
+  /**
+    * Return a List which contains all of the same elements as this List,
+    * but in order of smallest to largest according to the implicit `Order`
+    * of the type that is being mapped to
+    */
+  def sortBy1[B](f: A => B)(implicit ord: Order[B]): Nel[A] = {
+    val sorted = toScalaList.sortBy(f)(ord.toOrdering)
+    Nel(sorted.head, List.fromIterable(sorted.tail))
+  }
+
+  final def max(implicit ord: Order[A]): A =
+    maxBy(identity).head
+
+  final def maxBy[B](f: A => B)(implicit ord: Order[B]): Nel[A] =
+    tail match {
+      case El()        => Nel(head, List.empty)
+      case nel: Nel[_] =>
+        val maxOfTail = nel.maxBy(f)
+        ord.comparison(f(head), f(maxOfTail.head)) match {
+          case Comparison.LessThan    => maxOfTail
+          case Comparison.EqualTo     => Nel(head, maxOfTail)
+          case Comparison.GreaterThan => Nel(head, List.empty)
+        }
+    }
+
+  final def min(implicit ord: Order[A]): A =
+    minBy(identity).head
+
+  final def minBy[B](f: A => B)(implicit ord: Order[B]): Nel[A] =
+    tail match {
+      case El()        => Nel(head, List.empty)
+      case nel: Nel[_] =>
+        val minOfTail = nel.minBy(f)
+        ord.comparison(f(head), f(minOfTail.head)) match {
+          case Comparison.GreaterThan => minOfTail
+          case Comparison.EqualTo     => Nel(head, minOfTail)
+          case Comparison.LessThan    => Nel(head, List.empty)
+        }
+    }
 }
 
 final case object El extends List[Nothing] {

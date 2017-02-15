@@ -88,8 +88,6 @@ lazy val commonSettings = Seq(
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false,
-  // Using Rhino as jsEnv to build scala.js code can lead to OOM, switch to PhantomJS by default
-  scalaJSUseRhino := false,
   requiresDOM := false,
   jsEnv := NodeJSEnv().value,
   // Only used for scala.js for now
@@ -209,5 +207,5 @@ lazy val warnUnusedImport = Seq(
     }
   },
   scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
-  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
+  scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
 )

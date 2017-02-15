@@ -113,4 +113,42 @@ class ListSpec extends DogsSuite {
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
     })
 
+  test("sorted")(
+    forAll { (xs: List[Int]) =>
+      xs.sorted.toScalaList should be (xs.toScalaList.sorted)
+    }
+  )
+
+  test("sortBy")(
+    forAll { (xs: List[String]) =>
+      xs.sortBy(_.length).toScalaList should be (xs.toScalaList.sortBy(_.length))
+    }
+  )
+
+  test("min")(
+    forAll { (xs: Nel[Int]) =>
+      xs.min should be (xs.sorted1.head)
+    }
+  )
+
+  test("minBy")(
+    forAll { xs: Nel[String] =>
+      xs.minBy(_.length).toScalaList should contain theSameElementsAs
+        (xs.sortBy1(_.length).takeWhile(_.length == xs.sortBy1(_.length).head.length).toScalaList)
+    }
+  )
+
+  test("max")(
+    forAll { (xs: Nel[Int]) =>
+      xs.max should be (xs.sorted1.last)
+    }
+  )
+
+  test("maxBy")(
+    forAll { (xs: Nel[String]) =>
+      xs.maxBy(_.length).toScalaList should contain theSameElementsAs
+        (xs.sortBy1(_.length).dropWhile(_.length != xs.sortBy1(_.length).last.length).toScalaList)
+    }
+  )
+
 }
