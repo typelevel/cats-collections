@@ -11,24 +11,25 @@ lazy val buildSettings = Seq(
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
   .settings(noPublishSettings)
-  .aggregate(dogsJVM, dogsJS)
+  .aggregate(dogsJVM/*, dogsJS*/)
 
 lazy val dogsJVM = project.in(file(".dogsJVM"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJVM, docs, testsJVM, bench)
 
+/*
 lazy val dogsJS = project.in(file(".dogsJS"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJS, testsJS)
-
+ */
 lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "dogs-core")
   .settings(dogsSettings:_*)
 
 lazy val coreJVM = core.jvm
-lazy val coreJS = core.js
+//lazy val coreJS = core.js
 
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
@@ -38,16 +39,16 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %%% "cats-laws"          % "0.8.1",
-      "org.scalacheck" %%% "scalacheck"         % "1.13.4",
-      "org.scalatest"  %%% "scalatest"          % "3.0.0"    % "test",
-      "org.typelevel"  %%% "catalysts-platform" % "0.0.5"    % "test",
-      "org.typelevel"  %%% "discipline"         % "0.7.1"    % "test"
+      "org.typelevel"  %% "cats-laws"          % "0.9.0",
+      "org.scalacheck" %% "scalacheck"         % "1.13.4",
+      "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
+      "org.typelevel"  %% "catalysts-platform" % "0.0.5"    % "test",
+      "org.typelevel"  %% "discipline"         % "0.7.3"    % "test"
     )
   )
 
 lazy val testsJVM = tests.jvm
-lazy val testsJS = tests.js
+//lazy val testsJS = tests.js
 
 lazy val docs = project
   .dependsOn(coreJVM)
@@ -73,9 +74,9 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %%% "cats-core"  % "0.8.1",
-    "com.github.mpilquist"           %%% "simulacrum" % "0.10.0",
-    "org.typelevel"                  %%% "machinist"  % "0.6.0",
+    "org.typelevel"                  %% "cats-core"  % "0.9.0",
+    "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
+    "org.typelevel"                  %% "machinist"  % "0.6.1",
 
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.3"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.full)
@@ -85,6 +86,7 @@ lazy val commonSettings = Seq(
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings")
 ) ++ warnUnusedImport
 
+/*
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false,
@@ -97,14 +99,15 @@ lazy val commonJsSettings = Seq(
   // batch mode decreases the amount of memory needed to compile scala.js code
   scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
 )
-
+ */
 addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
 
 addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
 
-addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
+//addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
 
-addCommandAlias("validate", ";validateJS;validateJVM")
+//addCommandAlias("validate", ";validateJS;validateJVM")
+addCommandAlias("validate", ";validateJVM")
 
 addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVersion.value.get + \"-SNAPSHOT\"")
 
