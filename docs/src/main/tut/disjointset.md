@@ -6,7 +6,7 @@ source: "core/src/main/scala/DisjointSet.scala"
 # Disjoint-set
 
 `Disjoint-set` is a basic data structure that tracks which partition an element in the set belong to, see
- [Disjoing-set data structure](https://en.wikipedia.org/wiki/Disjoint-set_data_structure).
+ [Disjoint-set data structure](https://en.wikipedia.org/wiki/Disjoint-set_data_structure).
  It is often used as a building block for graph data structures or functions.
  
  There are just a few basic operations:
