@@ -15,16 +15,3 @@ source: "core/src/main/scala/DisjointSet.scala"
  - `def union(x, y)`: 	Joins two subsets into a single subset.
  - `numComponents`: The number of partitions in the set.
 
-
- 
-```tut
- val xs = Set(1,2,3)
- val dset = DisjointSet(xs)
- val updated = dset.union(1,2)
- 
- /* find the parent. */
- updated.find(1) 
- 
- /* query the number of components. */
- updated.compnents
-```
