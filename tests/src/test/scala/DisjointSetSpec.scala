@@ -32,21 +32,17 @@ class DisjointSetSpec extends DogsSuite with ArbitrarySet with ArbitraryList {
     xs.toList().forall(set.find(_).isDefined)
   }})
 
+  test("incremental union should reduce components.")(forAll { (xs: Set[Int]) => {
+    val edges = xs.toScalaSet.iterator.sliding(2).toList
+    val sets = edges.scanLeft(DisjointSet(xs))((acc,v) => acc.union(v.head,v.last).getOrElse(acc))
+    val check = sets.zipWithIndex
+    check.forall((x) => x._1.components + x._2 == xs.size)
+  }})
+
 
   /* Check empty sets, etc. */
   test("number of components of an empty set is zero") {
     DisjointSet(Set.empty[Int]).components should equal(0)
-  }
-
-  test("union of element outside of set yields None()") {
-    DisjointSet(Set(1,2)).union(2,3) should be(None())
-    DisjointSet(Set(2,3)).union(1,2) should be(None())
-    DisjointSet(Set(1,2)).union(3,4) should be(None())
-  }
-
-  test("incremental union of elements reduces number of components by 1") {
-    val set = DisjointSet(Set(1,2,3,4,5)).union(1,5)
-    set.flatMap[Int](x => Some(x.components)) should be (Some(4))
   }
 
 
