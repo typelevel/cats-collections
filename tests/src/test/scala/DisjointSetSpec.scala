@@ -32,7 +32,7 @@ class DisjointSetSpec extends DogsSuite with ArbitrarySet with ArbitraryList {
     xs.toList().forall(set.find(_).isDefined) should be (true)
   }})
 
-  
+
   /* Check empty sets, etc. */
   test("number of components of an empty set is zero") {
     DisjointSet(Set.empty[Int]).components should equal(0)

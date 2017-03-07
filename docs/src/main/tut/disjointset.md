@@ -15,3 +15,4 @@ source: "core/src/main/scala/DisjointSet.scala"
  - `def find(x)`:	Returns the 'parent' of `x` (i.e. which partition it belong to).
  - `def union(x, y)`: 	Joins two subsets into a single subset.
  - `numComponents`: The number of partitions in the set.
+
