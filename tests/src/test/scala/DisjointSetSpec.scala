@@ -21,9 +21,19 @@ class DisjointSetSpec extends DogsSuite with ArbitrarySet with ArbitraryList {
     if (!xs.isEmpty) set.components should equal(1) else set.components should equal(0)
   }})
 
+  test("find of an element not in the set should return None")(forAll { (xs: Set[Int], ys: Set[Int]) => {
+    val d = xs.diff(ys).toList()
+    val set = DisjointSet(ys)
+    if (!d.isEmpty) d.forall(set.find(_).isNone)
+  }})
+
+  test("find of an element in the set should be defined")(forAll { (xs: Set[Int]) => {
+    val set = DisjointSet(xs)
+    xs.toList().forall(set.find(_).isDefined)
+  }})
+
 
   /* Check empty sets, etc. */
-
   test("number of components of an empty set is zero") {
     DisjointSet(Set.empty[Int]).components should equal(0)
   }
