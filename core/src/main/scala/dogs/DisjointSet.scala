@@ -43,15 +43,12 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
 
   /**
     * Given two elements u and v, return Some(ranks(u),ranks(v))
-    * if ranks(u) and ranks(v) are both defined. Otherwise
-    * return None().
+    * ranks.get(u) and ranks.get(v) will be defined. Only invoked after
+    * call to 'getParents' returns Some(x,y).
     */
-  private[this] def getRanks(u: T, v: T)(implicit order: Order[T]): Option[(Int, Int)] = {
-    (ranks.get(u), ranks.get(v)) match {
-      case (Some(uRank), Some(vRank)) => Some((uRank, vRank))
-      case _ => None()
-    }
-  }
+  private[this] def getRanks(u: T, v: T)(implicit order: Order[T]): Option[(Int, Int)] =
+    (ranks.get(u), ranks.get(v)) match { case (Some(uRank), Some(vRank)) => Some((uRank, vRank)) }
+
 
   /**
     * Join two elements of the set and return a new disjoint
@@ -66,18 +63,15 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
         getRanks(x, y) match {
           case (Some(rank)) =>
             if (rank._1 < rank._2) {
-              Some(new DisjointSet[T](parents.remove(x).updateAppend(x, y),
-                ranks, nComponents - 1))
+              Some(new DisjointSet[T](parents.remove(x).updateAppend(x, y), ranks, nComponents - 1))
             }
             else if (rank._1 > rank._2)
-              Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x),
-                ranks, nComponents -1))
+              Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x), ranks, nComponents -1))
             else {
               val newRank = rank._1 + 1
               Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x),
                 ranks.remove(x).updateAppend(x,newRank), nComponents - 1))
             }
-          case _ => None()
         }
     }
   }
