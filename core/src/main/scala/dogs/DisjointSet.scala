@@ -43,19 +43,11 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
 
   /**
     * Given two elements u and v, return Some(ranks(u),ranks(v))
-<<<<<<< HEAD
     * getRanks is invoked only if getParents(u,v) are both defined,
     * so the None() case need not be checked for.
     */
   private[this] def getRanks(u: T, v: T)(implicit order: Order[T]): Option[(Int, Int)] =
     (ranks.get(u), ranks.get(v)) match {case (Some(uRank), Some(vRank)) => Some((uRank, vRank))}
-=======
-    * ranks.get(u) and ranks.get(v) will be defined. Only invoked after
-    * call to 'getParents' returns Some(x,y).
-    */
-  private[this] def getRanks(u: T, v: T)(implicit order: Order[T]): Option[(Int, Int)] =
-    (ranks.get(u), ranks.get(v)) match { case (Some(uRank), Some(vRank)) => Some((uRank, vRank)) }
->>>>>>> 20b8ae3... Improved test case, removed redudant case match.
 
 
   /**

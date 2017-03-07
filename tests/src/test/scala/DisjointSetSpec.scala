@@ -44,6 +44,5 @@ class DisjointSetSpec extends DogsSuite with ArbitrarySet with ArbitraryList {
   test("number of components of an empty set is zero") {
     DisjointSet(Set.empty[Int]).components should equal(0)
   }
-h.
 
 }
