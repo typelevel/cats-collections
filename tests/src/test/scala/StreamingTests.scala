@@ -250,7 +250,7 @@ class AdHocStreamingTests extends DogsSuite {
     implicit val arbInt: Arbitrary[Int] = Arbitrary(Gen.choose(-10, 20))
     forAll { (start: Int, n: Int) =>
       val end = start + n
-      def check(i: Int): Option[Int] = if (i <= end) Some(i) else None()
+      def check(i: Int): Option[Int] = if (i <= end) Some(i) else None
       val unfolded = Streaming.unfold(check(start))(i => check(i + 1))
       val fromInfinite = Streaming.infinite(start)(_ + 1).takeWhile(_ <= end)
       unfolded.toList should === (fromInfinite.toList)
@@ -259,7 +259,7 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("unfold on None returns empty stream") {
     forAll { (f: Int => Option[Int]) =>
-      Streaming.unfold[Int](None())(f) should === (Streaming.empty[Int])
+      Streaming.unfold[Int](None)(f) should === (Streaming.empty[Int])
     }
   }
 

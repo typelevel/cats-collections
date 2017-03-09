@@ -9,7 +9,6 @@ source: "core/src/main/scala/Option.scala"
 
 - There is no `get` method.  This method is not total, if the value is
   None, .get in the stdlib throws an exception.
-- `Option` in dogs is invariant instead of covariant.
 - There aren't implicit conversions from Option to any other type. In
   the standard library, there are implicit conversions for Option to
   Iterable, which sometimes are convenient, but sometimes unexpected
@@ -36,31 +35,7 @@ constructors directly, the types will be inferred differently:
 
 ```tut
 val x = Some(1)
-val y = None()
-```
-
-One thing worth noting in the above example, is that unlike the None
-from the standard library, we had to use `None()` instead of `None` in
-order to get the None instances. This is an unfortunate consequence of
-having `Option` be invariant instead of covariant. This will allow the
-correct type to be returned when it can be inferred:
-
-```tut
-val x = None()
-val x: Option[Int] = None()
-```
-
-### Pattern Matching
-
-Pattern matching on `Option` should work the same as it does with the standard library `Option`, however, again we will have to use `None()` instead of `None`:
-
-```tut
-val x = Option(1)
-
-x match {
-  case Some(x) => println(s"Some($x)")
-  case None() => println("None")
-}
+val y = None
 ```
 
 ### Interoperating with scala.Option

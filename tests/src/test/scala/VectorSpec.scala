@@ -198,12 +198,12 @@ class VectorTest extends SlowDogsSuite {
       val received = ns get index
 
       val expected:Option[Int] = if (index < 0 || index >= ns.length) {
-        None()
+        None
       } else {
-        val (_, back) = ns.foldLeft((0, None(): Option[Int])) {
-          case ((`index`, None()), n) => (0, Some(n))
+        val (_, back) = ns.foldLeft((0, None: Option[Int])) {
+          case ((`index`, None), n) => (0, Some(n))
           case ((_, Some(n)), _) => (0, Some(n))
-          case ((i, None()), n) => (i + 1, None())
+          case ((i, None), n) => (i + 1, None)
         }
 
         back

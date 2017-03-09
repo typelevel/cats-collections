@@ -142,7 +142,7 @@ sealed abstract class Dequeue[A] {
     def go(n: Nel[A]): (ListBuilder[B], Int, Option[B]) = {
       val lb = new ListBuilder[B]
       var s = 0
-      var o: Option[B] = None()
+      var o: Option[B] = None
 
       n.foreach { a =>
         f(a) match {
@@ -177,13 +177,13 @@ sealed abstract class Dequeue[A] {
         val (bl,bs,bo) = go(back.reverse)
 
         (fo,bo) match {
-          case (None(),None()) => EmptyDequeue()
-          case (Some(a), None()) =>
+          case (None,None) => EmptyDequeue()
+          case (Some(a), None) =>
             if(fs == 1)
               SingletonDequeue(a)
             else
               FullDequeue(fl.run.asInstanceOf[Nel[B]], fs-1, Nel(a, List.empty), 1)
-          case (None(), Some(a)) =>
+          case (None, Some(a)) =>
             if(bs == 1)
               SingletonDequeue(a)
             else
@@ -199,7 +199,7 @@ sealed abstract class Dequeue[A] {
   def coflatMap[B](f: Dequeue[A] => B): Dequeue[B] = {
     def loop(op: Option[(A, Dequeue[A])], last: Dequeue[A], acc: Dequeue[B]): Dequeue[B] =
       op match {
-        case None() => acc
+        case None => acc
         case Some((_, rest)) => loop(rest.uncons, rest, acc :+ f(last))
       }
 

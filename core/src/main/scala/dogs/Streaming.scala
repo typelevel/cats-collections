@@ -112,7 +112,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   def uncons: Option[(A, Eval[Streaming[A]])] = {
     @tailrec def unroll(s: Streaming[A]): Option[(A, Eval[Streaming[A]])] =
       s match {
-        case Empty() => None()
+        case Empty() => None
         case Wait(lt) => unroll(lt.value)
         case Cons(a, lt) => Some((a, lt))
       }
@@ -186,7 +186,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       s match {
         case Cons(a, lt) => if (f(a)) Some(a) else loop(lt.value)
         case Wait(lt) => loop(lt.value)
-        case Empty() => None()
+        case Empty() => None
       }
     loop(this)
   }
@@ -227,7 +227,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   def peekEmpty: Option[Boolean] =
     this match {
       case Empty() => Some(true)
-      case Wait(_) => None()
+      case Wait(_) => None
       case Cons(a, lt) => Some(false)
     }
 
@@ -620,7 +620,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
         case Cons(a, lt) => unroll(n - 1, sb.append(", " + a.toString), lt.value)
       }
     uncons match {
-      case None() =>
+      case None =>
         "Streaming()"
       case Some((a, lt)) =>
         val sb = new StringBuffer().append("Streaming(" + a.toString)
@@ -707,7 +707,7 @@ object Streaming extends StreamingInstances {
   final case class Cons[A](a: A, tail: Eval[Streaming[A]]) extends Streaming[A]
 
   def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
-    case None()   => Streaming.empty
+    case None   => Streaming.empty
     case Some((a,b)) => Streaming.cons(a, defer(unfold(b)(f)))
   }
 
@@ -862,7 +862,7 @@ object Streaming extends StreamingInstances {
    */
   def unfold[A](o: Option[A])(f: A => Option[A]): Streaming[A] =
     o match {
-      case None() => Empty()
+      case None => Empty()
       case Some(a) => Cons(a, always(unfold(f(a))(f)))
     }
 }

@@ -65,11 +65,11 @@ class RangeTest extends DogsSuite {
 
     x1.isDefined should be (false)
 
-    val Some((x2, None())) = range - Range(-1, 5)
+    val Some((x2, None)) = range - Range(-1, 5)
 
     x2.toStreaming.toScalaList should contain inOrderOnly (6, 7, 8, 9, 10)
 
-    val Some((x3, None())) = range - Range(3, 12)
+    val Some((x3, None)) = range - Range(3, 12)
 
     x3.toStreaming.toScalaList should contain inOrderOnly(1, 2)
   }

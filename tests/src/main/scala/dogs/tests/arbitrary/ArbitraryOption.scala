@@ -7,6 +7,6 @@ trait ArbitraryOption {
   def optionGen[A](implicit A: Arbitrary[A]): Gen[Option[A]] =
     arbitrary[scala.Option[A]].map(Option.fromScalaOption)
 
-  implicit def arbitraryOption[A: Arbitrary]: Arbitrary[Option[A]] =
-    Arbitrary(optionGen)
+  implicit def arbitraryOption[A](implicit A: Arbitrary[A]): Arbitrary[Option[A]] =
+    Arbitrary(optionGen(A))
 }

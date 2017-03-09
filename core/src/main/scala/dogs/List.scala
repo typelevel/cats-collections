@@ -33,7 +33,7 @@ sealed abstract class List[A] {
   final def toNel: Option[Nel[A]] =
     this match {
       case nel: Nel[_] => Some(nel)
-      case El() => None()
+      case El() => None
     }
 
   /**
@@ -206,7 +206,7 @@ sealed abstract class List[A] {
    */
   @tailrec final def find(pred: A => Boolean): Option[A] =
     this match {
-      case El() => None()
+      case El() => None
       case Nel(h, t) => if (pred(h)) Some(h) else t.find(pred)
     }
 

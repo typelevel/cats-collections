@@ -86,7 +86,7 @@ sealed abstract class Diet[A] {
       case DietNode(rng, l, r)  => {
         val (r1,r2) = (rng + range)
           r2 match {
-            case None() =>
+            case None =>
               val (left, start) = l.noMoreThan(r1.start)
               val (right, end) = r.noLessThan(r1.end)
               DietNode[A](Range(start,end),left,right)
@@ -150,8 +150,8 @@ sealed abstract class Diet[A] {
       val left = if(order.lt(range.start, rng.start)) l.removeRange(range) else l
       val right = if(order.gt(range.end, rng.end)) r.removeRange(range) else r
         (rng - range) match {
-        case None() => merge(l, r)
-        case Some((m, None())) => DietNode(m, left, right)
+        case None => merge(l, r)
+        case Some((m, None)) => DietNode(m, left, right)
         case Some((m, Some(n))) => merge(DietNode(m, l, EmptyDiet()), DietNode(n, EmptyDiet(), r))
       }
   }
@@ -197,7 +197,7 @@ sealed abstract class Diet[A] {
 
         (range & other) match {
           case Some(range) =>       DietNode(range, newLeft, newRight)
-          case None() => merge(newLeft, newRight)
+          case None => merge(newLeft, newRight)
         }
       case x => x
     }
@@ -213,7 +213,7 @@ sealed abstract class Diet[A] {
    * min value in the tree
    */
   def min: Option[A] = this match {
-    case EmptyDiet()  =>  None()
+    case EmptyDiet()  =>  None
     case DietNode(Range(x, _), EmptyDiet(), _) => Some(x)
     case DietNode(_, l, _) => l.min
   }
@@ -222,7 +222,7 @@ sealed abstract class Diet[A] {
    * max value in the tree
    */
   def max: Option[A] = this match {
-    case EmptyDiet()  => None()
+    case EmptyDiet()  => None
     case DietNode(Range(_, y), _, EmptyDiet()) => Some(y)
     case DietNode(_, _, r) => r.max
   }

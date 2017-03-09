@@ -50,8 +50,7 @@ val x = 1 :: scala.Nil
 ### Pattern matching
 
 The pattern `El()` will match empty lists, The parentheses are
-required here, for a similar reason that they are required on
-[Option](option)'s `None()` pattern.
+required here because Lists are no covariant.
 
 `Nel(head, tail)` will match on the head and tail of a non-empty list.
 
