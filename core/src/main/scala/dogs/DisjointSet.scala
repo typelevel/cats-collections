@@ -55,17 +55,18 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
       case None() => None()
       case (Some((x, y))) if x == y => Some(this)
       case (Some((x, y))) if x != y =>
+        val c = if (u==v) nComponents  else nComponents - 1
         getRanks(x, y) match {
           case (Some((xr,yr))) =>
             if (xr < yr) {
-              Some(new DisjointSet[T](parents.remove(x).updateAppend(x, y), ranks, nComponents - 1))
+              Some(new DisjointSet[T](parents.remove(x).updateAppend(x, y), ranks,c))
             }
             else if (xr > yr)
-              Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x), ranks, nComponents -1))
+              Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x), ranks,c))
             else {
               val newRank = xr + 1
               Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x),
-                ranks.remove(x).updateAppend(x,newRank), nComponents - 1))
+                ranks.remove(x).updateAppend(x,newRank),c))
             }
         }
     }
