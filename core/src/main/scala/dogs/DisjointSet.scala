@@ -3,7 +3,6 @@ package dogs
 import Predef._
 import cats._
 import cats.instances.all._
-import scala.annotation.tailrec
 
 
 /**
@@ -21,25 +20,19 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
   /**
     * Finds the root parent of a given element.
     */
-  @tailrec
-  def find(u: T)(implicit order: Order[T]): Option[T] = {
-    parents.get(u) match {
-      case None() => None()
-      case Some(v) => if (u == v) Some(v) else find(v)
-    }
-  }
+  def find(u: T)(implicit order: Order[T]): Option[T] =
+    parents.get(u).flatMap(v=> if (u == v) Some(v) else find(v))
 
   /**
     * Given two elements u and v, return Some(find(u),find(v))
     * if find(u) and find(v) are both defined. Otherwise
     * return None().
     */
-  private[this] def getParents(u: T, v: T)(implicit order: Order[T]): Option[(T, T)] = {
-    (find(u), find(v)) match {
-      case (Some(x), Some(y)) => Some((x, y))
-      case _ => None()
-    }
-  }
+  private[this] def getParents(u: T, v: T)(implicit order: Order[T]) : Option[(T,T)] = for {
+    x <- find(u)
+    y <- find(v)
+  } yield (x,y)
+
 
   /**
     * Given two elements u and v, return Some(ranks(u),ranks(v))
@@ -61,14 +54,14 @@ final class DisjointSet[T] private (parents: Map[T,T], ranks: Map[T,Int], nCompo
       case (Some((x, y))) if x == y => Some(this)
       case (Some((x, y))) if x != y =>
         getRanks(x, y) match {
-          case (Some(rank)) =>
-            if (rank._1 < rank._2) {
+          case (Some((xr,yr))) =>
+            if (xr < yr) {
               Some(new DisjointSet[T](parents.remove(x).updateAppend(x, y), ranks, nComponents - 1))
             }
-            else if (rank._1 > rank._2)
+            else if (xr > yr)
               Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x), ranks, nComponents -1))
             else {
-              val newRank = rank._1 + 1
+              val newRank = xr + 1
               Some(new DisjointSet[T](parents.remove(y).updateAppend(y,x),
                 ranks.remove(x).updateAppend(x,newRank), nComponents - 1))
             }
