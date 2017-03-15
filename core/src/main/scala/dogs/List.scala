@@ -246,8 +246,8 @@ sealed abstract class List[A] {
     * Return a List which contains all of the same elements as this List,
     * but in order of smallest to largest according to the implicit `Order`
     */
-  def sorted(implicit ord: Order[A]): List[A] =
-    toNel.cata(_.sorted1, List.empty)
+  def sorted(implicit ord: Order[A]): List[A] = 
+    List.fromIterable(toScalaList.sorted(ord.toOrdering))
 
   /**
     * Return a List which contains all of the same elements as this List,
