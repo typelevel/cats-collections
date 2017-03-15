@@ -17,8 +17,13 @@ class Map[K,V](val set: Set[(K,V)]) {
   /**
    * Map a function on all the values in the Map.
    */
-  def flatMap[B](f: V => Map[K,V])(implicit K: Order[K]): Map[K,V] =
-    new Map(set.flatMap(kv => f(kv._2).set))
+  def flatMap[B](f: V => Map[K,B])(implicit K: Order[K]): Map[K,B] =
+    new Map(set.map(kv =>
+      f(kv._2).get(kv._1).map((kv._1, _))
+    ).flatMap(_ match {
+      case Some(x) => Set(x)
+      case _ => Set.empty
+    }))
 
    /**
    * Fold across all the key/value pairs, associating maximum keys
@@ -142,6 +147,8 @@ object Map extends MapInstances {
 }
 
 trait MapInstances {
+  import scala.util.{Either => SEither, Right => SRight, Left => SLeft}
+
   implicit def eqMap[K: Eq, V: Eq](implicit K: Eq[K], V: Eq[V]): Eq[Map[K,V]] = new Eq[Map[K,V]] {
     // TODO get rid of this once cats has it:
     implicit val tupleEq: Eq[(K,V)] = new Eq[(K,V)] {
@@ -151,5 +158,27 @@ trait MapInstances {
 
     override def eqv(l: Map[K,V], r: Map[K,V]): Boolean =
       Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
+  }
+
+
+  implicit def flatMapMap[K](implicit K: Order[K]) = new FlatMap[ Map[K,?]] {
+    private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
+
+    override def flatMap[A,B](fa: Map[K,A])(f: A => Map[K,B]) : Map[K,B] = fa flatMap f
+
+    override def map[A,B](fa: Map[K,A])(f: A => B) : Map[K,B] = fa map f
+
+    override def tailRecM[A,B](a: A)(f: A => Map[K,SEither[A,B]]) : Map[K,B] = {
+      @tailrec def extract(kv : (K, SEither[A,B])) : Set[(K,B)] = kv._2 match {
+        case SLeft(a) =>
+          f(a).get(kv._1) match {
+            case Some(x) => extract(kv._1 -> x)
+            case _ => Set.empty[(K,B)]
+          }
+        case SRight(b) =>
+          Set[(K,B)](kv._1 -> b)
+      }
+      new Map[K,B](f(a).set.flatMap(extract))
+    }
   }
 }

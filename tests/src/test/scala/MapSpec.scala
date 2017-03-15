@@ -5,6 +5,8 @@ import Predef._
 import cats._
 import cats.implicits._
 import dogs.tests.arbitrary._
+import cats.laws.discipline._
+
 
 class MapSpec extends DogsSuite with ArbitraryList {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
@@ -63,7 +65,16 @@ class MapSpec extends DogsSuite with ArbitraryList {
 
     toSet(m map f) should contain theSameElementsAs (sm map f2).to[SSet]
   })
+
+  test("flatMap works")(forAll {(xs : SSet[(String,Int)]) =>
+    val f: Int => Map[String,Int] = _ => fromSet(xs) map (_ + 1)
+    val f2: ((String,Int)) => SSet[(String,Int)] = kv => SSet(kv._1 -> (kv._2 + 1))
+    val m = fromSet(xs)
+    val sm = fromSetS(xs)
+    toSet(m flatMap f) should contain theSameElementsAs (sm flatMap f2).to[SSet]
+  })
 }
+
 
 class MapShow extends DogsSuite {
 
@@ -78,4 +89,9 @@ class MapShow extends DogsSuite {
 
     map.show should be("{[1-->2]\n[2-->3]\n}")
   }
+}
+
+class MapLaws extends SlowDogsSuite with ArbitrarySet with ArbitraryMap  {
+  implicit val iso = CartesianTests.Isomorphisms.invariant[Map[String, ?]]
+  checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)]) 
 }
