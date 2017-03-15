@@ -12,6 +12,7 @@ import cats.kernel.laws.{GroupLaws, OrderLaws}
 
 class ListSpec extends DogsSuite {
   import List._
+  import Option._
 
 //  implicit val xx: Eq[Int] = implicitly[Eq[Int]]
 
@@ -113,15 +114,24 @@ class ListSpec extends DogsSuite {
       xs.drop(n).toScalaList should be (xs.toScalaList.drop(n))
     })
 
+  @tailrec final def testSorted[A](l: List[A], last: Option[A])(implicit or: Order[A]): Boolean = l match {
+    case El() => true
+    case Nel(h,t) =>
+      if(last.cata(or.gteqv(h, _), true))
+        testSorted(t,some(h))
+      else
+        false
+  }
+
   test("sorted")(
     forAll { (xs: List[Int]) =>
-      xs.sorted.toScalaList should be (xs.toScalaList.sorted)
+      testSorted(xs.sorted, none)
     }
   )
 
   test("sortBy")(
     forAll { (xs: List[String]) =>
-      xs.sortBy(_.length).toScalaList should be (xs.toScalaList.sortBy(_.length))
+      testSorted(xs.sortBy(_.length), none)
     }
   )
 
