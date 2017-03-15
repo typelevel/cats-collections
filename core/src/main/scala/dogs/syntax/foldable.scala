@@ -31,9 +31,8 @@ final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
     }
   }
 
-  def toStreaming(fa: F[A]): Streaming[A] =
+  def toStreaming: Streaming[A] =
     F.foldRight(fa, Eval.now(Streaming.empty[A])){ (a, ls) =>
       Eval.now(Streaming.cons(a, ls))
     }.value
-
 }
