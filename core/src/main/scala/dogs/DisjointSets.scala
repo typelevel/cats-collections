@@ -18,32 +18,35 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
     * )
     */
   def union(a: T, b: T): (DisjointSets[T], Boolean) = {
+    import DisjointSets.{find => findSt, get}
 
     val result: Option[DisjointSets[T]] = {
-      val (phase1, opa) = find(a)
       for {
-        pa <- opa
-        (phase2, opb) = phase1.find(b)
-        pb <- opb
+        opa <- findSt(a) // Find `a` parent's label, track path compression
+        opb <- findSt(b) // Find `b` parent's label, track path compression
+        dsets <- get // Get the state (the compressed [[DisjointSets]])
+      } yield for {
+        pa <- opa // If `a` was part of the collection
+        pb <- opb // As well as `b`...
+        flatEntries = dsets.entries
+        paEntry <- flatEntries get pa //then their ranks are recovered...
+        pbEntry <- flatEntries get pb
       } yield {
-        val Some(((parent, parentEntry), (child, childEntry))) = {
-          import phase2.{entries => flatEntries}
-          for {
-            paEntry <- flatEntries get pa
-            pbEntry <- flatEntries get pb
-          } yield {
-            val parent_child = (pa -> paEntry, pb -> pbEntry)
-            if(paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
-          }
+        val ((parent, parentEntry), (child, childEntry)) = {
+          //... so it is possible to determine which one should be placed below
+          //the other minimizing the resulting tree depth
+          val parent_child = (pa -> paEntry, pb -> pbEntry)
+          if(paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
         }
         new DisjointSets[T] (
-          phase2.entries ++ Map(
+          flatEntries ++ Map(
             child -> childEntry.copy(parent = parent),
             parent -> parentEntry.copy(rank = scala.math.max(parentEntry.rank, childEntry.rank+1))
           )
         )
       }
-    }
+    }.runA(this).value
+
     result.getOrElse(this) -> result.isDefined
 
   }
@@ -61,7 +64,7 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
     * @return (new state, 'None' if the value doesn't exist, Some(label) otherwise)
     */
   def find(v: T): (DisjointSets[T], Option[T]) = {
-    val newState = entries.get(v) map { _ =>
+    val newState = entries.get(v) flatMap { _ =>
       flattenBranch(v)
     }
     (newState.getOrElse(this), newState flatMap { st => st.entries.get(v).map(_.parent) })
@@ -89,12 +92,13 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
         (newSt, acc + (label -> updatedSet))
     }
 
-  private def flattenBranch(label: T, toPropagate: Map[T, Entry[T]] = Map.empty): DisjointSets[T] =
-    entries.get(label) match {
-      case Some(Entry(_, parent)) if parent == label =>
-        val newEntries = entries ++ toPropagate
-        new DisjointSets(newEntries)
-      case Some(entry @ Entry(_, parent)) => flattenBranch(parent, toPropagate + (label -> entry))
+  private def flattenBranch(label: T, toPropagate: Map[T, Entry[T]] = Map.empty): Option[DisjointSets[T]] =
+    entries.get(label) flatMap {
+      case Entry(_, parent) if parent == label =>
+        val newEntries = entries ++ toPropagate.map(_.copy(parent = label))
+        Some(new DisjointSets(newEntries))
+      case entry @ Entry(_, parent) =>
+        flattenBranch(parent, toPropagate + (label -> entry))
     }
 
 }
@@ -121,6 +125,10 @@ trait DisjointSetsStates {
 
   def toSets[T] = State[DisjointSets[T], Map[T, Set[T]]](
     disjointSets => disjointSets.toSets
+  )
+
+  def get[T] = State[DisjointSets[T], DisjointSets[T]](
+    disjointSets => disjointSets -> disjointSets
   )
 
 }
