@@ -2,6 +2,7 @@ package dogs
 
 import Predef._
 import cats._
+import cats.data.State
 
 import DisjointSets.Entry
 
@@ -98,11 +99,28 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
 
 }
 
-object DisjointSets {
+object DisjointSets extends DisjointSetsStates {
 
   def apply[T : Order](labels: T*): DisjointSets[T] = new DisjointSets[T](
     Map(labels.map(l => l -> Entry(0, l)):_*)
   )
 
   private case class Entry[T](rank: Int, parent: T)
+}
+
+
+trait DisjointSetsStates {
+
+  def find[T](v: T) = State[DisjointSets[T], Option[T]](
+    disjointSets => disjointSets.find(v)
+  )
+
+  def union[T](a: T, b: T) = State[DisjointSets[T], Boolean](
+    disjointSets => disjointSets.union(a, b)
+  )
+
+  def toSets[T] = State[DisjointSets[T], Map[T, Set[T]]](
+    disjointSets => disjointSets.toSets
+  )
+
 }
