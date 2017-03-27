@@ -3,7 +3,7 @@ layout: default
 title:  "DisjointSets"
 source: "core/src/main/scala/dogs/DisjointSets.scala"
 ---
-#Disjoint Sets
+# Disjoint Sets
 
 `DisjointSets` provides a purely functional implementation for the union-find collection. 
 An Union-Find (aka Disjoint Sets) structure is a set of sets where the intersection of any two sets is empty.
@@ -17,7 +17,7 @@ This constraint opens the way to fast unions (`O(1)` average). That makes of Dis
  
 Initially, it is a flat collection where each element forms its own, size 1, disjoint set.
 New elements are added as new disjoint sets and union operations can be used to fusion these sets.
-The joined sets are represented by one of its elements known as *label* or *root*.
+The joined sets are represented by one of its elements known as ***label* or *root***. 
 
 Fast fusion of disjoints sets is key and its provided through parenthood relations. Sets `labels` are always the 
 top-level ancestor.
@@ -26,7 +26,7 @@ The following example shows 3 disjoint sets of size 1.
 
 ![](http://i.imgur.com/h8ddOkT.png)
 
-Whereas, in the next one, `C` is the parent of the `{A, B, C}` set which the single set in the DisjointSets structure. 
+Whereas, in the next one, `C` is the parent of the `{A, B, C}` set which is the only set in the DisjointSets structure. 
 
 ![](http://i.imgur.com/V71Z0eS.png)
 
@@ -41,7 +41,7 @@ Whereas, in the next one, `C` is the parent of the `{A, B, C}` set which the sin
 ![](http://i.imgur.com/7uunsNJ.png)
 
 
-- `dsets.find(v)` (find): Retrieves the `Some(label)` if `v` belongs to the set with that label or `None` if the 
+- `dsets.find(v)` (find): Retrieves `Some(label)` if `v` belongs to the set with that label or `None` if the 
 value is not part of `dsets`.
 
 - `dsets.toSets`: Gets a `Map[T, Set[T]]` representation of the DisjointSets contents where the key is each set 
@@ -66,11 +66,14 @@ val label2disjointset: Map[Int, Set[Int]] = operations.runA(DisjointSets(1,2,3,4
 
 ## Structure and performance 
 
-The main idea is that each element starts as a disjoint set itself. A set with two or more elements is always the result of one or several _union_ operations. Thus, a multi-element set is composed of sets of just one element, call them components. Each component has to fields:
+The main idea is that each element starts as a disjoint set itself. A set with two or more elements is always the result of one or several _union_ operations. Thus, a multi-element set is composed of sets of just one element, call them components. 
+
+Each component has 3 fields:
 
 - One for the value of the element it contains.
-- A reference pointing to another component of the same composed multi-element set.
-Three one-element disjoint sets.
+- A reference pointing to another component of the same composed multi-element set. Or itself if it constitutes a single element set.
+- An estimation of how many components/nodes compose its descendants. This estimation is known as **rank**.
+
 
 Let’s assume that the next operations are executed:
 
@@ -89,8 +92,8 @@ operations, the resulting structure after (1) and (2) is:
 ![](http://i.imgur.com/9srckn2.png)
 
 Each set is a tree represented by its _root_. Therefore, looking for the set an element belongs to is not more than 
-following its parental relations until the root of the tree is reached. So the shallower the tree is the smaller is 
-the number of operations to be performed in the lookup.
+following its parental relations until the root of the tree is reached. So the shallower the tree is, the fewer
+the operations to be performed in the lookup are.
 
 On the other hand, the operation where two sets are merged (_union_) consist on making one of the two trees to become a 
 branch of the other:
@@ -110,11 +113,10 @@ jumps from the deepest leaf to its tree root. That is ![](http://i.imgur.com/DR5
 
 There are two heuristics designed to keep these tress low:
 
-- Union by rank:  Avoids incrementing ![](http://i.imgur.com/DR5IUP3.png) whenever possible. The idea is for each 
+- **Union by rank:**  Avoids incrementing ![](http://i.imgur.com/DR5IUP3.png) whenever possible. The idea is for each 
 value node to store how many levels have the sub-tree that they are ancestor of (call it rank). All new elements 
 have a rank value of 0 (the _root_ is the first level). This way, whenever an _union_ operation is 
-executed, is the shorter tree the one that becomes a branch of the other and, therefore, ![](http://i.imgur
-.com/DR5IUP3.png) does not increase.
-- Path compression: In this case the aim is to take advantage of the jumps made in _find_ operation. Whenever a tree 
+executed, is the shorter tree the one that becomes a branch of the other and, therefore, ![](http://i.imgur.com/DR5IUP3.png) does not increase.
+- **Path compression:** In this case the aim is to take advantage of the jumps made in _find_ operation. Whenever a tree 
 _root_ is found it is assigned to every node in the search path. This is a purely functional data structure so the 
-changtes are reflected in a new copy of it which forms part of the operation result.
+changes are reflected in a new copy of it which forms part of the operation result.
