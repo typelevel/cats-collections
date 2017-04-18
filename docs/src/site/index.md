@@ -32,10 +32,6 @@ Here is a list of the current structures present in dogs:
 - [Set](tut/set)       - A tree based, ordered, extensional set
 - Streaming - A stream of values with a lazily evaluated tail
 
-## Predef
-
-dogs offers an alternate Predef 
-
 ## Testing
 
 In some circumstances, we want to compare two List[A] without converting

@@ -17,8 +17,6 @@ import cats.implicits._
 @State(Scope.Benchmark)
 class DietRandomizeBench extends BigNumberLists{
 
-//  import dogs.Predef._
-
   implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 
   @Benchmark

@@ -1,7 +1,6 @@
 package dogs
 package tests.arbitrary
 
-import Predef._
 import org.scalacheck.{Gen, Arbitrary, Shrink}, Arbitrary.arbitrary
 import org.scalacheck.util.Buildable
 

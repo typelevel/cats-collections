@@ -15,8 +15,6 @@ import cats.implicits._
 @State(Scope.Benchmark)
 class DietBenchSearch {
 
-  import dogs.Predef._
-
   implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 
   var diet = Diet.empty[Int]

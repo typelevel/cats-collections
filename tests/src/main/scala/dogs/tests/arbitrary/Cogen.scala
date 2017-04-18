@@ -1,8 +1,6 @@
 package dogs
 package tests.arbitrary
 
-import cats.Foldable
-
 import org.scalacheck._
 import rng.Seed
 

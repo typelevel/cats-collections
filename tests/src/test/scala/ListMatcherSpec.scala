@@ -5,7 +5,6 @@
 package dogs
 package tests
 
-import dogs.Predef._
 import cats.implicits._
 
 //forcing rebuild

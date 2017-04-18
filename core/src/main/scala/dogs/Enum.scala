@@ -1,7 +1,5 @@
 package dogs
 
-import Predef._
-
 /**
  * Represent discrete operations that can be performed on A
  */

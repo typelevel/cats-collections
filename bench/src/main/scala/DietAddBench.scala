@@ -5,7 +5,6 @@
 package dogs
 package bench
 
-import dogs.Predef._
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.util.Random
 import scalaz.{IList, Diev}
@@ -18,10 +17,10 @@ class BestCaseRangesList {
   var n: Int = _
 
   var scalazRanges: IndexedSeq[scala.Range] = _
-  var dogRanges: IndexedSeq[Range[Predef.Int]] = _
+  var dogRanges: IndexedSeq[Range[Int]] = _
 
   var scalazValues: IndexedSeq[Int] = _
-  var dogValues: IndexedSeq[Predef.Int] = _
+  var dogValues: IndexedSeq[Int] = _
 
   def getBestCaseDataScalaz: scala.IndexedSeq[scala.Range] = {
     for (x <- scala.Range(1, n)
@@ -29,7 +28,7 @@ class BestCaseRangesList {
     ) yield scala.Range(x, x + 10)
   }
 
-  def getBestCaseDataDogs: scala.IndexedSeq[Range[Predef.Int]] = {
+  def getBestCaseDataDogs: scala.IndexedSeq[Range[Int]] = {
     for (x <- scala.Range(1, n)
          if (x % 10 == 0)
     ) yield Range(x, x + 10)

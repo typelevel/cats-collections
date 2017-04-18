@@ -4,9 +4,7 @@
 package dogs
 package tests
 
-import cats._
 import org.scalatest.matchers.{MatchResult, Matcher}
-import dogs.Predef._
 
 trait DogMatcher {
 

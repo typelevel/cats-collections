@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import dogs.Predef._
 import cats.implicits._
 
 import scala.collection.Iterable

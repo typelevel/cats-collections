@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import Predef._
 import dogs.tests.arbitrary.all._
 import cats.implicits._
 import cats.laws.discipline._
@@ -29,9 +28,9 @@ class VectorTest extends SlowDogsSuite {
   }
  */
   test("mapAccumLeft") {
-    forAll { xs: Vector[dogs.Predef.Int] =>
-      val f = (_: dogs.Predef.Int) + 1
-      xs.mapAccumLeft(Vector[dogs.Predef.Int](), (c: Vector[dogs.Predef.Int], a) => (c :+ a, f(a))) should ===((xs, xs.map(f)))
+    forAll { xs: Vector[Int] =>
+      val f = (_: Int) + 1
+      xs.mapAccumLeft(Vector[Int](), (c: Vector[Int], a) => (c :+ a, f(a))) should ===((xs, xs.map(f)))
     }
   }
 

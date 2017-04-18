@@ -1,12 +1,9 @@
 package dogs
 
-import Predef._
+import Eval._
 import scala.NoSuchElementException
 import scala.reflect.ClassTag
-import scala.annotation.tailrec
 import scala.collection.mutable
-import cats.data.Ior
-import cats._, cats.Eval._
 import cats.implicits._
 
 /**
@@ -807,7 +804,7 @@ object Streaming extends StreamingInstances {
    */
 
   def fromIteratorUnsafe[A](it: scala.collection.Iterator[A]): Streaming[A] =
-    if (it.hasNext) Cons(it.next, Later(fromIteratorUnsafe(it))) else Empty()
+    if (it.hasNext) Cons(it.next, later(fromIteratorUnsafe(it))) else Empty()
 
 
   /**
@@ -927,7 +924,7 @@ private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
         //
         // (We don't worry about internal laziness because traverse
         // has to evaluate the entire stream anyway.)
-        foldRight(fa, Later(init)) { (a, lgsb) =>
+        foldRight(fa, later(init)) { (a, lgsb) =>
           lgsb.map(gsb => G.map2(f(a), gsb) { (a, s) => Streaming.cons(a, s) })
         }.value
       }

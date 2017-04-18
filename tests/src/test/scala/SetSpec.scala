@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import dogs.Predef._
 import dogs.tests.arbitrary._
 import scala.Array
 import scala.Predef.intArrayOps

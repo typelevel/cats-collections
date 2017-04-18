@@ -1,9 +1,5 @@
 package dogs
 
-import Predef._
-import cats._
-import cats.{Eq,Eval}
-
 /**
   * A Double-ended queue, based on the Bankers Double Ended Queue as
   * described by C. Okasaki in "Purely Functional Data Structures"
@@ -17,11 +13,10 @@ import cats.{Eq,Eval}
   * This queue maintains an invariant that whenever there are at least
   * two elements in the queue, neither the front list nor back list
   * are empty.  In order to maintain this invariant, a dequeue from
-  * either side which would leave that side empty constructs the
+ * either side which would leave that side empty constructs the
   * resulting queue by taking elements from the opposite side
   */
 sealed abstract class Dequeue[A] {
-
   def isEmpty: Boolean
 
   def frontOption: Option[A]

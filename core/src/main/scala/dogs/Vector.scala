@@ -34,9 +34,7 @@
 
 package dogs
 
-import cats.{Applicative, CoflatMap, Eq, Eval, MonadCombine, Monoid, Order, Show, Traverse}
 import cats.data.OneAnd
-import cats.syntax.eq._
 
 import scala.Array
 import scala.math.{max, min}
@@ -44,8 +42,6 @@ import scala.math.{max, min}
 import scala.collection.immutable.{Vector => SVector}
 
 import java.lang.IndexOutOfBoundsException
-
-import Predef._
 
 /**
  * A straight port of Clojure's <code>PersistentVector</code> class (with some

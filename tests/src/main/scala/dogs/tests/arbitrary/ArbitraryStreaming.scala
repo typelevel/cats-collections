@@ -1,10 +1,8 @@
 package dogs
 package tests.arbitrary
 
-import Predef._
 import org.scalacheck.{Gen, Arbitrary}
 import Arbitrary.arbitrary
-import cats.Eval
 
 trait ArbitraryStreaming {
   import cats.laws.discipline.arbitrary._

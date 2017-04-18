@@ -1,9 +1,6 @@
 package dogs
 
-import Predef._
 import scala.util.control.NonFatal
-import cats._
-import cats.data._
 
 /** An optional value
  *

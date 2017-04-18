@@ -1,8 +1,6 @@
 package dogs
 package syntax
 
-import Predef._
-
 trait RangeSyntax {
   implicit def rangeSyntax[A](a: A): RangeOps[A] = new RangeOps(a)
 }

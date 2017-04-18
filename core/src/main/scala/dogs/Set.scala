@@ -1,9 +1,6 @@
 package dogs
 
-import Predef._
-import cats._
 import cats.implicits._
-import scala.annotation.tailrec
 
 /**
  * An immutable, ordered, extensional Set

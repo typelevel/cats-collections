@@ -1,12 +1,9 @@
 package dogs
 package tests
 
-import Predef._
 import java.lang.System
 
 import catalysts.Platform
-
-import cats._
 
 import org.scalatest.{FunSuite, Matchers, BeforeAndAfterAll}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}

@@ -1,8 +1,6 @@
 package dogs
 package tests
 
-import dogs.Predef._
-
 class RangeTest extends DogsSuite {
 
   import Range._

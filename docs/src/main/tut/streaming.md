@@ -58,7 +58,6 @@ in most of the ways you use other Scala collections:
 
 ```tut
 import dogs.Streaming
-import dogs.Predef._
 import dogs.syntax.streaming._
 
 val ns = Streaming(1, 10, 100, 1000)

@@ -33,6 +33,7 @@ scalacOptions := Seq(
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Yno-predef")
+  "-Ysysdef", "_",
+  "-Ypredef", "plankton.Phyto._",
+  "-Xfuture")
 

@@ -41,7 +41,7 @@ In the worst case scenario, there is a hole of size one (1) between each node an
 Start by creating an empty Diet:
 
 ```tut
-import dogs._, dogs.Predef._, cats._, cats.implicits._, dogs.syntax.all._
+import dogs._, cats._, cats.implicits._, dogs.syntax.all._
 
 val d: Diet[Int] = Diet.empty
 d.isEmpty

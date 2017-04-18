@@ -5,7 +5,6 @@
 package dogs
 
 import cats._
-import dogs.Predef._
 
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
@@ -197,7 +196,7 @@ object Heap {
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {
-    override def show(f: Heap[A]): Predef.String = f.toList() match {
+    override def show(f: Heap[A]): String = f.toList() match {
       case El()       => "[]"
       case Nel(h, t)  => t.foldLeft("[" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "]"
     }

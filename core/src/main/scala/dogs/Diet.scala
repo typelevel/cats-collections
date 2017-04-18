@@ -1,8 +1,5 @@
 package dogs
 
-import cats._
-import dogs.Predef._
-
 /**
  * Discrete Interval Encoding Tree (Diet).
  * It stores subsets of types having a total order, a predecessor and a successor function described by Enum[A]
@@ -295,15 +292,15 @@ object Diet {
   }
 
   private [dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
+    case EmptyDiet() => throw new java.lang.Exception("can't happen")
     case DietNode(Range(x, y), l, EmptyDiet())   =>  (l, (x, y))
     case DietNode(rng, l, r)             =>  {
       val (d, i) = splitMax(r)
-
       (DietNode(rng,l, d), i)
     }
   }
 
   implicit def dietShowable[A](implicit s: Show[Range[A]]): Show[Diet[A]] = new Show[Diet[A]] {
-    override def show(f: Diet[A]): Predef.String = f.foldLeftRange("{")((str,rng) => str + " " + s.show(rng)) + " }"
+    override def show(f: Diet[A]): String = f.foldLeftRange("{")((str,rng) => str + " " + s.show(rng)) + " }"
   }
 }

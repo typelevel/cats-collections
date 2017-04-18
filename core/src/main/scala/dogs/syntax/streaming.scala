@@ -1,7 +1,6 @@
 package dogs
 package syntax
 
-import cats.Eval
 /**
  * Contains various Stream-specific syntax.
  *

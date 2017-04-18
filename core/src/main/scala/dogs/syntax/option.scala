@@ -1,9 +1,6 @@
 package dogs
 package syntax
 
-import Predef._
-import cats.data.{Validated,ValidatedNel}
-
 trait OptionSyntax {
   def none[A] = None()
   implicit def optionIdSyntax[A](a: A): OptionIdOps[A] = new OptionIdOps(a)

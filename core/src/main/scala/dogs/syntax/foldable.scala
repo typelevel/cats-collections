@@ -1,9 +1,6 @@
 package dogs
 package syntax
 
-import Predef._
-import cats.{Eval,Foldable,Order,Semigroup}
-
 trait FoldableSyntax {
 
   implicit def foldableSyntax[F[_]: Foldable, A](fa: F[A]): FoldableOps[F,A] =

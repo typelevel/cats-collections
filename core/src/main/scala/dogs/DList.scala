@@ -1,6 +1,5 @@
 package dogs
 
-import Predef._
 import cats._, cats.Eval._
 
 /**

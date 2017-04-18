@@ -1,10 +1,8 @@
 package dogs
 package tests
 
-import Predef._
 import dogs.tests.arbitrary._
 import dogs.tests.arbitrary.cogen._
-import cats._
 import cats.implicits._
 import cats.laws.discipline._
 import cats.kernel.laws._

@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import Predef._
 import dogs.tests.arbitrary.all._
 import cats._
 import cats.implicits._

@@ -1,8 +1,5 @@
 package dogs
 
-import Predef._
-import cats._
-
 /**
  * A tree based immutable Map.
  */
@@ -135,7 +132,7 @@ object Map extends MapInstances {
   def empty[K,V]: Map[K,V] = new Map(Set.empty)
 
   implicit def toShow[K, V](implicit sk: Show[K], sv: Show[V]): Show[Map[K, V]] = new Show[Map[K, V]] {
-    override def show(f: Map[K, V]): scala.Predef.String = {
+    override def show(f: Map[K, V]): String = {
       val pairs = f.toList
 
       val result = pairs.foldLeft("{"){(b, p) => b + "[" + sk.show(p._1) + "-->" + sv.show(p._2) + "]\n"} + "}"

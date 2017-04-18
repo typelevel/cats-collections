@@ -1,8 +1,6 @@
 package dogs
 package tests
 
-import Predef._
-
 class OptionSpec extends DogsSuite {
   import Option._
 

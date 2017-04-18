@@ -2,10 +2,11 @@ import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   name := "dogs",
+  scalaOrganization in ThisBuild := "org.typelevel",
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.1",
-  crossScalaVersions := Seq("2.11.7", scalaVersion.value)
-  //resolvers in Global += Resolver.sonatypeRepo("snapshots")
+  scalaVersion in ThisBuild := "2.12.1",
+  crossScalaVersions := Seq("2.11.7", scalaVersion.value),
+  resolvers += Resolver.bintrayRepo("stew", "plankton")
 )
 
 lazy val dogs = project.in(file("."))
@@ -74,6 +75,7 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
+    "io.github.stew"                 %% "zoo"      % "0.0.3-SNAPSHOT",
     "org.typelevel"                  %% "cats-core"  % "0.9.0",
     "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
     "org.typelevel"                  %% "machinist"  % "0.6.1",
@@ -197,8 +199,9 @@ lazy val commonScalacOptions = Seq(
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
   "-Xfuture",
-  "-Yno-imports",
-  "-Yno-predef")
+  "-Ysysdef", "_",
+  "-Ypredef", "plankton.Zoo._"
+)
 
 lazy val warnUnusedImport = Seq(
   scalacOptions ++= {

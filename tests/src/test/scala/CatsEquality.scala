@@ -1,9 +1,6 @@
 package dogs
 package tests
 
-import Predef._
-import cats._
-
 import org.scalactic._
 import TripleEqualsSupport.AToBEquivalenceConstraint
 import TripleEqualsSupport.BToAEquivalenceConstraint

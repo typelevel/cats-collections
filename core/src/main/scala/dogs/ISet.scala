@@ -1,7 +1,4 @@
 package dogs
-import Predef._
-
-import cats._
 
 /**
  * An intensional set, which is a set which instead of enumerating its

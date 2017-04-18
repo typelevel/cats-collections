@@ -2,8 +2,6 @@ package dogs
 package tests.arbitrary
 
 import org.scalacheck.{Gen, Arbitrary}
-import cats.Order
-
 
 trait ArbitraryMap extends ArbitrarySet {
 

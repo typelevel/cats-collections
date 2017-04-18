@@ -25,7 +25,7 @@ List(1,2,3,4,5)
 The preferred way to construct an empty list with the `empty` member of the `List` companion object:
 
 ```tut
-import dogs._, Predef._
+import dogs._
 
 val x = List.empty[Int]
 val y: List[Int] = List.empty

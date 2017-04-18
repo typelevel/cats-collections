@@ -23,7 +23,7 @@ source: "core/src/main/scala/Option.scala"
 The preferred method of creating an option is by using the `some` and `none` "smart constructors` on the Option companion object:
 
 ```tut
-import dogs._, dogs.Predef._, Option._
+import dogs._, Option._
 
 val x = some(1)
 val y = none[Int]

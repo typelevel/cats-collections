@@ -1,10 +1,7 @@
 package dogs
 
-import Predef._
-import scala.{inline,Iterable}
-import java.lang.{String,StringBuilder}
-import scala.annotation.{tailrec}
-import cats._
+import scala.Iterable
+import java.lang.StringBuilder
 import cats.kernel.Comparison
 
 /**

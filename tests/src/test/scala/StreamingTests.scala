@@ -1,11 +1,9 @@
 package dogs
 package tests
 
-import Predef._
-
+import Eval._
 import dogs.syntax.streaming._
 import dogs.tests.arbitrary.all._
-import cats._
 import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
@@ -300,11 +298,11 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("isEmpty consistent with fold"){
     forAll { (s: Streaming[Int]) =>
-      s.isEmpty should === (s.fold(Now(true), (_, _) => false))
+      s.isEmpty should === (s.fold(now(true), (_, _) => false))
     }
   }
 
-  implicitly[Arbitrary[(dogs.Predef.Int, cats.Eval[dogs.Streaming[dogs.Predef.Int]]) => dogs.Streaming[dogs.Predef.Long]]]
+  implicitly[Arbitrary[(Int, Eval[dogs.Streaming[Int]]) => dogs.Streaming[Long]]]
 
   implicitly[Arbitrary[(Int,Streaming[Int])]]
   implicitly[Cogen[Streaming[Int]]]
@@ -313,7 +311,7 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("foldStreaming consistent with fold"){
     forAll { (ints: Streaming[Int], longs: Streaming[Long], f: (Int, Eval[Streaming[Int]]) => Streaming[Long]) =>
-      ints.foldStreaming(longs, f) should === (ints.fold(Now(longs), f))
+      ints.foldStreaming(longs, f) should === (ints.fold(now(longs), f))
     }
   }
 
@@ -400,7 +398,7 @@ class AdHocStreamingTests extends DogsSuite {
   }
 
   test("lazy foldRight") {
-    isok(bomb.foldRight(Now(0))((x, total) => total.map(_ + x)))
+    isok(bomb.foldRight(now(0))((x, total) => total.map(_ + x)))
   }
 
   test("lazy peekEmpty") {
@@ -412,7 +410,7 @@ class AdHocStreamingTests extends DogsSuite {
   }
 
   test("lazier ++") {
-    isok(bomb ++ Always(scala.sys.error("ouch"): Streaming[Int]))
+    isok(bomb ++ always(scala.sys.error("ouch"): Streaming[Int]))
   }
 
   test("lazy zip") {
