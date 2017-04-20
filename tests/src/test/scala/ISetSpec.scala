@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import dogs.tests.arbitrary.all._
 import cats.laws.discipline.SerializableTests
 import cats.implicits._
 

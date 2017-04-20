@@ -2,7 +2,7 @@ package dogs
 package tests
 
 import cats._
-import arbitrary.all._
+import cats.instances.list._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.{arbitrary => scarbitrary}
 
@@ -78,7 +78,7 @@ object ListWrapper {
         ListWrapper(M.flatMap(fa.list)(a => f(a).list))
 
       def tailRecM[A, B](a: A)(f: A => dogs.tests.ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
-        ListWrapper(List.listInstance.tailRecM(a)(f andThen (_.list)))
+        ListWrapper(cats.instances.list.catsStdInstancesForList.tailRecM(a)(f andThen (_.list)))
 
       def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
 

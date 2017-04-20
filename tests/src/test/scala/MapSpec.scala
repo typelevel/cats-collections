@@ -6,7 +6,7 @@ import dogs.tests.arbitrary._
 import cats.laws.discipline._
 
 
-class MapSpec extends DogsSuite with ArbitraryList {
+class MapSpec extends DogsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   def fromSet[K: Order,V](s: SSet[(K,V)]): Map[K,V] =
@@ -23,7 +23,7 @@ class MapSpec extends DogsSuite with ArbitraryList {
     val m2 = fromSetS(xs)
 
     xs.forall {
-      case (k,v) => m.containsKey(k) && (m.get(k).toScalaOption == m2.get(k))
+      case (k,v) => m.containsKey(k) && (m.get(k) == m2.get(k))
     } should be (true)
   })
 
@@ -41,7 +41,7 @@ class MapSpec extends DogsSuite with ArbitraryList {
 
     xs.forall {
       case (k,v) =>
-        m.get(k._1).toScalaOption == m2.get(k._1)
+        m.get(k._1) == m2.get(k._1)
     } should be (true)
   })
 

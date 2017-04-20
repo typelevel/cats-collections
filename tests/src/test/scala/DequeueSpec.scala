@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import dogs.tests.arbitrary._
 import dogs.tests.arbitrary.cogen._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
@@ -9,8 +8,7 @@ import scala.{annotation}
 import cats.implicits._
 import cats.laws.discipline._
 
-class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption {
-  import Option._
+class DequeueSpec extends SlowDogsSuite {
   import Dequeue._
 
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
@@ -21,25 +19,25 @@ class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption 
 
    @annotation.tailrec
    final def consL[A](l: List[A], q: Dequeue[A]): Dequeue[A] = l match {
-     case El() => q
-     case Nel(x,xs) => consL(xs, q cons x)
+     case Nil => q
+     case x :: xs => consL(xs, q cons x)
    }
  
    @annotation.tailrec
    final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q uncons match {
-     case None() => acc
+     case None => acc
      case Some((i, q)) => unconsL(q, i :: acc)
    }
  
    @annotation.tailrec
    final def snocL[A](l: List[A], q: Dequeue[A]): Dequeue[A] = l match {
-     case El() => q
-     case Nel(x,xs) => snocL(xs, q snoc x)
+     case Nil => q
+     case x :: xs => snocL(xs, q snoc x)
    }
  
    @annotation.tailrec
    final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q unsnoc match {
-     case None() => acc
+     case None => acc
      case Some((i, q)) => unsnocL(q, i :: acc)
    }
 
@@ -86,11 +84,11 @@ class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption 
     } yield consL(l, snocL(r, Dequeue.empty)))
 
   test("foldLeft")(forAll{ (q: Dequeue[Int]) =>
-    q.foldLeft[List[Int]](List.empty)((xs,x) => Nel(x, xs)) should be (q.toBackStream.toList)
+    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.toBackStream.toList)
   })
 
   test("foldRight")(forAll { (q: Dequeue[Int]) =>
-    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => Nel(x,xs))).value should be (q.toStreaming.toList)
+    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(x :: _)).value should be (q.toStreaming.toList)
   })
 
 

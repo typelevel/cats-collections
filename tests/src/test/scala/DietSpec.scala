@@ -1,8 +1,8 @@
 package dogs
 package tests
 
-import dogs.syntax.range._
 import cats.implicits._
+import dogs.syntax.range._
 import org.scalacheck._
 
 class DietSpec extends DogsSuite {
@@ -28,7 +28,7 @@ class DietSpec extends DogsSuite {
       (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1) | f(r2) | f(r3))
     }
 
-  def render: dogs.List[(Int,Int)] = {
+  def render: List[(Int,Int)] = {
     val adds = List(a1,a2,a3,a4,a5)
     val removes = List(r1,r2,r3)
 
@@ -36,22 +36,22 @@ class DietSpec extends DogsSuite {
       a <- adds
       r <- removes
       l <- (Range(a._1, a._2) - Range(r._1, r._2)) match {
-        case None() => List.empty
-        case Some((l, None())) => List((l.start, l.end))
+        case None => List.empty
+        case Some((l, None)) => List((l.start, l.end))
         case Some((l, Some(r))) => List((l.start, l.end),(r.start, r.end))
       }
     } yield l
   }
 
-  def min: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+  def min: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
     b match {
-      case None() => Some(a._1)
+      case None => Some(a._1)
       case Some(x) => Some(x min a._1)
     })
 
-  def max: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+  def max: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
     b match {
-      case None() => Some(a._2)
+      case None => Some(a._2)
       case Some(x) => Some(x max a._2)
     })
   }

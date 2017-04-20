@@ -1,19 +1,18 @@
 package dogs
 package tests
 
-import dogs.tests.arbitrary._
 import scala.Array
 import scala.Predef.intArrayOps
 import cats.implicits._
 
-class SetSpec extends DogsSuite with ArbitraryList {
+class SetSpec extends DogsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   test("set is always sorted")(forAll { (xs: List[Int]) =>
     val tree = xs.foldLeft(Set.empty[Int])(_ + _)
 
-    val ours: scala.List[Int] = tree.toList.toScalaList
-    val theirs: scala.List[Int] = xs.toScalaList.to[SSet].to[Array].sorted.to[scala.List]
+    val ours: scala.List[Int] = tree.toList
+    val theirs: scala.List[Int] = xs.to[SSet].to[Array].sorted.to[scala.List]
 
     ours should be (theirs)
   })
@@ -27,7 +26,7 @@ class SetSpec extends DogsSuite with ArbitraryList {
   }
 
   test("set is always balanced")(forAll { (xs: List[Int]) =>
-    val tree = Set(xs.toScalaList: _*)
+    val tree = Set(xs: _*)
     balanced(tree) should be(true)
   })
 
@@ -35,7 +34,7 @@ class SetSpec extends DogsSuite with ArbitraryList {
     val tree = Set(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
-    val ours: SSet[Int] = filtered.toList.toScalaList.to[SSet]
+    val ours: SSet[Int] = filtered.toList.to[SSet]
     val theirs: SSet[Int] = xs.collect{ case (i, true) => i }.to[SSet]
 
     ours should be (theirs)

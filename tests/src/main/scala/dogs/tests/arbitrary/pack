@@ -1,0 +1,28 @@
+  /Users/v724000/devel/dogs/tests/src/main/scala/dogs/tests/arbitrary:
+  total used in directory 96 available 105834848
+  drwxr-xr-x 26 v724000 1385651864  884 Apr 18 00:58 .
+  drwxr-xr-x  3 v724000 1385651864  102 Feb  3  2016 ..
+  -rw-r--r--  1 v724000 1385651864  237 Oct 24 09:10 ArbitraryDList.scala
+  -rw-r--r--  1 v724000 1385651864  144 Feb 21  2016 ArbitraryDList.scala~
+  -rw-r--r--  1 v724000 1385651864  165 Feb 21  2016 ArbitraryHeap.scala~
+  -rw-r--r--  1 v724000 1385651864  309 Oct 24 09:10 ArbitraryISet.scala
+  -rw-r--r--  1 v724000 1385651864  334 Apr  9  2016 ArbitraryISet.scala~
+  -rw-r--r--  1 v724000 1385651864  952 Apr 16 10:07 ArbitraryList.notscala
+  -rw-r--r--  1 v724000 1385651864  599 Dec 28  2015 ArbitraryList.scala~
+  -rw-r--r--  1 v724000 1385651864  424 Apr 18 00:57 ArbitraryMap.scala
+  -rw-r--r--  1 v724000 1385651864  342 Mar  2 20:57 ArbitraryOption.scala
+  -rw-r--r--  1 v724000 1385651864   64 Dec 28  2015 ArbitraryOption.scala~
+  -rw-r--r--  1 v724000 1385651864  300 Apr 18 00:57 ArbitrarySet.scala
+  -rw-r--r--  1 v724000 1385651864  912 Apr  9  2016 ArbitrarySet.scala~
+  -rw-r--r--  1 v724000 1385651864  879 Apr 18 00:57 ArbitraryStreaming.scala
+  -rw-r--r--  1 v724000 1385651864  104 Dec 28  2015 ArbitraryStreaming.scala~
+  -rw-r--r--  1 v724000 1385651864  593 Apr 16 10:07 ArbitraryVector.scala
+  -rw-r--r--  1 v724000 1385651864  838 Mar  4  2016 ArbitraryVector.scala~
+  -rw-r--r--  1 v724000 1385651864  270 Apr 18 00:58 Cogen.scala
+  -rw-r--r--  1 v724000 1385651864   18 Oct 27 00:23 Cogen.scala~
+  -rw-r--r--  1 v724000 1385651864  246 Dec 28  2015 ConstArbitrary.scala~
+  -rw-r--r--  1 v724000 1385651864  246 Oct 27 00:35 all.scala
+  -rw-r--r--  1 v724000 1385651864   99 Dec 28  2015 all.scala~
+  -rw-r--r--  1 v724000 1385651864 1292 Mar  3  2016 equality.scala~
+  -rw-r--r--  1 v724000 1385651864  392 Oct 27 00:34 package.scala
+  -rw-r--r--  1 v724000 1385651864   31 Dec 28  2015 package.scala~

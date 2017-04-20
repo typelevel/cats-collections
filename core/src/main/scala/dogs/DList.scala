@@ -1,6 +1,7 @@
 package dogs
 
-import cats._, cats.Eval._
+import cats.instances.list._
+import Eval._
 
 /**
  * A "difference list" - A List like structure with O(1) appends.
@@ -39,8 +40,8 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
    */
   def uncons[B](z: Eval[B], f: (A, DList[A]) => Eval[B]): Eval[B] =
     run(List.empty) flatMap {
-      case El() => z
-      case h Nel t => f(h, DList(t))
+      case Nil => z
+      case h :: t => f(h, DList(t))
     }
 
   /**
@@ -52,21 +53,21 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
    * Get the first element of the list, if any.
    * O(n) where n is the number of append operations in this DList
    */
-  def headOption: Option[A] = uncons[Option[A]](now(Option.none),(x, _) => now(Some(x))).value
+  def headOption: Option[A] = uncons[Option[A]](now(None),(x, _) => now(Some(x))).value
 
   /**
    * Get the tail of the list, if any.
    * O(n) where n is the number of append operations in this DList
    */
   def tailOption: Option[DList[A]] =
-    uncons[Option[DList[A]]](now(Option.none), (_, y) => now(Some(y))).value
+    uncons[Option[DList[A]]](now(None), (_, y) => now(Some(y))).value
 
   /**
    * Tests whether list is empty.
    * O(n) where n is the number of append operations in this DList
    * which is a bit weirdly expensive
    */
-  def isEmpty: Boolean = headOption.isNone
+  def isEmpty: Boolean = headOption.isEmpty
 
   def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
     run(List.empty).flatMap( _.foldRight(b)(f))

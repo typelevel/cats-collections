@@ -10,7 +10,7 @@ import scala.collection.Iterable
  */
 class HeapSpec extends DogsSuite {
   implicit class IterableOps[A](as: Iterable[A]) {
-    def toScalaList: List[A] = List.fromIterable(as)
+    def toScalaList: List[A] = as.toList
   }
 
   test("sorted")(
@@ -20,7 +20,7 @@ class HeapSpec extends DogsSuite {
 
       var heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-      val exp = dogs.List.fromIterable(set)
+      val exp = set.toList
 
       heap.toList should matchToSorted(exp)
 

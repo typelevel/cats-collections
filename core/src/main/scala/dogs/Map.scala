@@ -1,5 +1,8 @@
 package dogs
 
+import cats.instances.option._
+import scala.collection.mutable.ListBuffer
+
 /**
  * A tree based immutable Map.
  */
@@ -78,9 +81,9 @@ class Map[K,V](val set: Set[(K,V)]) {
    * O(N)
    */
   def toList: List[(K,V)] = {
-    val lb = new ListBuilder[(K,V)]
+    val lb = new ListBuffer[(K,V)]
     this.foldLeft(()){(_,kv) => val _ = lb += kv}
-    lb.run
+    lb.toList
   }
 
   /**

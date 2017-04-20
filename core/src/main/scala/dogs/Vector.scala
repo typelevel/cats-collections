@@ -197,7 +197,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[A] = {
       if (i >= length) {
-        None()
+        None
       } else {
         val a = apply(i)
 
@@ -245,7 +245,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
    * Safe dereference operation.  Slower than apply due to the boxing into Option.
    */
   def get(i: Int): Option[A] =
-    if (i >= 0 && i < length) Some(this(i)) else None()
+    if (i >= 0 && i < length) Some(this(i)) else None
 
   def groupBy[K](f: A => K)(implicit ev: Order[K]): Map[K, Vector[A]] = {
     foldLeft(Map.empty[K, Vector[A]]) { (m, a) =>
@@ -260,7 +260,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def headOption: Option[A] =
-    if (length > 0) Some(apply(0)) else None()
+    if (length > 0) Some(apply(0)) else None
 
   def indexOf(a: A)(implicit ev: Eq[A]): Option[Int] =
     indexWhere { _ === a }
@@ -269,7 +269,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(offset: Int): Option[Int] = {
       if (offset + that.length > length) {
-        None()
+        None
       } else {
         if (matches(that, offset))
           Some(offset)
@@ -285,7 +285,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[Int] = {
       if (i >= length) {
-        None()
+        None
       } else {
         if (f(apply(i)))
           Some(i)
@@ -298,7 +298,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def initOption: Option[Vector[A]] =
-    if (isEmpty) None() else Some(pop)
+    if (isEmpty) None else Some(pop)
 
   def inits: Vector[Vector[A]] = {
     @tailrec
@@ -336,7 +336,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(offset: Int): Option[Int] = {
       if (offset < 0) {
-        None()
+        None
       } else {
         if (matches(that, offset))
           Some(offset)
@@ -352,7 +352,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[Int] = {
       if (i < 0) {
-        None()
+        None
       } else {
         if (f(apply(i)))
           Some(i)
@@ -365,7 +365,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def lastOption: Option[A] =
-    if (isEmpty) None() else Some(this(length - 1))
+    if (isEmpty) None else Some(this(length - 1))
 
   def map[B](f: A => B): Vector[B] =
     foldLeft(Vector.empty[B]) { _ :+ f(_) }
@@ -486,7 +486,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
 
     if (length <= 0)
-      None()
+      None
     else
       Some(inner(1, this(0)))
   }
@@ -501,7 +501,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
 
     if (length <= 0)
-      None()
+      None
     else
       Some(inner(length - 2, this(length - 1)))
   }
@@ -628,7 +628,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def tailOption: Option[Vector[A]] = {
     if (length == 0)
-      None()
+      None
     else
       Some(this drop 1)
   }
@@ -676,7 +676,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def toScalaVector: SVector[A] = foldRight[SVector[A]](Eval.now(SVector.empty))((a,fa) => fa.map(a +: _)).value
 
-  def toList: List[A] = foldRight(Eval.now(El[A]))((a,fa) => fa.map( a :: _ )).value
+  def toList: List[A] = foldRight[List[A]](Eval.now(Nil))((a,fa) => fa.map( a :: _ )).value
 
   def toNel: Option[Nel[A]] = toList.toNel
 
@@ -755,7 +755,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
  */
 object :+ {
   def unapply[A](vec: Vector[A]): Option[(Vector[A], A)] =
-    if (vec.length > 0) Some((vec.pop, vec(vec.length - 1))) else None()
+    if (vec.length > 0) Some((vec.pop, vec(vec.length - 1))) else None
 }
 
 object Vector extends VectorInstances {

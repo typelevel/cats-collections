@@ -1,5 +1,6 @@
 package dogs
 
+import scala.collection.immutable.List
 import cats.implicits._
 
 /**
@@ -56,7 +57,7 @@ sealed abstract class Set[A] {
     }
 
     this match {
-      case BTNil() => None()
+      case BTNil() => None
       case Branch(a, l, _) => Some(loop(l, a))
     }
   }
@@ -73,7 +74,7 @@ sealed abstract class Set[A] {
     }
 
     this match {
-      case BTNil() => None()
+      case BTNil() => None
       case Branch(a, _, r) => Some(loop(r, a))
     }
   }
@@ -104,7 +105,7 @@ sealed abstract class Set[A] {
    * O(log n)
    */
   def find(pred: A => Boolean): Option[A] = this match {
-    case BTNil() => None()
+    case BTNil() => None
     case Branch(v, l, r) =>
       l.find(pred) orElse (if(pred(v)) Some(v) else r.find(pred))
   }
@@ -154,7 +155,7 @@ sealed abstract class Set[A] {
       case Branch(a, l, r) =>
         order.compare(x, a) match {
           case 0 => r.min match {
-            case None() => l
+            case None => l
             case Some(v) => Branch(v,l,r.remove(v)).balance
           }
           case o if o < 0 => Branch(a, l.remove(x), r).balance
@@ -169,7 +170,7 @@ sealed abstract class Set[A] {
       case Branch(a, l, r) =>
         B.compare(x, f(a)) match {
           case 0 => r.min match {
-            case None() => l
+            case None => l
             case Some(v) =>
               Branch(v,l,r.removef(f(v), f)).balance
           }
@@ -262,7 +263,7 @@ sealed abstract class Set[A] {
   // remember.
   private[dogs] def _getkv[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
     @tailrec def go(t: Set[A]): Option[A] = t match {
-      case BTNil() => None()
+      case BTNil() => None
       case Branch(v,l,r) =>
         B.compare(b, f(v)) match {
           case 0 => Some(v)

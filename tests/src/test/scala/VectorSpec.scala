@@ -97,7 +97,7 @@ class VectorTest extends SlowDogsSuite {
     forAll {
        (ns: Vector[Int]) =>
     val pf: PartialFunction[Int, Int] = { case n if n % 2 == 0 => n + 1 }
-      ns.collectFirst(pf).toScalaOption should ===(ns.toScalaVector.collectFirst(pf))
+      ns.collectFirst(pf) should ===(ns.toScalaVector.collectFirst(pf))
     }
   }
 
@@ -182,7 +182,7 @@ class VectorTest extends SlowDogsSuite {
   test("find"){
     forAll {
       (ns: Vector[Int], f: Int => Boolean) =>
-      ns.find(f).toScalaOption should ===(ns.toScalaVector.find(f))
+      ns.find(f) should ===(ns.toScalaVector.find(f))
     }
   }
 
@@ -197,12 +197,12 @@ class VectorTest extends SlowDogsSuite {
       val received = ns get index
 
       val expected:Option[Int] = if (index < 0 || index >= ns.length) {
-        None()
+        None
       } else {
-        val (_, back) = ns.foldLeft((0, None(): Option[Int])) {
-          case ((`index`, None()), n) => (0, Some(n))
+        val (_, back) = ns.foldLeft((0, None: Option[Int])) {
+          case ((`index`, None), n) => (0, Some(n))
           case ((_, Some(n)), _) => (0, Some(n))
-          case ((i, None()), n) => (i + 1, None())
+          case ((i, None), n) => (i + 1, None)
         }
 
         back
@@ -233,7 +233,7 @@ class VectorTest extends SlowDogsSuite {
   test("headOption"){
     forAll {
       ns: Vector[Int] =>
-      ns.headOption.toScalaOption should ===(ns.toScalaVector.headOption)
+      ns.headOption should ===(ns.toScalaVector.headOption)
     }
   }
 
@@ -261,7 +261,7 @@ class VectorTest extends SlowDogsSuite {
   test("initOption"){
     forAll {
       ns: Vector[Int] =>
-      val right = Option.fromScalaOption(scala.Either.catchNonFatal(ns.toScalaVector.init).toOption)
+      val right = scala.Either.catchNonFatal(ns.toScalaVector.init).toOption
       ns.initOption.map(_.toScalaVector) should ===(right)
     }
   }
@@ -300,7 +300,7 @@ class VectorTest extends SlowDogsSuite {
   test("lastOption"){ 
     forAll {
       ns: Vector[Int] =>
-      ns.lastOption.toScalaOption should ===(ns.toScalaVector.lastOption)
+      ns.lastOption should ===(ns.toScalaVector.lastOption)
     }
   }
 
@@ -345,14 +345,14 @@ class VectorTest extends SlowDogsSuite {
   test("reduceLeftOption"){ 
     forAll {
       (ns: Vector[Int], f: (Int, Int) => Int) =>
-      ns.reduceLeftOption(f).toScalaOption should ===(ns.toScalaVector.reduceLeftOption(f))
+      ns.reduceLeftOption(f) should ===(ns.toScalaVector.reduceLeftOption(f))
     }
   }
 
   test("reduceRightOption"){ 
     forAll {
       (ns: Vector[Int], f: (Int, Int) => Int) =>
-      ns.reduceRightOption(f).toScalaOption should ===(ns.toScalaVector.reduceRightOption(f))
+      ns.reduceRightOption(f) should ===(ns.toScalaVector.reduceRightOption(f))
     }
   }
 
@@ -445,7 +445,7 @@ class VectorTest extends SlowDogsSuite {
   test("tailOption"){
     forAll {
       ns: Vector[Int] =>
-      val sc = Option.fromScalaOption(scala.Either.catchNonFatal(ns.toScalaVector.tail).toOption)
+      val sc = scala.Either.catchNonFatal(ns.toScalaVector.tail).toOption
       ns.tailOption.map(_.toScalaVector) should === (sc)
     }
   }

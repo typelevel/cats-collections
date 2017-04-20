@@ -4,6 +4,7 @@
 package dogs
 package tests
 
+import cats.instances.list._
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 trait DogMatcher {
@@ -18,10 +19,10 @@ trait DogMatcher {
 
   object ListMatcher {
 
-    def apply[A](sList: scala.List[A])(implicit eq: Order[A]) = new ListMatcher(List.fromIterable(sList))
+    def apply[A](sList: scala.List[A])(implicit eq: Order[A]) = new ListMatcher(sList)
 
     def sorted[A](aList: List[A])(implicit eq: Order[A]): scala.List[A] =
-      aList.toScalaList.sortWith((a, b) => eq.lteqv(a, b))
+      aList.sortWith((a, b) => eq.lteqv(a, b))
   }
 
   private [tests] class DietMatcher[A](aDiet: Diet[A])(implicit eq: Enum[A], order: Order[A]) extends Matcher[Diet[A]] {

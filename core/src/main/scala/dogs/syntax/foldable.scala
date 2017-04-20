@@ -1,6 +1,8 @@
 package dogs
 package syntax
 
+import scala.collection.mutable.ListBuffer
+
 trait FoldableSyntax {
 
   implicit def foldableSyntax[F[_]: Foldable, A](fa: F[A]): FoldableOps[F,A] =
@@ -9,9 +11,9 @@ trait FoldableSyntax {
 
 final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
   def toDogsList: List[A] = {
-    val lb = new ListBuilder[A]
+    val lb = new ListBuffer[A]
     F.foldLeft(fa, ()){(_, a) => val _ = lb += a}
-    lb.run
+    lb.toList
   }
 
   def toDogsVector: Vector[A] =

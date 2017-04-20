@@ -21,7 +21,7 @@ class DietRandomizeBench extends BigNumberLists{
 
   @Benchmark
   def dogsDietAddRandom: Unit = {
-    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + r)
+    Random.shuffle(dogs).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
@@ -31,7 +31,7 @@ class DietRandomizeBench extends BigNumberLists{
 
   @Benchmark
   def dogsDietAddRangeRandom: Unit = {
-    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
+    Random.shuffle(dogs).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
   }
 
   @Benchmark

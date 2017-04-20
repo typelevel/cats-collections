@@ -3,8 +3,7 @@
  */
 
 package dogs
-
-import cats._
+import scala.{List,Nil,::}
 
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
@@ -69,7 +68,7 @@ sealed abstract class Heap[A] {
    * Order O(n)
    */
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] = {
-    def loop(i: Int, xs: scala.List[A]): Heap[A] =
+    def loop(i: Int, xs: List[A]): Heap[A] =
       if (i < xs.length) {
         bubbleDown(xs(i), loop(2 * i + 1, xs), loop(2 * i + 2, xs))
       }
@@ -77,7 +76,7 @@ sealed abstract class Heap[A] {
         Leaf()
       }
 
-    loop(0, a.toScalaList)
+    loop(0, a)
   }
 
   /**
@@ -93,8 +92,8 @@ sealed abstract class Heap[A] {
    * Returns a sorted list of the elements within the heap.
    */
   def toList()(implicit order: Order[A]): List[A] = this match {
-    case Leaf()                       =>  El[A]
-    case Branch(m, l, r, _, _)        =>  Nel(m, remove.toList)
+    case Leaf()                       =>  Nil
+    case Branch(m, l, r, _, _)        =>  m :: remove.toList
   }
 
   /**
@@ -139,9 +138,9 @@ object Heap {
 
     override def isEmpty: Boolean = true
 
-    override def getMin: Option[Option[Nothing]] = None()
+    override def getMin: Option[Option[Nothing]] = None
 
-    override private[dogs] val min: Option[Nothing] = None()
+    override private[dogs] val min: Option[Nothing] = None
   }
 
   private [dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
@@ -197,8 +196,8 @@ object Heap {
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {
     override def show(f: Heap[A]): String = f.toList() match {
-      case El()       => "[]"
-      case Nel(h, t)  => t.foldLeft("[" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "]"
+      case Nil       => "[]"
+      case h :: t  => t.foldLeft("[" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "]"
     }
   }
 }
