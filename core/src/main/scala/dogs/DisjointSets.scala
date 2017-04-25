@@ -3,6 +3,7 @@ package dogs
 import Predef._
 import cats._
 import cats.data.State
+import cats.data.State.get
 
 import DisjointSets.Entry
 
@@ -18,7 +19,7 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
     * )
     */
   def union(a: T, b: T): (DisjointSets[T], Boolean) = {
-    import DisjointSets.{find => findSt, get}
+    import DisjointSets.{find => findSt}
 
     val result: Option[DisjointSets[T]] = {
       for {
@@ -125,10 +126,6 @@ trait DisjointSetsStates {
 
   def toSets[T] = State[DisjointSets[T], Map[T, Set[T]]](
     disjointSets => disjointSets.toSets
-  )
-
-  def get[T] = State[DisjointSets[T], DisjointSets[T]](
-    disjointSets => disjointSets -> disjointSets
   )
 
 }
