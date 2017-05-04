@@ -147,6 +147,11 @@ sealed abstract class Option[A] {
   final def contains(a: A): Boolean =
     cata(_ == a, false)
 
+  /** Return the element if this is a [[Some]] and the underlying value
+   * satisfies the provided predicate */
+  final def find(f: A => Boolean): Option[A] =
+    filter(f)
+
   final def isDefined: Boolean = this != None()
   final def isEmpty: Boolean = this == None()
 
