@@ -44,7 +44,7 @@ class DisjointSetsSpec extends DogsSuite with ArbitraryList {
 
   }
 
-  test("build unions as a set of sets was used") {
+  test("build unions with disjoint sets as if a set of sets were used") {
 
     import scala.collection.immutable.Range
 
