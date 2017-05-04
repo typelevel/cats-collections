@@ -147,6 +147,19 @@ sealed abstract class Option[A] {
   final def contains(a: A): Boolean =
     cata(_ == a, false)
 
+  /** Return the element if this is a [[Some]] and the underlying value
+   * satisfies the provided predicate */
+  final def find(f: A => Boolean): Option[A] =
+    filter(f)
+
+  /** Return the element */
+  final def headOption: Option[A] =
+    this
+
+  /** Return the element */
+  final def lastOption: Option[A] =
+    this
+
   final def isDefined: Boolean = this != None()
   final def isEmpty: Boolean = this == None()
 
@@ -155,6 +168,10 @@ sealed abstract class Option[A] {
     case _ => None()
 
   }
+
+  final def collectFirst[B](f: PartialFunction[A,B]): Option[B] =
+    collect(f)
+
   final def toScalaOption: scala.Option[A] = cata(scala.Some.apply,scala.None)
 
 /*
@@ -306,5 +323,3 @@ private[dogs] sealed trait OptionInstances2 {
         x.cata(a => y.cata(ev.eqv(_, a), false), y == None)
     }
 }
-
-
