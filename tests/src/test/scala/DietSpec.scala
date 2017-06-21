@@ -134,6 +134,27 @@ class DietSpec extends DogsSuite {
   })
 
 
+  test("VRange") {
+    import Diet._
+
+    val diet = Diet.empty[Int] + Range(1, 10).withValue("hello")
+
+    diet should be (DietNode(VRange(1, 10, "hello"), EmptyDiet(), EmptyDiet()))
+  }
+
+  test("Focus") {
+
+    val diet = Diet.empty[Int] + Range(1, 10).withValue("hello")
+
+    val result = diet.focus(Range(1, 10))
+
+    println(result)
+
+    result should be (Some(VRange(1, 10, "hello")))
+
+    diet.focus(Range(1, 5)) should be (None)
+  }
+
 //  property("match") = forAll{ (r: Ranges) =>
 //    val d = fromRanges(r)
 //

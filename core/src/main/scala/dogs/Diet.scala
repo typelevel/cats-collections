@@ -27,7 +27,7 @@ sealed abstract class Diet[A] {
     case EmptyDiet() =>  false
     case DietNode(rng, l, r) =>
       if(order.lt(v, rng.start)) l.contains(v)
-      else if(order.gt(v, rng.end)) r.contains(v)
+      else if (order.gt(v, rng.end)) r.contains(v)
       else rng.contains(v)
   }
 
@@ -103,7 +103,7 @@ sealed abstract class Diet[A] {
   /**
    * Add new value range [x, y] to the Diet.
    */
-  def addRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
+  def addRange(range: dogs.Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
     if (order.lteqv(range.start, range.end))
       insertRange(range)
     else
@@ -264,6 +264,13 @@ sealed abstract class Diet[A] {
       case DietNode(rng,l,r) =>
         l.toStreaming ++ rng.toStreaming ++ r.toStreaming
     }
+
+  def focus(range: Range[A])(implicit order: Order[A]): Option[Range[A]] = this match {
+    case EmptyDiet() =>  None()
+    case d @ DietNode(Range(x, y), _, _) if (x == range.start && y == range.end) => Some(d.focus)
+    case DietNode(rng, l, r) =>
+      if(order.lt(range.start, rng.start)) l.focus(range) else r.focus(range)
+  }
 }
 
 object Diet {
