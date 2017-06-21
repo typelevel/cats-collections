@@ -101,3 +101,14 @@ class RangeTest extends DogsSuite {
     range.show should be ("[10, 20]")
   }
 }
+
+class VRangeTest extends DogsSuite {
+
+  test("range can store value") {
+    val range = Range(1, 100).withValue(5)
+
+    toRange(range) should be ((Range(1, 100), 5))
+  }
+
+  def toRange[A, B](vRange: VRange[A, B]): (Range[A], B) = (Range(vRange.start, vRange.end), vRange.value)
+}
