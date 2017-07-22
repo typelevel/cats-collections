@@ -3,6 +3,7 @@ package tests
 
 import dogs.tests.arbitrary.all._
 import cats.implicits._
+
 import cats.laws.discipline._
 import cats.kernel.laws.{GroupLaws, OrderLaws}
 
@@ -10,14 +11,15 @@ class VectorTest extends SlowDogsSuite {
   import scala.collection.immutable.{Vector=>SVector, Map=>SMap}
   import dogs.syntax.foldable._
   import Vector._
-  import Nel._
 
   checkAll("Monoid[Vector[Int]]", GroupLaws[Vector[Int]].monoid)
-//  checkAll("Vector[Int]", MonadCombineTests[Vector].monadCombine[Int, Int, Int])
+
+  //  checkAll("Vector[Int]", MonadCombineTests[Vector].monadCombine[Int, Int, Int])
   checkAll("Vector[Int]", CartesianTests[Vector].cartesian[Int, Int, Int])
   checkAll("Vector[Int]", CoflatMapTests[Vector].coflatMap[Int, Int, Int])
   checkAll("Vector[Int]", OrderLaws[Vector[Int]].order)
   checkAll("Vector[Int]", TraverseTests[Vector].traverse[Int,Int,Int,Vector[Int],Option,Option])
+
 
 /*
   test("intersperse then remove odd items is identity"){
@@ -70,6 +72,7 @@ class VectorTest extends SlowDogsSuite {
       (n +: ns).toScalaVector should ===(n +: ns.toScalaVector)
     }
   }
+
 
   test("/:"){
     forAll {
@@ -160,8 +163,8 @@ class VectorTest extends SlowDogsSuite {
 
   test("fill"){
     forAll {
-       (a: Byte, b: Int) =>
-      Vector.fill(a)(b).toScalaVector should ===(SVector.fill(a)(b))
+       (a: Byte, b: Byte) =>
+      Vector.fill[Byte](b.toInt)(a).toScalaVector should ===(SVector.fill(b.toInt)(a))
     }
   }
 
@@ -452,7 +455,7 @@ class VectorTest extends SlowDogsSuite {
 
   test("take"){
     forAll {
-      (ns: Vector[Int], n: Byte) =>
+      (ns: Vector[Int], n: Int) =>
       ns.take(n).toScalaVector should ===(ns.toScalaVector.take(n))
     }
   }
@@ -460,7 +463,7 @@ class VectorTest extends SlowDogsSuite {
   test("takeRight"){
     forAll {
       (ns: Vector[Int], n: Byte) =>
-      ns.takeRight(n).toScalaVector should ===(ns.toScalaVector.takeRight(n))
+      ns.takeRight(n.toInt).toScalaVector should ===(ns.toScalaVector.takeRight(n.toInt))
     }
   }
 

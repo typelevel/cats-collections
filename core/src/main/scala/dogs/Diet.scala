@@ -21,11 +21,11 @@ sealed abstract class Diet[A] {
    */
   @tailrec final
   def contains(v: A)(implicit order: Order[A]): Boolean = this match {
-    case EmptyDiet() =>  false
     case DietNode(rng, l, r) =>
       if(order.lt(v, rng.start)) l.contains(v)
       else if(order.gt(v, rng.end)) r.contains(v)
       else rng.contains(v)
+    case _ =>  false
   }
 
   /**
@@ -33,8 +33,7 @@ sealed abstract class Diet[A] {
    */
   @tailrec final
   def containsRange(range: Range[A])(implicit order: Order[A]): Boolean = this match {
-    case EmptyDiet() => false
-    case DietNode(rng, l, r) => {
+    case DietNode(rng, l, r) =>
       if (rng.contains(range)){
         true
       } else if (order.lt(range.start, rng.start)) {
@@ -42,7 +41,8 @@ sealed abstract class Diet[A] {
       } else {
         r.containsRange(range)
       }
-    }
+
+    case _ => false
   }
 
   // helper method for insertRange.
@@ -78,9 +78,7 @@ sealed abstract class Diet[A] {
   // helper method for addRange which does the actual insertion
   private [dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
     this match {
-      case EmptyDiet() =>  DietNode(range, EmptyDiet(), EmptyDiet())
-
-      case DietNode(rng, l, r)  => {
+      case DietNode(rng, l, r) => 
         val (r1,r2) = (rng + range)
           r2 match {
             case None =>
@@ -94,7 +92,8 @@ sealed abstract class Diet[A] {
               else
                 DietNode(r2, l.insertRange(r1), r)
             }
-      }
+
+      case _ => DietNode(range, EmptyDiet(), EmptyDiet())
     }
 
   /**
@@ -115,8 +114,7 @@ sealed abstract class Diet[A] {
     * remove x from the tree
     */
   def remove(x: A)(implicit enum: Enum[A], order: Order[A]): Diet[A] = this match {
-    case EmptyDiet()          =>  this
-    case DietNode(rng, l, r) =>  {
+    case DietNode(rng, l, r) =>
       if (order.compare(x, rng.start) < 0) {
         DietNode(rng, l.remove(x), r)
       }
@@ -135,15 +133,14 @@ sealed abstract class Diet[A] {
       else {
         DietNode(Range(rng.start, enum.pred(x)), l, DietNode(Range(enum.succ(x), rng.end), EmptyDiet(), r))
       }
-    }
+    case _ => this
   }
 
   /**
     * remove a range from Diet
     */
   def removeRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] = this match {
-    case EmptyDiet()             => this
-    case DietNode(rng, l, r)  =>
+    case DietNode(rng, l, r) =>
       val left = if(order.lt(range.start, rng.start)) l.removeRange(range) else l
       val right = if(order.gt(range.end, rng.end)) r.removeRange(range) else r
         (rng - range) match {
@@ -151,6 +148,7 @@ sealed abstract class Diet[A] {
         case Some((m, None)) => DietNode(m, left, right)
         case Some((m, Some(n))) => merge(DietNode(m, l, EmptyDiet()), DietNode(n, EmptyDiet(), r))
       }
+    case _ => this
   }
 
   /**
@@ -210,22 +208,21 @@ sealed abstract class Diet[A] {
    * min value in the tree
    */
   def min: Option[A] = this match {
-    case EmptyDiet()  =>  None
     case DietNode(Range(x, _), EmptyDiet(), _) => Some(x)
     case DietNode(_, l, _) => l.min
+    case _ => None
   }
 
   /**
    * max value in the tree
    */
   def max: Option[A] = this match {
-    case EmptyDiet()  => None
     case DietNode(Range(_, y), _, EmptyDiet()) => Some(y)
     case DietNode(_, _, r) => r.max
+    case _ => None
   }
 
   def map[B: Enum: Order](f: A => B): Diet[B] = this match {
-    case EmptyDiet()          =>  Diet.empty[B]
     case DietNode(Range(a, b), l, r) =>  {
       val (lp, rp) = (l.map(f), r.map(f))
 
@@ -233,33 +230,34 @@ sealed abstract class Diet[A] {
 
       merge(n, rp)
     }
+    case _ => Diet.empty[B]
   }
 
   def foldRight[B](s: Eval[B])(f: (A, Eval[B]) => Eval[B])(implicit enumA: Enum[A], orderA: Order[A]): Eval[B] = this match {
-    case EmptyDiet() => s
     case DietNode(rng, l, r) => l.foldRight(rng.toStreaming.foldRight(r.foldRight(s)(f))(f))(f)
+    case _ => s
   }
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit enumA: Enum[A], orderA: Order[A]): B = this match {
-    case EmptyDiet() =>  s
     case DietNode(rng, l, r) => r.foldLeft(rng.toStreaming.foldLeft(l.foldLeft[B](s)(f))(f))(f)
+    case _ => s
   }
 
   def foldLeftRange[B](z: B)(f: (B, Range[A]) => B): B = this match {
-    case EmptyDiet() => z
     case DietNode(rng, l, r) => r.foldLeftRange(f(l.foldLeftRange(z)(f), rng))(f)
+    case _ => z
   }
 
   def foldRightRange[B](z: Eval[B])(f: (Range[A], Eval[B]) => Eval[B]): Eval[B] = this match {
-    case EmptyDiet() => z
     case DietNode(rng, l, r) => l.foldRightRange(f(rng, r.foldRightRange(z)(f)))(f)
+    case _ => z
   }
 
   def toStreaming(implicit enum: Enum[A], order: Order[A]): Streaming[A] =
     this match {
-      case EmptyDiet() => Streaming.empty
       case DietNode(rng,l,r) =>
         l.toStreaming ++ rng.toStreaming ++ r.toStreaming
+      case _ => Streaming.empty
     }
 }
 
@@ -292,12 +290,12 @@ object Diet {
   }
 
   private [dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
-    case EmptyDiet() => throw new java.lang.Exception("can't happen")
     case DietNode(Range(x, y), l, EmptyDiet())   =>  (l, (x, y))
     case DietNode(rng, l, r)             =>  {
       val (d, i) = splitMax(r)
       (DietNode(rng,l, d), i)
     }
+    case _ => throw new java.lang.Exception("can't happen")
   }
 
   implicit def dietShowable[A](implicit s: Show[Range[A]]): Show[Diet[A]] = new Show[Diet[A]] {

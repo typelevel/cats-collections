@@ -41,8 +41,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def toList(): List[A] = this match {
-    case BTNil() =>  List.empty[A]
     case Branch(a, l, r) => l.toList ::: (a :: r.toList)
+    case _ =>  List.empty[A]
   }
 
   /**
@@ -52,13 +52,13 @@ sealed abstract class Set[A] {
    */
   def min: Option[A] = {
     @tailrec def loop(sub: Set[A], x: A): A = sub match {
-      case BTNil() =>  x
       case Branch(a, l, _) => loop(l, a)
+      case _ =>  x
     }
 
     this match {
-      case BTNil() => None
       case Branch(a, l, _) => Some(loop(l, a))
+      case _ => None
     }
   }
 
@@ -69,13 +69,13 @@ sealed abstract class Set[A] {
    */
   def max: Option[A] = {
     @tailrec def loop(sub: Set[A], x: A): A = sub match {
-      case BTNil() =>  x
       case Branch(a, _, r) => loop(r, a)
+      case _ =>  x
     }
 
     this match {
-      case BTNil() => None
       case Branch(a, _, r) => Some(loop(r, a))
+      case _ => None
     }
   }
 
@@ -85,8 +85,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
-    case BTNil() => z
     case Branch(v, l, r) => r.foldLeft(f(l.foldLeft(z)(f), v))(f)
+    case _ => z
   }
 
   /**
@@ -95,8 +95,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def foldRight[B](z: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = this match {
-    case BTNil() => z
     case Branch(v, l, r) => l.foldRight(f(v, r.foldRight(z)(f)))(f)
+    case _ => z
   }
 
   /**
@@ -105,9 +105,9 @@ sealed abstract class Set[A] {
    * O(log n)
    */
   def find(pred: A => Boolean): Option[A] = this match {
-    case BTNil() => None
     case Branch(v, l, r) =>
       l.find(pred) orElse (if(pred(v)) Some(v) else r.find(pred))
+    case _ => None
   }
 
   /**
@@ -115,13 +115,12 @@ sealed abstract class Set[A] {
    * O(log n)
    */
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
-    case BTNil() => false
-
     case Branch(a, l, r) => order.compare(x, a) match {
       case 0 => true
       case o if o < 0 => l.contains(x)
       case _ => r.contains(x)
     }
+    case _ => false
   }
 
   /**
@@ -130,12 +129,12 @@ sealed abstract class Set[A] {
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
     (this match {
-      case BTNil() =>  Branch(x, Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
         case 0 => Branch(x, l, r)
         case o if o < 0 => Branch(a, l.add(x), r)
         case _ => Branch(a, l, r.add(x))
       }
+      case _ =>  Branch(x, Set.empty, Set.empty)
     }).balance
 
 
@@ -151,7 +150,6 @@ sealed abstract class Set[A] {
    */
   def remove(x: A)(implicit order: Order[A]): Set[A] =
     this match {
-      case BTNil() => Set.empty
       case Branch(a, l, r) =>
         order.compare(x, a) match {
           case 0 => r.min match {
@@ -161,12 +159,12 @@ sealed abstract class Set[A] {
           case o if o < 0 => Branch(a, l.remove(x), r).balance
           case _ => Branch(a, l, r.remove(x)).balance
         }
+      case _ => Set.empty
     }
 
   // STU: this is used by Map, not sure what to do about this
   private[dogs] def removef[B](x: B, f: A => B)(implicit B: Order[B]): Set[A] =
     this match {
-      case BTNil() => Set.empty
       case Branch(a, l, r) =>
         B.compare(x, f(a)) match {
           case 0 => r.min match {
@@ -177,6 +175,7 @@ sealed abstract class Set[A] {
           case o if o < 0 => Branch(a, l.removef(x, f), r).balance
           case _ => Branch(a, l, r.removef(x, f)).balance
         }
+      case _ => Set.empty
     }
 
   /**
@@ -263,20 +262,19 @@ sealed abstract class Set[A] {
   // remember.
   private[dogs] def _getkv[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
     @tailrec def go(t: Set[A]): Option[A] = t match {
-      case BTNil() => None
       case Branch(v,l,r) =>
         B.compare(b, f(v)) match {
           case 0 => Some(v)
           case x if x < 0 => go(l)
           case _ => go(r)
         }
+      case _ => None
     }
     go(this)
   }
 
   private[dogs] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): Set[A] = {
     (this match {
-      case BTNil() =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
         case 0 =>
           val (k,v) = ev(a)
@@ -284,6 +282,7 @@ sealed abstract class Set[A] {
         case o if o < 0 => Branch(a, l.updateKey(key, value), r)
         case _ => Branch(a, l, r.updateKey(key,value))
       }
+      case _ =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
     }).balance
   }
 
@@ -331,23 +330,23 @@ object Set {
         case 0 => this
 
         case x if x > 0 => left match {
-          case BTNil() => this
           case Branch(lv,ll,lr) => rotation(ll.height, lr.height, 0) match {
             case x if x < 0 =>
               val Branch(lrv,lrl,lrr) = lr
               Branch(lrv,Branch(lv, ll, lrl), Branch(value, lrr, right))
             case _ => Branch(lv, ll, Branch(value, lr, right))
           }
+          case _ => this
         }
 
         case _ => right match {
-          case BTNil() => this
           case Branch(rv,rl,rr) => if(rotation(rl.height, rr.height, 0) > 0) {
             val Branch(rlv,rll,rlr) = rl
             Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
           } else {
             Branch(rv, Branch(value, left, rl), rr)
           }
+          case _ => this
         }
       }
     }

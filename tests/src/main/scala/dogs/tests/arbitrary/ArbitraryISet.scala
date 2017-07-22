@@ -6,8 +6,8 @@ import cats.Order
 
 trait ArbitraryISet {
   import set._
-  def isetGen[A: Arbitrary: Order]: Gen[ISet[A]] =
-    setGen.map(_.iset)
+  def isetGen[A](implicit arb: Arbitrary[A], ord: Order[A]): Gen[ISet[A]] =
+    setGen(ord,arb).map(_.iset)
 
   implicit def isetArbitrary[A: Arbitrary: Order]: Arbitrary[ISet[A]] =
     Arbitrary(isetGen[A])

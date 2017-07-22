@@ -130,7 +130,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def collectFirst[B](pf: PartialFunction[A, B]): Option[B] =
-    find(pf isDefinedAt) map pf
+    find(pf.isDefinedAt) map pf
 
   def containsSlice(that: Vector[A])(implicit ev: Eq[A]): Boolean =
     lastIndexOfSlice(that).isDefined
@@ -143,6 +143,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def drop(n: Int): Vector[A] = {
     def inner(n: Int, acc: Vector[A]): Vector[A] = {
+
       if (n < length)
         inner(n + 1, acc :+ apply(n))
       else
@@ -634,7 +635,10 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def take(n: Int): Vector[A] =
-    dropRight(length - n)
+    if(n > 0)
+      dropRight(length - n)
+    else
+      Vector.empty
 
   def takeRight(n: Int): Vector[A] = drop(max((length - n), 0))
 
@@ -678,7 +682,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def toList: List[A] = foldRight[List[A]](Eval.now(Nil))((a,fa) => fa.map( a :: _ )).value
 
-  def toNel: Option[Nel[A]] = toList.toNel
+  def toNel: Option[NonEmptyList[A]] = toList.toNel
 
   def toMap[K, V](implicit ev0: A =:= (K, V), ev1: Order[K]): Map[K, V] =
     widen[(K, V)].foldLeft(Map.empty[K, V]) { _ + _ }

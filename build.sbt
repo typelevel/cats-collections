@@ -4,9 +4,7 @@ lazy val buildSettings = Seq(
   name := "dogs",
   scalaOrganization in ThisBuild := "org.typelevel",
   organization in Global := "org.typelevel",
-  scalaVersion in ThisBuild := "2.12.1",
-  crossScalaVersions := Seq("2.11.7", scalaVersion.value),
-  resolvers += Resolver.bintrayRepo("stew", "plankton")
+  scalaVersion in ThisBuild := "2.12.2-bin-typelevel-4"
 )
 
 lazy val dogs = project.in(file("."))
@@ -27,6 +25,7 @@ lazy val dogsJS = project.in(file(".dogsJS"))
  */
 lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "dogs-core")
+  .enablePlugins(ZooPlankton)
   .settings(dogsSettings:_*)
 
 lazy val coreJVM = core.jvm
@@ -36,6 +35,7 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
   .settings(moduleName := "dogs-tests")
   .settings(dogsSettings:_*)
+  .enablePlugins(ZooPlankton)
   .settings(
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
@@ -54,6 +54,7 @@ lazy val testsJVM = tests.jvm
 lazy val docs = project
   .dependsOn(coreJVM)
   .settings(dogsSettings:_*)
+  .enablePlugins(ZooPlankton)
   .settings(noPublishSettings)
 
 lazy val bench = project
@@ -73,20 +74,20 @@ lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev 
 lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ scoverageSettings
 
 lazy val commonSettings = Seq(
-  scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "io.github.stew"                 %% "zoo"      % "0.0.3-SNAPSHOT",
     "org.typelevel"                  %% "cats-core"  % "0.9.0",
     "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
     "org.typelevel"                  %% "machinist"  % "0.6.1",
 
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.3"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
+
   ),
   fork in test := true,
   // parallelExecution in Test := false,
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings")
 ) ++ warnUnusedImport
+
 
 /*
 lazy val commonJsSettings = Seq(
@@ -183,35 +184,8 @@ lazy val publishSettings = Seq(
   )
 ) ++ credentialSettings ++ sharedReleaseProcess
 
-lazy val commonScalacOptions = Seq(
-  "-feature",
-  "-deprecation",
-  "-encoding", "utf8",
-  "-language:postfixOps",
-  "-language:higherKinds",
-  "-language:implicitConversions",
-  "-unchecked",
-  "-Xcheckinit",
-  "-Xfuture",
-  "-Xlint",
-  "-Xfatal-warnings",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Ysysdef", "_",
-  "-Ypredef", "plankton.Zoo._"
-)
-
 lazy val warnUnusedImport = Seq(
-  scalacOptions ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 10)) =>
-        Seq()
-      case Some((2, n)) if n >= 11 =>
-        Seq("-Ywarn-unused-import")
-    }
-  },
+  scalacOptions ++= {Seq("-Ywarn-unused-import") },
   scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
   scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
 )

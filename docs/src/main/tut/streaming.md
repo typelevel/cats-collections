@@ -135,7 +135,7 @@ def fib(n: Int): Z =
     case 0 => Z0
     case 1 => Z1
     case x if x > 1 => fib(x - 1) + fib(x - 2)
-    case x => sys.error(s"invalid x ($x)")
+    case x => scala.sys.error(s"invalid x ($x)")
   }
 ```
 

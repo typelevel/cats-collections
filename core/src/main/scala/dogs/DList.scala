@@ -70,7 +70,7 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
   def isEmpty: Boolean = headOption.isEmpty
 
   def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-    run(List.empty).flatMap( _.foldRight(b)(f))
+    run(List.empty).flatMap(Foldable[List].foldRight(_,b)(f))
 
   def map[B](f: A => B): DList[B] =
     new DList(t => run(List.empty).flatMap(x => (x map f).foldRight(now(t))((a,as) => as.map(a :: _))))
@@ -98,11 +98,9 @@ trait DListInstances {
     new Traverse[DList] with MonoidK[DList] {
       override def map[A,B](fa: DList[A])(f: A => B): DList[B] = fa map f
 
-      override def traverse[G[_], A, B](fa: DList[A])(f: A => G[B])(implicit G: Applicative[G]): G[DList[B]] =
-        foldLeft[A, G[DList[B]]](fa,G.pure(DList.empty))((res, a) =>
-          G.map2(res, f(a))(_ :+ _)
-        )
-
+      override def traverse[G[_], A, B](fa: DList[A])(f: A => G[B])(implicit G: Applicative[G]): G[DList[B]] = {
+        fa.foldRight(Now(G.pure(DList.empty[B]))){ (a, lgsb) => G.map2Eval(f(a), lgsb)(_ +: _) }.value
+      }
       override def foldLeft[A, B](fa: dogs.DList[A],b: B)(f: (B, A) => B): B =
         fa.toList.foldLeft(b)(f)
 

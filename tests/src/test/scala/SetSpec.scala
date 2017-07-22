@@ -19,9 +19,9 @@ class SetSpec extends DogsSuite {
 
   import Set._
   def balanced[A](t: Set[A]): Boolean = t match {
-    case BTNil() => true
     case Branch(_, l, r) =>
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
+    case _ => true
 
   }
 
