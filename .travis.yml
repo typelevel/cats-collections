@@ -8,7 +8,7 @@ cache:
 language: scala
 sudo: required
 scala:
-- 2.11.8
+- 2.12.2-bin-typelevel-4
 jdk:
 - oraclejdk8
 env:

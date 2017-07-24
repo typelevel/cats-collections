@@ -50,7 +50,7 @@ class Map[K,V](val set: Set[(K,V)]) {
    * Check if we have the given key in the map.
    * O(log n)
    */
-  def containsKey(key: K)(implicit K: Order[K]) = getkv(key).isDefined
+  def containsKey(key: K)(implicit K: Order[K]): Boolean = getkv(key).isDefined
 
   /**
    * Add a key value pair to the map.
@@ -94,7 +94,7 @@ class Map[K,V](val set: Set[(K,V)]) {
     foldRight(Eval.now(Streaming.empty[(K,V)])){ (a, ls) =>
       Eval.now(Streaming.cons(a, ls))
     }.value
-              
+
   /**
    * Return a scala.collection.immutable.map
    */
@@ -161,7 +161,7 @@ trait MapInstances {
   }
 
 
-  implicit def flatMapMap[K](implicit K: Order[K]) = new FlatMap[ Map[K,?]] {
+  implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[Map[K,?]]  = new FlatMap[Map[K,?]] {
     private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
 
     override def flatMap[A,B](fa: Map[K,A])(f: A => Map[K,B]) : Map[K,B] = fa flatMap f

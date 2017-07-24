@@ -183,21 +183,21 @@ sealed abstract class Set[A] {
    * the given Set.
    * O(n log n)
    */
-  def union(another: Set[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
+  def union(another: Set[A])(implicit order: Order[A]): Set[A] = another.foldLeft(this)(_ + _)
 
   /**
    * Return a Set containing the union of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def |(another: Set[A])(implicit order: Order[A]) = this union another
+  def |(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
 
   /**
    * Return a Set containing the intersection of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def intersect(another: Set[A])(implicit order: Order[A]) = {
+  def intersect(another: Set[A])(implicit order: Order[A]): Set[A] = {
     def _intersect(small: Set[A], large: Set[A]): Set[A] =
       small.foldLeft[Set[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
@@ -212,27 +212,27 @@ sealed abstract class Set[A] {
    * the given Set.
    * O(n log n)
    */
-  def &(another: Set[A])(implicit order: Order[A]) = this intersect another
+  def &(another: Set[A])(implicit order: Order[A]): Set[A] = this intersect another
 
   /**
    * Return a Set containing the union of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def ++(another: Set[A])(implicit order: Order[A]) = this union another
+  def ++(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
 
   /**
    * Return a Set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def diff(removals: Set[A])(implicit order: Order[A]) =
+  def diff(removals: Set[A])(implicit order: Order[A]): Set[A] =
     removals.foldLeft(this)(_ remove _)
 
   /**
    * Return a Set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def -(removals: Set[A])(implicit order: Order[A]) =
+  def -(removals: Set[A])(implicit order: Order[A]): Set[A] =
     removals.foldLeft(this)(_ remove _)
 
 
@@ -314,38 +314,40 @@ object Set {
 
     override def isEmpty: Boolean = false
 
+    // Determine the direction that the tree should be rotated,
+    // given the allowed amount of imbalance.
+    // Returns -1 when a left rotation is called for.
+    // Returns 0 when a right rotation is called for.
+    // Returns 1 when the tree is withing the allowance.
+    private def rotation(l: Int, r: Int, allow: Int): Int =
+      if(l - r > allow ) 1
+      else if(r - l > allow) -1
+      else 0
+
     private[dogs] def balance: Branch[A] = {
+      val r = rotation(left.height, right.height, 1)
 
-      // Determine the direction that the tree should be rotated,
-      // given the allowed amount of imbalance.
-      // Returns -1 when a left rotation is called for.
-      // Returns 0 when a right rotation is called for.
-      // Returns 1 when the tree is withing the allowance.
-      def rotation(l: Int, r: Int, allow: Int): Int =
-        if(l - r > allow ) 1
-        else if(r - l > allow) -1
-        else 0
-
-      rotation(left.height, right.height, 1) match {
-        case 0 => this
-
-        case x if x > 0 => left match {
-          case Branch(lv,ll,lr) => rotation(ll.height, lr.height, 0) match {
-            case x if x < 0 =>
+      if(r == 0) this
+      else if(r > 0) {
+        left match {
+          case Branch(lv,ll,lr) =>
+            if(rotation(ll.height, lr.height, 0) < 0) {
               val Branch(lrv,lrl,lrr) = lr
               Branch(lrv,Branch(lv, ll, lrl), Branch(value, lrr, right))
-            case _ => Branch(lv, ll, Branch(value, lr, right))
-          }
+            } else {
+              Branch(lv, ll, Branch(value, lr, right))
+            }
           case _ => this
         }
-
-        case _ => right match {
-          case Branch(rv,rl,rr) => if(rotation(rl.height, rr.height, 0) > 0) {
-            val Branch(rlv,rll,rlr) = rl
-            Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
-          } else {
-            Branch(rv, Branch(value, left, rl), rr)
-          }
+      } else {
+        right match {
+          case Branch(rv,rl,rr) =>
+            if(rotation(rl.height, rr.height, 0) > 0) {
+              val Branch(rlv,rll,rlr) = rl
+              Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
+            } else {
+              Branch(rv, Branch(value, left, rl), rr)
+            }
           case _ => this
         }
       }

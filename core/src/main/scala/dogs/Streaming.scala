@@ -964,6 +964,6 @@ private[dogs] sealed trait StreamingInstances2 {
     new Eq[Streaming[A]] {
       def eqv(x: Streaming[A], y: Streaming[A]): Boolean =
         (x izipMap y)(_ === _, _ => false, _ => false)
-          .forall(_ == true)
+          .forall(identity)
     }
 }

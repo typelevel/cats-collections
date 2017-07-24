@@ -76,9 +76,9 @@ sealed abstract class Diet[A] {
     }
 
   // helper method for addRange which does the actual insertion
-  private [dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
+  private[dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
     this match {
-      case DietNode(rng, l, r) => 
+      case DietNode(rng, l, r) =>
         val (r1,r2) = (rng + range)
           r2 match {
             case None =>
@@ -264,11 +264,11 @@ sealed abstract class Diet[A] {
 object Diet {
   def empty[A]: Diet[A] = EmptyDiet()
 
-  private [dogs] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
+  private[dogs] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
     override val isEmpty: Boolean = false
   }
 
-  private [dogs] case object EmptyDiet extends Diet[Nothing] {
+  private[dogs] case object EmptyDiet extends Diet[Nothing] {
     def unapply[A](diet: Diet[A]): Boolean = diet.isEmpty
 
     def apply[A](): Diet[A] = this.asInstanceOf[Diet[A]]
@@ -279,7 +279,7 @@ object Diet {
   /**
    *  Merge two Diets
    */
-  private [dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
+  private[dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
     case (l, EmptyDiet())   =>  l
     case (EmptyDiet(), r)   =>  r
     case (l, r)             =>  {
@@ -289,7 +289,7 @@ object Diet {
     }
   }
 
-  private [dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
+  private[dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
     case DietNode(Range(x, y), l, EmptyDiet())   =>  (l, (x, y))
     case DietNode(rng, l, r)             =>  {
       val (d, i) = splitMax(r)

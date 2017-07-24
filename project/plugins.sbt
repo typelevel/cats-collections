@@ -3,7 +3,6 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/stew/plankton"))(
   Resolver.ivyStylePatterns)
 
-
 addSbtPlugin("io.github.stew"     % "sbt-plankton"           % "0.0.10")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"             % "0.3.3")
 addSbtPlugin("com.github.gseitz"  % "sbt-release"            % "1.0.0")

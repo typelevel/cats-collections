@@ -8,30 +8,16 @@ lazy val buildSettings = Seq(
 )
 
 lazy val dogs = project.in(file("."))
-  .settings(moduleName := "root")
-  .settings(noPublishSettings)
-  .aggregate(dogsJVM/*, dogsJS*/)
-
-lazy val dogsJVM = project.in(file(".dogsJVM"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
-  .aggregate(coreJVM, docs, testsJVM, bench)
+  .aggregate(core, docs, tests, bench)
 
-/*
-lazy val dogsJS = project.in(file(".dogsJS"))
-  .settings(moduleName := "dogs")
-  .settings(noPublishSettings)
-  .aggregate(coreJS, testsJS)
- */
-lazy val core = crossProject.crossType(CrossType.Pure)
+lazy val core = project
   .settings(moduleName := "dogs-core")
   .enablePlugins(ZooPlankton)
   .settings(dogsSettings:_*)
 
-lazy val coreJVM = core.jvm
-//lazy val coreJS = core.js
-
-lazy val tests = crossProject.crossType(CrossType.Pure)
+lazy val tests = project
   .dependsOn(core)
   .settings(moduleName := "dogs-tests")
   .settings(dogsSettings:_*)
@@ -48,19 +34,15 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     )
   )
 
-lazy val testsJVM = tests.jvm
-//lazy val testsJS = tests.js
-
 lazy val docs = project
-  .dependsOn(coreJVM)
+  .dependsOn(core)
   .settings(dogsSettings:_*)
   .enablePlugins(ZooPlankton)
   .settings(noPublishSettings)
 
 lazy val bench = project
   .settings(moduleName := "dogs-bench")
-  .dependsOn(coreJVM)
-  //.settings(dogsSettings:_*)
+  .dependsOn(core)
   .settings(noPublishSettings)
   .settings(
     coverageEnabled := false,
@@ -89,26 +71,11 @@ lazy val commonSettings = Seq(
 ) ++ warnUnusedImport
 
 
-/*
-lazy val commonJsSettings = Seq(
-  scalaJSStage in Global := FastOptStage,
-  parallelExecution := false,
-  requiresDOM := false,
-  jsEnv := NodeJSEnv().value,
-  // Only used for scala.js for now
-  botBuild := scala.sys.env.get("TRAVIS").isDefined,
-  // batch mode decreases the amount of memory needed to compile scala.js code
-  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
-)
- */
-addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
+addCommandAlias("build", ";core/compile;core/test;bench/test")
 
-addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
+addCommandAlias("validate", ";scalastyle;build;makeSite")
 
-//addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
-
-//addCommandAlias("validate", ";validateJS;validateJVM")
-addCommandAlias("validate", ";validateJVM")
+addCommandAlias("validate", ";validate")
 
 addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVersion.value.get + \"-SNAPSHOT\"")
 

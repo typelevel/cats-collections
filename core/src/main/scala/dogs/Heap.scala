@@ -20,16 +20,16 @@ sealed abstract class Heap[A] {
   /**
    * Internal representation of the min value to avoid deconstruction of `min: Option[A]` since min is heavily used.
    */
-  private [dogs] val min: A
+  private[dogs] val min: A
 
   /**
    * Returns min value on the heap.
    */
   def getMin: Option[A]
 
-  private [dogs] def left: Heap[A]
+  private[dogs] def left: Heap[A]
 
-  private [dogs] def right: Heap[A]
+  private[dogs] def right: Heap[A]
 
   /**
    * Returns the size of the heap.
@@ -117,13 +117,13 @@ object Heap {
   def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
     Branch(x, l, r, l.size + r.size + 1, scala.math.max(l.height, r.height) + 1)
 
-  private [dogs] case class Branch[A](min: A, left: Heap[A], right: Heap[A], size: Int, height: Int) extends Heap[A] {
+  private[dogs] case class Branch[A](min: A, left: Heap[A], right: Heap[A], size: Int, height: Int) extends Heap[A] {
     override def isEmpty: Boolean = false
 
     override def getMin: Option[A] = Some(min)
   }
 
-  private [dogs] case object Leaf extends Heap[Option[Nothing]] {
+  private[dogs] case object Leaf extends Heap[Option[Nothing]] {
     def apply[A](): Heap[A] = this.asInstanceOf[Heap[A]]
 
     def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
@@ -143,7 +143,7 @@ object Heap {
     override private[dogs] val min: Option[Nothing] = None
   }
 
-  private [dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
+  private[dogs] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
     case (Branch(y, lt, rt, _, _), _) if order.gt(x , y) =>
       Heap(y, Heap(x, lt, rt), r)
     case (_, Branch(z, lt, rt, _, _)) if order.gt(x , z) =>
@@ -151,7 +151,7 @@ object Heap {
     case (_, _) => Heap(x, l, r)
   }
 
-  private [dogs] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
+  private[dogs] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
     case (Branch(y, _, _, _, _), Branch(z, lt, rt, _, _))
       if (order.lt(z , y) && order.gt(x , z))                 => Heap(z, l, bubbleDown(x, lt, rt))
     case (Branch(y, lt, rt, _, _), _)
@@ -159,7 +159,7 @@ object Heap {
     case (_, _)                                               => Heap(x, l, r)
   }
 
-  private [dogs] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
+  private[dogs] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
     if (h.isEmpty) {
       Leaf()
     }
@@ -167,7 +167,7 @@ object Heap {
       bubbleDown(h.min, h.left, h.right)
     }
 
-  private [dogs] def mergeChildren[A](l: Heap[A], r: Heap[A]): Heap[A] =
+  private[dogs] def mergeChildren[A](l: Heap[A], r: Heap[A]): Heap[A] =
     if (l.isEmpty && r.isEmpty) {
       Leaf()
     }
@@ -184,12 +184,12 @@ object Heap {
       floatRight(r.min, l, mergeChildren(r.left, r.right))
     }
 
-  private [dogs] def floatLeft[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = l match {
+  private[dogs] def floatLeft[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = l match {
     case Branch(y, lt, rt, _, _) => Heap(y, Heap(x, lt, rt), r)
     case _ => Heap(x, l, r)
   }
 
-  private [dogs] def floatRight[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = r match {
+  private[dogs] def floatRight[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = r match {
     case Branch(y, lt, rt, _, _) => Heap(y, l, Heap(x, lt, rt))
     case _ => Heap(x, l, r)
   }

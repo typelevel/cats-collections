@@ -76,7 +76,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * Verify is x is in range [start, end]
     */
-  def contains(x: A)(implicit A: Order[A]) = A.gteqv(x, start) && A.lteqv(x, end)
+  def contains(x: A)(implicit A: Order[A]): Boolean = A.gteqv(x, start) && A.lteqv(x, end)
 
   /**
     * Apply function f to each element in range [star, end]

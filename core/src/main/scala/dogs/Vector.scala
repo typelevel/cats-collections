@@ -838,11 +838,11 @@ private object VectorCases {
 
     val shift = -1
 
-    def apply(i: Int) = throw new IndexOutOfBoundsException(i.toString)
-    def update(i: Int, obj: AnyRef) = throw new IndexOutOfBoundsException(i.toString)
+    def apply(i: Int): Array[AnyRef] = throw new IndexOutOfBoundsException(i.toString)
+    def update(i: Int, obj: AnyRef): Nothing = throw new IndexOutOfBoundsException(i.toString)
 
-    def +(node: Array[AnyRef]) = One(node)
-    def pop = throw new IndexOutOfBoundsException("Cannot pop an empty Vector")
+    def +(node: Array[AnyRef]): Case = One(node)
+    def pop: (Case, Array[AnyRef]) = throw new IndexOutOfBoundsException("Cannot pop an empty Vector")
   }
 
   case class One(trie: Array[AnyRef]) extends Case {
@@ -850,22 +850,22 @@ private object VectorCases {
 
     val shift = 0
 
-    def apply(i: Int) = trie
+    def apply(i: Int): Array[AnyRef] = trie
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2 = copy1(trie, new Array[AnyRef](trie.length))
       trie2(i & 0x01f) = obj
       One(trie2)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       val trie2 = new Array[Array[AnyRef]](2)
       trie2(0) = trie
       trie2(1) = tail
       Two(trie2)
     }
 
-    def pop = (Zero, trie)
+    def pop: (Case, Array[AnyRef]) = (Zero, trie)
   }
 
   case class Two(trie: Array[Array[AnyRef]]) extends Case {
@@ -873,9 +873,9 @@ private object VectorCases {
 
     val shift = 5
 
-    def apply(i: Int) = trie((i >>> 5) & 0x01f)
+    def apply(i: Int): Array[AnyRef] = trie((i >>> 5) & 0x01f): Array[AnyRef]
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy2(trie, new Array[Array[AnyRef]](trie.length))
 
       val trie2b = {
@@ -888,7 +888,7 @@ private object VectorCases {
       Two(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.length >= 32) {
         val trie2 = new Array[Array[Array[AnyRef]]](2)
         trie2(0) = trie
@@ -904,7 +904,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.length == 2) {
         (One(trie(0)), trie.last)
       } else {
@@ -919,12 +919,12 @@ private object VectorCases {
 
     val shift = 10
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 10) & 0x01f)
       a((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy3(trie, new Array[Array[Array[AnyRef]]](trie.length))
 
       val trie2b = {
@@ -943,7 +943,7 @@ private object VectorCases {
       Three(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.length >= 32) {
         if (trie.length >= 32) {
           val trie2 = new Array[Array[Array[Array[AnyRef]]]](2)
@@ -968,7 +968,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.length == 1) {
         if (trie.length == 2) {
           (Two(trie(0)), trie.last.last)
@@ -989,13 +989,13 @@ private object VectorCases {
 
     val shift = 15
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 15) & 0x01f)
       val b = a((i >>> 10) & 0x01f)
       b((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy4(trie, new Array[Array[Array[Array[AnyRef]]]](trie.length))
 
       val trie2b = {
@@ -1020,7 +1020,7 @@ private object VectorCases {
       Four(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.length >= 32) {
         if (trie.last.length >= 32) {
           if (trie.length >= 32) {
@@ -1056,7 +1056,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.length == 1) {
         if (trie.last.length == 1) {
           if (trie.length == 2) {
@@ -1084,14 +1084,14 @@ private object VectorCases {
 
     val shift = 20
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 20) & 0x01f)
       val b = a((i >>> 15) & 0x01f)
       val c = b((i >>> 10) & 0x01f)
       c((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy5(trie, new Array[Array[Array[Array[Array[AnyRef]]]]](trie.length))
 
       val trie2b = {
@@ -1122,7 +1122,7 @@ private object VectorCases {
       Five(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.last.length >= 32) {
         if (trie.last.last.length >= 32) {
           if (trie.last.length >= 32) {
@@ -1171,7 +1171,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.last.length == 1) {
         if (trie.last.last.length == 1) {
           if (trie.last.length == 1) {
@@ -1207,7 +1207,7 @@ private object VectorCases {
 
     val shift = 25
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 25) & 0x01f)
       val b = a((i >>> 20) & 0x01f)
       val c = b((i >>> 15) & 0x01f)
@@ -1215,7 +1215,7 @@ private object VectorCases {
       d((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy6(trie, new Array[Array[Array[Array[Array[Array[AnyRef]]]]]](trie.length))
 
       val trie2b = {
@@ -1252,7 +1252,7 @@ private object VectorCases {
       Six(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.last.last.length >= 32) {
         if (trie.last.last.last.length >= 32) {
           if (trie.last.last.length >= 32) {
@@ -1306,7 +1306,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.last.last.length == 1) {
         if (trie.last.last.last.length == 1) {
           if (trie.last.last.length == 1) {

@@ -4,9 +4,9 @@ import scala.collection.mutable.ListBuffer
 
 /** Dequeue - A Double Ended Queue
 
-          Front         Back  
+          Front         Back
 
-  <- uncons   ---------   unsnoc ->     
+  <- uncons   ---------   unsnoc ->
       cons -> --------- <- snoc
 
   * Based on the Bankers Double Ended Queue as described by C. Okasaki
@@ -227,9 +227,9 @@ sealed abstract class Dequeue[A] {
   * which can be accessed from either side of the queue
   */
 private[dogs] final case class SingletonDequeue[A](single: A) extends Dequeue[A] {
-  override def isEmpty = false
-  override def frontOption = Some(single)
-  override def backOption = Some(single)
+  override def isEmpty: Boolean = false
+  override def frontOption: Option[A] = Some(single)
+  override def backOption: Option[A] = Some(single)
 }
 
 /**
@@ -237,22 +237,22 @@ private[dogs] final case class SingletonDequeue[A](single: A) extends Dequeue[A]
   * front list and back lists cannot be empty
   */
 private[dogs] final case class FullDequeue[A](front: NonEmptyList[A], fsize: Int, back: NonEmptyList[A], backSize: Int) extends Dequeue[A]  {
-  override def isEmpty = false
-  override def frontOption = Some(front.head)
-  override def backOption = Some(back.head)
+  override def isEmpty: Boolean = false
+  override def frontOption: Option[A] = Some(front.head)
+  override def backOption: Option[A] = Some(back.head)
 }
 /**
   * a queue which has no elements
   */
 private[dogs] case object EmptyDequeue extends Dequeue[Nothing] { self =>
-  override val isEmpty = true
-  override val frontOption = None
-  override val backOption = None
-  
+  override val isEmpty: Boolean = true
+  override val frontOption: Option[Nothing] = None
+  override val backOption: Option[Nothing] = None
+
   override def toString: String = "EmptyDequeue"
 
-  def apply[A]() = self.asInstanceOf[Dequeue[A]]
-  def unapply[A](q: Dequeue[A]) = q.isEmpty
+  def apply[A](): Dequeue[A] = self.asInstanceOf[Dequeue[A]]
+  def unapply[A](q: Dequeue[A]): Boolean = q.isEmpty
 }
 
 
@@ -263,7 +263,7 @@ private[dogs] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
 }
 
 object Dequeue extends DequeueInstances {
-  def apply[A](as: A*) = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
+  def apply[A](as: A*): Dequeue[A] = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
 
   def fromFoldable[F[_],A](fa: F[A])(implicit F: Foldable[F]): Dequeue[A] =
     F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) ⇒ q :+ a)
