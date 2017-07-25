@@ -5,7 +5,7 @@ import java.lang.System
 
 import catalysts.Platform
 
-import org.scalatest.{FunSuite, Matchers, BeforeAndAfterAll}
+import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.prop.{Configuration, GeneratorDrivenPropertyChecks}
 import org.typelevel.discipline.scalatest.Discipline
 
@@ -35,7 +35,6 @@ trait TestSettings extends Configuration with Matchers {
 }
 
 trait DogsSuite extends FunSuite
-    with BeforeAndAfterAll
     with Matchers
     with DogMatcher
     with GeneratorDrivenPropertyChecks
@@ -44,16 +43,6 @@ trait DogsSuite extends FunSuite
     with StrictDogsEquality {
 
   var startTime: Long = System.currentTimeMillis
-
-  override def beforeAll: Unit = {
-    startTime = System.currentTimeMillis
-    println(s"[info]-------------------- ${this.getClass.getName} begins")
-  }
-
-  override def afterAll: Unit = {
-    val elapsed: Long = System.currentTimeMillis - startTime
-    println(s"[info]-------------------- ${this.getClass.getName} finished. elapsed time: $elapsed ms.")
-  }
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration
