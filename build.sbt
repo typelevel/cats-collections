@@ -3,7 +3,7 @@ import ReleaseTransformations._
 lazy val buildSettings = Seq(
   name := "dogs",
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.1",
+  scalaVersion in Global := "2.12.3",
   crossScalaVersions := Seq("2.11.7", scalaVersion.value)
   //resolvers in Global += Resolver.sonatypeRepo("snapshots")
 )
@@ -39,7 +39,7 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-laws"          % "0.9.0",
+      "org.typelevel"  %% "cats-laws"          % "1.0.0-MF",
       "org.scalacheck" %% "scalacheck"         % "1.13.4",
       "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
       "org.typelevel"  %% "catalysts-platform" % "0.0.5"    % "test",
@@ -74,7 +74,7 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % "0.9.0",
+    "org.typelevel"                  %% "cats-core"  % "1.0.0-MF",
     "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
     "org.typelevel"                  %% "machinist"  % "0.6.1",
 

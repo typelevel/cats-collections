@@ -869,8 +869,8 @@ object Streaming extends StreamingInstances {
 
 private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
 
-  implicit val streamInstance: Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] =
-    new Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] {
+  implicit val streamInstance: Traverse[Streaming] with Monad[Streaming] with Alternative[Streaming] with CoflatMap[Streaming] =
+    new Traverse[Streaming] with Monad[Streaming] with Alternative[Streaming] with CoflatMap[Streaming] {
       def pure[A](a: A): Streaming[A] =
         Streaming(a)
 

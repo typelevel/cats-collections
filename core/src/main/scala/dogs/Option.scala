@@ -204,8 +204,8 @@ sealed trait OptionFunctions {
 
 
 trait OptionInstances extends OptionInstances1 {
-  implicit val optionInstance: Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] =
-    new Traverse[Option] with MonadCombine[Option] with CoflatMap[Option] with Alternative[Option] {
+  implicit val optionInstance: Traverse[Option] with Monad[Option] with CoflatMap[Option] with Alternative[Option] =
+    new Traverse[Option] with Monad[Option] with CoflatMap[Option] with Alternative[Option] {
 
       override def empty[A]: Option[A] = None()
 
@@ -306,5 +306,3 @@ private[dogs] sealed trait OptionInstances2 {
         x.cata(a => y.cata(ev.eqv(_, a), false), y == None)
     }
 }
-
-

@@ -14,7 +14,7 @@ class VectorTest extends SlowDogsSuite {
   import Nel._
 
   checkAll("Monoid[Vector[Int]]", GroupLaws[Vector[Int]].monoid)
-//  checkAll("Vector[Int]", MonadCombineTests[Vector].monadCombine[Int, Int, Int])
+//  checkAll("Vector[Int]", AlternativeTests[Vector].Alternative[Int, Int, Int])
   checkAll("Vector[Int]", CartesianTests[Vector].cartesian[Int, Int, Int])
   checkAll("Vector[Int]", CoflatMapTests[Vector].coflatMap[Int, Int, Int])
   checkAll("Vector[Int]", OrderLaws[Vector[Int]].order)

@@ -7,7 +7,7 @@ import cats._
 import cats.implicits._
 import scala.collection.Iterable
 import scala.collection.immutable.{List=>SList}
-import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadCombineTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
+import cats.laws.discipline.{TraverseTests, CoflatMapTests, ComonadTests, MonadTests, AlternativeTests, FoldableTests/*, ReducibleTests*/,SerializableTests, CartesianTests}
 import cats.kernel.laws.{GroupLaws, OrderLaws}
 
 class ListSpec extends DogsSuite {
@@ -22,16 +22,19 @@ class ListSpec extends DogsSuite {
 
   checkAll("Monoid[List[Int]]", GroupLaws[List[Int]].monoid)
   checkAll("List[Int]", OrderLaws[List[Int]].eqv)
-  
+
   checkAll("List[Int]", CartesianTests[List].cartesian[Int, Int, Int])
   checkAll("Cartesian[List]", SerializableTests.serializable(Cartesian[List]))
-  
+
   checkAll("List[Int]", CoflatMapTests[List].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[List]", SerializableTests.serializable(CoflatMap[List]))
 
-  checkAll("List[Int]", MonadCombineTests[List].monadCombine[Int, Int, Int])
-  checkAll("MonadCombine[List]", SerializableTests.serializable(MonadCombine[List]))
-  
+  checkAll("List[Int]", MonadTests[List].monad[Int, Int, Int])
+  checkAll("Monad[List]", SerializableTests.serializable(Monad[List]))
+
+  checkAll("List[Int]", AlternativeTests[List].alternative[Int, Int, Int])
+  checkAll("Alternative[List]", SerializableTests.serializable(Alternative[List]))
+
   checkAll("List[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
   checkAll("Traverse[List]", SerializableTests.serializable(Traverse[List]))
 
@@ -41,11 +44,11 @@ class ListSpec extends DogsSuite {
   checkAll("Nel[Int]", ComonadTests[Nel].comonad[Int, Int, Int])
   checkAll("ComonadMap[Nel]", SerializableTests.serializable(CoflatMap[Nel]))
   checkAll("Nel[Int]", FoldableTests[Nel].foldable[Int, Int])
-  checkAll("MonadCombine[Nel]", SerializableTests.serializable(Foldable[Nel]))
+  checkAll("Alternative[Nel]", SerializableTests.serializable(Foldable[Nel]))
 
 // when we get a new cats release
 //  checkAll("Nel[Int]", ReducibleTests[Nel].reducible[Int, Int])
-//  checkAll("MonadCombine[Nel]", SerializableTests.serializable(MonadCombine[List]))
+//  checkAll("Alternative[Nel]", SerializableTests.serializable(Alternative[List]))
 
   checkAll("Nel[Int] with Option", TraverseTests[List].traverse[Int, Int, Int, List[Int], Option, Option])
   checkAll("Traverse[Nel]", SerializableTests.serializable(Traverse[List]))

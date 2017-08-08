@@ -69,10 +69,26 @@ object ListWrapper {
 
   def semigroup[A]: Semigroup[ListWrapper[A]] = semigroupK.algebra[A]
 
-  val monadCombine: MonadCombine[ListWrapper] = {
-    val M = MonadCombine[List]
+  val alternative: Alternative[ListWrapper] = {
+    val M = Alternative[List]
 
-    new MonadCombine[ListWrapper] {
+    new Alternative[ListWrapper] {
+      def pure[A](x: A): ListWrapper[A] = ListWrapper(M.pure(x))
+
+      def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
+
+      def combineK[A](x: ListWrapper[A], y: ListWrapper[A]): ListWrapper[A] =
+        ListWrapper(M.combineK(x.list, y.list))
+
+      def ap[A, B](ff: ListWrapper[A => B])(fa: ListWrapper[A]) =
+        ListWrapper(M.ap(ff.list)(fa.list))
+    }
+  }
+
+  val monad: Monad[ListWrapper] = {
+    val M = Monad[List]
+
+    new Monad[ListWrapper] {
       def pure[A](x: A): ListWrapper[A] = ListWrapper(M.pure(x))
 
       def flatMap[A, B](fa: ListWrapper[A])(f: A => ListWrapper[B]): ListWrapper[B] =
@@ -80,26 +96,17 @@ object ListWrapper {
 
       def tailRecM[A, B](a: A)(f: A => dogs.tests.ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
         ListWrapper(List.listInstance.tailRecM(a)(f andThen (_.list)))
-
-      def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
-
-      def combineK[A](x: ListWrapper[A], y: ListWrapper[A]): ListWrapper[A] =
-        ListWrapper(M.combineK(x.list, y.list))
     }
   }
 
-  val monad: Monad[ListWrapper] = monadCombine
-
   /** apply is taken due to ListWrapper being a case class */
-  val applyInstance: Apply[ListWrapper] = monadCombine
+  val applyInstance: Apply[ListWrapper] = alternative
 
-  def monoidK: MonoidK[ListWrapper] = monadCombine
+  def monoidK: MonoidK[ListWrapper] = alternative
 
-  def monadFilter: MonadFilter[ListWrapper] = monadCombine
+  // def monadFilter: MonadFilter[ListWrapper] = alternative
 
-  def alternative: Alternative[ListWrapper] = monadCombine
-
-  def monoid[A]: Monoid[ListWrapper[A]] = monadCombine.algebra[A]
+  def monoid[A]: Monoid[ListWrapper[A]] = alternative.algebra[A]
 
   implicit def listWrapperArbitrary[A: Arbitrary]: Arbitrary[ListWrapper[A]] =
     Arbitrary(scarbitrary[List[A]].map(ListWrapper.apply))
