@@ -135,7 +135,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def collectFirst[B](pf: PartialFunction[A, B]): Option[B] =
-    find(pf isDefinedAt) map pf
+    find(pf.isDefinedAt) map pf
 
   def containsSlice(that: Vector[A])(implicit ev: Eq[A]): Boolean =
     lastIndexOfSlice(that).isDefined
