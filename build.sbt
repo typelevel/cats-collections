@@ -183,6 +183,7 @@ lazy val compilerFlags = Seq(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 11 =>
         Seq(
+          "-language",
           "-feature",
           "-deprecation",
           "-Yno-adapted-args",
