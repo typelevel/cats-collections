@@ -11,25 +11,24 @@ lazy val buildSettings = Seq(
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
   .settings(noPublishSettings)
-  .aggregate(dogsJVM/*, dogsJS*/)
+  .aggregate(dogsJVM, dogsJS)
 
 lazy val dogsJVM = project.in(file(".dogsJVM"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJVM, docs, testsJVM, bench)
 
-/*
 lazy val dogsJS = project.in(file(".dogsJS"))
   .settings(moduleName := "dogs")
   .settings(noPublishSettings)
   .aggregate(coreJS, testsJS)
- */
+
 lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "dogs-core")
   .settings(dogsSettings:_*)
 
 lazy val coreJVM = core.jvm
-//lazy val coreJS = core.js
+lazy val coreJS  = core.js
 
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
@@ -48,7 +47,7 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
   )
 
 lazy val testsJVM = tests.jvm
-//lazy val testsJS = tests.js
+lazy val testsJS  = tests.js
 
 lazy val docs = project
   .dependsOn(coreJVM)
@@ -86,18 +85,17 @@ lazy val commonSettings = Seq(
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings")
 ) ++ warnUnusedImport
 
-/*
 lazy val commonJsSettings = Seq(
   scalaJSStage in Global := FastOptStage,
   parallelExecution := false,
   requiresDOM := false,
-  jsEnv := NodeJSEnv().value,
+  jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
   // Only used for scala.js for now
   botBuild := scala.sys.env.get("TRAVIS").isDefined,
   // batch mode decreases the amount of memory needed to compile scala.js code
   scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
 )
- */
+
 addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
 
 addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
