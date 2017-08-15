@@ -26,21 +26,21 @@ class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption 
      case El() => q
      case Nel(x,xs) => consL(xs, q cons x)
    }
- 
+
    @annotation.tailrec
-   final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q uncons match {
+   final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q.uncons match {
      case None() => acc
      case Some((i, q)) => unconsL(q, i :: acc)
    }
- 
+
    @annotation.tailrec
    final def snocL[A](l: List[A], q: Dequeue[A]): Dequeue[A] = l match {
      case El() => q
      case Nel(x,xs) => snocL(xs, q snoc x)
    }
- 
+
    @annotation.tailrec
-   final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q unsnoc match {
+   final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q.unsnoc match {
      case None() => acc
      case Some((i, q)) => unsnocL(q, i :: acc)
    }
@@ -97,5 +97,3 @@ class DequeueSpec extends SlowDogsSuite with ArbitraryList with ArbitraryOption 
 
 
 }
-
-

@@ -14,7 +14,7 @@ class VectorTest extends SlowDogsSuite {
   import Nel._
 
   checkAll("Monoid[Vector[Int]]", GroupLaws[Vector[Int]].monoid)
-//  checkAll("Vector[Int]", MonadCombineTests[Vector].monadCombine[Int, Int, Int])
+//  checkAll("Vector[Int]", AlternativeTests[Vector].Alternative[Int, Int, Int])
   checkAll("Vector[Int]", CartesianTests[Vector].cartesian[Int, Int, Int])
   checkAll("Vector[Int]", CoflatMapTests[Vector].coflatMap[Int, Int, Int])
   checkAll("Vector[Int]", OrderLaws[Vector[Int]].order)
@@ -162,7 +162,7 @@ class VectorTest extends SlowDogsSuite {
   test("fill"){
     forAll {
        (a: Byte, b: Int) =>
-      Vector.fill(a)(b).toScalaVector should ===(SVector.fill(a)(b))
+      Vector.fill(a.toInt)(b).toScalaVector should ===(SVector.fill(a.toInt)(b))
     }
   }
 
@@ -284,21 +284,21 @@ class VectorTest extends SlowDogsSuite {
     }
   }
 
-  test("lastIndexOfSlice"){ 
+  test("lastIndexOfSlice"){
     forAll {
       (ns: Vector[Int], ms: Vector[Int]) =>
       ns.lastIndexOfSlice(ms).getOrElse(-1) should ===(ns.toScalaVector.lastIndexOfSlice(ms.toScalaVector))
     }
   }
 
-  test("lastIndexWhere"){ 
+  test("lastIndexWhere"){
     forAll {
       (ns: Vector[Int], f: Int => Boolean) =>
       ns.lastIndexWhere(f).getOrElse(-1) should ===(ns.toScalaVector.lastIndexWhere(f))
     }
   }
 
-  test("lastOption"){ 
+  test("lastOption"){
     forAll {
       ns: Vector[Int] =>
       ns.lastOption.toScalaOption should ===(ns.toScalaVector.lastOption)
@@ -314,28 +314,28 @@ class VectorTest extends SlowDogsSuite {
 
   // map is tested by functor laws
 
-  test("nonEmpty"){ 
+  test("nonEmpty"){
     forAll {
       ns: Vector[Int] =>
       ns.nonEmpty should ===(ns.toScalaVector.nonEmpty)
     }
   }
 
-  test("padTo"){ 
+  test("padTo"){
     forAll {
       (ns: Vector[Int], n: Int) =>
       ns.padTo(100, n).toScalaVector should ===(ns.toScalaVector.padTo(100, n))
     }
   }
 
-  test("patch"){ 
+  test("patch"){
     forAll {
       (ns: Vector[Int], a: Int, ms: Vector[Int], b: Int) =>
       ns.patch(a, ms, b).toScalaVector should ===(ns.toScalaVector.patch(a, ms.toScalaVector, b))
     }
   }
 
-  test("prefixLength"){ 
+  test("prefixLength"){
     forAll {
       (ns: Vector[Int], f: Int => Boolean) =>
       ns.prefixLength(f) should ===(ns.toScalaVector.prefixLength(f))
@@ -343,35 +343,35 @@ class VectorTest extends SlowDogsSuite {
   }
 
 
-  test("reduceLeftOption"){ 
+  test("reduceLeftOption"){
     forAll {
       (ns: Vector[Int], f: (Int, Int) => Int) =>
       ns.reduceLeftOption(f).toScalaOption should ===(ns.toScalaVector.reduceLeftOption(f))
     }
   }
 
-  test("reduceRightOption"){ 
+  test("reduceRightOption"){
     forAll {
       (ns: Vector[Int], f: (Int, Int) => Int) =>
       ns.reduceRightOption(f).toScalaOption should ===(ns.toScalaVector.reduceRightOption(f))
     }
   }
 
-  test("reverse"){ 
+  test("reverse"){
     forAll {
       ns: Vector[Int] =>
       ns.reverse.toScalaVector should  ===(ns.toScalaVector.reverse)
     }
   }
 
-  test("reverseMap"){ 
+  test("reverseMap"){
     forAll {
       (ns: Vector[Int], f: Int => Int) =>
       ns.reverseMap(f).toScalaVector should ===(ns.toScalaVector.reverseMap(f))
     }
   }
 
-  test("scanLeft"){ 
+  test("scanLeft"){
     forAll {
       (ss: Vector[String], f: (Int, String) => Int) =>
       ss.scanLeft(0)(f).toScalaVector should ===(ss.toScalaVector.scanLeft(0)(f))
@@ -454,14 +454,14 @@ class VectorTest extends SlowDogsSuite {
   test("take"){
     forAll {
       (ns: Vector[Int], n: Byte) =>
-      ns.take(n).toScalaVector should ===(ns.toScalaVector.take(n))
+      ns.take(n.toInt).toScalaVector should ===(ns.toScalaVector.take(n.toInt))
     }
   }
 
   test("takeRight"){
     forAll {
       (ns: Vector[Int], n: Byte) =>
-      ns.takeRight(n).toScalaVector should ===(ns.toScalaVector.takeRight(n))
+      ns.takeRight(n.toInt).toScalaVector should ===(ns.toScalaVector.takeRight(n.toInt))
     }
   }
 
@@ -510,7 +510,7 @@ class VectorTest extends SlowDogsSuite {
     forAll {
       (ns: Vector[(Int, String)]) =>
       val (x,y) = ns.unzip[Int,String]
-      (x.toScalaVector, y.toScalaVector) should === (ns.toScalaVector.unzip) 
+      (x.toScalaVector, y.toScalaVector) should === (ns.toScalaVector.unzip)
     }
   }
 

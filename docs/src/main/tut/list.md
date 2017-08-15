@@ -59,8 +59,8 @@ required here, for a similar reason that they are required on
 import List._
 
 def listPrint[A](l: List[A]) = l match {
-  case El() => println("empty")
-  case Nel(h,t) => println(s"Non-empty, with $h at head")
+  case El() => Console.println("empty")
+  case Nel(h,t) => Console.println(s"Non-empty, with $h at head")
 }
 
 listPrint(empty)
@@ -100,7 +100,7 @@ x.flatMap(x => List(x, x+1))
 x.filter(_ % 2 == 0)
 x.foldLeft(0)(_ + _)
 x.foldRight(Eval.now(scala.Vector.empty[Int]))((a,la) => la.map(a +: _))
-x.foreach(println)
+x.foreach(Console.println)
 x.headOption
 x ++ List(6,7,8)
 x.find(_ == 7)

@@ -5,6 +5,7 @@ import scala.{inline,Iterable}
 import java.lang.{String,StringBuilder}
 import scala.annotation.{tailrec}
 import cats._
+import cats.evidence.Is
 import cats.kernel.Comparison
 
 /**
@@ -246,7 +247,7 @@ sealed abstract class List[A] {
     * Return a List which contains all of the same elements as this List,
     * but in order of smallest to largest according to the implicit `Order`
     */
-  def sorted(implicit ord: Order[A]): List[A] = 
+  def sorted(implicit ord: Order[A]): List[A] =
     List.fromIterable(toScalaList.sorted(ord.toOrdering))
 
   /**
@@ -353,7 +354,7 @@ sealed abstract class List[A] {
    * If there is proof that this is a list of (B,C) return a tuple of
    * the lists with the elements separated
    */
-  final def unzip[B,C](implicit unz: (B,C) =:= A): (List[B],List[C]) = {
+  final def unzip[B,C](implicit unz: A Is (B,C)): (List[B],List[C]) = {
     val lbb = new ListBuilder[B]
     val lbc = new ListBuilder[C]
     def go(as: List[(B,C)]): Unit = as match {
@@ -363,7 +364,7 @@ sealed abstract class List[A] {
         go(as)
       case _ =>
     }
-    go(this.asInstanceOf[List[(B,C)]])
+    go(unz.substitute(this))
     (lbb.run,lbc.run)
   }
 
@@ -546,8 +547,8 @@ sealed trait ListInstances extends ListInstances1 {
   }
 
 
-  implicit val listInstance: Traverse[List] with MonadCombine[List] with CoflatMap[List] =
-    new Traverse[List] with MonadCombine[List] with CoflatMap[List] {
+  implicit val listInstance: Traverse[List] with Monad[List] with Alternative[List] with CoflatMap[List] =
+    new Traverse[List] with Monad[List] with Alternative[List] with CoflatMap[List] {
 
       override def empty[A]: List[A] = List.empty
 

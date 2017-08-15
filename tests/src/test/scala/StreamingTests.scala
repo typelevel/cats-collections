@@ -32,8 +32,11 @@ class StreamingTests extends DogsSuite {
   checkAll("Streaming[Int]", CoflatMapTests[Streaming].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Streaming]", SerializableTests.serializable(CoflatMap[Streaming]))
 
-  checkAll("Streaming[Int]", MonadCombineTests[Streaming].monadCombine[Int, Int, Int])
-  checkAll("MonadCombine[Streaming]", SerializableTests.serializable(MonadCombine[Streaming]))
+  checkAll("Streaming[Int]", MonadTests[Streaming].monad[Int, Int, Int])
+  checkAll("Monad[Streaming]", SerializableTests.serializable(Monad[Streaming]))
+
+  checkAll("Streaming[Int]", AlternativeTests[Streaming].alternative[Int, Int, Int])
+  checkAll("Alternative[Streaming]", SerializableTests.serializable(Alternative[Streaming]))
 
   checkAll("Streaming[Int] with Option", TraverseTests[Streaming].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("Traverse[Streaming]", SerializableTests.serializable(Traverse[Streaming]))
@@ -346,15 +349,16 @@ class AdHocStreamingTests extends DogsSuite {
     }
 
     val positiveRationals = (nats product nats).filter(isRelativelyPrime)
-    implicit def tupleOrder[A, B](implicit A: Order[A], B: Order[B]): Order[(A,B)] = new Order[(A,B)] {
-      override def compare(l: (A,B), r: (A,B)): Int =
-        A.compare(l._1, r._1) match {
-          case 0 => B.compare(l._2, r._2)
-          case x => x
-        }
+    // implicit def tupleOrder[A, B](implicit A: Order[A], B: Order[B]): Order[(A,B)] = new Order[(A,B)] {
+    //   override def compare(l: (A,B), r: (A,B)): Int =
+    //     A.compare(l._1, r._1) match {
+    //       case 0 => B.compare(l._2, r._2)
+    //       case x => x
+    //     }
+    //   }
     val e = scala.collection.immutable.Set((1,1), (2,1), (1,2), (3,1), (1,3), (4,1), (3,2), (2,3), (1,4))
     positiveRationals.take(e.size).iterator.toSet should === (e)
-    }
+
   }
 
   test("interleave") {
@@ -431,7 +435,7 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("lazy unzip") {
     val bombBomb: Streaming[(Int, Int)] = bomb.map(n => (n, n))
-    isok { val t: (Streaming[Int], Streaming[Int]) = bombBomb.unzip }
+    isok { bombBomb.unzip: (Streaming[Int], Streaming[Int]) }
   }
 
   test("lazy merge") {

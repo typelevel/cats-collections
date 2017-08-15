@@ -8,6 +8,6 @@ trait RangeSyntax {
 }
 
 final class RangeOps[A](val from: A) extends AnyVal {
-  def to(to: A)(implicit A: Enum[A]): Range[A] = Range(from, to)
+  def to(to: A): Range[A] = Range(from, to)
   def until(to: A)(implicit A: Enum[A]): Range[A] = Range(from, A.pred(to))
 }

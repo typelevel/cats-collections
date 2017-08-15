@@ -74,7 +74,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * Returns range [end, start]
     */
-  def reverse(implicit discrete: Enum[A], order: Order[A]): Range[A] = Range(end, start)
+  def reverse: Range[A] = Range(end, start)
 
   /**
     * Verify is x is in range [start, end]

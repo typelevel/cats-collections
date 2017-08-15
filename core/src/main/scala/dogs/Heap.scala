@@ -56,9 +56,9 @@ sealed abstract class Heap[A] {
   def add(x: A)(implicit order: Order[A]): Heap[A] =
     if (isEmpty)
       Heap(x, Leaf(), Leaf())
-    else if (left.size < scala.math.pow(2, left.height) - 1)
+    else if (left.size < scala.math.pow(2, left.height.toDouble) - 1)
       bubbleUp(min, left.add(x), right)
-    else if (right.size < scala.math.pow(2, right.height) - 1)
+    else if (right.size < scala.math.pow(2, right.height.toDouble) - 1)
       bubbleUp(min, left, right.add(x))
     else if (right.height < left.height)
       bubbleUp(min, left, right.add(x))
@@ -173,10 +173,10 @@ object Heap {
     if (l.isEmpty && r.isEmpty) {
       Leaf()
     }
-    else if (l.size < scala.math.pow(2, l.height) - 1) {
+    else if (l.size < scala.math.pow(2, l.height.toDouble) - 1) {
       floatLeft(l.min, mergeChildren(l.left, l.right), r)
     }
-    else if (r.size < scala.math.pow(2, r.height) - 1) {
+    else if (r.size < scala.math.pow(2, r.height.toDouble) - 1) {
       floatRight(r.min, l, mergeChildren(r.left, r.right))
     }
     else if (r.height < l.height) {

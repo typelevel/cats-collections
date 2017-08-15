@@ -34,8 +34,9 @@
 
 package dogs
 
-import cats.{Applicative, CoflatMap, Eq, Eval, MonadCombine, Monoid, Order, Show, Traverse}
+import cats.{Applicative, CoflatMap, Eq, Eval, Alternative, Monad, Monoid, Order, Show, Traverse}
 import cats.data.OneAnd
+import cats.evidence.Is
 import cats.syntax.eq._
 
 import scala.Array
@@ -118,7 +119,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
       if (i >= tailOff) {
         tail(i & 0x01f).asInstanceOf[A]
       } else {
-        var arr = trie(i)
+        val arr = trie(i)
         arr(i & 0x01f).asInstanceOf[A]
       }
     } else throw new IndexOutOfBoundsException(i.toString)
@@ -134,7 +135,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def collectFirst[B](pf: PartialFunction[A, B]): Option[B] =
-    find(pf isDefinedAt) map pf
+    find(pf.isDefinedAt) map pf
 
   def containsSlice(that: Vector[A])(implicit ev: Eq[A]): Boolean =
     lastIndexOfSlice(that).isDefined
@@ -684,13 +685,13 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def toNel: Option[Nel[A]] = toList.toNel
 
-  def toMap[K, V](implicit ev0: A =:= (K, V), ev1: Order[K]): Map[K, V] =
+  def toMap[K, V](implicit ev0: A Is (K, V), ev1: Order[K]): Map[K, V] =
     widen[(K, V)].foldLeft(Map.empty[K, V]) { _ + _ }
 
   override def toString: String =
     Vector show Show.fromToString show this
 
-  def unzip[B, C](implicit ev: A =:= (B, C)): (Vector[B], Vector[C]) = {
+  def unzip[B, C](implicit ev: A Is (B, C)): (Vector[B], Vector[C]) = {
     widen[(B, C)].foldLeft((Vector.empty[B], Vector.empty[C])) {
       case ((bs, cs), (b, c)) => (bs :+ b, cs :+ c)
     }
@@ -712,8 +713,8 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
   }
 
-  def widen[B](implicit ev: A =:= B): Vector[B] =
-    this.asInstanceOf[Vector[B]]     // protip!  this is actually sound and doesn't involve type lambdas
+  def widen[B](implicit ev: A Is B): Vector[B] =
+    ev.substitute(this)
 
   def zip[B](_that: => Vector[B]): Vector[(A, B)] = {
     lazy val that = _that
@@ -1362,8 +1363,8 @@ sealed abstract class VectorInstance0 {
 
 sealed abstract class VectorInstances extends VectorInstance0 {
 
-  implicit val instances: Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] = {
-    new Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] {
+  implicit val instances: Traverse[Vector] with Monad[Vector] with Alternative[Vector] with CoflatMap[Vector] = {
+    new Traverse[Vector] with Monad[Vector] with Alternative[Vector] with CoflatMap[Vector] {
 
       def pure[A](a: A): Vector[A] = Vector(a)
 
@@ -1396,9 +1397,6 @@ sealed abstract class VectorInstances extends VectorInstance0 {
       def combineK[A](x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
 
       override def isEmpty[A](fa: Vector[A]): Boolean = fa.isEmpty
-
-      def plus[A](a: Vector[A], b: => Vector[A]): Vector[A] =
-        a ++ b
 
       def empty[A]: Vector[A] = Vector.empty[A]
 
