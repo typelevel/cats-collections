@@ -30,8 +30,11 @@ class StreamingTests extends DogsSuite {
   checkAll("Streaming[Int]", CoflatMapTests[Streaming].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Streaming]", SerializableTests.serializable(CoflatMap[Streaming]))
 
-  checkAll("Streaming[Int]", MonadCombineTests[Streaming].monadCombine[Int, Int, Int])
-  checkAll("MonadCombine[Streaming]", SerializableTests.serializable(MonadCombine[Streaming]))
+  checkAll("Streaming[Int]", MonadTests[Streaming].monad[Int, Int, Int])
+  checkAll("MonoidK[Streaming]", SerializableTests.serializable(MonoidK[Streaming]))
+
+  checkAll("Streaming[Int]", AlternativeTests[Streaming].alternative[Int, Int, Int])
+  checkAll("Alternative[Streaming]", SerializableTests.serializable(Alternative[Streaming]))
 
   checkAll("Streaming[Int] with Option", TraverseTests[Streaming].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("Traverse[Streaming]", SerializableTests.serializable(Traverse[Streaming]))

@@ -68,16 +68,16 @@ object ListWrapper {
 
   def semigroup[A]: Semigroup[ListWrapper[A]] = semigroupK.algebra[A]
 
-  val monadCombine: MonadCombine[ListWrapper] = {
-    val M = MonadCombine[List]
+  val monadCombine: Monad[ListWrapper] with Alternative[ListWrapper] = {
+    val M = cats.instances.list.catsStdInstancesForList
 
-    new MonadCombine[ListWrapper] {
+    new Monad[ListWrapper] with Alternative[ListWrapper] {
       def pure[A](x: A): ListWrapper[A] = ListWrapper(M.pure(x))
 
       def flatMap[A, B](fa: ListWrapper[A])(f: A => ListWrapper[B]): ListWrapper[B] =
         ListWrapper(M.flatMap(fa.list)(a => f(a).list))
 
-      def tailRecM[A, B](a: A)(f: A => dogs.tests.ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
+      def tailRecM[A, B](a: A)(f: A => ListWrapper[scala.Either[A,B]]): ListWrapper[B] =
         ListWrapper(cats.instances.list.catsStdInstancesForList.tailRecM(a)(f andThen (_.list)))
 
       def empty[A]: ListWrapper[A] = ListWrapper(M.empty[A])
@@ -93,8 +93,6 @@ object ListWrapper {
   val applyInstance: Apply[ListWrapper] = monadCombine
 
   def monoidK: MonoidK[ListWrapper] = monadCombine
-
-  def monadFilter: MonadFilter[ListWrapper] = monadCombine
 
   def alternative: Alternative[ListWrapper] = monadCombine
 

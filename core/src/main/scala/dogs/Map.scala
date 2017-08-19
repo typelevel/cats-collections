@@ -111,6 +111,12 @@ class Map[K,V](val set: Set[(K,V)]) {
   def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): Map[K,V] =
     new Map(set.updateKey(key, value))
 
+  override def toString: String =
+    "Map(" + Foldable[List].intercalate(toList.map {
+      case (k,v) => k.toString + " -> " + v.toString
+    }, ",") + ")"
+
+
   //
   // Fetch a Key/Value pair from the Map if the key is present.
   // O(log n)

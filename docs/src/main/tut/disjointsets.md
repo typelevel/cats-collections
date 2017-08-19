@@ -49,8 +49,13 @@ value is not part of `dsets`.
  
 ## Example usage
 
-```scala
-import DisjointSets._
+```tut
+import cats.data.State
+import dogs.DisjointSets
+
+def union(a:Int, b:Int) =  State[DisjointSets[Int], Boolean](_.union(a,b))
+def find(a:Int) =  State[DisjointSets[Int], Option[Int]](_.find(a))
+def toSets =  State[DisjointSets[Int], dogs.Map[Int,dogs.Set[Int]]](_.toSets)
 
 val operations = for {
   _ <- union(1,2)
@@ -61,7 +66,7 @@ val operations = for {
   sets <- toSets
 } yield sets
 
-val label2disjointset: Map[Int, Set[Int]] = operations.runA(DisjointSets(1,2,3,4)).value
+val label2disjointset: dogs.Map[Int, dogs.Set[Int]] = operations.runA(DisjointSets(1,2,3,4)).value
 ```
 
 ## Structure and performance 

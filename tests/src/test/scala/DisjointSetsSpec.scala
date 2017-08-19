@@ -1,15 +1,9 @@
 package dogs
 package tests
 
-import Predef._
-import dogs.tests.arbitrary._
-import cats.implicits._
-
-
-class DisjointSetsSpec extends DogsSuite with ArbitraryList {
+class DisjointSetsSpec extends DogsSuite {
 
   test("union-find operations using state/stator monad") {
-
     import DisjointSets._
 
     val operations = for {
@@ -37,6 +31,8 @@ class DisjointSetsSpec extends DogsSuite with ArbitraryList {
       Some(f)
     ) = operations.runA(DisjointSets(1,2,3,4)).value
 
+    println("OPERATIONS: " + operations.toString)
+
     a should not equal (b)
     c shouldBe d
     d shouldBe e
@@ -58,7 +54,7 @@ class DisjointSetsSpec extends DogsSuite with ArbitraryList {
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
 
-    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet) should contain theSameElementsAs groupByClassification
+    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet) should be (groupByClassification)
   }
 
 }

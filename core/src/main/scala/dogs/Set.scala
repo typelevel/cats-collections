@@ -250,6 +250,8 @@ sealed abstract class Set[A] {
     foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
 
+  override def toString: String =
+    "Set(" + Foldable[List].intercalate(toList.map(_.toString), ",") + ")"
 
   // So yeah. we had to make a decision, either we have to make this
   // structure Key/Value pairs even when we don't always need a value

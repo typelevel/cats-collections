@@ -1,13 +1,12 @@
 package dogs
 
-import cats.instances.list._
-import Eval._
 
 /**
  * A "difference list" - A List like structure with O(1) appends.
  * Based on `Data.DList`, a Haskell library by Don Stewart.
  */
 final class DList[A](val run: List[A] => Eval[List[A]]) {
+  import Eval._
 
   /**
    * Prepend the contents of this dlist to the given tail.
@@ -80,6 +79,8 @@ final class DList[A](val run: List[A] => Eval[List[A]]) {
 }
 
 object DList extends DListInstances{
+  import Eval._
+
   def empty[A]: DList[A] = new DList(t => now(t))
   def apply[A](a: A): DList[A] = new DList(tail => Eval.now(a :: tail))
   def apply[A](as: List[A]): DList[A] = new DList(tail => as.foldRight(now(tail))((a,as) => as.map(a :: _)))

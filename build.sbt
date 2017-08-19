@@ -4,7 +4,7 @@ lazy val buildSettings = Seq(
   name := "dogs",
   scalaOrganization in ThisBuild := "org.typelevel",
   organization in Global := "org.typelevel",
-  scalaVersion in ThisBuild := "2.12.2-bin-typelevel-4"
+  scalaVersion in ThisBuild := "2.12.3-bin-typelevel-4"
 )
 
 lazy val dogs = project.in(file("."))
@@ -26,10 +26,9 @@ lazy val tests = project
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-laws"          % "0.9.0",
+      "org.typelevel"  %% "cats-laws"          % "1.0.0-MF",
       "org.scalacheck" %% "scalacheck"         % "1.13.4",
       "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
-      "org.typelevel"  %% "catalysts-platform" % "0.0.5"    % "test",
       "org.typelevel"  %% "discipline"         % "0.7.3"    % "test"
     )
   )
@@ -57,9 +56,9 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % "0.9.0",
-    "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
-    "org.typelevel"                  %% "machinist"  % "0.6.1",
+    "org.typelevel"                  %% "cats-core"  % "0.10.0-MF",
+//    "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
+//    "org.typelevel"                  %% "machinist"  % "0.6.1",
 
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.3"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
@@ -82,7 +81,7 @@ addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVe
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
   coverageFailOnMinimum := false,
-  coverageHighlighting := scalaBinaryVersion.value != "2.10"
+  coverageHighlighting := true
 )
 
 lazy val noPublishSettings = Seq(

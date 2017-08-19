@@ -1,7 +1,5 @@
 package dogs
 
-import Predef._
-import cats._
 import cats.data.State
 import cats.data.State.get
 
@@ -116,15 +114,15 @@ object DisjointSets extends DisjointSetsStates {
 
 trait DisjointSetsStates {
 
-  def find[T](v: T) = State[DisjointSets[T], Option[T]](
+  def find[T](v: T): State[DisjointSets[T], Option[T]] = State[DisjointSets[T], Option[T]](
     disjointSets => disjointSets.find(v)
   )
 
-  def union[T](a: T, b: T) = State[DisjointSets[T], Boolean](
+  def union[T](a: T, b: T): State[DisjointSets[T], Boolean] = State[DisjointSets[T], Boolean](
     disjointSets => disjointSets.union(a, b)
   )
 
-  def toSets[T] = State[DisjointSets[T], Map[T, Set[T]]](
+  def toSets[T]: State[DisjointSets[T], Map[T, Set[T]]] = State[DisjointSets[T], Map[T, Set[T]]](
     disjointSets => disjointSets.toSets
   )
 

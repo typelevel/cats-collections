@@ -1362,8 +1362,8 @@ sealed abstract class VectorInstance0 {
 
 sealed abstract class VectorInstances extends VectorInstance0 {
 
-  implicit val instances: Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] = {
-    new Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] {
+  implicit val instances: Traverse[Vector] with Monad[Vector] with MonoidK[Vector] with CoflatMap[Vector] = {
+    new Traverse[Vector] with Monad[Vector] with MonoidK[Vector] with CoflatMap[Vector] {
 
       def pure[A](a: A): Vector[A] = Vector(a)
 
