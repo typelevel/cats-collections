@@ -1,16 +1,13 @@
 import com.typesafe.sbt.SbtSite.SiteKeys._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import sbtunidoc.Plugin.UnidocKeys._
+//import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
+//import sbtunidoc.Plugin.UnidocKeys._
+
 
 name := "dogs-docs"
 
-site.settings
+enablePlugins(JekyllPlugin, TutPlugin, GhpagesPlugin)
 
-tutSettings
-
-site.addMappingsToSiteDir(tut, "tut")
-
-ghpages.settings
+//addMappingsToSiteDir(tut, (tutTargetDirectory in Tut))
 
 ghpagesNoJekyll := false
 
