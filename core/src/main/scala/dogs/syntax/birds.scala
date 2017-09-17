@@ -3,7 +3,7 @@ package dogs.syntax
 import scala.{AnyVal,Unit}
 
 trait BedazzleBirds {
-  implicit def toBirdOps[A](a: A) = new BirdOps(a)
+  implicit def toBirdOps[A](a: A): BirdOps[A] = new BirdOps(a)
 }
 
 class BirdOps[A](val a: A) extends AnyVal {

@@ -1,7 +1,7 @@
 package dogs
 
+import scala.annotation.tailrec
 import cats._
-import dogs.Predef._
 
 /**
  * Discrete Interval Encoding Tree (Diet).
@@ -79,14 +79,14 @@ sealed abstract class Diet[A] {
     }
 
   // helper method for addRange which does the actual insertion
-  private [dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
+  private[dogs] def insertRange(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Diet[A] =
     this match {
       case EmptyDiet() =>  DietNode(range, EmptyDiet(), EmptyDiet())
 
       case DietNode(rng, l, r)  => {
         val (r1,r2) = (rng + range)
           r2 match {
-            case None() =>
+            case None =>
               val (left, start) = l.noMoreThan(r1.start)
               val (right, end) = r.noLessThan(r1.end)
               DietNode[A](Range(start,end),left,right)
@@ -150,8 +150,8 @@ sealed abstract class Diet[A] {
       val left = if(order.lt(range.start, rng.start)) l.removeRange(range) else l
       val right = if(order.gt(range.end, rng.end)) r.removeRange(range) else r
         (rng - range) match {
-        case None() => merge(l, r)
-        case Some((m, None())) => DietNode(m, left, right)
+        case None => merge(l, r)
+        case Some((m, None)) => DietNode(m, left, right)
         case Some((m, Some(n))) => merge(DietNode(m, l, EmptyDiet()), DietNode(n, EmptyDiet(), r))
       }
   }
@@ -197,7 +197,7 @@ sealed abstract class Diet[A] {
 
         (range & other) match {
           case Some(range) =>       DietNode(range, newLeft, newRight)
-          case None() => merge(newLeft, newRight)
+          case None => merge(newLeft, newRight)
         }
       case x => x
     }
@@ -213,7 +213,7 @@ sealed abstract class Diet[A] {
    * min value in the tree
    */
   def min: Option[A] = this match {
-    case EmptyDiet()  =>  None()
+    case EmptyDiet()  =>  None
     case DietNode(Range(x, _), EmptyDiet(), _) => Some(x)
     case DietNode(_, l, _) => l.min
   }
@@ -222,7 +222,7 @@ sealed abstract class Diet[A] {
    * max value in the tree
    */
   def max: Option[A] = this match {
-    case EmptyDiet()  => None()
+    case EmptyDiet()  => None
     case DietNode(Range(_, y), _, EmptyDiet()) => Some(y)
     case DietNode(_, _, r) => r.max
   }
@@ -269,11 +269,11 @@ sealed abstract class Diet[A] {
 object Diet {
   def empty[A]: Diet[A] = EmptyDiet()
 
-  private [dogs] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
+  private[dogs] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
     override val isEmpty: Boolean = false
   }
 
-  private [dogs] case object EmptyDiet extends Diet[Nothing] {
+  private[dogs] case object EmptyDiet extends Diet[Nothing] {
     def unapply[A](diet: Diet[A]): Boolean = diet.isEmpty
 
     def apply[A](): Diet[A] = this.asInstanceOf[Diet[A]]
@@ -284,7 +284,7 @@ object Diet {
   /**
    *  Merge two Diets
    */
-  private [dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
+  private[dogs] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
     case (l, EmptyDiet())   =>  l
     case (EmptyDiet(), r)   =>  r
     case (l, r)             =>  {
@@ -294,7 +294,7 @@ object Diet {
     }
   }
 
-  private [dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
+  private[dogs] def splitMax[A](n: Diet[A]): (Diet[A], (A, A)) = n match {
     case DietNode(Range(x, y), l, EmptyDiet())   =>  (l, (x, y))
     case DietNode(rng, l, r)             =>  {
       val (d, i) = splitMax(r)
@@ -304,6 +304,6 @@ object Diet {
   }
 
   implicit def dietShowable[A](implicit s: Show[Range[A]]): Show[Diet[A]] = new Show[Diet[A]] {
-    override def show(f: Diet[A]): Predef.String = f.foldLeftRange("{")((str,rng) => str + " " + s.show(rng)) + " }"
+    override def show(f: Diet[A]): String = f.foldLeftRange("{")((str,rng) => str + " " + s.show(rng)) + " }"
   }
 }

@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import Predef._
 import dogs.tests.arbitrary._
 import dogs.tests.arbitrary.cogen._
 import cats._
@@ -12,7 +11,7 @@ import org.scalacheck._
 import Cogen._
 import catalysts.Platform
 
-class DListSpec extends SlowDogsSuite with ArbitraryList with ArbitraryDList with ArbitraryOption {
+class DListSpec extends SlowDogsSuite with ArbitraryDList {
   import DList._
 
   checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
@@ -28,7 +27,7 @@ class DListSpec extends SlowDogsSuite with ArbitraryList with ArbitraryDList wit
 
   test("tailOption")(forAll {(l: List[Int]) =>
     val dl = DList(l)
-    dl.tailOption.map(_.toList) should be (l.tailOption)
+    dl.tailOption.map(_.toList) should be (l.headOption.map(_ => l.tail))
   })
 
   test("isEmpty")(forAll {(l: List[Int]) =>

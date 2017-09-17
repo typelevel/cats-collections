@@ -1,9 +1,9 @@
 package dogs
 
-import Predef._
+import scala.annotation.tailrec
+import scala.collection.immutable.List
 import cats._
 import cats.implicits._
-import scala.annotation.tailrec
 
 /**
  * An immutable, ordered, extensional Set
@@ -43,8 +43,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def toList(): List[A] = this match {
-    case BTNil() =>  List.empty[A]
     case Branch(a, l, r) => l.toList ::: (a :: r.toList)
+    case _ =>  List.empty[A]
   }
 
   /**
@@ -54,13 +54,13 @@ sealed abstract class Set[A] {
    */
   def min: Option[A] = {
     @tailrec def loop(sub: Set[A], x: A): A = sub match {
-      case BTNil() =>  x
       case Branch(a, l, _) => loop(l, a)
+      case _ =>  x
     }
 
     this match {
-      case BTNil() => None()
       case Branch(a, l, _) => Some(loop(l, a))
+      case _ => None
     }
   }
 
@@ -71,13 +71,13 @@ sealed abstract class Set[A] {
    */
   def max: Option[A] = {
     @tailrec def loop(sub: Set[A], x: A): A = sub match {
-      case BTNil() =>  x
       case Branch(a, _, r) => loop(r, a)
+      case _ =>  x
     }
 
     this match {
-      case BTNil() => None()
       case Branch(a, _, r) => Some(loop(r, a))
+      case _ => None
     }
   }
 
@@ -87,8 +87,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
-    case BTNil() => z
     case Branch(v, l, r) => r.foldLeft(f(l.foldLeft(z)(f), v))(f)
+    case _ => z
   }
 
   /**
@@ -97,8 +97,8 @@ sealed abstract class Set[A] {
    * O(n)
    */
   def foldRight[B](z: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = this match {
-    case BTNil() => z
     case Branch(v, l, r) => l.foldRight(f(v, r.foldRight(z)(f)))(f)
+    case _ => z
   }
 
   /**
@@ -107,9 +107,9 @@ sealed abstract class Set[A] {
    * O(log n)
    */
   def find(pred: A => Boolean): Option[A] = this match {
-    case BTNil() => None()
     case Branch(v, l, r) =>
       l.find(pred) orElse (if(pred(v)) Some(v) else r.find(pred))
+    case _ => None
   }
 
   /**
@@ -117,13 +117,12 @@ sealed abstract class Set[A] {
    * O(log n)
    */
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
-    case BTNil() => false
-
     case Branch(a, l, r) => order.compare(x, a) match {
       case 0 => true
       case o if o < 0 => l.contains(x)
       case _ => r.contains(x)
     }
+    case _ => false
   }
 
   /**
@@ -132,12 +131,12 @@ sealed abstract class Set[A] {
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
     (this match {
-      case BTNil() =>  Branch(x, Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
         case 0 => Branch(x, l, r)
         case o if o < 0 => Branch(a, l.add(x), r)
         case _ => Branch(a, l, r.add(x))
       }
+      case _ =>  Branch(x, Set.empty, Set.empty)
     }).balance
 
 
@@ -153,32 +152,32 @@ sealed abstract class Set[A] {
    */
   def remove(x: A)(implicit order: Order[A]): Set[A] =
     this match {
-      case BTNil() => Set.empty
       case Branch(a, l, r) =>
         order.compare(x, a) match {
           case 0 => r.min match {
-            case None() => l
+            case None => l
             case Some(v) => Branch(v,l,r.remove(v)).balance
           }
           case o if o < 0 => Branch(a, l.remove(x), r).balance
           case _ => Branch(a, l, r.remove(x)).balance
         }
+      case _ => Set.empty
     }
 
   // STU: this is used by Map, not sure what to do about this
   private[dogs] def removef[B](x: B, f: A => B)(implicit B: Order[B]): Set[A] =
     this match {
-      case BTNil() => Set.empty
       case Branch(a, l, r) =>
         B.compare(x, f(a)) match {
           case 0 => r.min match {
-            case None() => l
+            case None => l
             case Some(v) =>
               Branch(v,l,r.removef(f(v), f)).balance
           }
           case o if o < 0 => Branch(a, l.removef(x, f), r).balance
           case _ => Branch(a, l, r.removef(x, f)).balance
         }
+      case _ => Set.empty
     }
 
   /**
@@ -186,21 +185,21 @@ sealed abstract class Set[A] {
    * the given Set.
    * O(n log n)
    */
-  def union(another: Set[A])(implicit order: Order[A]) = another.foldLeft(this)(_ + _)
+  def union(another: Set[A])(implicit order: Order[A]): Set[A] = another.foldLeft(this)(_ + _)
 
   /**
    * Return a Set containing the union of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def |(another: Set[A])(implicit order: Order[A]) = this union another
+  def |(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
 
   /**
    * Return a Set containing the intersection of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def intersect(another: Set[A])(implicit order: Order[A]) = {
+  def intersect(another: Set[A])(implicit order: Order[A]): Set[A] = {
     def _intersect(small: Set[A], large: Set[A]): Set[A] =
       small.foldLeft[Set[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
@@ -215,27 +214,27 @@ sealed abstract class Set[A] {
    * the given Set.
    * O(n log n)
    */
-  def &(another: Set[A])(implicit order: Order[A]) = this intersect another
+  def &(another: Set[A])(implicit order: Order[A]): Set[A] = this intersect another
 
   /**
    * Return a Set containing the union of elements with this Set and
    * the given Set.
    * O(n log n)
    */
-  def ++(another: Set[A])(implicit order: Order[A]) = this union another
+  def ++(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
 
   /**
    * Return a Set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def diff(removals: Set[A])(implicit order: Order[A]) =
+  def diff(removals: Set[A])(implicit order: Order[A]): Set[A] =
     removals.foldLeft(this)(_ remove _)
 
   /**
    * Return a Set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def -(removals: Set[A])(implicit order: Order[A]) =
+  def -(removals: Set[A])(implicit order: Order[A]): Set[A] =
     removals.foldLeft(this)(_ remove _)
 
 
@@ -253,6 +252,8 @@ sealed abstract class Set[A] {
     foldLeft[SSet[A]](SSet.empty)(_ + _)
   }
 
+  override def toString: String =
+    "Set(" + Foldable[List].intercalate(toList.map(_.toString), ",") + ")"
 
   // So yeah. we had to make a decision, either we have to make this
   // structure Key/Value pairs even when we don't always need a value
@@ -265,20 +266,19 @@ sealed abstract class Set[A] {
   // remember.
   private[dogs] def _getkv[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
     @tailrec def go(t: Set[A]): Option[A] = t match {
-      case BTNil() => None()
       case Branch(v,l,r) =>
         B.compare(b, f(v)) match {
           case 0 => Some(v)
           case x if x < 0 => go(l)
           case _ => go(r)
         }
+      case _ => None
     }
     go(this)
   }
 
   private[dogs] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): Set[A] = {
     (this match {
-      case BTNil() =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
       case branch @ Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
         case 0 =>
           val (k,v) = ev(a)
@@ -286,6 +286,7 @@ sealed abstract class Set[A] {
         case o if o < 0 => Branch(a, l.updateKey(key, value), r)
         case _ => Branch(a, l, r.updateKey(key,value))
       }
+      case _ =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
     }).balance
   }
 
@@ -317,39 +318,41 @@ object Set {
 
     override def isEmpty: Boolean = false
 
+    // Determine the direction that the tree should be rotated,
+    // given the allowed amount of imbalance.
+    // Returns -1 when a left rotation is called for.
+    // Returns 0 when a right rotation is called for.
+    // Returns 1 when the tree is withing the allowance.
+    private def rotation(l: Int, r: Int, allow: Int): Int =
+      if(l - r > allow ) 1
+      else if(r - l > allow) -1
+      else 0
+
     private[dogs] def balance: Branch[A] = {
+      val r = rotation(left.height, right.height, 1)
 
-      // Determine the direction that the tree should be rotated,
-      // given the allowed amount of imbalance.
-      // Returns -1 when a left rotation is called for.
-      // Returns 0 when a right rotation is called for.
-      // Returns 1 when the tree is withing the allowance.
-      def rotation(l: Int, r: Int, allow: Int): Int =
-        if(l - r > allow ) 1
-        else if(r - l > allow) -1
-        else 0
-
-      rotation(left.height, right.height, 1) match {
-        case 0 => this
-
-        case x if x > 0 => left match {
-          case BTNil() => this
-          case Branch(lv,ll,lr) => rotation(ll.height, lr.height, 0) match {
-            case x if x < 0 =>
+      if(r == 0) this
+      else if(r > 0) {
+        left match {
+          case Branch(lv,ll,lr) =>
+            if(rotation(ll.height, lr.height, 0) < 0) {
               val Branch(lrv,lrl,lrr) = lr
               Branch(lrv,Branch(lv, ll, lrl), Branch(value, lrr, right))
-            case _ => Branch(lv, ll, Branch(value, lr, right))
-          }
+            } else {
+              Branch(lv, ll, Branch(value, lr, right))
+            }
+          case _ => this
         }
-
-        case _ => right match {
-          case BTNil() => this
-          case Branch(rv,rl,rr) => if(rotation(rl.height, rr.height, 0) > 0) {
-            val Branch(rlv,rll,rlr) = rl
-            Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
-          } else {
-            Branch(rv, Branch(value, left, rl), rr)
-          }
+      } else {
+        right match {
+          case Branch(rv,rl,rr) =>
+            if(rotation(rl.height, rr.height, 0) > 0) {
+              val Branch(rlv,rll,rlr) = rl
+              Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
+            } else {
+              Branch(rv, Branch(value, left, rl), rr)
+            }
+          case _ => this
         }
       }
     }

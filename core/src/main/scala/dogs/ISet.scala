@@ -1,5 +1,4 @@
 package dogs
-import Predef._
 
 import cats._
 

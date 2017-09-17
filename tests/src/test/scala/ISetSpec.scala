@@ -1,8 +1,6 @@
 package dogs
 package tests
 
-import dogs.Predef._
-import dogs.tests.arbitrary.all._
 import cats.laws.discipline.SerializableTests
 import cats._
 import cats.implicits._

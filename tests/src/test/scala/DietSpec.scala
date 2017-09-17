@@ -1,8 +1,6 @@
 package dogs
 package tests
 
-import Predef._
-import dogs.syntax.range._
 import cats._
 import cats.implicits._
 import org.scalacheck._
@@ -30,7 +28,7 @@ class DietSpec extends DogsSuite {
       (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1) | f(r2) | f(r3))
     }
 
-  def render: dogs.List[(Int,Int)] = {
+  def render: List[(Int,Int)] = {
     val adds = List(a1,a2,a3,a4,a5)
     val removes = List(r1,r2,r3)
 
@@ -38,22 +36,22 @@ class DietSpec extends DogsSuite {
       a <- adds
       r <- removes
       l <- (Range(a._1, a._2) - Range(r._1, r._2)) match {
-        case None() => List.empty
-        case Some((l, None())) => List((l.start, l.end))
+        case None => List.empty
+        case Some((l, None)) => List((l.start, l.end))
         case Some((l, Some(r))) => List((l.start, l.end),(r.start, r.end))
       }
     } yield l
   }
 
-  def min: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+  def min: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
     b match {
-      case None() => Some(a._1)
+      case None => Some(a._1)
       case Some(x) => Some(x min a._1)
     })
 
-  def max: dogs.Option[Int] = render.foldLeft(Option.none[Int])((b,a) =>
+  def max: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
     b match {
-      case None() => Some(a._2)
+      case None => Some(a._2)
       case Some(x) => Some(x max a._2)
     })
   }
@@ -208,7 +206,7 @@ class DietTest extends DogsSuite {
   test("be spl"){
     val diet = Diet.empty[Int] + 1 +2 + 3 + 5
 
-    val other = diet.remove(2).intervals.map(x => x.generate.toScalaList).toScalaList
+    val other = diet.remove(2).intervals.map(x => x.generate)
 
     other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
   }
@@ -269,14 +267,14 @@ class DietTestJoin extends DogsSuite {
 
     val other = diet.addRange(range)
 
-    other.intervals.toScalaList(0).generate should matchTo(List(15, 16, 17, 18, 19, 20, 21))
+    other.intervals(0).generate should matchTo(List(15, 16, 17, 18, 19, 20, 21))
   }
 
   test("create disjoint range to the left"){
     val diet = Diet.empty[Int] + 20 + 21
     val range = Range(15, 18)
 
-    val sets = diet.addRange(range).intervals.map(r=>r.generate).toScalaList
+    val sets = diet.addRange(range).intervals.map(r=>r.generate)
 
     sets(0) should matchTo(List(15, 16, 17, 18))
     sets(1) should matchTo(List(20, 21))
@@ -316,7 +314,7 @@ class DietTestJoin extends DogsSuite {
   test("intersect with another diet"){
     val diet = Diet.empty[Int] + Range(20, 30)
 
-    (diet & Diet.empty[Int]).intervals.toScalaList.length should be (0)
+    (diet & Diet.empty[Int]).intervals.length should be (0)
 
     (diet & diet) should be(diet)
 

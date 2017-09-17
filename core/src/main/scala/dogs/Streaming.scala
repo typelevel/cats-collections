@@ -1,6 +1,5 @@
 package dogs
 
-import Predef._
 import scala.NoSuchElementException
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
@@ -112,7 +111,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   def uncons: Option[(A, Eval[Streaming[A]])] = {
     @tailrec def unroll(s: Streaming[A]): Option[(A, Eval[Streaming[A]])] =
       s match {
-        case Empty() => None()
+        case Empty() => None
         case Wait(lt) => unroll(lt.value)
         case Cons(a, lt) => Some((a, lt))
       }
@@ -186,7 +185,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       s match {
         case Cons(a, lt) => if (f(a)) Some(a) else loop(lt.value)
         case Wait(lt) => loop(lt.value)
-        case Empty() => None()
+        case Empty() => None
       }
     loop(this)
   }
@@ -227,7 +226,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   def peekEmpty: Option[Boolean] =
     this match {
       case Empty() => Some(true)
-      case Wait(_) => None()
+      case Wait(_) => None
       case Cons(a, lt) => Some(false)
     }
 
@@ -580,7 +579,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * This will evaluate the stream immediately, and will hang in the
    * case of infinite streams.
    */
-  def toList: List[A] = foldLeft[List[A]](List.empty)((as,a) => Nel(a,as)).reverse
+  def toList: List[A] = foldLeft[List[A]](List.empty)((as,a) => a :: as).reverse
 
   /**
    * Provide a scala.collection.immutable.List of elements in the
@@ -590,7 +589,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    * case of infinite streams.
    */
   def toScalaList: scala.collection.immutable.List[A] =
-    foldLeft(scala.collection.immutable.List.empty[A])((as,a) => a :: as).reverse
+    foldLeft(scala.collection.immutable.List.empty[A])((as,a) => (a :: as).reverse)
 
   /**
    * Basic string representation of a stream.
@@ -620,7 +619,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
         case Cons(a, lt) => unroll(n - 1, sb.append(", " + a.toString), lt.value)
       }
     uncons match {
-      case None() =>
+      case None =>
         "Streaming()"
       case Some((a, lt)) =>
         val sb = new StringBuffer().append("Streaming(" + a.toString)
@@ -707,7 +706,7 @@ object Streaming extends StreamingInstances {
   final case class Cons[A](a: A, tail: Eval[Streaming[A]]) extends Streaming[A]
 
   def unfold[A,B](b: B)(f: B => Option[(A,B)]): Streaming[A] = f(b) match {
-    case None()   => Streaming.empty
+    case None   => Streaming.empty
     case Some((a,b)) => Streaming.cons(a, defer(unfold(b)(f)))
   }
 
@@ -779,8 +778,8 @@ object Streaming extends StreamingInstances {
   def fromList[A](as: List[A]): Streaming[A] = {
     def loop(s: Streaming[A], ras: List[A]): Streaming[A] =
       ras match {
-        case El() => s
-        case Nel(a, rt) => loop(Cons(a, now(s)), rt)
+        case Nil => s
+        case a :: rt => loop(Cons(a, now(s)), rt)
       }
     loop(Empty(), as.reverse)
   }
@@ -862,15 +861,15 @@ object Streaming extends StreamingInstances {
    */
   def unfold[A](o: Option[A])(f: A => Option[A]): Streaming[A] =
     o match {
-      case None() => Empty()
+      case None => Empty()
       case Some(a) => Cons(a, always(unfold(f(a))(f)))
     }
 }
 
 private[dogs] sealed trait StreamingInstances extends StreamingInstances1 {
 
-  implicit val streamInstance: Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] =
-    new Traverse[Streaming] with MonadCombine[Streaming] with CoflatMap[Streaming] {
+  implicit val streamInstance: Traverse[Streaming] with Alternative[Streaming] with Monad[Streaming] with CoflatMap[Streaming] =
+    new Traverse[Streaming] with Alternative[Streaming] with Monad[Streaming] with CoflatMap[Streaming] {
       def pure[A](a: A): Streaming[A] =
         Streaming(a)
 
@@ -968,6 +967,6 @@ private[dogs] sealed trait StreamingInstances2 {
     new Eq[Streaming[A]] {
       def eqv(x: Streaming[A], y: Streaming[A]): Boolean =
         (x izipMap y)(_ === _, _ => false, _ => false)
-          .forall(_ == true)
+          .forall(identity)
     }
 }

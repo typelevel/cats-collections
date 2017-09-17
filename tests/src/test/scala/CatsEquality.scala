@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import Predef._
 import cats._
 
 import org.scalactic._

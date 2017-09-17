@@ -1,7 +1,6 @@
 package dogs
 package syntax
 
-import Predef._
 import cats.{Eval,Foldable,Order,Semigroup}
 
 trait FoldableSyntax {
@@ -11,12 +10,6 @@ trait FoldableSyntax {
 }
 
 final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
-  def toDogsList: List[A] = {
-    val lb = new ListBuilder[A]
-    F.foldLeft(fa, ()){(_, a) => val _ = lb += a}
-    lb.run
-  }
-
   def toDogsVector: Vector[A] =
     F.foldLeft[A, Vector[A]](fa, Vector.empty)(_ :+ _)
 

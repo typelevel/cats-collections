@@ -11,6 +11,8 @@ import scalaz.Diev
 import cats._
 import cats.implicits._
 
+
+
 /**
   * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
   */
@@ -23,7 +25,7 @@ class DietRandomizeBench extends BigNumberLists{
 
   @Benchmark
   def dogsDietAddRandom: Unit = {
-    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + r)
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
@@ -33,7 +35,7 @@ class DietRandomizeBench extends BigNumberLists{
 
   @Benchmark
   def dogsDietAddRangeRandom: Unit = {
-    Random.shuffle(dogs.toScalaList).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
   }
 
   @Benchmark

@@ -39,7 +39,7 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-laws"          % "0.9.0",
+      "org.typelevel"  %% "cats-laws"          % "1.0.0-MF",
       "org.scalacheck" %% "scalacheck"         % "1.13.4",
       "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
       "org.typelevel"  %% "catalysts-platform" % "0.0.5"    % "test",
@@ -74,7 +74,7 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ sc
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
   libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % "0.9.0",
+    "org.typelevel"                  %% "cats-core"  % "1.0.0-MF",
     "com.github.mpilquist"           %% "simulacrum" % "0.10.0",
     "org.typelevel"                  %% "machinist"  % "0.6.1",
 
@@ -196,9 +196,7 @@ lazy val commonScalacOptions = Seq(
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Yno-imports",
-  "-Yno-predef")
+  "-Xfuture")
 
 lazy val warnUnusedImport = Seq(
   scalacOptions ++= {

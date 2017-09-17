@@ -1,7 +1,6 @@
 package dogs
 package tests
 
-import Predef._
 import java.lang.System
 
 import catalysts.Platform

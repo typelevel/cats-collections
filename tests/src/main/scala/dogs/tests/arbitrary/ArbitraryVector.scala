@@ -7,7 +7,7 @@ import org.scalacheck.{Gen, Arbitrary, Shrink}, Arbitrary.arbitrary
 trait ArbitraryVector {
   def vectorGen[A](implicit arbA: Arbitrary[A]): Gen[Vector[A]] =
     Gen.listOf[A](arbitrary(arbA)).map(l => Vector(l:_*))
-                              
+
   implicit def arbitraryVector[A: Arbitrary]: Arbitrary[Vector[A]] =
     Arbitrary(vectorGen)
 

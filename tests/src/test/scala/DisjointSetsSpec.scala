@@ -1,12 +1,9 @@
 package dogs
 package tests
 
-import Predef._
-import dogs.tests.arbitrary._
 import cats.implicits._
 
-
-class DisjointSetsSpec extends DogsSuite with ArbitraryList {
+class DisjointSetsSpec extends DogsSuite {
 
   test("union-find operations using state/stator monad") {
 

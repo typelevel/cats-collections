@@ -34,18 +34,16 @@
 
 package dogs
 
-import cats.{Applicative, CoflatMap, Eq, Eval, MonadCombine, Monoid, Order, Show, Traverse}
+import cats._
 import cats.data.OneAnd
 import cats.syntax.eq._
 
-import scala.Array
+import scala.annotation.tailrec
 import scala.math.{max, min}
 
 import scala.collection.immutable.{Vector => SVector}
 
 import java.lang.IndexOutOfBoundsException
-
-import Predef._
 
 /**
  * A straight port of Clojure's <code>PersistentVector</code> class (with some
@@ -201,7 +199,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[A] = {
       if (i >= length) {
-        None()
+        None
       } else {
         val a = apply(i)
 
@@ -249,7 +247,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
    * Safe dereference operation.  Slower than apply due to the boxing into Option.
    */
   def get(i: Int): Option[A] =
-    if (i >= 0 && i < length) Some(this(i)) else None()
+    if (i >= 0 && i < length) Some(this(i)) else None
 
   def groupBy[K](f: A => K)(implicit ev: Order[K]): Map[K, Vector[A]] = {
     foldLeft(Map.empty[K, Vector[A]]) { (m, a) =>
@@ -264,7 +262,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def headOption: Option[A] =
-    if (length > 0) Some(apply(0)) else None()
+    if (length > 0) Some(apply(0)) else None
 
   def indexOf(a: A)(implicit ev: Eq[A]): Option[Int] =
     indexWhere { _ === a }
@@ -273,7 +271,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(offset: Int): Option[Int] = {
       if (offset + that.length > length) {
-        None()
+        None
       } else {
         if (matches(that, offset))
           Some(offset)
@@ -289,7 +287,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[Int] = {
       if (i >= length) {
-        None()
+        None
       } else {
         if (f(apply(i)))
           Some(i)
@@ -302,7 +300,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def initOption: Option[Vector[A]] =
-    if (isEmpty) None() else Some(pop)
+    if (isEmpty) None else Some(pop)
 
   def inits: Vector[Vector[A]] = {
     @tailrec
@@ -340,7 +338,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(offset: Int): Option[Int] = {
       if (offset < 0) {
-        None()
+        None
       } else {
         if (matches(that, offset))
           Some(offset)
@@ -356,7 +354,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     @tailrec
     def inner(i: Int): Option[Int] = {
       if (i < 0) {
-        None()
+        None
       } else {
         if (f(apply(i)))
           Some(i)
@@ -369,7 +367,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
   }
 
   def lastOption: Option[A] =
-    if (isEmpty) None() else Some(this(length - 1))
+    if (isEmpty) None else Some(this(length - 1))
 
   def map[B](f: A => B): Vector[B] =
     foldLeft(Vector.empty[B]) { _ :+ f(_) }
@@ -490,7 +488,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
 
     if (length <= 0)
-      None()
+      None
     else
       Some(inner(1, this(0)))
   }
@@ -505,7 +503,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
 
     if (length <= 0)
-      None()
+      None
     else
       Some(inner(length - 2, this(length - 1)))
   }
@@ -632,13 +630,16 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def tailOption: Option[Vector[A]] = {
     if (length == 0)
-      None()
+      None
     else
       Some(this drop 1)
   }
 
   def take(n: Int): Vector[A] =
-    dropRight(length - n)
+    if(n > 0)
+      dropRight(length - n)
+    else
+      Vector.empty
 
   def takeRight(n: Int): Vector[A] = drop(max((length - n), 0))
 
@@ -680,9 +681,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def toScalaVector: SVector[A] = foldRight[SVector[A]](Eval.now(SVector.empty))((a,fa) => fa.map(a +: _)).value
 
-  def toList: List[A] = foldRight(Eval.now(El[A]))((a,fa) => fa.map( a :: _ )).value
-
-  def toNel: Option[Nel[A]] = toList.toNel
+  def toList: List[A] = foldRight(Eval.now(List.empty[A]))((a,fa) => fa.map( a :: _ )).value
 
   def toMap[K, V](implicit ev0: A =:= (K, V), ev1: Order[K]): Map[K, V] =
     widen[(K, V)].foldLeft(Map.empty[K, V]) { _ + _ }
@@ -759,7 +758,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
  */
 object :+ {
   def unapply[A](vec: Vector[A]): Option[(Vector[A], A)] =
-    if (vec.length > 0) Some((vec.pop, vec(vec.length - 1))) else None()
+    if (vec.length > 0) Some((vec.pop, vec(vec.length - 1))) else None
 }
 
 object Vector extends VectorInstances {
@@ -836,46 +835,46 @@ private object VectorCases {
   case object Zero extends Case {
     type Self = Nothing
 
-    val shift = -1
+    val shift: Int = -1
 
-    def apply(i: Int) = throw new IndexOutOfBoundsException(i.toString)
-    def update(i: Int, obj: AnyRef) = throw new IndexOutOfBoundsException(i.toString)
+    def apply(i: Int): Array[AnyRef] = throw new IndexOutOfBoundsException(i.toString)
+    def update(i: Int, obj: AnyRef): Self = throw new IndexOutOfBoundsException(i.toString)
 
-    def +(node: Array[AnyRef]) = One(node)
-    def pop = throw new IndexOutOfBoundsException("Cannot pop an empty Vector")
+    def +(node: Array[AnyRef]): Case = One(node)
+    def pop: (Case, Array[AnyRef]) = throw new IndexOutOfBoundsException("Cannot pop an empty Vector")
   }
 
   case class One(trie: Array[AnyRef]) extends Case {
     type Self = One
 
-    val shift = 0
+    val shift: Int = 0
 
-    def apply(i: Int) = trie
+    def apply(i: Int): Array[AnyRef] = trie
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2 = copy1(trie, new Array[AnyRef](trie.length))
       trie2(i & 0x01f) = obj
       One(trie2)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       val trie2 = new Array[Array[AnyRef]](2)
       trie2(0) = trie
       trie2(1) = tail
       Two(trie2)
     }
 
-    def pop = (Zero, trie)
+    def pop: (Case, Array[AnyRef]) = (Zero, trie)
   }
 
   case class Two(trie: Array[Array[AnyRef]]) extends Case {
     type Self = Two
 
-    val shift = 5
+    val shift: Int = 5
 
-    def apply(i: Int) = trie((i >>> 5) & 0x01f)
+    def apply(i: Int): Array[AnyRef]  = trie((i >>> 5) & 0x01f)
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy2(trie, new Array[Array[AnyRef]](trie.length))
 
       val trie2b = {
@@ -888,7 +887,7 @@ private object VectorCases {
       Two(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.length >= 32) {
         val trie2 = new Array[Array[Array[AnyRef]]](2)
         trie2(0) = trie
@@ -904,7 +903,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.length == 2) {
         (One(trie(0)), trie.last)
       } else {
@@ -917,14 +916,14 @@ private object VectorCases {
   case class Three(trie: Array[Array[Array[AnyRef]]]) extends Case {
     type Self = Three
 
-    val shift = 10
+    val shift: Int = 10
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 10) & 0x01f)
       a((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy3(trie, new Array[Array[Array[AnyRef]]](trie.length))
 
       val trie2b = {
@@ -943,7 +942,7 @@ private object VectorCases {
       Three(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.length >= 32) {
         if (trie.length >= 32) {
           val trie2 = new Array[Array[Array[Array[AnyRef]]]](2)
@@ -968,7 +967,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.length == 1) {
         if (trie.length == 2) {
           (Two(trie(0)), trie.last.last)
@@ -987,15 +986,15 @@ private object VectorCases {
   case class Four(trie: Array[Array[Array[Array[AnyRef]]]]) extends Case {
     type Self = Four
 
-    val shift = 15
+    val shift: Int = 15
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 15) & 0x01f)
       val b = a((i >>> 10) & 0x01f)
       b((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy4(trie, new Array[Array[Array[Array[AnyRef]]]](trie.length))
 
       val trie2b = {
@@ -1020,7 +1019,7 @@ private object VectorCases {
       Four(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.length >= 32) {
         if (trie.last.length >= 32) {
           if (trie.length >= 32) {
@@ -1056,7 +1055,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.length == 1) {
         if (trie.last.length == 1) {
           if (trie.length == 2) {
@@ -1082,16 +1081,16 @@ private object VectorCases {
   case class Five(trie: Array[Array[Array[Array[Array[AnyRef]]]]]) extends Case {
     type Self = Five
 
-    val shift = 20
+    val shift: Int = 20
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 20) & 0x01f)
       val b = a((i >>> 15) & 0x01f)
       val c = b((i >>> 10) & 0x01f)
       c((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy5(trie, new Array[Array[Array[Array[Array[AnyRef]]]]](trie.length))
 
       val trie2b = {
@@ -1122,7 +1121,7 @@ private object VectorCases {
       Five(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.last.length >= 32) {
         if (trie.last.last.length >= 32) {
           if (trie.last.length >= 32) {
@@ -1171,7 +1170,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.last.length == 1) {
         if (trie.last.last.length == 1) {
           if (trie.last.length == 1) {
@@ -1207,7 +1206,7 @@ private object VectorCases {
 
     val shift = 25
 
-    def apply(i: Int) = {
+    def apply(i: Int): Array[AnyRef] = {
       val a = trie((i >>> 25) & 0x01f)
       val b = a((i >>> 20) & 0x01f)
       val c = b((i >>> 15) & 0x01f)
@@ -1215,7 +1214,7 @@ private object VectorCases {
       d((i >>> 5) & 0x01f)
     }
 
-    def update(i: Int, obj: AnyRef) = {
+    def update(i: Int, obj: AnyRef): Self = {
       val trie2a = copy6(trie, new Array[Array[Array[Array[Array[Array[AnyRef]]]]]](trie.length))
 
       val trie2b = {
@@ -1252,7 +1251,7 @@ private object VectorCases {
       Six(trie2a)
     }
 
-    def +(tail: Array[AnyRef]) = {
+    def +(tail: Array[AnyRef]): Case = {
       if (trie.last.last.last.last.length >= 32) {
         if (trie.last.last.last.length >= 32) {
           if (trie.last.last.length >= 32) {
@@ -1306,7 +1305,7 @@ private object VectorCases {
       }
     }
 
-    def pop = {
+    def pop: (Case, Array[AnyRef]) = {
       if (trie.last.last.last.last.length == 1) {
         if (trie.last.last.last.length == 1) {
           if (trie.last.last.length == 1) {
@@ -1362,8 +1361,8 @@ sealed abstract class VectorInstance0 {
 
 sealed abstract class VectorInstances extends VectorInstance0 {
 
-  implicit val instances: Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] = {
-    new Traverse[Vector] with MonadCombine[Vector] with CoflatMap[Vector] {
+  implicit val instances: Traverse[Vector] with Alternative[Vector] with Monad[Vector] with CoflatMap[Vector] = {
+    new Traverse[Vector] with Alternative[Vector] with Monad[Vector] with CoflatMap[Vector] {
 
       def pure[A](a: A): Vector[A] = Vector(a)
 
