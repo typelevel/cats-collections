@@ -155,7 +155,7 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := Function.const(false),
-  publishTo := {
+  publishTo in ThisBuild := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
       Some("Snapshots" at nexus + "content/repositories/snapshots")
