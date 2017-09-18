@@ -20,14 +20,12 @@ This project is in its infancy, it should be considered beta
 Here is a list of the current structures present in dogs:
 
 - [Dequeue](tut/dequeue)   - A double-ended queue
-- [Diet](tut/diet)      - Efficient storage of ragnes of values
-- [Heap](tut/binaryheap)    - Purelely Functional Binary Heap
+- [Diet](tut/diet)      - Efficient storage of ranges of values
+- [Heap](tut/binaryheap)    - Purely Functional Binary Heap
 - DList     - A list that supports constant-time append
 - [Enum](tut/enum)      - An enumeration of values
 - ISet      - An intensional Set
-- [List](tut/list)      - A singly linked List
 - Map       - A tree based Map
-- [Option](tut/option)    - A value which may or may not be present
 - [Range](tut/range)     - A range of values from an Enum
 - [Set](tut/set)       - A tree based, ordered, extensional set
 - Streaming - A stream of values with a lazily evaluated tail

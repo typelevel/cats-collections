@@ -2,7 +2,7 @@
 
 DList and Dequeue are both structures which are attractive in that the
 allow for fast append operations. Whereas `append` on the more
-famiiliar List structure is O(n) time, it is a constant time operation
+familiar List structure is O(n) time, it is a constant time operation
 with these structures. This benchmark is just appending bundles of 10
 elements, n times. 
 
