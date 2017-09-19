@@ -3,14 +3,14 @@ import ReleaseTransformations._
 lazy val buildSettings = Seq(
   name := "dogs",
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.1",
-  crossScalaVersions := Seq("2.11.7", scalaVersion.value)
+  scalaVersion in Global := "2.12.3",
+  crossScalaVersions := Seq("2.11.11", scalaVersion.value)
   //resolvers in Global += Resolver.sonatypeRepo("snapshots")
 )
 
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
-  .settings(noPublishSettings)
+  .settings(publishSettings)
   .aggregate(dogsJVM/*, dogsJS*/)
 
 lazy val dogsJVM = project.in(file(".dogsJVM"))
@@ -18,18 +18,11 @@ lazy val dogsJVM = project.in(file(".dogsJVM"))
   .settings(noPublishSettings)
   .aggregate(coreJVM, docs, testsJVM, bench)
 
-/*
-lazy val dogsJS = project.in(file(".dogsJS"))
-  .settings(moduleName := "dogs")
-  .settings(noPublishSettings)
-  .aggregate(coreJS, testsJS)
- */
 lazy val core = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "dogs-core")
   .settings(dogsSettings:_*)
 
 lazy val coreJVM = core.jvm
-//lazy val coreJS = core.js
 
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .dependsOn(core)
@@ -69,7 +62,7 @@ lazy val bench = project
 
 lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
 
-lazy val dogsSettings = buildSettings ++ commonSettings ++ publishSettings ++ scoverageSettings
+lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings ++ noPublishSettings
 
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
@@ -133,7 +126,7 @@ lazy val credentialSettings = Seq(
   } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
 )
 
-lazy val sharedReleaseProcess = Seq(
+lazy val publishSettings = Seq(
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -145,10 +138,7 @@ lazy val sharedReleaseProcess = Seq(
     setNextVersion,
     commitNextVersion,
     releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges)
-)
-
-lazy val publishSettings = Seq(
+    pushChanges),
   releaseCrossBuild := true,
   releaseTagName := tagName.value,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
@@ -179,7 +169,7 @@ lazy val publishSettings = Seq(
       </developer>
     </developers>
   )
-) ++ credentialSettings ++ sharedReleaseProcess
+) ++ credentialSettings
 
 lazy val commonScalacOptions = Seq(
   "-feature",

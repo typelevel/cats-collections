@@ -35,6 +35,7 @@
 package dogs
 
 import cats._
+import cats.evidence._
 import cats.data.OneAnd
 import cats.syntax.eq._
 
@@ -116,7 +117,7 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
       if (i >= tailOff) {
         tail(i & 0x01f).asInstanceOf[A]
       } else {
-        var arr = trie(i)
+        val arr = trie(i)
         arr(i & 0x01f).asInstanceOf[A]
       }
     } else throw new IndexOutOfBoundsException(i.toString)
@@ -683,13 +684,13 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
 
   def toList: List[A] = foldRight(Eval.now(List.empty[A]))((a,fa) => fa.map( a :: _ )).value
 
-  def toMap[K, V](implicit ev0: A =:= (K, V), ev1: Order[K]): Map[K, V] =
+  def toMap[K, V](implicit ev0: A Is (K, V), ev1: Order[K]): Map[K, V] =
     widen[(K, V)].foldLeft(Map.empty[K, V]) { _ + _ }
 
   override def toString: String =
     Vector show Show.fromToString show this
 
-  def unzip[B, C](implicit ev: A =:= (B, C)): (Vector[B], Vector[C]) = {
+  def unzip[B, C](implicit ev: A Is (B, C)): (Vector[B], Vector[C]) = {
     widen[(B, C)].foldLeft((Vector.empty[B], Vector.empty[C])) {
       case ((bs, cs), (b, c)) => (bs :+ b, cs :+ c)
     }
@@ -711,8 +712,8 @@ final class Vector[A] private (val length: Int, trie: VectorCases.Case, tail: Ar
     }
   }
 
-  def widen[B](implicit ev: A =:= B): Vector[B] =
-    this.asInstanceOf[Vector[B]]     // protip!  this is actually sound and doesn't involve type lambdas
+  def widen[B](implicit ev: A Is B): Vector[B] =
+    ev.substitute(this)
 
   def zip[B](_that: => Vector[B]): Vector[(A, B)] = {
     lazy val that = _that
@@ -1395,9 +1396,6 @@ sealed abstract class VectorInstances extends VectorInstance0 {
       def combineK[A](x: Vector[A], y: Vector[A]): Vector[A] = x ++ y
 
       override def isEmpty[A](fa: Vector[A]): Boolean = fa.isEmpty
-
-      def plus[A](a: Vector[A], b: => Vector[A]): Vector[A] =
-        a ++ b
 
       def empty[A]: Vector[A] = Vector.empty[A]
 

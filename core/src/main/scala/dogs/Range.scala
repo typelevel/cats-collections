@@ -30,8 +30,6 @@ final case class Range[A](val start: A, val end: A) {
       }
     }
 
-
-
   def +(other: Range[A])(implicit order: Order[A], enum: Enum[A]): (Range[A], Option[Range[A]]) = {
     val (l,r) = if(order.lt(this.start,other.start)) (this,other) else (other,this)
 
@@ -72,7 +70,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * Returns range [end, start]
     */
-  def reverse(implicit discrete: Enum[A], order: Order[A]): Range[A] = Range(end, start)
+  def reverse: Range[A] = Range(end, start)
 
   /**
     * Verify is x is in range [start, end]

@@ -12,7 +12,7 @@ class HeapSpec extends DogsSuite {
 
       val set = xs.toSet
 
-      var heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
+      val heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
       val exp = set.toList
 

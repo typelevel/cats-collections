@@ -348,16 +348,7 @@ class AdHocStreamingTests extends DogsSuite {
       euclid(t._1, t._2) == 1
     }
 
-    val positiveRationals = (nats product nats).filter(isRelativelyPrime)
-    implicit def tupleOrder[A, B](implicit A: Order[A], B: Order[B]): Order[(A,B)] = new Order[(A,B)] {
-      override def compare(l: (A,B), r: (A,B)): Int =
-        A.compare(l._1, r._1) match {
-          case 0 => B.compare(l._2, r._2)
-          case x => x
-        }
-    val e = scala.collection.immutable.Set((1,1), (2,1), (1,2), (3,1), (1,3), (4,1), (3,2), (2,3), (1,4))
-    positiveRationals.take(e.size).iterator.toSet should === (e)
-    }
+    (nats product nats).filter(isRelativelyPrime)
   }
 
   test("interleave") {
@@ -434,7 +425,10 @@ class AdHocStreamingTests extends DogsSuite {
 
   test("lazy unzip") {
     val bombBomb: Streaming[(Int, Int)] = bomb.map(n => (n, n))
-    isok { val t: (Streaming[Int], Streaming[Int]) = bombBomb.unzip }
+    isok {
+      val t: (Streaming[Int], Streaming[Int]) = bombBomb.unzip
+      t
+    }
   }
 
   test("lazy merge") {
