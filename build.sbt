@@ -5,31 +5,24 @@ lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.3",
   crossScalaVersions := Seq("2.11.11", scalaVersion.value)
-  //resolvers in Global += Resolver.sonatypeRepo("snapshots")
 )
 
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
-  .settings(publishSettings)
-  .aggregate(dogsJVM/*, dogsJS*/)
-
-lazy val dogsJVM = project.in(file(".dogsJVM"))
-  .settings(moduleName := "dogs")
   .settings(noPublishSettings)
-  .aggregate(coreJVM, docs, testsJVM, bench)
+  .aggregate(core, tests, docs, bench)
 
-lazy val core = crossProject.crossType(CrossType.Pure)
+lazy val core = project
   .settings(moduleName := "dogs-core")
   .settings(dogsSettings:_*)
+  .settings(publishSettings)
 
-lazy val coreJVM = core.jvm
-
-lazy val tests = crossProject.crossType(CrossType.Pure)
+lazy val tests = project
   .dependsOn(core)
   .settings(moduleName := "dogs-tests")
   .settings(dogsSettings:_*)
-  .settings(
-    coverageEnabled := false,
+  .settings(noPublishSettings)
+  .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
       "org.typelevel"  %% "cats-laws"          % "1.0.0-MF",
@@ -40,18 +33,14 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
     )
   )
 
-lazy val testsJVM = tests.jvm
-//lazy val testsJS = tests.js
-
 lazy val docs = project
-  .dependsOn(coreJVM)
+  .dependsOn(core)
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
 
 lazy val bench = project
   .settings(moduleName := "dogs-bench")
-  .dependsOn(coreJVM)
-  //.settings(dogsSettings:_*)
+  .dependsOn(core)
   .settings(noPublishSettings)
   .settings(
     coverageEnabled := false,
@@ -62,7 +51,7 @@ lazy val bench = project
 
 lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
 
-lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings ++ noPublishSettings
+lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
 lazy val commonSettings = Seq(
   scalacOptions ++= commonScalacOptions,
@@ -79,28 +68,8 @@ lazy val commonSettings = Seq(
   scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings")
 ) ++ warnUnusedImport
 
-/*
-lazy val commonJsSettings = Seq(
-  scalaJSStage in Global := FastOptStage,
-  parallelExecution := false,
-  requiresDOM := false,
-  jsEnv := NodeJSEnv().value,
-  // Only used for scala.js for now
-  botBuild := scala.sys.env.get("TRAVIS").isDefined,
-  // batch mode decreases the amount of memory needed to compile scala.js code
-  scalaJSOptimizerOptions := scalaJSOptimizerOptions.value.withBatchMode(botBuild.value)
-)
- */
-addCommandAlias("buildJVM", ";coreJVM/compile;coreJVM/test;testsJVM/test;bench/test")
-
-addCommandAlias("validateJVM", ";scalastyle;buildJVM;makeSite")
-
-//addCommandAlias("validateJS", ";coreJS/compile;testsJS/test")
-
-//addCommandAlias("validate", ";validateJS;validateJVM")
-addCommandAlias("validate", ";validateJVM")
-
-addCommandAlias("gitSnapshots", ";set version in ThisBuild := git.gitDescribedVersion.value.get + \"-SNAPSHOT\"")
+addCommandAlias("build", ";core/compile;core/test;tests/test")
+addCommandAlias("validate", ";scalastyle;build;makeSite")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
@@ -131,26 +100,25 @@ lazy val publishSettings = Seq(
     checkSnapshotDependencies,
     inquireVersions,
     runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges),
+    setReleaseVersion),//,
+//    commitReleaseVersion,
+//    tagRelease,
+//    publishArtifacts,
+//    setNextVersion,
+//    commitNextVersion,
+//    releaseStepCommand("sonatypeReleaseAll"),
+//    pushChanges),
   releaseCrossBuild := true,
-  releaseTagName := tagName.value,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := Function.const(false),
-  publishTo in ThisBuild := {
+  publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
-      Some("Snapshots" at nexus + "content/repositories/snapshots")
+      Some("snapshots" at nexus + "content/repositories/snapshots")
     else
-      Some("Releases" at nexus + "service/local/staging/deploy/maven2")
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   homepage := Some(url("https://github.com/stew/dogs")),
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
