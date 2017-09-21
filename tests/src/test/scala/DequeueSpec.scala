@@ -25,7 +25,7 @@ class DequeueSpec extends SlowDogsSuite {
    }
  
    @annotation.tailrec
-   final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q uncons match {
+   final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q.uncons match {
      case None => acc
      case Some((i, q)) => unconsL(q, i :: acc)
    }
@@ -37,7 +37,7 @@ class DequeueSpec extends SlowDogsSuite {
    }
  
    @annotation.tailrec
-   final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q unsnoc match {
+   final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q.unsnoc match {
      case None => acc
      case Some((i, q)) => unsnocL(q, i :: acc)
    }

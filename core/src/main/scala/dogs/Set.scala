@@ -131,7 +131,7 @@ sealed abstract class Set[A] {
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
     (this match {
-      case branch @ Branch(a, l, r) =>  order.compare(x, a) match {
+      case Branch(a, l, r) =>  order.compare(x, a) match {
         case 0 => Branch(x, l, r)
         case o if o < 0 => Branch(a, l.add(x), r)
         case _ => Branch(a, l, r.add(x))
@@ -279,7 +279,7 @@ sealed abstract class Set[A] {
 
   private[dogs] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): Set[A] = {
     (this match {
-      case branch @ Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
+      case Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
         case 0 =>
           val (k,v) = ev(a)
           Branch((k -> V.combine(v,value)).asInstanceOf[A], l, r)

@@ -160,7 +160,7 @@ class VectorTest extends SlowDogsSuite {
   test("fill"){
     forAll {
        (a: Byte, b: Int) =>
-      Vector.fill(a)(b).toScalaVector should ===(SVector.fill(a)(b))
+      Vector.fill(a.toInt)(b).toScalaVector should === (SVector.fill(a.toInt)(b))
     }
   }
 
@@ -201,7 +201,7 @@ class VectorTest extends SlowDogsSuite {
         val (_, back) = ns.foldLeft((0, None: Option[Int])) {
           case ((`index`, None), n) => (0, Some(n))
           case ((_, Some(n)), _) => (0, Some(n))
-          case ((i, None), n) => (i + 1, None)
+          case ((i, None), _) => (i + 1, None)
         }
 
         back
@@ -452,14 +452,14 @@ class VectorTest extends SlowDogsSuite {
   test("take"){
     forAll {
       (ns: Vector[Int], n: Byte) =>
-      ns.take(n).toScalaVector should ===(ns.toScalaVector.take(n))
+      ns.take(n.toInt).toScalaVector should ===(ns.toScalaVector.take(n.toInt))
     }
   }
 
   test("takeRight"){
     forAll {
       (ns: Vector[Int], n: Byte) =>
-      ns.takeRight(n).toScalaVector should ===(ns.toScalaVector.takeRight(n))
+      ns.takeRight(n.toInt).toScalaVector should ===(ns.toScalaVector.takeRight(n.toInt))
     }
   }
 

@@ -227,7 +227,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     this match {
       case Empty() => Some(true)
       case Wait(_) => None
-      case Cons(a, lt) => Some(false)
+      case _ => Some(false)
     }
 
   /**
@@ -489,7 +489,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     if (n <= 0) this else this match {
       case Empty() => Empty()
       case Wait(lt) => Wait(lt.map(_.drop(n)))
-      case Cons(a, lt) => Wait(lt.map(_.drop(n - 1)))
+      case Cons(_, lt) => Wait(lt.map(_.drop(n - 1)))
     }
 
   /**
@@ -545,7 +545,7 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    */
   def tails: Streaming[Streaming[A]] =
     this match {
-      case Cons(a, lt) => Cons(this, lt.map(_.tails))
+      case Cons(_, lt) => Cons(this, lt.map(_.tails))
       case Wait(lt) => Wait(lt.map(_.tails))
       case Empty() => Cons(this, always(Streaming.empty))
     }

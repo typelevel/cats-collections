@@ -56,7 +56,7 @@ sealed abstract class Diet[A] {
   @tailrec
   private def noMoreThan(a: A)(implicit order: Order[A], enum: Enum[A]): (Diet[A], A) =
     this match {
-      case DietNode(rng,l,r) =>
+      case DietNode(rng,l,_) =>
         if(order.gt(a, rng.end)) (this, a)
         else if(order.gteqv(a, rng.start)) (l, rng.start)
         else l.noMoreThan(a)
@@ -71,7 +71,7 @@ sealed abstract class Diet[A] {
   @tailrec
   private def noLessThan(a: A)(implicit order: Order[A], enum: Enum[A]): (Diet[A], A) =
     this match {
-      case DietNode(rng,l,r) =>
+      case DietNode(rng,_,r) =>
         if(order.lt(a, rng.start)) (this, a)
         else if(order.lteqv(a, rng.end)) (r, rng.end)
         else r.noLessThan(a)

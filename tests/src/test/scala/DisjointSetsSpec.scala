@@ -47,15 +47,14 @@ class DisjointSetsSpec extends DogsSuite {
 
     val numbers = Range(0,200)
 
-    val classifiedNumbers = (DisjointSets(numbers:_*) /: numbers) { (dsets, v) =>
+    val classifiedNumbers = numbers.foldLeft(DisjointSets(numbers:_*)){ (dsets, v) =>
       dsets.union(v, v%10)._1
     }
 
     val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet)
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
-
-    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet) should contain theSameElementsAs groupByClassification
+    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet) should be (groupByClassification)
   }
 
 }

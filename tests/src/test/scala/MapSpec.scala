@@ -24,7 +24,7 @@ class MapSpec extends DogsSuite {
     val m2 = fromSetS(xs)
 
     xs.forall {
-      case (k,v) => m.containsKey(k) && (m.get(k) == m2.get(k))
+      case (k,_) => m.containsKey(k) && (m.get(k) == m2.get(k))
     } should be (true)
   })
 
@@ -41,7 +41,7 @@ class MapSpec extends DogsSuite {
     )
 
     xs.forall {
-      case (k,v) =>
+      case (k,_) =>
         m.get(k._1) == m2.get(k._1)
     } should be (true)
   })
