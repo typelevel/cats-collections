@@ -9,6 +9,7 @@ lazy val buildSettings = Seq(
 
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
+  .settings(buildSettings:_*)
   .settings(noPublishSettings)
   .settings(
     releaseCrossBuild := true,
@@ -83,7 +84,7 @@ addCommandAlias("validate", ";scalastyle;build;makeSite")
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
   coverageFailOnMinimum := false,
-  coverageHighlighting := scalaBinaryVersion.value != "2.10"
+  coverageHighlighting := scalaBinaryVersion.value != "2.11"
 )
 
 lazy val noPublishSettings = Seq(
