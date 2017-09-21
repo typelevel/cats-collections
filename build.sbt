@@ -121,6 +121,7 @@ lazy val publishSettings = Seq(
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
   scmInfo := Some(ScmInfo(url("https://github.com/stew/dogs"), "scm:git:git@github.com:stew/dogs.git")),
   autoAPIMappings := true,
+  releaseProcess := Nil,
   pomExtra := (
     <developers>
       <developer>
