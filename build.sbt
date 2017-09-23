@@ -1,16 +1,16 @@
 import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
-  name := "dogs",
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.3",
   crossScalaVersions := Seq("2.11.11", scalaVersion.value)
 )
 
 lazy val dogs = project.in(file("."))
-  .settings(moduleName := "root")
-  .settings(dogsSettings:_*)
+  .settings(buildSettings:_*)
   .settings(noPublishSettings)
+  .dependsOn(core, tests, docs, bench)
+  .aggregate(core, tests, docs, bench)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -26,8 +26,6 @@ lazy val dogs = project.in(file("."))
       setNextVersion,
       commitNextVersion,
       pushChanges))
-  .dependsOn(core, tests, docs, bench)
-  .aggregate(core, tests, docs, bench)
 
 lazy val core = project
   .settings(moduleName := "dogs-core")
