@@ -9,22 +9,24 @@ lazy val buildSettings = Seq(
 
 lazy val dogs = project.in(file("."))
   .settings(moduleName := "root")
-  .settings(buildSettings:_*)
+  .settings(dogsSettings:_*)
   .settings(noPublishSettings)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
       checkSnapshotDependencies,
       inquireVersions,
+      runClean,
       runTest,
       setReleaseVersion,
       commitReleaseVersion,
       tagRelease,
       publishArtifacts,
+      releaseStepCommand("sonatypeReleaseAll"),
       setNextVersion,
       commitNextVersion,
-      releaseStepCommand("sonatypeReleaseAll"),
       pushChanges))
+  .dependsOn(core, tests, docs, bench)
   .aggregate(core, tests, docs, bench)
 
 lazy val core = project
