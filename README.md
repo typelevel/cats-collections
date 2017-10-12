@@ -9,12 +9,12 @@ It intends to be a library containing data structures which facilitate pure func
 
 ### Getting Started
 
-Dogs is currently available for Scala 2.12.
+Dogs is currently available for Scala 2.11, and 2.12.
 
 To get started with SBT, simply add the following to your `build.sbt` file:
 
 ```scala
-libraryDependencies += "org.typelevel" %% "dogs-core" % "0.5.2"
+libraryDependencies += "org.typelevel" %% "dogs-core" % "0.6.9"
 ```
 
 ### CONTRIBUTING
