@@ -6,7 +6,7 @@ cache:
   - "$HOME/.ivy2/cache"
   - "$HOME/.nvm"
 language: scala
-sudo: required
+sudo: false
 scala:
 - 2.11.11
 - 2.12.4
