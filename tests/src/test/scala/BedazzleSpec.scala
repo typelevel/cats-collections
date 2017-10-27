@@ -8,7 +8,7 @@ class BedazzleSpec extends DogsSuite {
     import syntax.birds._
 
     var called = false
-    val call: String => Unit = Function.const(called = true)
+    val call: String => Unit = { x => called = true }
     val a = "xyzzy"
     val b = a <| call
 
