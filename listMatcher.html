@@ -1,0 +1,35 @@
+<hr />
+<p>layout: page
+title:  “List”
+source: “core/src/main/scala/Option.scala”
+——————————————</p>
+
+<h1 id="listmatcher">ListMatcher</h1>
+
+<p><code class="highlighter-rouge">ListMatcher</code> is a <code class="highlighter-rouge">ScalaTest Matcher</code> to be <em>mix</em> within our test classes</p>
+
+<h2 id="supported-operations">Supported Operations</h2>
+
+<ul>
+  <li>matchTo:  Match the <code class="highlighter-rouge">dogs.List[A]</code> to another <code class="highlighter-rouge">dogs.List[A]</code>. Note
+that we need to know how to compare elements of type <code class="highlighter-rouge">A</code>. This is
+described by <code class="highlighter-rouge">Order[A]</code>.</li>
+</ul>
+
+<h2 id="using-range">Using Range</h2>
+
+<p>In order to use this new matcher, we only need to mix it in our test
+classes. An example would be the <code class="highlighter-rouge">DietTest</code> class.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>class DietTest extends FlatSpec with Matchers with ListMatcher {
+    it should "be always sorted" in {
+        val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
+    
+        val sorted = diet.toList()
+    
+        sorted should matchTo(List(1, 2, 3, 5, 6, 8))
+      }
+}
+</code></pre>
+</div>
+
