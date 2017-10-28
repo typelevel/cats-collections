@@ -12,7 +12,7 @@ enablePlugins(MicrositesPlugin)
 
 ghpagesNoJekyll := false
 micrositeName := "dogs"
-micrositeDocumentationUrl := "/dogs"
+micrositeBaseUrl := "/dogs"
 micrositeHomepage := "https://stew.github.io/dogs/"
 micrositeGithubOwner := "stew"
 micrositeGithubRepo := "dogs"
