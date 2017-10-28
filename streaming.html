@@ -1,0 +1,607 @@
+<html><head><title>dogs</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="org.typelevel" /><meta name="description" content="dogs-docs" /><meta name="og:image" content="/dogs/img/poster.png" /><meta name="og:title" content="dogs" /><meta name="og:site_name" content="dogs" /><meta name="og:url" content="https://stew.github.io/dogs/" /><meta name="og:type" content="website" /><meta name="og:description" content="dogs-docs" /><link rel="icon" type="image/png" href="/dogs/img/favicon.png" /><meta name="twitter:title" content="dogs" /><meta name="twitter:image" content="https://stew.github.io/dogs/img/poster.png" /><meta name="twitter:description" content="dogs-docs" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/dogs/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/dogs/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/dogs/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/dogs/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/dogs/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/dogs/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/dogs/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/dogs/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/dogs/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/dogs/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/dogs/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/dogs/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/dogs/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/dogs/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/dogs/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/dogs/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/dogs/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/dogs/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/dogs/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/dogs/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/dogs/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/dogs/css/style.css" /><link rel="stylesheet" href="/dogs/css/palette.css" /><link rel="stylesheet" href="/dogs/css/codemirror.css" /><link rel="stylesheet" href="/dogs/css/kazari-style.css" /><link rel="stylesheet" href="/dogs/css/monokai.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/dogs/" class="brand"><div class="brand-wrapper"><span>dogs</span></div></a></li> <li><a href="/dogs/index.html" class="">Home</a></li> <li><a href="/dogs/binaryheap.html" class="">Binary Heap</a></li> <li><a href="/dogs/dequeue.html" class="">Dequeue</a></li> <li><a href="/dogs/diet.html" class="">Diet</a></li> <li><a href="/dogs/disjointsets.html" class="">Disjoin Sets</a></li> <li><a href="/dogs/enum.html" class="">Enum</a></li> <li><a href="/dogs/iset.html" class="">ISet</a></li> <li><a href="/dogs/range.html" class="">Range</a></li> <li><a href="/dogs/set.html" class="">Set</a></li> <li><a href="/dogs/streaming.html" class=" active ">Streaming</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/stew/dogs"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/stew/dogs"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('dogs dogs-docs');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('dogs dogs-docs');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="stew" data-github-repo="dogs"><div class="content-wrapper"><section><h1 id="streaming">Streaming</h1>
+
+<p>The <code class="highlighter-rouge">Streaming</code> data type provides support for sequences of values
+which can be computed on demand. It is immutable (meaning its
+contents will never change), and supports optional memoization.</p>
+
+<p>The data type which <code class="highlighter-rouge">Streaming</code> implements is often called a <em>stream</em>.
+In fact, <code class="highlighter-rouge">Streaming</code> is similar to an existing Scala data type called
+<code class="highlighter-rouge">Stream</code> (the name <code class="highlighter-rouge">Streaming</code> was chosen to avoid a conflict with the
+standard library).</p>
+
+<p>Sometimes the <code class="highlighter-rouge">Streaming</code> documentation will refer to a <em>stream</em>. In
+these cases, we will use lowercase <em>stream</em> as a general term,
+distinguished from <code class="highlighter-rouge">Stream</code> (the specific type from the standard
+library) or <code class="highlighter-rouge">Streaming</code> (the specific type from Dogs).</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>A non-empty <code class="highlighter-rouge">Streaming</code> instance is structured like a <code class="highlighter-rouge">List</code>: it has a
+<em>cons</em> cell containing a single value, as well as a reference to a
+tail which will calculate the subsequent values (if any). This means
+that adding values to the beginning is very efficient, whereas adding
+values to the end is potentially expensive.</p>
+
+<p>The major difference between <code class="highlighter-rouge">List</code> and <code class="highlighter-rouge">Streaming</code> is evaluation.
+<code class="highlighter-rouge">List</code> is strict: this means that if you have an instance of <code class="highlighter-rouge">List</code>
+the entire thing has been calculated and constructed in memory for
+you to access, even if you never access any of the list’s elements.</p>
+
+<p>Unlike <code class="highlighter-rouge">List</code>, a <code class="highlighter-rouge">Streaming</code> instance can lazily-compute its tail. This
+means that until the tail is needed, it will not be constructed (and
+only the part that is accessed will be constructed). This is very
+useful for sequences which are potentially large (or infinite) but are
+easily computed.</p>
+
+<p>This laziness might remind you of another familiar type: <code class="highlighter-rouge">Iterator</code>.
+Like <code class="highlighter-rouge">Streaming</code>, <code class="highlighter-rouge">Iterator</code> also computes values on-demand using a
+<code class="highlighter-rouge">.next</code> method (along with <code class="highlighter-rouge">.hasNext</code>). However, the resemblance is
+only skin deep, since <code class="highlighter-rouge">Iterator</code> is a mutable data type. This means
+that <code class="highlighter-rouge">Iterator</code> can only be traversed once, it cannot be safely shared,
+and is often more difficult to reason about.</p>
+
+<p>By contrast, <code class="highlighter-rouge">Streaming</code> can be safely shared (and safely accessed from
+many threads simultaneously). It can be traversed as many times as
+needed, and has all the other advantages of an immutable data
+structure.</p>
+
+<h2 id="using-streaming">Using Streaming</h2>
+
+<p>The <code class="highlighter-rouge">Streaming</code> type does not extend <code class="highlighter-rouge">Seq[_]</code>, <code class="highlighter-rouge">Iterable[_]</code>, or any of
+the other Scala collection types. Despite this, you can use <code class="highlighter-rouge">Streaming</code>
+in most of the ways you use other Scala collections:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="k">import</span> <span class="nn">dogs.Streaming</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">ns</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">100</span><span class="o">,</span> <span class="mi">1000</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">ns</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">xs</span> <span class="k">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">filter</span><span class="o">(</span><span class="k">_</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">xs</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">ys</span> <span class="k">=</span> <span class="n">ns</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">ys</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">zs</span> <span class="k">=</span> <span class="n">xs</span> <span class="o">++</span> <span class="n">ys</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">zs</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">zs</span><span class="o">.</span><span class="n">toList</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res0</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">21</span><span class="o">,</span> <span class="mi">201</span><span class="o">,</span> <span class="mi">2001</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>The first thing you probably noticed was that <code class="highlighter-rouge">.toString</code> does not give
+the complete contents of a <code class="highlighter-rouge">Streaming</code> instance. This is intentional:
+since the contents may be lazy, we won’t print the entire stream by
+default. Ellipses (<code class="highlighter-rouge">...</code>) are used to indicate the possibility of more
+elements.</p>
+
+<p>Instead, you can pass an argument to <code class="highlighter-rouge">.toString()</code> which will specify
+the maximum number of terms to be evaluated:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">ns</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">5</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">ns</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">ns</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res1</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">ns</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res2</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">ns</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">100</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res3</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">5</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>In our previous examples we’ve been using <code class="highlighter-rouge">Streaming#apply</code> to
+construct our instances. This means these instances are not lazy (since
+we provided all the elements to the constructor).</p>
+
+<p>However, we can also construct lazy instances:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">def</span> <span class="n">int</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="o">{</span> <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"int($n)"</span><span class="o">);</span> <span class="n">n</span> <span class="o">}</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">int</span><span class="k">:</span> <span class="o">(</span><span class="kt">n:</span> <span class="kt">Int</span><span class="o">)</span><span class="kt">Int</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">now</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="n">int</span><span class="o">(</span><span class="mi">1</span><span class="o">),</span> <span class="n">int</span><span class="o">(</span><span class="mi">2</span><span class="o">),</span> <span class="n">int</span><span class="o">(</span><span class="mi">3</span><span class="o">))</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">int</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="n">int</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+<span class="n">int</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span>
+<span class="n">now</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">later</span> <span class="k">=</span> <span class="n">int</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span> <span class="o">%::</span> <span class="n">int</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span> <span class="o">%::</span> <span class="n">int</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span> <span class="o">%::</span> <span class="nc">Streaming</span><span class="o">.</span><span class="n">empty</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span>
+<span class="n">int</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="n">later</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<p>Notice the difference between the <code class="highlighter-rouge">now</code> and <code class="highlighter-rouge">later</code> instances. In the
+<em>now</em> case, we print messages for <code class="highlighter-rouge">1</code>, <code class="highlighter-rouge">2</code>, and <code class="highlighter-rouge">3</code>. In the <em>later</em>
+case, we only print a message for <code class="highlighter-rouge">1</code>. This indicates that the tail of
+the stream (containing <code class="highlighter-rouge">2</code> and <code class="highlighter-rouge">3</code>) will be constructed lazily, i.e. it
+has not been constructed yet. We can take advantage of this feature to
+write interesting definitions:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">lazy</span> <span class="k">val</span> <span class="n">fives</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="mi">5</span> <span class="o">%::</span> <span class="n">fives</span>
+<span class="n">fives</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">&lt;</span><span class="k">lazy</span><span class="o">&gt;</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">fives</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">5</span><span class="o">).</span><span class="n">toList</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res4</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">5</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<h2 id="fibonaci-sequence">Fibonaci Sequence</h2>
+
+<p>The Fibonacci sequence starts with <code class="highlighter-rouge">0, 1, 1, 2, 3, 5, 8, 13, ...</code> and
+continues on forever: it is an infinite sequence. Each term is
+calculated by adding the two previous terms (the starting values <code class="highlighter-rouge">0</code>
+and <code class="highlighter-rouge">1</code> are fixed).</p>
+
+<p>Since the sequence grows forever, lets set up an unbounded integer type
+(<code class="highlighter-rouge">Z</code>) as well as some useful values:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">type</span> <span class="kt">Z</span> <span class="o">=</span> <span class="nc">BigInt</span>
+
+<span class="k">val</span> <span class="n">Z0</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">Z1</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Our first implementation will be a simple recursive method. While this
+doesn’t use <code class="highlighter-rouge">Streaming</code>, its definition is very close to one a
+mathematician might write.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">fib</span><span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Z</span> <span class="o">=</span>
+  <span class="n">n</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="mi">0</span> <span class="k">=&gt;</span> <span class="n">Z0</span>
+    <span class="k">case</span> <span class="mi">1</span> <span class="k">=&gt;</span> <span class="n">Z1</span>
+    <span class="k">case</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">=&gt;</span> <span class="n">fib</span><span class="o">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">+</span> <span class="n">fib</span><span class="o">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span><span class="o">)</span>
+    <span class="k">case</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">error</span><span class="o">(</span><span class="n">s</span><span class="s">"invalid x ($x)"</span><span class="o">)</span>
+  <span class="o">}</span>
+</code></pre>
+</div>
+
+<p>However, we can also model the Fibonacci sequence as an infinite stream
+of values, where each value depends upon the two previous values. Our
+first implementation uses a <code class="highlighter-rouge">lazy val</code> to set up a self-referential
+structure which captures this relationship.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">lazy</span> <span class="k">val</span> <span class="n">fibs</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Z</span><span class="o">]</span> <span class="k">=</span>
+  <span class="n">Z0</span> <span class="o">%::</span> <span class="n">Z1</span> <span class="o">%::</span> <span class="o">(</span><span class="n">fibs</span> <span class="n">zipMap</span> <span class="n">fibs</span><span class="o">.</span><span class="n">drop</span><span class="o">(</span><span class="mi">1</span><span class="o">))(</span><span class="k">_</span> <span class="o">+</span> <span class="k">_</span><span class="o">)</span>
+<span class="n">fibs</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">6</span><span class="o">).</span><span class="n">toList</span>
+</code></pre>
+</div>
+
+<p>You might be surprised that you can zip a stream with itself. But
+because we are dealing with immutable values, there is no problem!
+There is no way that referencing the same stream multiple times can go
+wrong, or corrupt internal state.</p>
+
+<p>We can also be a bit more explicit about the recursive nature of the
+Fibonacci sequence, while still modeling it with <code class="highlighter-rouge">Streaming[Z]</code>. Since
+each “step” of the sequence generates the next term given the current
+state (and sets up subsequent steps by changing the state) we can use
+an inner method (<code class="highlighter-rouge">term</code>) which acts exactly the same way:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">fibs</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Z</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">term</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="kt">Z</span><span class="o">)</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Z</span><span class="o">]</span> <span class="k">=</span> <span class="n">x</span> <span class="o">%::</span> <span class="n">term</span><span class="o">(</span><span class="n">y</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">)</span>
+  <span class="n">term</span><span class="o">(</span><span class="n">Z0</span><span class="o">,</span> <span class="n">Z1</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>In this formulation, <code class="highlighter-rouge">x</code> is the “current” term and <code class="highlighter-rouge">y</code> is the “next”
+term. The term after <code class="highlighter-rouge">y</code> will be <code class="highlighter-rouge">x + y</code>, which we calculate after
+emitting <code class="highlighter-rouge">x</code> (and which is saved along with <code class="highlighter-rouge">y</code> in our suspended call
+to <code class="highlighter-rouge">term</code>).</p>
+
+<p>One thing to keep in mind is that the <code class="highlighter-rouge">%::</code> syntax defers the call to
+<code class="highlighter-rouge">term</code> (it is interpreted as a by-name parameter through some
+syntactic trickery). This means that <code class="highlighter-rouge">term</code> is not a recursive method
+in the usual sense: the method does not call itself directly, but
+instead builds a <code class="highlighter-rouge">Streaming[Z]</code> instance which will potentially call
+<code class="highlighter-rouge">term</code> itself when the stream’s tail is needed.</p>
+
+<p>This technique of defining streams (using an inner <code class="highlighter-rouge">term</code> method) is
+quite powerful and general. Our third example uses a built-in method
+for producing infinite streams that can be defined in the same way (a
+current <em>state</em> and a way to get the next <em>state</em> from the current
+one):</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">fibs</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Z</span><span class="o">]</span> <span class="k">=</span>
+  <span class="nc">Streaming</span><span class="o">.</span><span class="n">infinite</span><span class="o">((</span><span class="n">Z0</span><span class="o">,</span> <span class="n">Z1</span><span class="o">))</span> <span class="o">{</span> <span class="k">case</span> <span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">y</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="n">y</span><span class="o">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">)</span> <span class="o">}</span> <span class="n">map</span> <span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_1</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>The first argument to <code class="highlighter-rouge">.infinite</code> is the starting state (<code class="highlighter-rouge">(Z0, Z1)</code>,
+i.e. zero and one). The next argument is a method from the current
+state (<code class="highlighter-rouge">(x, y)</code>) to the next one (<code class="highlighter-rouge">(y, x + y)</code>). Ignoring the call to
+<code class="highlighter-rouge">.map</code> for right now, this is the sequence that would be produced:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>start: (0, 1)
+step1: (1, 1)
+step2: (1, 2)
+step3: (2, 3)
+step4: (3, 5)
+...
+</code></pre>
+</div>
+
+<p>If you look at the first column of numbers you can see the familiar
+Fibonacci sequence. However, our sequence needs to return values of
+type <code class="highlighter-rouge">Z</code>, not tuples of <code class="highlighter-rouge">(Z, Z)</code> pairs. The call to <code class="highlighter-rouge">map (_._1)</code> is
+just to take the first of the two numbers, to produce the sequence we
+want.</p>
+
+<p>If we had a sequence that only relied on one previous number (e.g. <code class="highlighter-rouge">1,
+2, 3, ...</code>) we would not need this step. If we had a sequence that
+used a much more complicated state we could model it similarly: create
+an infinite stream of states, then map the states to the values we
+want to emit.</p>
+
+<h2 id="counting-the-rational-numbers">Counting the rational numbers</h2>
+
+<p>To prove these kinds of constructions work for examples which are more
+complex, let’s model an infinite stream of all rational numbers. This
+infinite stream should generate every rational number (no matter how
+big or small) exactly once at some point. (In practice we have limited
+time and space, so we will have to make do with the numbers we have
+the patience to compute.)</p>
+
+<p>First let’s review what a rational number is. A rational number is any
+number which can be written as a fraction. For example 3 is a rational
+number (3/1), so is 0.2 (1/5), so is 117/113, etc.</p>
+
+<p>To simplify the example, we’re going to use the type <code class="highlighter-rouge">(Z, Z)</code> to
+represent a rational number (which we will alias as <code class="highlighter-rouge">Q</code>). The first
+value of the tuple is the numerator, and the second is the
+denominator. We’ll also limit ourselves to <em>canonical</em> rational
+numbers: numbers whose denominator is positive, and which are in
+simplest form. For example, 2/5, 3/1, and -9/1 are canonical, whereas
+6/-5, -1/-1, and 4/10 are not.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">type</span> <span class="kt">Q</span> <span class="o">=</span> <span class="o">(</span><span class="n">Z</span><span class="o">,</span> <span class="n">Z</span><span class="o">)</span>
+
+<span class="c1">// Some useful rational constants for zero and one.
+</span><span class="k">val</span> <span class="n">Q0</span> <span class="k">=</span> <span class="o">(</span><span class="n">Z0</span><span class="o">,</span> <span class="n">Z1</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">Q1</span> <span class="k">=</span> <span class="o">(</span><span class="n">Z1</span><span class="o">,</span> <span class="n">Z1</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>The actual code for defining this stream is very concise, but needs
+some explanation. The basic approach is that we want to generate all
+possible pairs of integers, and then filter out anything that is not
+canonical. This will leave us with all the rational numbers:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">zs</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">.</span><span class="n">infinite</span><span class="o">(</span><span class="n">Z1</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="n">Z1</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">pairs</span> <span class="k">=</span> <span class="o">(</span><span class="n">zs</span> <span class="n">product</span> <span class="n">zs</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">qs</span> <span class="k">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">filter</span> <span class="o">{</span> <span class="k">case</span> <span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">d</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="n">n</span> <span class="n">gcd</span> <span class="n">d</span><span class="o">)</span> <span class="o">==</span> <span class="n">Z1</span> <span class="o">}</span>
+<span class="k">val</span> <span class="n">rats</span> <span class="k">=</span> <span class="n">Q0</span> <span class="o">%::</span> <span class="n">qs</span><span class="o">.</span><span class="n">flatMap</span> <span class="o">{</span> <span class="k">case</span> <span class="n">q</span> <span class="k">@</span> <span class="o">(</span><span class="n">n</span><span class="o">,</span> <span class="n">d</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">Streaming</span><span class="o">(</span><span class="n">q</span><span class="o">,</span> <span class="o">(-</span><span class="n">n</span><span class="o">,</span> <span class="n">d</span><span class="o">))</span> <span class="o">}</span>
+</code></pre>
+</div>
+
+<p>First we define <code class="highlighter-rouge">zs</code>, an infinite stream of all the positive numbers
+(beginning with one). Next we use the <code class="highlighter-rouge">product</code> method to create the
+Cartesian product of <code class="highlighter-rouge">zs</code> with itself (every possible pairing of two
+values from <code class="highlighter-rouge">zs</code>). Here are the first few terms of <code class="highlighter-rouge">pairs</code> to give you
+the idea:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">pairs</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">12</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res9</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">((</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">5</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">4</span><span class="o">),</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<p>As you can see, this sequence contains some pairs which are not
+canonical rational numbers (e.g. <code class="highlighter-rouge">(2, 2)</code>). The next step filters
+these out using the <code class="highlighter-rouge">gcd</code> method (which finds the greatest common
+divisor between two numbers). Unless the GCD is one, the numbers share
+a divisor, and are not in the simplest form. In the case of <code class="highlighter-rouge">(2, 2)</code>,
+the simplest form would be <code class="highlighter-rouge">(1, 1)</code> which we already saw. (In fact,
+every non-canonical rational number has a canonical equivalent which
+will have already appeared in the stream.) Here are the first few
+terms of <code class="highlighter-rouge">qs</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">qs</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">12</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res10</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">((</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">5</span><span class="o">),</span> <span class="o">(</span><span class="mi">5</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">6</span><span class="o">),</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<p>Finally, we have to do two things to produce a correct
+sequence. First, we have to include zero (since we started <code class="highlighter-rouge">zs</code> with
+one, we won’t have any zeros in <code class="highlighter-rouge">qs</code>). Second, we need to produce
+negative numbers (the values in <code class="highlighter-rouge">qs</code> are all positive). Once we’ve
+accomplished these things, we’re done. Here are the first few terms of <code class="highlighter-rouge">rats</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">rats</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">12</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res11</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">((</span><span class="mi">0</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(-</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(-</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span> <span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(-</span><span class="mi">2</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(-</span><span class="mi">1</span><span class="o">,</span><span class="mi">3</span><span class="o">),</span> <span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(-</span><span class="mi">3</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="o">),</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<h2 id="pseudo-random-numbers">pseudo-random numbers</h2>
+
+<p>We can also use <code class="highlighter-rouge">Streaming</code> to implement streams of pseudo-random
+values. Every pseudo-random number generator (PRNG) is a combination
+of a state value, and a transition function to produce the next state
+from the current one. This is just like our Fibonacci example from
+earlier. We will use the same PRNG we do in the documentation for
+<code class="highlighter-rouge">StateT</code>, a linear-congruent generator devised by Donald Knuth call
+MMIX.</p>
+
+<p>The basic idea behind the PRNG is that multiplying two large <code class="highlighter-rouge">Long</code>
+values will cause the value to “wrap around” to another valid <code class="highlighter-rouge">Long</code>
+value. Using addition and multiplication, we can create a stream of
+<code class="highlighter-rouge">Long</code> values which appear random:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">def</span> <span class="n">createMmix</span><span class="o">(</span><span class="n">seed</span><span class="k">:</span> <span class="kt">Long</span><span class="o">)</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Long</span><span class="o">]</span> <span class="k">=</span>
+     <span class="o">|</span>   <span class="nc">Streaming</span><span class="o">.</span><span class="n">infinite</span><span class="o">(</span><span class="n">seed</span><span class="o">)(</span><span class="n">n</span> <span class="k">=&gt;</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">6364136223846793005L</span> <span class="o">+</span> <span class="mi">1442695040888963407L</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">createMmix</span><span class="k">:</span> <span class="o">(</span><span class="kt">seed:</span> <span class="kt">Long</span><span class="o">)</span><span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Long</span><span class="o">]</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">longs</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Long</span><span class="o">]</span> <span class="k">=</span> <span class="n">createMmix</span><span class="o">(</span><span class="mh">0x741f2d2eea7e5c70</span><span class="n">L</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">longs</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Long</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">8367456312203566192</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">longs</span><span class="o">.</span><span class="n">toString</span><span class="o">(</span><span class="mi">5</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res12</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">8367456312203566192</span><span class="o">,</span> <span class="o">-</span><span class="mi">7595406808669662977</span><span class="o">,</span> <span class="o">-</span><span class="mi">9188966057111175390</span><span class="o">,</span> <span class="o">-</span><span class="mi">6253267935754553271</span><span class="o">,</span> <span class="mi">5593120396242050340</span><span class="o">,</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<p>Our stream (<code class="highlighter-rouge">longs</code>) produces an infinite sequence of arbitrary <code class="highlighter-rouge">Long</code>
+values, based on the seed (<code class="highlighter-rouge">0x741f2d2eea7e5c70</code>) which was provided to
+<code class="highlighter-rouge">createMmix</code>.</p>
+
+<p>We can transform the <code class="highlighter-rouge">longs</code> stream into any kind of stream we
+want. For example, if we want a <code class="highlighter-rouge">Streaming[Int]</code> instead we can split
+each <code class="highlighter-rouge">Long</code> value in two. We’ll use <code class="highlighter-rouge">.flatMap</code> to produce a
+<code class="highlighter-rouge">Streaming[Int]</code> containing two 32-bit <code class="highlighter-rouge">Int</code> values for each 64-bit
+<code class="highlighter-rouge">Long</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">ints</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span>
+     <span class="o">|</span>   <span class="n">longs</span><span class="o">.</span><span class="n">flatMap</span> <span class="o">{</span> <span class="o">(</span><span class="n">n</span><span class="k">:</span> <span class="kt">Long</span><span class="o">)</span> <span class="k">=&gt;</span>
+     <span class="o">|</span>     <span class="k">val</span> <span class="n">n0</span> <span class="k">=</span> <span class="o">((</span><span class="n">n</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">32</span><span class="o">)</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span><span class="o">).</span><span class="n">toInt</span>
+     <span class="o">|</span>     <span class="k">val</span> <span class="n">n1</span> <span class="k">=</span> <span class="o">(</span><span class="n">n</span> <span class="o">&amp;</span> <span class="mh">0xffffffff</span><span class="o">).</span><span class="n">toInt</span>
+     <span class="o">|</span>     <span class="nc">Streaming</span><span class="o">(</span><span class="n">n0</span><span class="o">,</span> <span class="n">n1</span><span class="o">)</span>
+     <span class="o">|</span>   <span class="o">}</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">ints</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">1948200238</span><span class="o">,</span> <span class="o">...)</span>
+</code></pre>
+</div>
+
+<p>It’s worth noting that while <code class="highlighter-rouge">longs</code> is infinite, there are only a
+finite number of <code class="highlighter-rouge">Long</code> values. More worryingly, the same input value
+will also produce the same output value, meaning that eventually our
+sequence will hit a cycle and repeat itself. (In the case of MMIX the
+period of the sequence is 2^64.)</p>
+
+<p>PRNGs which need to provide a large amount of random entropy will use
+much larger state variables, and have correspondingly larger periods.</p>
+
+<h2 id="digits-of-pi">Digits of Pi</h2>
+
+<p>The final example is more complex than the previous examples: we will
+compute the digits of Pi as a <code class="highlighter-rouge">Streaming[Z]</code>, where each digit is one
+element in the stream. Since Pi has an infinite decimal expansion, the
+stream of digits is also infinite.</p>
+
+<p>The algorithm used is ported from this <a href="http://www.cs.utsa.edu/~wagner/pi/pi_cont.html">python code</a>.
+It uses a <a href="https://en.wikipedia.org/wiki/Continued_fraction">continued fraction</a>
+to get ever-closer approximations of Pi, which it uses to produce decimal digits.</p>
+
+<p>First we will need to define some more numerical constants:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">Z2</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">Z4</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">4</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">Z10</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">Z12</span> <span class="k">=</span> <span class="nc">BigInt</span><span class="o">(</span><span class="mi">12</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>To make the algorithms’ structure a bit more amenable to defining a
+stream, we are going to break it up into two parts:</p>
+
+<ul>
+  <li><code class="highlighter-rouge">narrow</code>: the outer loop, refines the approximation of Pi.</li>
+  <li><code class="highlighter-rouge">emit</code>: the inner loop, outputs decimal terms as available.</li>
+</ul>
+
+<p>You might notice that these methods are corecursive (they call each
+other). In some cases, corecursive methods will lead to stack
+overflows (if the call chain becomes too “deep”). However, the details
+of this algorithms ensure that there won’t be very many <code class="highlighter-rouge">narrow</code> and
+<code class="highlighter-rouge">emit</code> calls before a term of the stream is output.</p>
+
+<p>Also, since we are outputting decimal digits (0-9) you might wonder
+why our calculations are done using <code class="highlighter-rouge">Z</code>, rather than the much less
+expensive <code class="highlighter-rouge">Int</code> which we return. The reason we do this is that
+internally our calculation needs to use very large numbers to
+represent increasingly precise fractional approximations of Pi.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">pi</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">narrow</span><span class="o">(</span><span class="n">k</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">a</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">b</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">a1</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">b1</span><span class="k">:</span> <span class="kt">Z</span><span class="o">)</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">q</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="o">,</span> <span class="n">k</span> <span class="o">*</span> <span class="n">Z2</span> <span class="o">+</span> <span class="n">Z1</span><span class="o">)</span>
+    <span class="k">val</span> <span class="o">(</span><span class="n">aa</span><span class="o">,</span> <span class="n">bb</span><span class="o">,</span> <span class="n">aa1</span><span class="o">,</span> <span class="n">bb1</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="n">a1</span><span class="o">,</span> <span class="n">b1</span><span class="o">,</span> <span class="n">p</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="n">q</span> <span class="o">*</span> <span class="n">a1</span><span class="o">,</span> <span class="n">p</span> <span class="o">*</span> <span class="n">b</span> <span class="o">+</span> <span class="n">q</span> <span class="o">*</span> <span class="n">b1</span><span class="o">)</span>
+    <span class="k">val</span> <span class="o">(</span><span class="n">d</span><span class="o">,</span> <span class="n">d1</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="n">aa</span> <span class="o">/</span> <span class="n">bb</span><span class="o">,</span> <span class="n">aa1</span> <span class="o">/</span> <span class="n">bb1</span><span class="o">)</span>
+    <span class="n">emit</span><span class="o">(</span><span class="n">k</span> <span class="o">+</span> <span class="n">Z1</span><span class="o">,</span> <span class="n">aa</span><span class="o">,</span> <span class="n">bb</span><span class="o">,</span> <span class="n">aa1</span><span class="o">,</span> <span class="n">bb1</span><span class="o">,</span> <span class="n">p</span><span class="o">,</span> <span class="n">q</span><span class="o">,</span> <span class="n">d</span><span class="o">,</span> <span class="n">d1</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">emit</span><span class="o">(</span><span class="n">k</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">a</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">b</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">a1</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">b1</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">p</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">q</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">d</span><span class="k">:</span> <span class="kt">Z</span><span class="o">,</span> <span class="n">d1</span><span class="k">:</span> <span class="kt">Z</span><span class="o">)</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">d</span> <span class="o">!=</span> <span class="n">d1</span><span class="o">)</span> <span class="n">narrow</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="n">a</span><span class="o">,</span> <span class="n">b</span><span class="o">,</span> <span class="n">a1</span><span class="o">,</span> <span class="n">b1</span><span class="o">)</span> <span class="k">else</span> <span class="o">{</span>
+      <span class="k">val</span> <span class="o">(</span><span class="n">aa</span><span class="o">,</span> <span class="n">aa1</span><span class="o">)</span> <span class="k">=</span> <span class="o">((</span><span class="n">a</span> <span class="o">%</span> <span class="n">b</span><span class="o">)</span> <span class="o">*</span> <span class="n">Z10</span><span class="o">,</span> <span class="o">(</span><span class="n">a1</span> <span class="o">%</span> <span class="n">b1</span><span class="o">)</span> <span class="o">*</span> <span class="n">Z10</span><span class="o">)</span>
+      <span class="k">val</span> <span class="o">(</span><span class="n">dd</span><span class="o">,</span> <span class="n">dd1</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="n">aa</span> <span class="o">/</span> <span class="n">b</span><span class="o">,</span> <span class="n">aa1</span> <span class="o">/</span> <span class="n">b1</span><span class="o">)</span>
+      <span class="n">d</span><span class="o">.</span><span class="n">toInt</span> <span class="o">%::</span> <span class="n">emit</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="n">aa</span><span class="o">,</span> <span class="n">b</span><span class="o">,</span> <span class="n">aa1</span><span class="o">,</span> <span class="n">b1</span><span class="o">,</span> <span class="n">p</span><span class="o">,</span> <span class="n">q</span><span class="o">,</span> <span class="n">dd</span><span class="o">,</span> <span class="n">dd1</span><span class="o">)</span>
+    <span class="o">}</span>
+
+  <span class="c1">// Starting parameters needed to calculate Pi.
+</span>  <span class="n">narrow</span><span class="o">(</span><span class="n">Z2</span><span class="o">,</span> <span class="n">Z4</span><span class="o">,</span> <span class="n">Z1</span><span class="o">,</span> <span class="n">Z12</span><span class="o">,</span> <span class="n">Z4</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Once again, we have our starting state (the five inputs to <code class="highlighter-rouge">narrow</code>)
+and our transition function (<code class="highlighter-rouge">narrow</code> and <code class="highlighter-rouge">emit</code> in tandem), so we can
+build a stream.</p>
+
+<p>Does it work? Let’s find out!</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">def</span> <span class="n">str</span><span class="o">(</span><span class="n">xs</span><span class="k">:</span> <span class="kt">Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span>
+     <span class="o">|</span>   <span class="n">xs</span><span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="s">""</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">xs</span>
+                                           <span class="o">^</span>
+<span class="n">str</span><span class="k">:</span> <span class="o">(</span><span class="kt">xs:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">])</span><span class="nc">String</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">h</span> <span class="k">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">take</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">h</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="o">...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">t</span> <span class="k">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">drop</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="n">take</span><span class="o">(</span><span class="mi">40</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">t</span><span class="k">:</span> <span class="kt">dogs.Streaming</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Streaming</span><span class="o">(...)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">str</span><span class="o">(</span><span class="n">h</span><span class="o">)</span> <span class="o">+</span> <span class="s">"."</span> <span class="o">+</span> <span class="n">str</span><span class="o">(</span><span class="n">t</span><span class="o">)</span> <span class="o">+</span> <span class="s">"..."</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">9</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.Streaming</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">11</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.streaming._</span>
+                                    <span class="o">^</span>
+<span class="n">res13</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="mf">3.1415926535897932384626433832795028841971</span><span class="o">...</span>
+</code></pre>
+</div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Lazy, immutable streams are a powerful way to model an in-progress
+calculation, especially when those sequences are potentially
+unbounded. While these examples were based on mathematical problems,
+streams are a great way to model any case where waiting to collect all
+the elements of a sequence would be inefficient or prohibitive.</p>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/dogs/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script><script>((window.gitter = {}).chat = {}).options = {
+room: 'stew/dogs'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/dogs/js/main.js"></script><script src="/dogs/js/kazari.js"></script><script>
+$(document).ready(function() {
+	kazari.KazariPlugin().decorateCode('https://scala-evaluator-212.herokuapp.com/eval', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.S2F6YXJp.Jl2eqMfw8IakJF93PjxTbrf-8YUJgX5OoOfy5JHE8Yw', '', 'monokai')
+})
+    </script></body></html>
