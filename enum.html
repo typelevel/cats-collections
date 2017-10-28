@@ -1,0 +1,34 @@
+<h1 id="enum">Enum</h1>
+
+<p><code class="highlighter-rouge">Enum</code> represents discrete operations that can be performed on a type <code class="highlighter-rouge">A</code></p>
+
+<p>These operations are presented by the following functions.</p>
+
+<ul>
+  <li><code class="highlighter-rouge">def succ(x)</code>:		Returns the successor value of <code class="highlighter-rouge">x</code></li>
+  <li><code class="highlighter-rouge">def pred(x)</code>: 	Returns the predecessor value of <code class="highlighter-rouge">x</code></li>
+  <li><code class="highlighter-rouge">def adj(i, j)</code>:	Returns if <code class="highlighter-rouge">i</code> and <code class="highlighter-rouge">j</code> are consecutive ( <code class="highlighter-rouge">succ(i) is j</code>)</li>
+</ul>
+
+<p>An example of the discrete operation on integer values could be:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span>
+                           <span class="o">^</span>
+<span class="k">import</span> <span class="nn">dogs._</span>
+<span class="k">import</span> <span class="nn">cats._</span>
+
+<span class="n">scala</span><span class="o">&gt;</span>  <span class="k">implicit</span> <span class="k">val</span> <span class="n">intEnum</span><span class="k">:</span> <span class="kt">Enum</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Enum</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
+     <span class="o">|</span>     <span class="k">override</span> <span class="k">def</span> <span class="n">succ</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+     <span class="o">|</span>     <span class="k">override</span> <span class="k">def</span> <span class="n">pred</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="mi">1</span>
+     <span class="o">|</span>   <span class="o">}</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="n">intEnum</span><span class="k">:</span> <span class="kt">dogs.Enum</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">$anon$1</span><span class="k">@</span><span class="mi">7</span><span class="n">a7cb883</span>
+</code></pre>
+</div>

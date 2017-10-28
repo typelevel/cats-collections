@@ -1,0 +1,217 @@
+<h1 id="diet">Diet</h1>
+
+<p><code class="highlighter-rouge">Heap</code> is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
+ their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based on
+ Vladimir Kostyukov’s paper and it does support the basic operations on a heap without compromising performance.</p>
+
+<h2 id="supported-operations">Supported Operations</h2>
+
+<ul>
+  <li>add:						add a value to the heap</li>
+  <li>remove:					remove a value from the heap (it removes the <code class="highlighter-rouge">min</code> value)</li>
+  <li>(<code class="highlighter-rouge">--</code>) operator:		    remove a value from the heap (it removes the <code class="highlighter-rouge">min</code> value)</li>
+  <li>
+    <p>min:						min value in the heap (it does not remove it)</p>
+  </li>
+  <li>toList: 				    list of sorted values in the heap</li>
+</ul>
+
+<h2 id="example-usage">Example usage:</h2>
+
+<p>Start by creating an empty <code class="highlighter-rouge">Heap</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="n">implicits</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">dogs</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="k">_</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="n">implicits</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">dogs</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="k">_</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="n">implicits</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">dogs</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="k">_</span>
+                           <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="n">implicits</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">dogs</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="k">_</span>
+                                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">12</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">cats</span><span class="o">.</span><span class="n">implicits</span><span class="o">.</span><span class="k">_</span><span class="o">,</span> <span class="n">dogs</span><span class="o">.</span><span class="n">syntax</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="k">_</span>
+                                                                <span class="o">^</span>
+<span class="k">import</span> <span class="nn">dogs._</span>
+<span class="k">import</span> <span class="nn">cats._</span>
+<span class="k">import</span> <span class="nn">cats.implicits._</span>
+<span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">h</span> <span class="k">=</span> <span class="nc">Heap</span><span class="o">.</span><span class="n">empty</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">16</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">h</span><span class="k">:</span> <span class="kt">dogs.Heap</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Leaf</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h</span><span class="o">.</span><span class="n">isEmpty</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">16</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res0</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">true</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h</span><span class="o">.</span><span class="n">show</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res1</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="o">[]</span>
+</code></pre>
+</div>
+
+<p>Asking for the min value of a empty heap</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">h</span><span class="o">.</span><span class="n">getMin</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">16</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res2</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">None</span>
+</code></pre>
+</div>
+
+<p>And we can add an item:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">h2</span> <span class="k">=</span> <span class="n">h</span><span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="mi">12</span><span class="o">)</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">h2</span><span class="k">:</span> <span class="kt">dogs.Heap</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Branch</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h2</span><span class="o">.</span><span class="n">isEmpty</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">16</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res3</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h2</span><span class="o">.</span><span class="n">show</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res4</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="o">[</span><span class="err">12</span><span class="o">]</span>
+</code></pre>
+</div>
+
+<p>Let’s add a new items and ask for the min value:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">h3</span> <span class="k">=</span> <span class="n">h2</span> <span class="o">+</span> <span class="mi">5</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">7</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">h3</span><span class="k">:</span> <span class="kt">dogs.Heap</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Branch</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="nc">Branch</span><span class="o">(</span><span class="mi">7</span><span class="o">,</span><span class="nc">Branch</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">2</span><span class="o">,</span><span class="mi">2</span><span class="o">),</span><span class="nc">Branch</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span><span class="mi">4</span><span class="o">,</span><span class="mi">3</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h3</span><span class="o">.</span><span class="n">getMin</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">16</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats.implicits._</span>
+                             <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res5</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">h3</span><span class="o">.</span><span class="n">show</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res6</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="o">[</span><span class="err">1</span>, <span class="err">5</span>, <span class="err">7</span>, <span class="err">12</span><span class="o">]</span>
+</code></pre>
+</div>
+<p>If we call <code class="highlighter-rouge">remove</code> it removes the min value:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="k">val</span> <span class="n">r</span> <span class="k">=</span> <span class="n">h3</span><span class="o">.</span><span class="n">remove</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">r</span><span class="k">:</span> <span class="kt">dogs.Heap</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Branch</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span><span class="nc">Branch</span><span class="o">(</span><span class="mi">7</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span><span class="nc">Branch</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="nc">Leaf</span><span class="o">,</span><span class="mi">1</span><span class="o">,</span><span class="mi">1</span><span class="o">),</span><span class="mi">3</span><span class="o">,</span><span class="mi">2</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">r</span><span class="o">.</span><span class="n">show</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">10</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">13</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">cats._</span>
+                   <span class="o">^</span>
+<span class="o">&lt;</span><span class="n">console</span><span class="k">&gt;:</span><span class="mi">19</span><span class="k">:</span> <span class="kt">warning:</span> <span class="kt">Unused</span> <span class="kt">import</span>
+       <span class="k">import</span> <span class="nn">dogs.syntax.all._</span>
+                              <span class="o">^</span>
+<span class="n">res7</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="o">[</span><span class="err">5</span>, <span class="err">7</span>, <span class="err">12</span><span class="o">]</span>
+</code></pre>
+</div>
+
+<h2 id="heap-sub-projects">Heap sub projects</h2>
+
+<p>More complex implementation of Heap will be added as sub projects where each implementation can be used for specific 
+ requirements</p>

@@ -1,0 +1,127 @@
+<h1 id="disjoint-sets">Disjoint Sets</h1>
+
+<p><code class="highlighter-rouge">DisjointSets</code> provides a purely functional implementation for the union-find collection. 
+An Union-Find (aka Disjoint Sets) structure is a set of sets where the intersection of any two sets is empty.</p>
+
+<p><img src="http://i.imgur.com/K7BwoOk.png" alt="" /></p>
+
+<p><img src="http://i.imgur.com/SkqEdwt.png" alt="" /></p>
+
+<p>This constraint opens the way to fast unions (<code class="highlighter-rouge">O(1)</code> average). That makes of Disjoint Sets the perfect tool for
+ clustering algorithms such as calculating the connected components in a graph.</p>
+
+<p>Initially, it is a flat collection where each element forms its own, size 1, disjoint set.
+New elements are added as new disjoint sets and union operations can be used to fusion these sets.
+The joined sets are represented by one of its elements known as <strong><em>label</em> or <em>root</em></strong>.</p>
+
+<p>Fast fusion of disjoints sets is key and its provided through parenthood relations. Sets <code class="highlighter-rouge">labels</code> are always the 
+top-level ancestor.</p>
+
+<p>The following example shows 3 disjoint sets of size 1.</p>
+
+<p><img src="http://i.imgur.com/h8ddOkT.png" alt="" /></p>
+
+<p>Whereas, in the next one, <code class="highlighter-rouge">C</code> is the parent of the <code class="highlighter-rouge"><span class="p">{</span><span class="err">A,</span><span class="w"> </span><span class="err">B,</span><span class="w"> </span><span class="err">C</span><span class="p">}</span></code> set which is the only set in the DisjointSets structure.</p>
+
+<p><img src="http://i.imgur.com/V71Z0eS.png" alt="" /></p>
+
+<h2 id="supported-operations">Supported operations</h2>
+
+<ul>
+  <li><code class="highlighter-rouge">dsets + c</code> (add): Adds a value as a single element set:</li>
+</ul>
+
+<p><img src="http://i.imgur.com/iA00VgQ.png" alt="" /></p>
+
+<ul>
+  <li><code class="highlighter-rouge">desets.union(A,C)</code> (union/join): Fusion two disjoint sets:</li>
+</ul>
+
+<p><img src="http://i.imgur.com/7uunsNJ.png" alt="" /></p>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">dsets.find(v)</code> (find): Retrieves <code class="highlighter-rouge">Some(label)</code> if <code class="highlighter-rouge">v</code> belongs to the set with that label or <code class="highlighter-rouge">None</code> if the 
+value is not part of <code class="highlighter-rouge">dsets</code>.</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">dsets.toSets</code>: Gets a <code class="highlighter-rouge">Map[T, Set[T]]</code> representation of the DisjointSets contents where the key is each set 
+<em>label</em>.</p>
+  </li>
+</ul>
+
+<h2 id="example-usage">Example usage</h2>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">DisjointSets._</span>
+
+<span class="k">val</span> <span class="n">operations</span> <span class="k">=</span> <span class="k">for</span> <span class="o">{</span>
+  <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">union</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">)</span>
+  <span class="n">oneAndTwo</span> <span class="k">&lt;-</span> <span class="n">find</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+  <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">union</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">4</span><span class="o">)</span>
+  <span class="n">threeAndFour</span> <span class="k">&lt;-</span> <span class="n">find</span><span class="o">(</span><span class="mi">3</span><span class="o">)</span>
+  <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">union</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">)</span>
+  <span class="n">sets</span> <span class="k">&lt;-</span> <span class="n">toSets</span>
+<span class="o">}</span> <span class="k">yield</span> <span class="n">sets</span>
+
+<span class="k">val</span> <span class="n">label2disjointset</span><span class="k">:</span> <span class="kt">Map</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Set</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">operations</span><span class="o">.</span><span class="n">runA</span><span class="o">(</span><span class="nc">DisjointSets</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">,</span><span class="mi">3</span><span class="o">,</span><span class="mi">4</span><span class="o">)).</span><span class="n">value</span>
+</code></pre>
+</div>
+
+<h2 id="structure-and-performance">Structure and performance</h2>
+
+<p>The main idea is that each element starts as a disjoint set itself. A set with two or more elements is always the result of one or several <em>union</em> operations. Thus, a multi-element set is composed of sets of just one element, call them components.</p>
+
+<p>Each component has 3 fields:</p>
+
+<ul>
+  <li>One for the value of the element it contains.</li>
+  <li>A reference pointing to another component of the same composed multi-element set. Or itself if it constitutes a single element set.</li>
+  <li>An estimation of how many components/nodes compose its descendants. This estimation is known as <strong>rank</strong>.</li>
+</ul>
+
+<p>Let’s assume that the next operations are executed:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>dsets.union(B,A) //1
+dsets.union(B,C) //2
+</code></pre>
+</div>
+
+<p>From a mathematical point of view, the result should be similar to the one shown below:</p>
+
+<p><img src="http://i.imgur.com/V71Z0eS.png" alt="" /></p>
+
+<p>However, in order to improve lookups performance, some optimizations need to be applied. Therefore, with optimized 
+operations, the resulting structure after (1) and (2) is:</p>
+
+<p><img src="http://i.imgur.com/9srckn2.png" alt="" /></p>
+
+<p>Each set is a tree represented by its <em>root</em>. Therefore, looking for the set an element belongs to is not more than 
+following its parental relations until the root of the tree is reached. So the shallower the tree is, the fewer
+the operations to be performed in the lookup are.</p>
+
+<p>On the other hand, the operation where two sets are merged (<em>union</em>) consist on making one of the two trees to become a 
+branch of the other:</p>
+
+<p><img src="http://i.imgur.com/aKHPrtV.png" alt="" /></p>
+
+<h3 id="heuristics">Heuristics</h3>
+
+<p>These are two optimizations whose goal is to reduce the depth of each tree representing a set. The lower the tree height is, 
+the fewer operations are needed to find one element set  label.</p>
+
+<p>Considering <code class="highlighter-rouge">DisjointSets</code> structure as a forest of tree-sets, let’s compute <img src="http://i.imgur.com/wgbq86Y.png" alt="" /> as the maximum tree height of the 
+forest.
+The maximum number of operations to complete before finding one element in one set is proportional to the number of 
+jumps from the deepest leaf to its tree root. That is <img src="http://i.imgur.com/DR5IUP3.png" alt="" />.</p>
+
+<p>There are two heuristics designed to keep these tress low:</p>
+
+<ul>
+  <li><strong>Union by rank:</strong>  Avoids incrementing <img src="http://i.imgur.com/DR5IUP3.png" alt="" /> whenever possible. The idea is for each 
+value node to store how many levels have the sub-tree that they are ancestor of (call it rank). All new elements 
+have a rank value of 0 (the <em>root</em> is the first level). This way, whenever an <em>union</em> operation is 
+executed, is the shorter tree the one that becomes a branch of the other and, therefore, <img src="http://i.imgur.com/DR5IUP3.png" alt="" /> does not increase.</li>
+  <li><strong>Path compression:</strong> In this case the aim is to take advantage of the jumps made in <em>find</em> operation. Whenever a tree 
+<em>root</em> is found it is assigned to every node in the search path. This is a purely functional data structure so the 
+changes are reflected in a new copy of it which forms part of the operation result.</li>
+</ul>
