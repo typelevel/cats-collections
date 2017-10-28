@@ -2,10 +2,6 @@ import microsites._
 
 name := "dogs-docs"
 
-//enablePlugins(TutPlugin, GhpagesPlugin)
-
-//tutTargetDirectory := siteDirectory.value / "tut"
-
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
 enablePlugins(MicrositesPlugin)
@@ -24,6 +20,7 @@ micrositeExtraMdFiles := Map(
     Map("title" -> "Home", "layout" -> "docs")
   )
 )
+
 micrositePalette := Map(
   "brand-primary" -> "#5B5988",
   "brand-secondary" -> "#292E53",
@@ -33,10 +30,6 @@ micrositePalette := Map(
   "gray-light" -> "#E5E5E6",
   "gray-lighter" -> "#F4F3F4",
   "white-color" -> "#FFFFFF")
-
-autoAPIMappings := true
-
-docsMappingsAPIDir := "api"
 
 includeFilter in Jekyll := (includeFilter in makeSite).value
 

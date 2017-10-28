@@ -1,3 +1,4 @@
+---
 layout: docs
 title:  "Streaming"
 source: "core/src/main/scala/cats/data/Streaming.scala"
