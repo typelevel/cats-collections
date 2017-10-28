@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: "docs"
 title:  "Dequeue"
 source: "core/src/main/scala/Dequeue.scala"
 ---

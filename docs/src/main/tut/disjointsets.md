@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "DisjointSets"
 source: "core/src/main/scala/dogs/DisjointSets.scala"
 ---

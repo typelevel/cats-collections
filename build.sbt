@@ -53,6 +53,7 @@ lazy val docs = project
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
 
+
 lazy val bench = project
   .settings(moduleName := "dogs-bench")
   .dependsOn(core)

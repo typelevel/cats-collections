@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "Range"
 source: "core/src/main/scala/Range.scala"
 ---

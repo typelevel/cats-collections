@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "Diet"
 source: "core/src/main/scala/Diet.scala"
 ---

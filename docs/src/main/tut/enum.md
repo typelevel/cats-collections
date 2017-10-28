@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "Enum"
 source: "core/src/main/scala/Enum.scala"
 ---

@@ -1,14 +1,46 @@
-import com.typesafe.sbt.SbtSite.SiteKeys._
+import microsites._
 
 name := "dogs-docs"
 
-enablePlugins(TutPlugin, GhpagesPlugin)
+//enablePlugins(TutPlugin, GhpagesPlugin)
 
-tutTargetDirectory := siteDirectory.value / "tut"
+//tutTargetDirectory := siteDirectory.value / "tut"
+
+lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
+
+enablePlugins(MicrositesPlugin)
 
 ghpagesNoJekyll := false
+micrositeName := "dogs"
+micrositeDocumentationUrl := "/dogs"
+micrositeHomepage := "https://stew.github.io/dogs/"
+micrositeGithubOwner := "stew"
+micrositeGithubRepo := "dogs"
+micrositeHighlightTheme := "atom-one-light"
+micrositeExtraMdFiles := Map(
+  file("README.md") -> ExtraMdFileConfig(
+    "index.md",
+    "docs",
+    Map("title" -> "Home", "layout" -> "docs")
+  )
+)
+micrositePalette := Map(
+  "brand-primary" -> "#5B5988",
+  "brand-secondary" -> "#292E53",
+  "brand-tertiary" -> "#222749",
+  "gray-dark" -> "#49494B",
+  "gray" -> "#7B7B7E",
+  "gray-light" -> "#E5E5E6",
+  "gray-lighter" -> "#F4F3F4",
+  "white-color" -> "#FFFFFF")
 
-includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.yml" | "*.md"
+autoAPIMappings := true
+
+docsMappingsAPIDir := "api"
+
+includeFilter in Jekyll := (includeFilter in makeSite).value
+
+fork in tut := true
 
 git.remoteRepo := "git@github.com:stew/dogs.git"
 

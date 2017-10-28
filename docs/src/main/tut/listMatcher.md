@@ -1,6 +1,6 @@
 ---
-layout: default
-title:  "Option"
+layout: page
+title:  "List"
 source: "core/src/main/scala/Option.scala"
 ------------------------------------------
 

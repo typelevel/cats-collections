@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "ISet"
 source: "core/src/main/scala/ISet.scala"
 ---

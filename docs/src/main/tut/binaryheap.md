@@ -1,9 +1,8 @@
 ---
-layout: default
-title:  "Diet"
-source: "core/src/main/scala/Diet.scala"
+layout: "docs"
+title:  "Binary Heap"
 ---
-# Diet
+# Binary Heap
 
 `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
  their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based on

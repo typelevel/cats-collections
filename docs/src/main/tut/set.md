@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: docs
 title:  "Set"
 source: "core/src/main/scala/Set.scala"
 ---
