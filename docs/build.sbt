@@ -8,11 +8,11 @@ enablePlugins(MicrositesPlugin)
 
 ghpagesNoJekyll := false
 micrositeName := "dogs"
+micrositeDescription := "pure functional data structures for Scala"
 micrositeBaseUrl := "/dogs"
 micrositeHomepage := "https://stew.github.io/dogs/"
 micrositeGithubOwner := "stew"
 micrositeGithubRepo := "dogs"
-micrositeHighlightTheme := "atom-one-light"
 micrositeExtraMdFiles := Map(
   file("README.md") -> ExtraMdFileConfig(
     "index.md",
