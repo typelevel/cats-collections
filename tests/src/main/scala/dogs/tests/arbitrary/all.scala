@@ -5,5 +5,4 @@ trait AllArbitrary
     with ArbitrarySet
     with ArbitraryISet
     with ArbitraryStreaming
-    with ArbitraryVector
     with CogenInstances

@@ -7,6 +7,5 @@ package object arbitrary {
   object set extends ArbitrarySet
   object iset extends ArbitraryISet
   object streaming extends ArbitraryStreaming
-  object vector extends ArbitraryVector
   object cogen extends CogenInstances
 }
