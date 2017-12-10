@@ -468,4 +468,8 @@ class AdHocStreamingTests extends DogsSuite {
   test("lazy tails") {
     isok(bomb.tails)
   }
+
+  test("traverse short-circuits") {
+    dangerous.traverse(i => if (i < 3) Some(i) else None) shouldBe None
+  }
 }
