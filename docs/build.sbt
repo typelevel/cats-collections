@@ -52,5 +52,7 @@ scalacOptions := Seq(
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
-  "-Xfuture")
+  "-Xfuture",
+  "-nowarn")
+
 
