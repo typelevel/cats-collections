@@ -5,8 +5,8 @@ import dogs.tests.arbitrary._
 import dogs.tests.arbitrary.cogen._
 import cats._
 import cats.implicits._
+import cats.kernel.laws.discipline.{SerializableTests => _, _}
 import cats.laws.discipline._
-import cats.kernel.laws._
 import org.scalacheck._
 import Cogen._
 import catalysts.Platform
@@ -14,10 +14,10 @@ import catalysts.Platform
 class DListSpec extends SlowDogsSuite with ArbitraryDList {
   import DList._
 
-  checkAll("DList[Int]", GroupLaws[DList[Int]].monoid)
-  checkAll("DList[Int]", OrderLaws[DList[Int]].eqv)
+  checkAll("DList[Int]", MonoidTests[DList[Int]].monoid)
+  checkAll("DList[Int]", EqTests[DList[Int]].eqv)
 
-  checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, DList[Int], Option, Option])
+  checkAll("Traverse[DList]", TraverseTests[DList].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("Traverse[DList]", SerializableTests.serializable(Traverse[DList]))
 
   test("headOption")(forAll {(l: List[Int]) =>

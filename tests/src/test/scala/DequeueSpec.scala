@@ -15,7 +15,7 @@ class DequeueSpec extends SlowDogsSuite {
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Dequeue]", SerializableTests.serializable(CoflatMap[Dequeue]))
 
-  checkAll("Dequeue[Int] with Option", TraverseTests[Dequeue].traverse[Int, Int, Int, Dequeue[Int], Option, Option])
+  checkAll("Dequeue[Int] with Option", TraverseTests[Dequeue].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("Traverse[Dequeue]", SerializableTests.serializable(Traverse[Dequeue]))
 
    @annotation.tailrec

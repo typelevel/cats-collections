@@ -94,7 +94,7 @@ trait DListInstances {
   }
 
   implicit def dlistEq[A](implicit A: Eq[A]): Eq[DList[A]] =
-    Eq[List[A]].on[DList[A]](_.toList)
+    Eq[List[A]].contramap[DList[A]](_.toList)
 
   implicit val dlistInstance: Traverse[DList] with MonoidK[DList] = // TODO coflatmap?
     new Traverse[DList] with MonoidK[DList] {

@@ -119,7 +119,7 @@ class Map[K,V](val set: Set[(K,V)]) {
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
     set._getkv(_._1,  key)
 
-  private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
+  private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 }
 
 object Map extends MapInstances {
@@ -163,7 +163,7 @@ trait MapInstances {
 
 
   implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[Map[K,?]] = new FlatMap[Map[K,?]] {
-    private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
+    private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 
     override def flatMap[A,B](fa: Map[K,A])(f: A => Map[K,B]) : Map[K,B] = fa flatMap f
 

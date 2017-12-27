@@ -91,6 +91,6 @@ class MapShow extends DogsSuite {
 }
 
 class MapLaws extends SlowDogsSuite with ArbitrarySet with ArbitraryMap  {
-  implicit val iso = CartesianTests.Isomorphisms.invariant[Map[String, ?]]
+  implicit val iso = SemigroupalTests.Isomorphisms.invariant[Map[String, ?]]
   checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)]) 
 }

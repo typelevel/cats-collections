@@ -7,7 +7,7 @@ import cats._
 import cats.implicits._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
-import cats.kernel.laws.OrderLaws
+import cats.kernel.laws.discipline.OrderTests
 import org.scalacheck._
 import org.scalacheck.Cogen._
 import scala.collection.immutable.{List => SList}
@@ -23,8 +23,8 @@ class StreamingTests extends DogsSuite {
 //  implicit val utopia: Cogen[Streaming[ListWrapper[Int]]] =
 //    dogs.tests.arbitrary.cogen.cogenFoldable[Streaming, ListWrapper[Int]](Streaming.streamInstance, implicitly)
 
-  checkAll("Streaming[Int]", CartesianTests[Streaming].cartesian[Int, Int, Int])
-  checkAll("Cartesian[Streaming]", SerializableTests.serializable(Cartesian[Streaming]))
+  checkAll("Streaming[Int]", SemigroupalTests[Streaming].semigroupal[Int, Int, Int])
+  checkAll("Cartesian[Streaming]", SerializableTests.serializable(Semigroupal[Streaming]))
 
   checkAll("Streaming[Int]", CoflatMapTests[Streaming].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Streaming]", SerializableTests.serializable(CoflatMap[Streaming]))
@@ -38,7 +38,7 @@ class StreamingTests extends DogsSuite {
   checkAll("Streaming[Int] with Option", TraverseTests[Streaming].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("Traverse[Streaming]", SerializableTests.serializable(Traverse[Streaming]))
 
-  checkAll("Streaming[Int]", OrderLaws[Streaming[Int]].order)
+  checkAll("Streaming[Int]", OrderTests[Streaming[Int]].order)
   checkAll("Order[Streaming[Int]]", SerializableTests.serializable(Order[Streaming[Int]]))
 
 /*

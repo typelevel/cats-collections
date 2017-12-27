@@ -8,7 +8,7 @@ import cats.Order
 trait ArbitraryMap extends ArbitrarySet {
 
   def mapGen[K: Order: Arbitrary, A: Arbitrary]: Gen[Map[K,A]] = {
-    implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.on[(K,X)](_._1)
+    implicit def order[X](implicit K: Order[K]): Order[(K,X)] = Order.by[(K,X), K](_._1)(K)
     setGen[(K,A)].map(new Map(_))
   }
 
