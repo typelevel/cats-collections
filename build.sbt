@@ -40,7 +40,7 @@ lazy val tests = project
   .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-laws"          % "1.0.0-RC2",
+      "org.typelevel"  %% "cats-laws"          % "1.0.0",
       "org.scalacheck" %% "scalacheck"         % "1.13.5",
       "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
       "org.typelevel"  %% "discipline"         % "0.7.3"    % "test"
