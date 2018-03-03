@@ -8,8 +8,9 @@ import scala.{annotation}
 import cats._
 import cats.implicits._
 import cats.laws.discipline._
+import cats.tests.CatsSuite
 
-class DequeueSpec extends SlowDogsSuite {
+class DequeueSpec extends CatsSuite {
   import Dequeue._
 
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])

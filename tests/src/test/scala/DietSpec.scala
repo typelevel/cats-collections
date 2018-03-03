@@ -4,8 +4,9 @@ package tests
 import cats._
 import cats.implicits._
 import org.scalacheck._
+import cats.tests.CatsSuite
 
-class DietSpec extends DogsSuite {
+class DietSpec extends CatsSuite {
 
   //  Properties("Diet")  with DogMatcher {
 

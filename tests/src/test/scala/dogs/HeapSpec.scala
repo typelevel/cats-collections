@@ -2,11 +2,12 @@ package dogs
 package tests
 
 import cats.implicits._
+import cats.tests.CatsSuite
 
 /**
  * Created by nperez on 3/28/16.
  */
-class HeapSpec extends DogsSuite {
+class HeapSpec extends CatsSuite {
   test("sorted")(
     forAll { (xs: scala.List[Int]) =>
 

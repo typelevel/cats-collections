@@ -40,10 +40,8 @@ lazy val tests = project
   .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel"  %% "cats-laws"          % "1.0.0",
-      "org.scalacheck" %% "scalacheck"         % "1.13.5",
-      "org.scalatest"  %% "scalatest"          % "3.0.0"    % "test",
-      "org.typelevel"  %% "discipline"         % "0.7.3"    % "test"
+      "org.typelevel" %% "cats-testkit" % V.cats % "test",
+      "org.typelevel" %% "cats-laws"    % V.cats
     )
   )
 
@@ -71,7 +69,7 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 lazy val commonSettings = 
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % "1.0.0",
+    "org.typelevel"                  %% "cats-core"  % V.cats,
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.4"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
     ),

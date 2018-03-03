@@ -10,8 +10,9 @@ import cats.laws.discipline._
 import org.scalacheck._
 import Cogen._
 import catalysts.Platform
+import cats.tests.CatsSuite
 
-class DListSpec extends SlowDogsSuite with ArbitraryDList {
+class DListSpec extends CatsSuite with ArbitraryDList {
   import DList._
 
   checkAll("DList[Int]", MonoidTests[DList[Int]].monoid)

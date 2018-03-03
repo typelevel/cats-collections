@@ -1,9 +1,10 @@
 package dogs
 package tests
 
+import cats.tests.CatsSuite
 import scala.Function
 
-class BedazzleSpec extends DogsSuite {
+class BedazzleSpec extends CatsSuite {
   test("kestrel aka unsafeTap"){
     import syntax.birds._
 

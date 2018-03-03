@@ -3,11 +3,12 @@ package tests
 
 import cats._
 import cats.implicits._
+import cats.tests.CatsSuite
 import dogs.tests.arbitrary._
 import cats.laws.discipline._
 
 
-class MapSpec extends DogsSuite {
+class MapSpec extends CatsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   def fromSet[K: Order,V](s: SSet[(K,V)]): Map[K,V] =
@@ -75,7 +76,7 @@ class MapSpec extends DogsSuite {
 }
 
 
-class MapShow extends DogsSuite {
+class MapShow extends CatsSuite {
 
   test("show empty") {
     val map = Map.empty[Int, Int]
@@ -90,7 +91,7 @@ class MapShow extends DogsSuite {
   }
 }
 
-class MapLaws extends SlowDogsSuite with ArbitrarySet with ArbitraryMap  {
+class MapLaws extends CatsSuite with ArbitrarySet with ArbitraryMap  {
   implicit val iso = SemigroupalTests.Isomorphisms.invariant[Map[String, ?]]
   checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)]) 
 }

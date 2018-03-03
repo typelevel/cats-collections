@@ -12,8 +12,9 @@ import org.scalacheck._
 import org.scalacheck.Cogen._
 import scala.collection.immutable.{List => SList}
 import scala.collection.immutable.Vector
+import cats.tests.CatsSuite
 
-class StreamingTests extends DogsSuite {
+class StreamingTests extends CatsSuite {
   import Streaming._
   // who oh why do these need to be here?
 //  implicit val ilive: Cogen[ListWrapper[Int]] =
@@ -57,7 +58,7 @@ class StreamingTests extends DogsSuite {
  */
 }
  
-class AdHocStreamingTests extends DogsSuite {
+class AdHocStreamingTests extends CatsSuite {
   import Streaming._
 
 //  implicit val ilive: Cogen[ListWrapper[Int]] =

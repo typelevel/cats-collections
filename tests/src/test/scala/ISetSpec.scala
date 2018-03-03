@@ -3,9 +3,10 @@ package tests
 
 import cats.laws.discipline.SerializableTests
 import cats._
+import cats.tests.CatsSuite
 import cats.implicits._
 
-class ISetSpec extends DogsSuite {
+class ISetSpec extends CatsSuite {
  
   checkAll("MonoidK[ISet]", SerializableTests.serializable(MonoidK[ISet]))
 

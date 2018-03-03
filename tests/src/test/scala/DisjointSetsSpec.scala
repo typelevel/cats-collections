@@ -2,8 +2,9 @@ package dogs
 package tests
 
 import cats.implicits._
+import cats.tests.CatsSuite
 
-class DisjointSetsSpec extends DogsSuite {
+class DisjointSetsSpec extends CatsSuite {
 
   test("union-find operations using state/stator monad") {
 

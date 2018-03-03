@@ -1,9 +1,10 @@
 package dogs
 package tests
 
+import cats.tests.CatsSuite
 import cats.implicits._
 
-class SetSpec extends DogsSuite {
+class SetSpec extends CatsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   test("set is always sorted")(forAll { (xs: List[Int]) =>

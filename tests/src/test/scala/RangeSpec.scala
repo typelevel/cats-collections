@@ -1,7 +1,9 @@
 package dogs
 package tests
 
-class RangeTest extends DogsSuite {
+import cats.tests.CatsSuite
+
+class RangeTest extends CatsSuite {
 
   import Range._
 
