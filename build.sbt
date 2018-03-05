@@ -9,8 +9,7 @@ lazy val buildSettings = Seq(
 lazy val dogs = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .dependsOn(core, tests, docs, bench)
-  .aggregate(core, tests, docs, bench)
+  .aggregate(core, tests, docs)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
