@@ -76,7 +76,7 @@ lazy val commonSettings =
   )
 
 addCommandAlias("build", ";core/compile;core/test;tests/test")
-addCommandAlias("validate", ";scalastyle;build;makeSite")
+addCommandAlias("validate", ";scalastyle;build")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
