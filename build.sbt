@@ -2,8 +2,8 @@ import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.4",
-  crossScalaVersions := Seq("2.11.11", scalaVersion.value)
+  scalaVersion in Global := "2.12.6",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 )
 
 lazy val dogs = project.in(file("."))
@@ -57,7 +57,7 @@ lazy val bench = project
   .settings(
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.24"
   )
   .enablePlugins(JmhPlugin)
 
@@ -65,11 +65,11 @@ lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev 
 
 lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
-lazy val commonSettings = 
+lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % V.cats,
-    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.4"),
+    "org.typelevel" %% "cats-core"  % V.cats,
+    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
     ),
     fork in test := true
