@@ -2,8 +2,8 @@ import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.4",
-  crossScalaVersions := Seq("2.11.11", scalaVersion.value)
+  scalaVersion in Global := "2.12.6",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 )
 
 lazy val dogs = project.in(file("."))
@@ -57,7 +57,7 @@ lazy val bench = project
   .settings(
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.8"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.26"
   )
   .enablePlugins(JmhPlugin)
 
@@ -69,7 +69,7 @@ lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
     "org.typelevel"                  %% "cats-core"  % V.cats,
-    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.4"),
+    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7"),
     compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
     ),
     fork in test := true
@@ -190,7 +190,8 @@ lazy val compilerFlags = Seq(
           "-Ywarn-unused:params",              // Warn if a value parameter is unused.
           "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
           "-Ywarn-unused:privates",            // Warn if a private member is unused.
-          "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
+          "-Ywarn-value-discard",              // Warn when non-Unit expression results are unused.
+          "-Yrangepos"                         // Syntax highlighting for whole error range.
         )
     }
   ),

@@ -8,8 +8,8 @@ cache:
 language: scala
 sudo: false
 scala:
-- 2.11.11
-- 2.12.4
+- 2.11.12
+- 2.12.6
 sbt_args: -J-Xss4m -J-Xmx6G -J-Xms1G
 jdk:
 - oraclejdk8
