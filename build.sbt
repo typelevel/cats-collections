@@ -70,7 +70,7 @@ lazy val commonSettings =
     libraryDependencies ++= Seq(
     "org.typelevel"                  %% "cats-core"  % V.cats,
     compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7"),
-    compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.0" cross CrossVersion.patch)
+    compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.1" cross CrossVersion.patch)
     ),
     fork in test := true
   )
