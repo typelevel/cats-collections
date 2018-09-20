@@ -2,7 +2,7 @@
  * Created by anicolaspp on 2/18/16.
  */
 
-package dogs
+package cats.collections
 package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}

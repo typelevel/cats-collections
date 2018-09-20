@@ -1,4 +1,4 @@
-package dogs
+package cats.collections
 package bench
 
 import scalaz.IList

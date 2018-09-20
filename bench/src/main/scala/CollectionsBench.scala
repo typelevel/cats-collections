@@ -1,4 +1,4 @@
-package dogs
+package cats.collections
 package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
