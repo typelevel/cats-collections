@@ -6,7 +6,7 @@ lazy val buildSettings = Seq(
   crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 )
 
-lazy val dogs = project.in(file("."))
+lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
   .aggregate(core, tests, docs)
@@ -27,13 +27,13 @@ lazy val dogs = project.in(file("."))
       pushChanges))
 
 lazy val core = project
-  .settings(moduleName := "dogs-core")
+  .settings(moduleName := "cats-collections-core")
   .settings(dogsSettings:_*)
   .settings(publishSettings)
 
 lazy val tests = project
   .dependsOn(core)
-  .settings(moduleName := "dogs-tests")
+  .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
   .settings(coverageEnabled := false,
@@ -51,7 +51,7 @@ lazy val docs = project
 
 
 lazy val bench = project
-  .settings(moduleName := "dogs-bench")
+  .settings(moduleName := "cats-collections-bench")
   .dependsOn(core)
   .settings(noPublishSettings)
   .settings(
@@ -113,10 +113,10 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   publishArtifact in Test := false,
-  homepage := Some(url("https://github.com/stew/dogs")),
+  homepage := Some(url("https://github.com/typelevel/cats-collections")),
   pomIncludeRepository := Function.const(false),
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html")),
-  scmInfo := Some(ScmInfo(url("https://github.com/stew/dogs"), "scm:git:git@github.com:stew/dogs.git")),
+  scmInfo := Some(ScmInfo(url("https://github.com/typeleve/cats-collections"), "scm:git:git@github.com:typelevel/cats-collections.git")),
   autoAPIMappings := true,
   releaseProcess := Nil,
   pomExtra := (
