@@ -1,18 +1,18 @@
 import microsites._
 
-name := "dogs-docs"
+name := "cats-collections-docs"
 
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
 enablePlugins(MicrositesPlugin)
 
 ghpagesNoJekyll := false
-micrositeName := "dogs"
+micrositeName := "cats-collections"
 micrositeDescription := "pure functional data structures for Scala"
-micrositeBaseUrl := "/dogs"
-micrositeHomepage := "https://stew.github.io/dogs/"
-micrositeGithubOwner := "stew"
-micrositeGithubRepo := "dogs"
+micrositeBaseUrl := "/cats-collections/"
+micrositeHomepage := "http://typelevel.org/cats-collections/"
+micrositeGithubOwner := "typelevel"
+micrositeGithubRepo := "cats-collections"
 micrositeExtraMdFiles := Map(
   file("README.md") -> ExtraMdFileConfig(
     "index.md",
@@ -35,7 +35,7 @@ includeFilter in Jekyll := (includeFilter in makeSite).value
 
 fork in tut := true
 
-git.remoteRepo := "git@github.com:stew/dogs.git"
+git.remoteRepo := "git@github.com:typelevel/cats-collections.git"
 
 scalacOptions := Seq(
   "-feature",
@@ -54,5 +54,3 @@ scalacOptions := Seq(
   "-Ywarn-value-discard",
   "-Xfuture",
   "-nowarn")
-
-

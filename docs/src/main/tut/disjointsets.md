@@ -1,7 +1,7 @@
 ---
 layout: docs
 title:  "DisjointSets"
-source: "core/src/main/scala/dogs/DisjointSets.scala"
+source: "core/src/main/scala/cats/collections/DisjointSets.scala"
 ---
 # Disjoint Sets
 

@@ -32,7 +32,7 @@ We can also get the string representing the range in math notation. `Range(x, y)
 `cats.Show`
 
 ```tut
-import dogs._, cats._, cats.implicits._, dogs.syntax.all._, dogs.Range._
+import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._, cats.collections.Range._
                                                                                                                                   
 val range = Range(1, 10)
 range.show
