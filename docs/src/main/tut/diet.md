@@ -53,7 +53,7 @@ circumstances, operations in the tree required O(n).
 Start by creating an empty Diet:
 
 ```tut
-import dogs._, cats._, cats.implicits._, dogs.syntax.all._
+import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
 
 val d: Diet[Int] = Diet.empty
 d.isEmpty

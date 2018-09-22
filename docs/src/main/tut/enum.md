@@ -16,7 +16,7 @@ These operations are presented by the following functions.
 An example of the discrete operation on integer values could be: 
 
 ```tut
-import dogs._, cats._
+import cats._, cats.collections._
 
  implicit val intEnum: Enum[Int] = new Enum[Int] {
     override def succ(x: Int): Int = x + 1

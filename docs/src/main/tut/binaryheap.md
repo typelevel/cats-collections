@@ -22,7 +22,7 @@ title:  "Binary Heap"
 Start by creating an empty `Heap`:
 
 ```tut
-import dogs._, cats._, cats.implicits._, dogs.syntax.all._
+import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
 
 val h = Heap.empty[Int]
 h.isEmpty

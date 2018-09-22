@@ -58,8 +58,8 @@ the other Scala collection types. Despite this, you can use `Streaming`
 in most of the ways you use other Scala collections:
 
 ```tut
-import dogs.Streaming
-import dogs.syntax.streaming._
+import cats.collections.Streaming
+import cats.collections.syntax.streaming._
 
 val ns = Streaming(1, 10, 100, 1000)
 val xs = ns.filter(_ < 50)
