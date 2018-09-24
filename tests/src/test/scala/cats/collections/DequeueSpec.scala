@@ -86,7 +86,7 @@ class DequeueSpec extends CatsSuite {
     } yield consL(l, snocL(r, Dequeue.empty)))
 
   test("foldLeft")(forAll{ (q: Dequeue[Int]) =>
-    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.toBackStream.toList)
+    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.reverse.toList)
   })
 
   test("foldRight")(forAll { (q: Dequeue[Int]) =>

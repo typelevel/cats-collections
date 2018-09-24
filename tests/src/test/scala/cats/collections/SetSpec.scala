@@ -41,7 +41,7 @@ class SetSpec extends CatsSuite {
   })
 
   test("contains works")(forAll{ (xs: MMap[Int,Boolean]) =>
-    val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
+    val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
 
@@ -51,7 +51,7 @@ class SetSpec extends CatsSuite {
   })
 
   test("find works")(forAll{ (xs: MMap[Int,Boolean]) =>
-    val tree = xs.foldLeft[Set[Int]](Set.empty)((t,i) =>
+    val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
 
