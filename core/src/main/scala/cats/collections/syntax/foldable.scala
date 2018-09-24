@@ -24,6 +24,7 @@ final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
     }
   }
 
+  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def toStreaming: Streaming[A] =
     F.foldRight(fa, Eval.now(Streaming.empty[A])){ (a, ls) =>
       Eval.now(Streaming.cons(a, ls))

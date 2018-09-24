@@ -91,6 +91,7 @@ class Map[K,V](val set: Set[(K,V)]) {
    * Return a stream of Key,Value pairs
    * O(N)
    */
+  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def toStreaming: Streaming[(K,V)] =
     foldRight(Eval.now(Streaming.empty[(K,V)])){ (a, ls) =>
       Eval.now(Streaming.cons(a, ls))
@@ -157,6 +158,7 @@ trait MapInstances {
         K.eqv(l._1, r._1) && V.eqv(l._2, r._2)
     }
 
+    // TODO requires an efficient implementation once Streaming is gone
     override def eqv(l: Map[K,V], r: Map[K,V]): Boolean =
       Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
   }

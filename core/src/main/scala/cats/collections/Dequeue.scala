@@ -90,12 +90,14 @@ sealed abstract class Dequeue[A] {
   /**
     * convert this queue to a stream of elements from front to back
     */
+  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def toStreaming: Streaming[A] = Streaming.unfold(this)(_.uncons)
 
   /**
     * convert this queue to a stream of elements from back to front
     */
- def toBackStream: Streaming[A] = Streaming.unfold(this)(_.unsnoc)
+  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
+  def toBackStream: Streaming[A] = Streaming.unfold(this)(_.unsnoc)
 
   /**
     * Append another Dequeue to this dequeue

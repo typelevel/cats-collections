@@ -58,8 +58,8 @@ class RangeTest extends CatsSuite {
 
     val Some((l, Some(r))) = range - Range(2,9)
 
-    l.toStreaming.toList should be(List(1))
-    r.toStreaming.toList should be(List(10))
+    l.toList should be(List(1))
+    r.toList should be(List(10))
 
     val x1 = range - range
 
@@ -67,17 +67,17 @@ class RangeTest extends CatsSuite {
 
     val Some((x2, None)) = range - Range(-1, 5)
 
-    x2.toStreaming.toList should contain inOrderOnly (6, 7, 8, 9, 10)
+    x2.toList should contain inOrderOnly (6, 7, 8, 9, 10)
 
     val Some((x3, None)) = range - Range(3, 12)
 
-    x3.toStreaming.toList should contain inOrderOnly(1, 2)
+    x3.toList should contain inOrderOnly(1, 2)
   }
 
   test("generate inverted range"){
     val range = Range(5, 1)
 
-    range.toStreaming.toList should contain inOrderOnly(5, 4, 3, 2, 1)
+    range.toList should contain inOrderOnly(5, 4, 3, 2, 1)
   }
 
   test("map inverted range"){
