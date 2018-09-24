@@ -65,7 +65,7 @@ lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev 
 
 lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
-lazy val commonSettings = 
+lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
     "org.typelevel"                  %% "cats-core"  % V.cats,
@@ -146,8 +146,9 @@ lazy val compilerFlags = Seq(
           "-Ypartial-unification"              // Enable partial unification in type constructor inference
         )
       case _ =>
+        // TODO uncomment after 0.7.0 release
         Seq(
-          "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
+          //"-deprecation",                      // Emit warning and location for usages of deprecated APIs.
           "-encoding", "utf-8",                // Specify character encoding used by source files.
           "-explaintypes",                     // Explain type errors in more detail.
           "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
@@ -156,7 +157,7 @@ lazy val compilerFlags = Seq(
           "-language:implicitConversions",     // Allow definition of implicit functions called views
           "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
           "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-          "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
+          //"-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
           "-Xfuture",                          // Turn on future language features.
           "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
           "-Xlint:by-name-right-associative",  // By-name parameter of right associative operator.
