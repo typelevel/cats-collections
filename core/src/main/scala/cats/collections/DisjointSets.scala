@@ -6,7 +6,7 @@ import cats.data.State.get
 
 import DisjointSets.Entry
 
-class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
+class DisjointSets[T : Order] private(private val entries: AvlMap[T, Entry[T]]) {
 
   /**
     * Joins two disjoint sets if both are contained by this [[DisjointSets]]
@@ -39,7 +39,7 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
           if(paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
         }
         new DisjointSets[T] (
-          flatEntries ++ Map(
+          flatEntries ++ AvlMap(
             child -> childEntry.copy(parent = parent),
             parent -> parentEntry.copy(rank = scala.math.max(parentEntry.rank, childEntry.rank+1))
           )
@@ -84,15 +84,15 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
     * Generates a map from labels to sets from
     * the current [[DisjointSets]].
     */
-  def toSets: (DisjointSets[T], Map[T, Set[T]]) =
-    entries.foldLeft((this, Map[T, Set[T]]())) {
+  def toSets: (DisjointSets[T], AvlMap[T, AvlSet[T]]) =
+    entries.foldLeft((this, AvlMap[T, AvlSet[T]]())) {
       case ((dsets, acc), (k, _)) =>
         val (newSt, Some(label)) = dsets.find(k)
-        val updatedSet = acc.get(label).getOrElse(Set.empty[T]) + k
+        val updatedSet = acc.get(label).getOrElse(AvlSet.empty[T]) + k
         (newSt, acc + (label -> updatedSet))
     }
 
-  private def flattenBranch(label: T, toPropagate: Map[T, Entry[T]] = Map.empty): Option[DisjointSets[T]] =
+  private def flattenBranch(label: T, toPropagate: AvlMap[T, Entry[T]] = AvlMap.empty): Option[DisjointSets[T]] =
     entries.get(label) flatMap {
       case Entry(_, parent) if parent == label =>
         val newEntries = entries ++ toPropagate.map(_.copy(parent = label))
@@ -106,7 +106,7 @@ class DisjointSets[T : Order] private(private val entries: Map[T, Entry[T]]) {
 object DisjointSets extends DisjointSetsStates {
 
   def apply[T : Order](labels: T*): DisjointSets[T] = new DisjointSets[T](
-    Map(labels.map(l => l -> Entry(0, l)):_*)
+    AvlMap(labels.map(l => l -> Entry(0, l)):_*)
   )
 
   private case class Entry[T](rank: Int, parent: T)
@@ -121,6 +121,6 @@ trait DisjointSetsStates {
   def union[T](a: T, b: T): State[DisjointSets[T], Boolean] =
     State[DisjointSets[T], Boolean](disjointSets => disjointSets.union(a, b))
 
-  def toSets[T]: State[DisjointSets[T], Map[T, Set[T]]] =
-    State[DisjointSets[T], Map[T, Set[T]]](disjointSets => disjointSets.toSets)
+  def toSets[T]: State[DisjointSets[T], AvlMap[T, AvlSet[T]]] =
+    State[DisjointSets[T], AvlMap[T, AvlSet[T]]](disjointSets => disjointSets.toSets)
 }

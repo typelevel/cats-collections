@@ -7,13 +7,13 @@ import cats.tests.CatsSuite
 import cats.implicits._
 
 class ISetSpec extends CatsSuite {
- 
+
   checkAll("MonoidK[ISet]", SerializableTests.serializable(MonoidK[ISet]))
 
   test("intersection works")(
     forAll { (as: List[Int], bs: List[Int]) =>
 
-      val setA: ISet[Int] = Set.fromList(as).iset
+      val setA: ISet[Int] = AvlSet.fromList(as).iset
       val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
       val s1 = setA & setEven
@@ -26,7 +26,7 @@ class ISetSpec extends CatsSuite {
 
   test("union works")(
     forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: ISet[Int] = Set.fromList(as).iset
+      val setA: ISet[Int] = AvlSet.fromList(as).iset
       val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
       val s1 = setA | setEven
@@ -39,7 +39,7 @@ class ISetSpec extends CatsSuite {
 
   test("difference works") (
     forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: ISet[Int] = Set.fromList(as).iset
+      val setA: ISet[Int] = AvlSet.fromList(as).iset
       val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
       val s1 = setA - setEven
@@ -52,7 +52,7 @@ class ISetSpec extends CatsSuite {
 
   test("negation works")(
     forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: ISet[Int] = Set.fromList(as).iset
+      val setA: ISet[Int] = AvlSet.fromList(as).iset
       val setEven: ISet[Int] = ISet(_ % 2 == 0)
 
       val s1 = !(setA - setEven)

@@ -8,7 +8,7 @@ class SetSpec extends CatsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
   test("set is always sorted")(forAll { (xs: List[Int]) =>
-    val tree = xs.foldLeft(Set.empty[Int])(_ + _)
+    val tree = xs.foldLeft(AvlSet.empty[Int])(_ + _)
 
     val ours: List[Int] = tree.toList
     val theirs: List[Int] = xs.to[SSet].to[Array].sorted.to[List]
@@ -16,8 +16,8 @@ class SetSpec extends CatsSuite {
     ours should be (theirs)
   })
 
-  import Set._
-  def balanced[A](t: Set[A]): Boolean = t match {
+  import AvlSet._
+  def balanced[A](t: AvlSet[A]): Boolean = t match {
     case BTNil() => true
     case Branch(_, l, r) =>
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
@@ -25,12 +25,12 @@ class SetSpec extends CatsSuite {
   }
 
   test("set is always balanced")(forAll { (xs: List[Int]) =>
-    val tree = Set(xs: _*)
+    val tree = AvlSet(xs: _*)
     balanced(tree) should be(true)
   })
 
   test("set can delete")(forAll{ (xs: MMap[Int,Boolean]) =>
-    val tree = Set(xs.keySet.toSeq: _*)
+    val tree = AvlSet(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
     val ours: SSet[Int] = filtered.toList.to[SSet]
@@ -61,24 +61,24 @@ class SetSpec extends CatsSuite {
   })
 
   test("intersect is correct")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
-    val xt = Set(xs.toSeq: _*)
-    val yt = Set(ys.toSeq: _*)
+    val xt = AvlSet(xs.toSeq: _*)
+    val yt = AvlSet(ys.toSeq: _*)
 
     (xt intersect yt).toScalaSet should be (xs intersect ys)
     (xt & yt).toScalaSet should be(xs intersect ys)
   })
 
   test("union is correct")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
-    val xt = Set(xs.toSeq: _*)
-    val yt = Set(ys.toSeq: _*)
+    val xt = AvlSet(xs.toSeq: _*)
+    val yt = AvlSet(ys.toSeq: _*)
 
     (xt union yt).toScalaSet should be(xs union ys)
     (xt | yt).toScalaSet should be(xs union ys)
   })
 
   test("we can take the difference of sets")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
-    val xt = Set(xs.toSeq: _*)
-    val yt = Set(ys.toSeq: _*)
+    val xt = AvlSet(xs.toSeq: _*)
+    val yt = AvlSet(ys.toSeq: _*)
 
     (xt diff yt).toScalaSet should be(xs diff ys)
     (xt - yt).toScalaSet should be(xs diff ys)
@@ -87,9 +87,8 @@ class SetSpec extends CatsSuite {
   test("map works") (forAll{ (xs: SSet[Int]) =>
     val f: Int => Int = _ + 1
 
-    val xt = Set(xs.toSeq: _*)
+    val xt = AvlSet(xs.toSeq: _*)
 
     (xt map f).toScalaSet should be(xs map f)
   })
 }
-

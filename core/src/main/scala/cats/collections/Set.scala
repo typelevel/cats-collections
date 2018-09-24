@@ -6,13 +6,13 @@ import cats._
 import cats.implicits._
 
 /**
- * An immutable, ordered, extensional Set
+ * An immutable, ordered, extensional set
  *
  * This data-structure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
  */
-sealed abstract class Set[A] {
-  import Set._
+sealed abstract class AvlSet[A] {
+  import AvlSet._
 
   /**
    * The number of items in the Set.
@@ -29,14 +29,14 @@ sealed abstract class Set[A] {
   /**
    * Map a function on all values of the set
    */
-  def map[B: Order](f: A => B): Set[B] =
-    foldLeft[Set[B]](empty)((s,a) => s + f(a))
+  def map[B: Order](f: A => B): AvlSet[B] =
+    foldLeft[AvlSet[B]](empty)((s,a) => s + f(a))
 
   /**
    * Map a function on all values of the set
    */
-  def flatMap[B: Order](f: A => Set[B]): Set[B] =
-    foldLeft[Set[B]](empty)((s,a) => s ++ f(a))
+  def flatMap[B: Order](f: A => AvlSet[B]): AvlSet[B] =
+    foldLeft[AvlSet[B]](empty)((s,a) => s ++ f(a))
 
   /**
    * Return the sorted list of elements.
@@ -48,12 +48,12 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Returns None if the Set is empty, otherwise returns the minimum
+   * Returns None if the set is empty, otherwise returns the minimum
    * element.
    * O(log n)
    */
   def min: Option[A] = {
-    @tailrec def loop(sub: Set[A], x: A): A = sub match {
+    @tailrec def loop(sub: AvlSet[A], x: A): A = sub match {
       case Branch(a, l, _) => loop(l, a)
       case _ =>  x
     }
@@ -65,12 +65,12 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Returns `None` if the Set is empty, otherwise returns the maximum
+   * Returns `None` if the set is empty, otherwise returns the maximum
    * element.
    * O(log n)
    */
   def max: Option[A] = {
-    @tailrec def loop(sub: Set[A], x: A): A = sub match {
+    @tailrec def loop(sub: AvlSet[A], x: A): A = sub match {
       case Branch(a, _, r) => loop(r, a)
       case _ =>  x
     }
@@ -113,7 +113,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Returns `true` if the given element is in the Set.
+   * Returns `true` if the given element is in the set.
    * O(log n)
    */
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
@@ -126,7 +126,7 @@ sealed abstract class Set[A] {
   }
 
   /**
-   * Add's the given element to the Set if it is not already present.
+   * Add's the given element to the set if it is not already present.
    * O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
@@ -136,21 +136,21 @@ sealed abstract class Set[A] {
         case o if o < 0 => Branch(a, l.add(x), r)
         case _ => Branch(a, l, r.add(x))
       }
-      case _ =>  Branch(x, Set.empty, Set.empty)
+      case _ =>  Branch(x, AvlSet.empty, AvlSet.empty)
     }).balance
 
 
   /**
-   * Add's the given element to the Set if it is not already present.
+   * Add's the given element to the set if it is not already present.
    * O(log n)
    */
-  def +(x: A)(implicit order: Order[A]): Set[A] = add(x)
+  def +(x: A)(implicit order: Order[A]): AvlSet[A] = add(x)
 
   /**
-   * Return a Set which does not contain the given element.
+   * Return a set which does not contain the given element.
    * O(log n)
    */
-  def remove(x: A)(implicit order: Order[A]): Set[A] =
+  def remove(x: A)(implicit order: Order[A]): AvlSet[A] =
     this match {
       case Branch(a, l, r) =>
         order.compare(x, a) match {
@@ -161,11 +161,11 @@ sealed abstract class Set[A] {
           case o if o < 0 => Branch(a, l.remove(x), r).balance
           case _ => Branch(a, l, r.remove(x)).balance
         }
-      case _ => Set.empty
+      case _ => AvlSet.empty
     }
 
   // STU: this is used by Map, not sure what to do about this
-  private[collections] def removef[B](x: B, f: A => B)(implicit B: Order[B]): Set[A] =
+  private[collections] def removef[B](x: B, f: A => B)(implicit B: Order[B]): AvlSet[A] =
     this match {
       case Branch(a, l, r) =>
         B.compare(x, f(a)) match {
@@ -177,64 +177,64 @@ sealed abstract class Set[A] {
           case o if o < 0 => Branch(a, l.removef(x, f), r).balance
           case _ => Branch(a, l, r.removef(x, f)).balance
         }
-      case _ => Set.empty
+      case _ => AvlSet.empty
     }
 
   /**
-   * Return a Set containing the union of elements with this Set and
-   * the given Set.
+   * Return a set containing the union of elements with this set and
+   * the given set.
    * O(n log n)
    */
-  def union(another: Set[A])(implicit order: Order[A]): Set[A] = another.foldLeft(this)(_ + _)
+  def union(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = another.foldLeft(this)(_ + _)
 
   /**
-   * Return a Set containing the union of elements with this Set and
-   * the given Set.
+   * Return a set containing the union of elements with this set and
+   * the given set.
    * O(n log n)
    */
-  def |(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
+  def |(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this union another
 
   /**
-   * Return a Set containing the intersection of elements with this Set and
-   * the given Set.
+   * Return a set containing the intersection of elements with this set and
+   * the given set.
    * O(n log n)
    */
-  def intersect(another: Set[A])(implicit order: Order[A]): Set[A] = {
-    def _intersect(small: Set[A], large: Set[A]): Set[A] =
-      small.foldLeft[Set[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
+  def intersect(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = {
+    def _intersect(small: AvlSet[A], large: AvlSet[A]): AvlSet[A] =
+      small.foldLeft[AvlSet[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
-    if(Order[Int].compare(this.size, another.size) < 0)
+    if (this.size < another.size)
       _intersect(this, another)
     else
-      _intersect(another,this)
+      _intersect(another, this)
   }
 
   /**
-   * Return a Set containing the intersection of elements with this Set and
-   * the given Set.
+   * Return a set containing the intersection of elements with this set and
+   * the given set.
    * O(n log n)
    */
-  def &(another: Set[A])(implicit order: Order[A]): Set[A] = this intersect another
+  def &(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this intersect another
 
   /**
-   * Return a Set containing the union of elements with this Set and
-   * the given Set.
+   * Return a set containing the union of elements with this set and
+   * the given set.
    * O(n log n)
    */
-  def ++(another: Set[A])(implicit order: Order[A]): Set[A] = this union another
+  def ++(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this union another
 
   /**
-   * Return a Set that has any elements appearing in the removals set removed
+   * Return a set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def diff(removals: Set[A])(implicit order: Order[A]): Set[A] =
+  def diff(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
     removals.foldLeft(this)(_ remove _)
 
   /**
-   * Return a Set that has any elements appearing in the removals set removed
+   * Return a set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def -(removals: Set[A])(implicit order: Order[A]): Set[A] =
+  def -(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
     removals.foldLeft(this)(_ remove _)
 
 
@@ -265,7 +265,7 @@ sealed abstract class Set[A] {
   // The name was chosen so that it would be convenient for nobody to
   // remember.
   private[collections] def _getkv[B](f: A => B, b: B)(implicit B: Order[B]): Option[A] = {
-    @tailrec def go(t: Set[A]): Option[A] = t match {
+    @tailrec def go(t: AvlSet[A]): Option[A] = t match {
       case Branch(v,l,r) =>
         B.compare(b, f(v)) match {
           case 0 => Some(v)
@@ -277,7 +277,7 @@ sealed abstract class Set[A] {
     go(this)
   }
 
-  private[collections] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): Set[A] = {
+  private[collections] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): AvlSet[A] = {
     (this match {
       case Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
         case 0 =>
@@ -286,32 +286,32 @@ sealed abstract class Set[A] {
         case o if o < 0 => Branch(a, l.updateKey(key, value), r)
         case _ => Branch(a, l, r.updateKey(key,value))
       }
-      case _ =>  Branch((key -> value).asInstanceOf[A], Set.empty, Set.empty)
+      case _ =>  Branch((key -> value).asInstanceOf[A], AvlSet.empty, AvlSet.empty)
     }).balance
   }
 
   private[collections] val height: Int
 }
 
-object Set {
+object AvlSet {
 
   /**
    * Create a set with the given elements.
    */
-  def apply[A: Order](as: A*): Set[A] =
-    as.foldLeft[Set[A]](empty)(_ + _)
+  def apply[A: Order](as: A*): AvlSet[A] =
+    as.foldLeft[AvlSet[A]](empty)(_ + _)
 
-  def fromList[A: Order](as: List[A]): Set[A] =
-    as.foldLeft[Set[A]](empty)(_ + _)
+  def fromList[A: Order](as: List[A]): AvlSet[A] =
+    as.foldLeft[AvlSet[A]](empty)(_ + _)
 
   /**
-   * The empty Set.
+   * The empty set.
    */
-  def empty[A]: Set[A] = BTNil()
+  def empty[A]: AvlSet[A] = BTNil()
 
   private[collections] case class Branch[A](value: A,
-                                     left: Set[A],
-                                     right: Set[A]) extends Set[A] {
+                                     left: AvlSet[A],
+                                     right: AvlSet[A]) extends AvlSet[A] {
 
     val size = left.size + right.size + 1
     val height = java.lang.Math.max(left.height, right.height) + 1
@@ -358,16 +358,15 @@ object Set {
     }
   }
 
-  private[collections] case object BTNil extends Set[Nothing] {
+  private[collections] case object BTNil extends AvlSet[Nothing] {
     override def isEmpty: Boolean = true
 
-    def apply[A](): Set[A] = this.asInstanceOf[Set[A]]
+    def apply[A](): AvlSet[A] = this.asInstanceOf[AvlSet[A]]
 
-    def unapply[A](a: Set[A]): Boolean = a.isEmpty
+    def unapply[A](a: AvlSet[A]): Boolean = a.isEmpty
 
     override val size: Int = 0
     override val height: Int = 0
   }
 
 }
-

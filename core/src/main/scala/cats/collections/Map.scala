@@ -5,25 +5,25 @@ import cats._, cats.implicits._
 import scala.collection.mutable.ListBuffer
 
 /**
- * A tree based immutable Map.
+ * A tree based immutable map.
  */
-class Map[K,V](val set: Set[(K,V)]) {
+class AvlMap[K,V](val set: AvlSet[(K,V)]) {
 
   /**
-   * Map a function on all the values in the Map.
+   * Map a function on all the values in the map.
    */
-  def map[B](f: V => B)(implicit K: Order[K]): Map[K,B] =
-    new Map(set.map(kv => kv._1 -> f(kv._2)))
+  def map[B](f: V => B)(implicit K: Order[K]): AvlMap[K,B] =
+    new AvlMap(set.map(kv => kv._1 -> f(kv._2)))
 
   /**
-   * Map a function on all the values in the Map.
+   * Map a function on all the values in the map.
    */
-  def flatMap[B](f: V => Map[K,B])(implicit K: Order[K]): Map[K,B] =
-    new Map(set.map(kv =>
+  def flatMap[B](f: V => AvlMap[K,B])(implicit K: Order[K]): AvlMap[K,B] =
+    new AvlMap(set.map(kv =>
       f(kv._2).get(kv._1).map((kv._1, _))
     ).flatMap(_ match {
-      case Some(x) => Set(x)
-      case _ => Set.empty
+      case Some(x) => AvlSet(x)
+      case _ => AvlSet.empty
     }))
 
    /**
@@ -44,7 +44,7 @@ class Map[K,V](val set: Set[(K,V)]) {
    * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist.
    * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
    */
-  def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): Map[K, V] =
+  def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): AvlMap[K, V] =
     f(get(k)) map { v => this + (k -> v) } getOrElse this
 
   /**
@@ -57,7 +57,7 @@ class Map[K,V](val set: Set[(K,V)]) {
    * Add a key value pair to the map.
    * O(log n)
    */
-  def +(kv: (K,V))(implicit K: Order[K]): Map[K,V] = new Map(set + kv)
+  def +(kv: (K,V))(implicit K: Order[K]): AvlMap[K,V] = new AvlMap(set + kv)
 
   /**
    * Get the value for the given key, if it exists.
@@ -69,13 +69,13 @@ class Map[K,V](val set: Set[(K,V)]) {
    * Return a map which doesn't contain the given key.
    * O(log n)
    */
-  def remove(key: K)(implicit K: Order[K]): Map[K,V] = new Map(set.removef(key, _._1))
+  def remove(key: K)(implicit K: Order[K]): AvlMap[K,V] = new AvlMap(set.removef(key, _._1))
 
   /**
-   * Merge this Map with another Map.
+   * Merge this map with another map.
    * O(n log n)
    */
-  def ++(other: Map[K,V])(implicit K: Order[K]): Map[K,V] = new Map(set ++ other.set)
+  def ++(other: AvlMap[K,V])(implicit K: Order[K]): AvlMap[K,V] = new AvlMap(set ++ other.set)
 
   /**
    * Return a list of Key,Value pairs
@@ -98,7 +98,7 @@ class Map[K,V](val set: Set[(K,V)]) {
     }.value
 
   /**
-   * Return a scala.collection.immutable.map
+   * Return a scala.collection.immutable.Map
    */
   def toScalaMap: scala.collection.immutable.Map[K,V] =
     foldLeft(scala.collection.immutable.Map.empty[K,V])((m,kv) => m + kv)
@@ -110,11 +110,11 @@ class Map[K,V](val set: Set[(K,V)]) {
    * using the provided Semigroup.
    * O(log n)
    */
-  def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): Map[K,V] =
-    new Map(set.updateKey(key, value))
+  def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): AvlMap[K,V] =
+    new AvlMap(set.updateKey(key, value))
 
   //
-  // Fetch a Key/Value pair from the Map if the key is present.
+  // Fetch a Key/Value pair from the map if the key is present.
   // O(log n)
   //
   private def getkv(key: K)(implicit K: Order[K]): Option[(K,V)] =
@@ -123,21 +123,21 @@ class Map[K,V](val set: Set[(K,V)]) {
   private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 }
 
-object Map extends MapInstances {
+object AvlMap extends AvlMapInstances {
   /**
    * Construct a map containing the given key/value pairs.
    * O(n log n)
    */
-  def apply[K,V](kvs: (K,V)*)(implicit K: Order[K]): Map[K,V] =
-    kvs.foldLeft[Map[K,V]](empty)(_ + _)
+  def apply[K,V](kvs: (K,V)*)(implicit K: Order[K]): AvlMap[K,V] =
+    kvs.foldLeft[AvlMap[K,V]](empty)(_ + _)
 
   /**
    * Return an empty map.
    */
-  def empty[K,V]: Map[K,V] = new Map(Set.empty)
+  def empty[K,V]: AvlMap[K,V] = new AvlMap(AvlSet.empty)
 
-  implicit def toShow[K, V](implicit sk: Show[K], sv: Show[V]): Show[Map[K, V]] = new Show[Map[K, V]] {
-    override def show(f: Map[K, V]): String = {
+  implicit def toShow[K, V](implicit sk: Show[K], sv: Show[V]): Show[AvlMap[K, V]] = new Show[AvlMap[K, V]] {
+    override def show(f: AvlMap[K, V]): String = {
       val pairs = f.toList
 
       val result = pairs.foldLeft("{"){(b, p) => b + "[" + sk.show(p._1) + "-->" + sv.show(p._2) + "]\n"} + "}"
@@ -148,10 +148,10 @@ object Map extends MapInstances {
 
 }
 
-trait MapInstances {
+trait AvlMapInstances {
   import scala.util.{Either => SEither, Right => SRight, Left => SLeft}
 
-  implicit def eqMap[K: Eq, V: Eq](implicit K: Eq[K], V: Eq[V]): Eq[Map[K,V]] = new Eq[Map[K,V]] {
+  implicit def eqMap[K: Eq, V: Eq](implicit K: Eq[K], V: Eq[V]): Eq[AvlMap[K,V]] = new Eq[AvlMap[K,V]] {
     // TODO get rid of this once cats has it:
     implicit val tupleEq: Eq[(K,V)] = new Eq[(K,V)] {
       override def eqv(l: (K,V), r: (K,V)): Boolean =
@@ -159,29 +159,29 @@ trait MapInstances {
     }
 
     // TODO requires an efficient implementation once Streaming is gone
-    override def eqv(l: Map[K,V], r: Map[K,V]): Boolean =
+    override def eqv(l: AvlMap[K,V], r: AvlMap[K,V]): Boolean =
       Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
   }
 
 
-  implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[Map[K,?]] = new FlatMap[Map[K,?]] {
+  implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[AvlMap[K,?]] = new FlatMap[AvlMap[K,?]] {
     private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 
-    override def flatMap[A,B](fa: Map[K,A])(f: A => Map[K,B]) : Map[K,B] = fa flatMap f
+    override def flatMap[A,B](fa: AvlMap[K,A])(f: A => AvlMap[K,B]): AvlMap[K,B] = fa flatMap f
 
-    override def map[A,B](fa: Map[K,A])(f: A => B) : Map[K,B] = fa map f
+    override def map[A,B](fa: AvlMap[K,A])(f: A => B): AvlMap[K,B] = fa map f
 
-    override def tailRecM[A,B](a: A)(f: A => Map[K,SEither[A,B]]) : Map[K,B] = {
-      @tailrec def extract(kv : (K, SEither[A,B])) : Set[(K,B)] = kv._2 match {
+    override def tailRecM[A,B](a: A)(f: A => AvlMap[K,SEither[A,B]]): AvlMap[K,B] = {
+      @tailrec def extract(kv : (K, SEither[A,B])) : AvlSet[(K,B)] = kv._2 match {
         case SLeft(a) =>
           f(a).get(kv._1) match {
             case Some(x) => extract(kv._1 -> x)
-            case _ => Set.empty[(K,B)]
+            case _ => AvlSet.empty[(K,B)]
           }
         case SRight(b) =>
-          Set[(K,B)](kv._1 -> b)
+          AvlSet[(K,B)](kv._1 -> b)
       }
-      new Map[K,B](f(a).set.flatMap(extract))
+      new AvlMap[K,B](f(a).set.flatMap(extract))
     }
   }
 }
