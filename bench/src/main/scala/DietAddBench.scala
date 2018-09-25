@@ -51,7 +51,7 @@ class DietAddBench extends BestCaseRangesList {
 
   @Benchmark
   def dogsDietAdd: Unit = {
-    var diet = dogs.Diet.empty[Int]
+    var diet = Diet.empty[Int]
 
     dogValues.foreach{ i => diet = diet + i }
   }
