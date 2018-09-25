@@ -9,7 +9,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(core, tests, docs)
+  .aggregate(core, bench, tests, docs)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -65,7 +65,7 @@ lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev 
 
 lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
-lazy val commonSettings = 
+lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
     "org.typelevel"                  %% "cats-core"  % V.cats,
@@ -75,8 +75,8 @@ lazy val commonSettings =
     fork in test := true
   )
 
-addCommandAlias("build", ";core/compile;core/test;tests/test")
-addCommandAlias("validate", ";scalastyle;build")
+addCommandAlias("build", ";compile;test")
+addCommandAlias("validate", ";scalastyle;build;docs/tut")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
