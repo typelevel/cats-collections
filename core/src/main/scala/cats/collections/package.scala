@@ -12,4 +12,9 @@ package object collections {
   @deprecated("Map has been renamed to AvlMap to avoid naming clashes.", "cats-collections 0.7.0")
   val Map = AvlMap
 
+  @deprecated("Enum has been renamed to Discrete to avoid naming clashes.", "cats-collections 0.7.0")
+  type Enum[A] = Discrete[A]
+  @deprecated("Enum has been renamed to Discrete to avoid naming clashes.", "cats-collections 0.7.0")
+  val Enum = Discrete
+
 }

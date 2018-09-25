@@ -12,7 +12,7 @@ final case class Range[A](val start: A, val end: A) {
    * Subtract a Range from this range.
    * The result will be 0, 1 or 2 ranges
    */
-  def -(range: Range[A])(implicit enum: Enum[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
+  def -(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
     if(order.lteqv(range.start, start)) {
       if(order.lt(range.end, start))
         Some((this, None))  // they are completely to the left of us
@@ -30,7 +30,7 @@ final case class Range[A](val start: A, val end: A) {
       }
     }
 
-  def +(other: Range[A])(implicit order: Order[A], enum: Enum[A]): (Range[A], Option[Range[A]]) = {
+  def +(other: Range[A])(implicit order: Order[A], enum: Discrete[A]): (Range[A], Option[Range[A]]) = {
     val (l,r) = if(order.lt(this.start,other.start)) (this,other) else (other,this)
 
     if(order.gteqv(l.end, r.start) || enum.adj(l.end, r.start))
@@ -56,7 +56,7 @@ final case class Range[A](val start: A, val end: A) {
     * return a stream of the elements in the range
     */
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toStreaming(implicit enum: Enum[A], order: Order[A]): Streaming[A] =
+  def toStreaming(implicit enum: Discrete[A], order: Order[A]): Streaming[A] =
     order.compare(start,end) match {
       case 0 => Streaming(start)
       case x if x < 0 => Streaming.cons(start, Streaming.defer(Range(enum.succ(start), end).toStreaming))
@@ -66,7 +66,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * Return all the values in the Range as a List
     */
-  def toList(implicit enum: Enum[A], order: Order[A]): List[A] = toStreaming.toList
+  def toList(implicit enum: Discrete[A], order: Order[A]): List[A] = toStreaming.toList
 
   /**
     * Returns range [end, start]
@@ -81,7 +81,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * Apply function f to each element in range [star, end]
     */
-  def foreach(f: A => Unit)(implicit enum: Enum[A], order: Order[A]): Unit = {
+  def foreach(f: A => Unit)(implicit enum: Discrete[A], order: Order[A]): Unit = {
     var i = start
     while(order.lteqv(i,end)) {
       f(i)
@@ -91,7 +91,7 @@ final case class Range[A](val start: A, val end: A) {
 
   def map[B](f: A => B): Range[B] = Range[B](f(start), f(end))
 
-  def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Enum[A], order: Order[A]): B = {
+  def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Discrete[A], order: Order[A]): B = {
     var b = s
     foreach { a =>
       b = f(b,a)
