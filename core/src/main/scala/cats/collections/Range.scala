@@ -55,7 +55,6 @@ final case class Range[A](val start: A, val end: A) {
   /**
     * return a stream of the elements in the range
     */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def toStreaming(implicit enum: Discrete[A], order: Order[A]): Streaming[A] =
     order.compare(start,end) match {
       case 0 => Streaming(start)
