@@ -9,7 +9,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(core, tests, docs)
+  .aggregate(core, bench, tests, docs)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -55,6 +55,7 @@ lazy val bench = project
   .dependsOn(core)
   .settings(noPublishSettings)
   .settings(
+    buildSettings,
     coverageEnabled := false,
     fork in run := true,
     libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.26"
@@ -75,8 +76,8 @@ lazy val commonSettings =
     fork in test := true
   )
 
-addCommandAlias("build", ";core/compile;core/test;tests/test")
-addCommandAlias("validate", ";scalastyle;build")
+addCommandAlias("build", ";compile;test")
+addCommandAlias("validate", ";scalastyle;build;docs/tut")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
