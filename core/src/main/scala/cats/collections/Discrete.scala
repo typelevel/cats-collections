@@ -4,7 +4,7 @@ package cats.collections
 /**
  * Represent discrete operations that can be performed on A
  */
-trait Enum[A] {
+trait Discrete[A] {
 
   /**
    * Return the successor of x.
@@ -22,13 +22,13 @@ trait Enum[A] {
   def adj(x: A, y: A): Boolean = succ(x) == y
 }
 
-object Enum {
-  implicit val intEnum: Enum[Int] = new Enum[Int] {
+object Discrete {
+  implicit val intDiscrete: Discrete[Int] = new Discrete[Int] {
     override def succ(x: Int): Int = x + 1
     override def pred(x: Int): Int = x - 1
   }
 
-  implicit val bigIntEnum: Enum[BigInt] = new Enum[BigInt] {
+  implicit val bigIntDiscrete: Discrete[BigInt] = new Discrete[BigInt] {
     override def succ(x: BigInt): BigInt = x + 1
     override def pred(x: BigInt): BigInt = x - 1
   }

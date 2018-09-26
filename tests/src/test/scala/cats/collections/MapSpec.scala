@@ -11,13 +11,13 @@ import cats.laws.discipline._
 class MapSpec extends CatsSuite {
   import scala.collection.immutable.{Set => SSet, Map => MMap}
 
-  def fromSet[K: Order,V](s: SSet[(K,V)]): Map[K,V] =
-    s.foldLeft[Map[K,V]](Map.empty)(_ + _)
+  def fromSet[K: Order,V](s: SSet[(K,V)]): AvlMap[K,V] =
+    s.foldLeft[AvlMap[K,V]](AvlMap.empty)(_ + _)
 
   def fromSetS[K: Order,V](s: SSet[(K,V)]): MMap[K,V] =
     s.foldLeft[MMap[K,V]](MMap.empty)(_ + _)
 
-  def toSet[K: Order,V](m: Map[K,V]): SSet[(K,V)] =
+  def toSet[K: Order,V](m: AvlMap[K,V]): SSet[(K,V)] =
     m.foldLeft[SSet[(K,V)]](SSet.empty)(_ + _)
 
   test("we can add things to a Map, then find them")(forAll {(xs: SSet[(String,Int)]) =>
@@ -33,7 +33,7 @@ class MapSpec extends CatsSuite {
     val n = fromSet(xs.map(_._1))
     val n2 = fromSetS(xs.map(_._1))
 
-    val m = xs.foldLeft[Map[String,Int]](n)((mm,kvr) =>
+    val m = xs.foldLeft[AvlMap[String,Int]](n)((mm,kvr) =>
       if(kvr._2) mm.remove(kvr._1._1) else mm
     )
 
@@ -67,7 +67,7 @@ class MapSpec extends CatsSuite {
   })
 
   test("flatMap works")(forAll {(xs : SSet[(String,Int)]) =>
-    val f: Int => Map[String,Int] = _ => fromSet(xs) map (_ + 1)
+    val f: Int => AvlMap[String,Int] = _ => fromSet(xs) map (_ + 1)
     val f2: ((String,Int)) => SSet[(String,Int)] = kv => SSet(kv._1 -> (kv._2 + 1))
     val m = fromSet(xs)
     val sm = fromSetS(xs)
@@ -79,13 +79,13 @@ class MapSpec extends CatsSuite {
 class MapShow extends CatsSuite {
 
   test("show empty") {
-    val map = Map.empty[Int, Int]
+    val map = AvlMap.empty[Int, Int]
 
     map.show should be("{}")
   }
 
   test("show mappings") {
-    val map = Map.empty[Int, Int].+((1, 2)).+((2, 3))
+    val map = AvlMap.empty[Int, Int].+((1, 2)).+((2, 3))
 
     map.show should be("{[1-->2]\n[2-->3]\n}")
   }
@@ -93,5 +93,5 @@ class MapShow extends CatsSuite {
 
 class MapLaws extends CatsSuite with ArbitrarySet with ArbitraryMap  {
   implicit val iso = SemigroupalTests.Isomorphisms.invariant[Map[String, ?]]
-  checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)]) 
+  checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)])
 }

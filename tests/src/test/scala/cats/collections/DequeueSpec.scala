@@ -24,19 +24,19 @@ class DequeueSpec extends CatsSuite {
      case Nil => q
      case x :: xs => consL(xs, q cons x)
    }
- 
+
    @annotation.tailrec
    final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q.uncons match {
      case None => acc
      case Some((i, q)) => unconsL(q, i :: acc)
    }
- 
+
    @annotation.tailrec
    final def snocL[A](l: List[A], q: Dequeue[A]): Dequeue[A] = l match {
      case Nil => q
      case x :: xs => snocL(xs, q snoc x)
    }
- 
+
    @annotation.tailrec
    final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q.unsnoc match {
      case None => acc
@@ -86,11 +86,11 @@ class DequeueSpec extends CatsSuite {
     } yield consL(l, snocL(r, Dequeue.empty)))
 
   test("foldLeft")(forAll{ (q: Dequeue[Int]) =>
-    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.toBackStream.toList)
+    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.reverse.toList)
   })
 
   test("foldRight")(forAll { (q: Dequeue[Int]) =>
-    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value should be (q.toStreaming.toList)
+    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value should be (q.toList)
   })
 
 

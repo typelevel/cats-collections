@@ -1,11 +1,11 @@
 ---
 layout: docs
-title:  "Enum"
-source: "core/src/main/scala/Enum.scala"
+title:  "Discrete"
+source: "core/src/main/scala/Discrete.scala"
 ---
-# Enum
+# Discrete
 
-`Enum` represents discrete operations that can be performed on a type `A`
+`Discrete` represents discrete operations that can be performed on a type `A`
 
 These operations are presented by the following functions.
 
@@ -18,8 +18,8 @@ An example of the discrete operation on integer values could be:
 ```tut
 import cats._, cats.collections._
 
- implicit val intEnum: Enum[Int] = new Enum[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-  }
+implicit val intDiscrete: Discrete[Int] = new Discrete[Int] {
+  override def succ(x: Int): Int = x + 1
+  override def pred(x: Int): Int = x - 1
+}
 ```

@@ -11,11 +11,11 @@ options:
   - title: Diet
     url: diet.html
 
+  - title: Discrete
+    url: discrete.html
+
   - title: Disjoin Sets
     url: disjointsets.html
-
-  - title: Enum
-    url: enum.html
 
   - title: ISet
     url: iset.html
@@ -25,6 +25,3 @@ options:
 
   - title: Set
     url: set.html
-
-  - title: Streaming
-    url: streaming.html
