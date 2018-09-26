@@ -55,6 +55,7 @@ lazy val bench = project
   .dependsOn(core)
   .settings(noPublishSettings)
   .settings(
+    buildSettings,
     coverageEnabled := false,
     fork in run := true,
     libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.26"
