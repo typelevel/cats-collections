@@ -103,6 +103,10 @@ lazy val credentialSettings = Seq(
   } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
 )
 
+credentials in ThisBuild += Credentials(
+  Option(System.getProperty("build.publish.credentials")) map (new File(_)) getOrElse (Path.userHome / ".ivy2" / ".credentials")
+)
+
 lazy val publishSettings = Seq(
   publishTo in ThisBuild := {
     val nexus = "https://oss.sonatype.org/"
