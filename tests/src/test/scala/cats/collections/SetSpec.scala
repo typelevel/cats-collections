@@ -5,7 +5,7 @@ import cats.tests.CatsSuite
 
 class SetSpec extends CatsSuite {
   test("set is always sorted")(forAll { (xs: List[Int]) =>
-    val tree = xs.foldLeft(AvlSet.empty[Int])(_ + _)
+    val tree = AvlSet.fromList(xs)
 
     val ours: List[Int] = tree.toList
     val theirs: List[Int] = xs.to[Set].to[Array].sorted.to[List]
@@ -13,12 +13,15 @@ class SetSpec extends CatsSuite {
     ours should be (theirs)
   })
 
+  test("iterator works")(forAll { xs: AvlSet[Int] =>
+    xs.toIterator.toList should be (xs.toList)
+  })
+
   import AvlSet._
   def balanced[A](t: AvlSet[A]): Boolean = t match {
     case BTNil() => true
     case Branch(_, l, r) =>
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
-
   }
 
   test("set is always balanced")(forAll { (xs: List[Int]) =>

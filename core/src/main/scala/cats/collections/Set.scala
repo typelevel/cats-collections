@@ -1,9 +1,13 @@
 package cats.collections
 
+import java.util.NoSuchElementException
+
 import scala.annotation.tailrec
 import scala.collection.immutable.List
 import cats._
 import cats.implicits._
+
+import scala.collection.generic.CanBuildFrom
 
 /**
  * An immutable, ordered, extensional set
@@ -39,15 +43,6 @@ sealed abstract class AvlSet[A] {
     foldLeft[AvlSet[B]](empty)((s,a) => s ++ f(a))
 
   /**
-   * Return the sorted list of elements.
-   * O(n)
-   */
-  def toList(): List[A] = this match {
-    case Branch(a, l, r) => l.toList ::: (a :: r.toList)
-    case _ =>  List.empty[A]
-  }
-
-  /**
    * Returns None if the set is empty, otherwise returns the minimum
    * element.
    * O(log n)
@@ -79,6 +74,15 @@ sealed abstract class AvlSet[A] {
       case Branch(a, _, r) => Some(loop(r, a))
       case _ => None
     }
+  }
+
+  /**
+   * Applies a function to each element, in ascending order
+   * O(n)
+   */
+  def foreach(f: A => Unit): Unit = this match {
+    case Branch(v, l, r) => l.foreach(f); f(v); r.foreach(f)
+    case _ =>
   }
 
   /**
@@ -244,12 +248,51 @@ sealed abstract class AvlSet[A] {
   def iset(implicit order: Order[A]): ISet[A] = ISet(contains)
 
   /**
-   * Return a scala set containing the elements in the Set
+    * Converts this set into a Scala collection
+    * O(n)
+    */
+  def to[Col[_]](implicit cbf: CanBuildFrom[Nothing, A, Col[A]]): Col[A] = {
+    val builder = cbf()
+    this.foreach(builder += _)
+    builder.result()
+  }
+
+  /**
+    * Return the sorted list of elements.
+    * O(n)
+    */
+  def toList: List[A] = to[List]
+
+  /**
+   * Return a Scala set containing the elements in the set
    * O(n)
    */
-  def toScalaSet: scala.collection.immutable.Set[A] = {
-    import scala.collection.immutable.{Set => SSet}
-    foldLeft[SSet[A]](SSet.empty)(_ + _)
+  def toScalaSet: Set[A] = to[Set]
+
+  def toIterator: Iterator[A] = new Iterator[A] {
+    var stack: List[Either[A, AvlSet[A]]] = List(Right(AvlSet.this))
+
+    @tailrec override def hasNext: Boolean = stack match {
+      case Nil => false
+      case Left(_) :: _ => true
+      case Right(Branch(_, _, _)) :: _ => true
+      case _ :: ss =>
+        stack = ss
+        hasNext
+    }
+
+    @tailrec override def next(): A = stack match {
+      case Nil => throw new NoSuchElementException()
+      case Left(v) :: ss =>
+        stack = ss
+        v
+      case Right(Branch(v, l, r)) :: ss =>
+        stack = Right(l) :: Left(v) :: Right(r) :: ss
+        next()
+      case _ :: ss =>
+        stack = ss
+        next()
+    }
   }
 
   override def toString: String =
