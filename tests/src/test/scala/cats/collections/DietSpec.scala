@@ -2,7 +2,6 @@ package cats.collections
 package tests
 
 import cats._
-import cats.implicits._
 import org.scalacheck._
 import cats.tests.CatsSuite
 

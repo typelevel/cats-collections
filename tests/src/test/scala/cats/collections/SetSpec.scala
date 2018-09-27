@@ -2,16 +2,13 @@ package cats.collections
 package tests
 
 import cats.tests.CatsSuite
-import cats.implicits._
 
 class SetSpec extends CatsSuite {
-  import scala.collection.immutable.{Set => SSet, Map => MMap}
-
   test("set is always sorted")(forAll { (xs: List[Int]) =>
     val tree = xs.foldLeft(AvlSet.empty[Int])(_ + _)
 
     val ours: List[Int] = tree.toList
-    val theirs: List[Int] = xs.to[SSet].to[Array].sorted.to[List]
+    val theirs: List[Int] = xs.to[Set].to[Array].sorted.to[List]
 
     ours should be (theirs)
   })
@@ -29,18 +26,18 @@ class SetSpec extends CatsSuite {
     balanced(tree) should be(true)
   })
 
-  test("set can delete")(forAll{ (xs: MMap[Int,Boolean]) =>
+  test("set can delete")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = AvlSet(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
-    val ours: SSet[Int] = filtered.toList.to[SSet]
-    val theirs: SSet[Int] = xs.collect{ case (i, true) => i }.to[SSet]
+    val ours: Set[Int] = filtered.toList.to[Set]
+    val theirs: Set[Int] = xs.collect{ case (i, true) => i }.to[Set]
 
     ours should be (theirs)
     balanced(filtered) should be(true)
   })
 
-  test("contains works")(forAll{ (xs: MMap[Int,Boolean]) =>
+  test("contains works")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
@@ -50,7 +47,7 @@ class SetSpec extends CatsSuite {
     }.foldLeft(true)(_ && _) should be(true)
   })
 
-  test("find works")(forAll{ (xs: MMap[Int,Boolean]) =>
+  test("find works")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
@@ -60,7 +57,7 @@ class SetSpec extends CatsSuite {
     }.foldLeft(true)(_ && _) should be(true)
   })
 
-  test("intersect is correct")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+  test("intersect is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -68,7 +65,7 @@ class SetSpec extends CatsSuite {
     (xt & yt).toScalaSet should be(xs intersect ys)
   })
 
-  test("union is correct")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+  test("union is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -76,7 +73,7 @@ class SetSpec extends CatsSuite {
     (xt | yt).toScalaSet should be(xs union ys)
   })
 
-  test("we can take the difference of sets")(forAll{ (xs: SSet[Int], ys: SSet[Int]) =>
+  test("we can take the difference of sets")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -84,7 +81,7 @@ class SetSpec extends CatsSuite {
     (xt - yt).toScalaSet should be(xs diff ys)
   })
 
-  test("map works") (forAll{ (xs: SSet[Int]) =>
+  test("map works") (forAll{ (xs: Set[Int]) =>
     val f: Int => Int = _ + 1
 
     val xt = AvlSet(xs.toSeq: _*)

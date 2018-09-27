@@ -2,25 +2,21 @@ package cats.collections
 package tests
 
 import cats._
-import cats.implicits._
 import cats.tests.CatsSuite
 import cats.collections.arbitrary._
 import cats.laws.discipline._
 
-
 class MapSpec extends CatsSuite {
-  import scala.collection.immutable.{Set => SSet, Map => MMap}
-
-  def fromSet[K: Order,V](s: SSet[(K,V)]): AvlMap[K,V] =
+  def fromSet[K: Order,V](s: Set[(K,V)]): AvlMap[K,V] =
     s.foldLeft[AvlMap[K,V]](AvlMap.empty)(_ + _)
 
-  def fromSetS[K: Order,V](s: SSet[(K,V)]): MMap[K,V] =
-    s.foldLeft[MMap[K,V]](MMap.empty)(_ + _)
+  def fromSetS[K: Order,V](s: Set[(K,V)]): Map[K,V] =
+    s.foldLeft[Map[K,V]](Map.empty)(_ + _)
 
-  def toSet[K: Order,V](m: AvlMap[K,V]): SSet[(K,V)] =
-    m.foldLeft[SSet[(K,V)]](SSet.empty)(_ + _)
+  def toSet[K: Order,V](m: AvlMap[K,V]): Set[(K,V)] =
+    m.foldLeft[Set[(K,V)]](Set.empty)(_ + _)
 
-  test("we can add things to a Map, then find them")(forAll {(xs: SSet[(String,Int)]) =>
+  test("we can add things to a Map, then find them")(forAll {(xs: Set[(String,Int)]) =>
     val m = fromSet(xs)
     val m2 = fromSetS(xs)
 
@@ -29,7 +25,7 @@ class MapSpec extends CatsSuite {
     } should be (true)
   })
 
-  test("we can add things to a Map, then remove them")(forAll {(xs: SSet[((String,Int), Boolean)]) =>
+  test("we can add things to a Map, then remove them")(forAll {(xs: Set[((String,Int), Boolean)]) =>
     val n = fromSet(xs.map(_._1))
     val n2 = fromSetS(xs.map(_._1))
 
@@ -37,7 +33,7 @@ class MapSpec extends CatsSuite {
       if(kvr._2) mm.remove(kvr._1._1) else mm
     )
 
-    val m2 = xs.foldLeft[MMap[String,Int]](n2)((mm,kvr) =>
+    val m2 = xs.foldLeft[Map[String,Int]](n2)((mm,kvr) =>
       if(kvr._2) mm - (kvr._1._1) else mm
     )
 
@@ -47,31 +43,31 @@ class MapSpec extends CatsSuite {
     } should be (true)
   })
 
-  test("we can combine maps")(forAll {(xs: SSet[(String,Int)],xs2: SSet[(String,Int)]) =>
+  test("we can combine maps")(forAll {(xs: Set[(String,Int)],xs2: Set[(String,Int)]) =>
     val m = fromSet(xs)
     val m2 = fromSet(xs2)
 
     val sm = fromSetS(xs)
     val sm2 = fromSetS(xs2)
 
-    toSet(m ++ m2) should contain theSameElementsAs (sm ++ sm2).to[SSet]
+    toSet(m ++ m2) should contain theSameElementsAs (sm ++ sm2).to[Set]
   })
 
-  test("map works")(forAll {(xs: SSet[(String,Int)]) =>
+  test("map works")(forAll {(xs: Set[(String,Int)]) =>
     val f: Int => Int = _ + 1
     val f2: ((String,Int)) => (String,Int) = kv => kv._1 -> (kv._2 + 1)
     val m = fromSet(xs)
     val sm = fromSetS(xs)
 
-    toSet(m map f) should contain theSameElementsAs (sm map f2).to[SSet]
+    toSet(m map f) should contain theSameElementsAs (sm map f2).to[Set]
   })
 
-  test("flatMap works")(forAll {(xs : SSet[(String,Int)]) =>
+  test("flatMap works")(forAll {(xs : Set[(String,Int)]) =>
     val f: Int => AvlMap[String,Int] = _ => fromSet(xs) map (_ + 1)
-    val f2: ((String,Int)) => SSet[(String,Int)] = kv => SSet(kv._1 -> (kv._2 + 1))
+    val f2: ((String,Int)) => Set[(String,Int)] = kv => Set(kv._1 -> (kv._2 + 1))
     val m = fromSet(xs)
     val sm = fromSetS(xs)
-    toSet(m flatMap f) should contain theSameElementsAs (sm flatMap f2).to[SSet]
+    toSet(m flatMap f) should contain theSameElementsAs (sm flatMap f2).to[Set]
   })
 }
 
