@@ -1,10 +1,6 @@
 package cats.collections
 
-import scala.NoSuchElementException
-import scala.reflect.ClassTag
 import scala.annotation.tailrec
-import scala.collection.mutable
-import cats.data.Ior
 import cats._, cats.Eval._
 import cats.implicits._
 
@@ -64,46 +60,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   import Streaming.{Empty, Wait, Cons}
 
   /**
-   * The stream's catamorphism.
-   *
-   * This method allows the stream to be transformed into an arbitrary
-   * value by handling two cases:
-   *
-   *  1. empty stream: return b
-   *  2. non-empty stream: apply the function to the head and tail
-   *
-   * This method can be more convenient than pattern-matching, since
-   * it includes support for handling deferred streams (i.e. Wait(_)),
-   * these nodes will be evaluated until an empty or non-empty stream
-   * is found (i.e. until Empty() or Cons() is found).
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def fold[B](b: Eval[B], f: (A, Eval[Streaming[A]]) => B): B = {
-    @tailrec def unroll(s: Streaming[A]): B =
-      s match {
-        case Empty() => b.value
-        case Wait(lt) => unroll(lt.value)
-        case Cons(a, lt) => f(a, lt)
-      }
-    unroll(this)
-  }
-
-  /**
-   * A variant of fold, used for constructing streams.
-   *
-   * The only difference is that foldStreaming will preserve deferred
-   * streams. This makes it more appropriate to use in situations
-   * where the stream's laziness must be preserved.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def foldStreaming[B](bs: => Streaming[B], f: (A, Eval[Streaming[A]]) => Streaming[B]): Streaming[B] =
-    this match {
-      case Empty() => bs
-      case Wait(lt) => Wait(lt.map(_.foldStreaming(bs, f)))
-      case Cons(a, lt) => f(a, lt)
-    }
-
-  /**
    * Deconstruct a stream into a head and tail (if available).
    *
    * This method will evaluate the stream until it finds a head and
@@ -134,32 +90,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     }
 
   /**
-   * Lazily transform the stream given a function `f`.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def flatMap[B](f: A => Streaming[B]): Streaming[B] =
-    this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.flatMap(f)))
-      case Cons(a, lt) => f(a) ++ lt.map(_.flatMap(f))
-    }
-
-  /**
-   * Lazily filter the stream given the predicate `f`.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def filter(f: A => Boolean): Streaming[A] =
-    this match {
-      case Empty() =>
-        this
-      case Wait(lt) =>
-        Wait(lt.map(_.filter(f)))
-      case Cons(a, lt) =>
-        val ft = lt.map(_.filter(f))
-        if (f(a)) Cons(a, ft) else Wait(ft)
-    }
-
-  /**
    * Eagerly fold the stream to a single value from the left.
    */
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
@@ -185,65 +115,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     }
 
   /**
-   * Eagerly search the stream from the left. The search ends when f
-   * returns true for some a, or the stream is exhausted. Some(a)
-   * signals a match, None means no matching items were found.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def find(f: A => Boolean): Option[A] = {
-    @tailrec def loop(s: Streaming[A]): Option[A] =
-      s match {
-        case Cons(a, lt) => if (f(a)) Some(a) else loop(lt.value)
-        case Wait(lt) => loop(lt.value)
-        case Empty() => None
-      }
-    loop(this)
-  }
-
-  /**
-   * Return true if the stream is empty, false otherwise.
-   *
-   * In this case of deferred streams this will force the first
-   * element to be calculated.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def isEmpty: Boolean = {
-    @tailrec def unroll(s: Streaming[A]): Boolean =
-      s match {
-        case Cons(_, _) => false
-        case Empty() => true
-        case Wait(lt) => unroll(lt.value)
-      }
-    unroll(this)
-  }
-
-  /**
-   * Return true if the stream is non-empty, false otherwise.
-   *
-   * In this case of deferred streams this will force the first
-   * element to be calculated.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def nonEmpty: Boolean =
-    !isEmpty
-
-  /**
-   * Peek at the start of the stream to see whether we know if it is
-   * empty.
-   *
-   * Unlike .isEmpty/.nonEmpty, this method will not force the
-   * calculation of a deferred stream. Instead, None will be
-   * returned.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def peekEmpty: Option[Boolean] =
-    this match {
-      case Empty() => Some(true)
-      case Wait(_) => None
-      case _ => Some(false)
-    }
-
-  /**
    * Lazily concatenate two streams.
    */
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
@@ -266,16 +137,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       case Wait(lt) => Wait(lt.map(_ ++ rhs))
       case Cons(a, lt) => Cons(a, lt.map(_ ++ rhs))
     }
-
-  /**
-   * Lazily zip two streams together.
-   *
-   * The length of the result will be the shorter of the two
-   * arguments.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def zip[B](rhs: Streaming[B]): Streaming[(A, B)] =
-    (lhs zipMap rhs)((a, b) => (a, b))
 
   /**
    * Lazily zip two streams together, using the given function `f` to
@@ -306,16 +167,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
       case (s, Wait(ltb)) =>
         Wait(ltb.map(s.zipMap(_)(f)))
     }
-
-  /**
-   * Lazily zip two streams together using Ior.
-   *
-   * Unlike `zip`, the length of the result will be the longer of the
-   * two arguments.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def izip[B](rhs: Streaming[B]): Streaming[Ior[A, B]] =
-    izipMap(rhs)(Ior.both, Ior.left, Ior.right)
 
   /**
    * Zip two streams together, using the given function `f` to produce
@@ -353,127 +204,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
     }
 
   /**
-   * Zip the items of the stream with their position.
-   *
-   * Indices start at 0, so
-   *
-   *   Streaming('x, 'y, 'z).zipWithIndex
-   *
-   * lazily produces:
-   *
-   *   Streaming(('x, 0), ('y, 1), ('z, 2))
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def zipWithIndex: Streaming[(A, Int)] = {
-    def loop(s: Streaming[A], i: Int): Streaming[(A, Int)] =
-      s match {
-        case Empty() => Empty()
-        case Wait(lt) => Wait(lt.map(s => loop(s, i)))
-        case Cons(a, lt) => Cons((a, i), lt.map(s => loop(s, i + 1)))
-      }
-    loop(this, 0)
-  }
-
-  /**
-   * Unzip this stream of tuples into two distinct streams.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def unzip[B, C](implicit ev: A =:= (B, C)): (Streaming[B], Streaming[C]) =
-    (this.map(_._1), this.map(_._2))
-
-  /**
-   * Merge two sorted streams into a new stream.
-   *
-   * The streams are assumed to already be sorted. If they are not,
-   * the resulting order is not defined.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def merge(rhs: Streaming[A])(implicit ev: Order[A]): Streaming[A] =
-    (lhs, rhs) match {
-      case (Cons(a0, lt0), Cons(a1, lt1)) =>
-        if (a0 < a1) Cons(a0, lt0.map(_ merge rhs)) else Cons(a1, lt1.map(lhs merge _))
-      case (Wait(lta), s) =>
-        Wait(lta.map(_ merge s))
-      case (s, Wait(ltb)) =>
-        Wait(ltb.map(s merge _))
-      case (s, Empty()) =>
-        s
-      case (Empty(), s) =>
-        s
-    }
-
-  /**
-   * Interleave the elements of two streams.
-   *
-   * Given x = [x0, x1, x2, ...] and y = [y0, y1, y2, ...] this method
-   * will return the stream [x0, y0, x1, y1, x2, ...]
-   *
-   * If one stream is longer than the other, the rest of its elements
-   * will appear after the other stream is exhausted.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def interleave(rhs: Streaming[A]): Streaming[A] =
-    lhs match {
-      case Cons(a, lt) => Cons(a, lt.map(rhs interleave _))
-      case Wait(lt) => Wait(lt.map(_ interleave rhs))
-      case Empty() => rhs
-    }
-
-  /**
-   * Produce the Cartestian product of two streams.
-   *
-   * Given x = [x0, x1, x2, ...] and y = [y0, y1, y2, ...] this method
-   * will return the stream:
-   *
-   *   [(x0, y0), (x0, y1), (x1, y0), (x0, y2), (x1, y1), (x2, y0), ...]
-   *
-   * This is the diagonalized product of both streams. Every possible
-   * combination will (eventually) be reached.
-   *
-   * This is true even for infinite streams, at least in theory --
-   * time and space limitations of evaluating an infinite stream may
-   * make it impossible to reach very distant elements.
-   *
-   * This method lazily evaluates the input streams, but due to the
-   * diagonalization method may read ahead more than is strictly
-   * necessary.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def product[B](rhs: Streaming[B]): Streaming[(A, B)] = {
-    def loop(i: Int): Streaming[(A, B)] = {
-      val xs = lhs.take(i + 1).asInstanceOf[Streaming[AnyRef]].toArray
-      val ys = rhs.take(i + 1).asInstanceOf[Streaming[AnyRef]].toArray
-      def build(j: Int): Streaming[(A, B)] =
-        if (j > i) Empty() else {
-          val k = i - j
-          if (j >= xs.length || k >= ys.length) build(j + 1) else {
-            val tpl = (xs(j).asInstanceOf[A], ys(k).asInstanceOf[B])
-            Cons(tpl, always(build(j + 1)))
-          }
-        }
-      if (i > xs.length + ys.length - 2) Empty() else {
-        build(0) ++ always(loop(i + 1))
-      }
-    }
-    Wait(always(loop(0)))
-  }
-
-  /**
-   * Return true if some element of the stream satisfies the
-   * predicate, false otherwise.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def exists(f: A => Boolean): Boolean = {
-    @tailrec def unroll(s: Streaming[A]): Boolean =
-      s match {
-        case Empty() => false
-        case Wait(lt) => unroll(lt.value)
-        case Cons(a, lt) => if (f(a)) true else unroll(lt.value)
-      }
-    unroll(this)
-  }
-
-  /**
    * Return true if every element of the stream satisfies the
    * predicate, false otherwise.
    */
@@ -489,122 +219,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
   }
 
   /**
-   * Return a stream consisting only of the first `n` elements of this
-   * stream.
-   *
-   * If the current stream has `n` or fewer elements, the entire
-   * stream will be returned.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def take(n: Int): Streaming[A] =
-    if (n <= 0) Empty() else this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.take(n)))
-      case Cons(a, lt) =>
-        Cons(a, if (n == 1) now(Empty()) else lt.map(_.take(n - 1)))
-    }
-
-  /**
-   * Return a stream consisting of all but the first `n` elements of
-   * this stream.
-   *
-   * If the current stream has `n` or fewer elements, an empty stream
-   * will be returned.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def drop(n: Int): Streaming[A] =
-    if (n <= 0) this else this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.drop(n)))
-      case Cons(_, lt) => Wait(lt.map(_.drop(n - 1)))
-    }
-
-  /**
-   * From the beginning of this stream, create a new stream which
-   * takes only those elements that fulfill the predicate `f`. Once an
-   * element is found which does not fulfill the predicate, no further
-   * elements will be returned.
-   *
-   * If all elements satisfy `f`, the current stream will be returned.
-   * If no elements satisfy `f`, an empty stream will be returned.
-   *
-   * For example:
-   *
-   *   Streaming(1, 2, 3, 4, 5, 6, 7).takeWhile(n => n != 4)
-   *
-   * Will result in: Streaming(1, 2, 3)
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def takeWhile(f: A => Boolean): Streaming[A] =
-    this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.takeWhile(f)))
-      case Cons(a, lt) => if (f(a)) Cons(a, lt.map(_.takeWhile(f))) else Empty()
-    }
-
-  /**
-   * From the beginning of this stream, create a new stream which
-   * removes all elements that fulfill the predicate `f`. Once an
-   * element is found which does not fulfill the predicate, that
-   * element and all subsequent elements will be returned.
-   *
-   * If all elements satisfy `f`, an empty stream will be returned.
-   * If no elements satisfy `f`, the current stream will be returned.
-   *
-   * For example:
-   *
-   *   Streaming(1, 2, 3, 4, 5, 6, 7).takeWhile(n => n != 4)
-   *
-   * Will result in: Streaming(4, 5, 6, 7)
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def dropWhile(f: A => Boolean): Streaming[A] =
-    this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.dropWhile(f)))
-      case Cons(a, lt) => if (f(a)) Wait(lt.map(_.dropWhile(f))) else this
-    }
-
-  /**
-   * Provide a stream of all the tails of a stream (including itself).
-   *
-   * For example, Streaming(1, 2).tails is equivalent to:
-   *
-   *   Streaming(Streaming(1, 2), Streaming(1), Streaming.empty)
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def tails: Streaming[Streaming[A]] =
-    this match {
-      case Cons(_, lt) => Cons(this, lt.map(_.tails))
-      case Wait(lt) => Wait(lt.map(_.tails))
-      case Empty() => Cons(this, always(Streaming.empty))
-    }
-
-
-  /**
-   * Provide an iterator over the elements in the stream.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def iterator: scala.collection.Iterator[A] =
-    new scala.collection.Iterator[A] {
-      var ls: Eval[Streaming[A]] = null
-      var s: Streaming[A] = lhs
-
-      def hasNext: Boolean =
-        { if (s == null) { s = ls.value; ls = null }; s.nonEmpty }
-
-      val emptyCase: Eval[A] =
-        always(throw new NoSuchElementException("next on empty iterator"))
-      val consCase: (A, Eval[Streaming[A]]) => A =
-        (a, lt) => { ls = lt; s = null; a }
-
-      def next: A = {
-        if (s == null) s = ls.value
-        s.fold(emptyCase, consCase)
-      }
-    }
-
-  /**
    * Provide a list of elements in the stream.
    *
    * This will evaluate the stream immediately, and will hang in the
@@ -612,116 +226,6 @@ sealed abstract class Streaming[A] extends Product with Serializable { lhs =>
    */
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def toList: List[A] = foldLeft[List[A]](List.empty)((as,a) => a :: as).reverse
-
-  /**
-   * Provide a scala.collection.immutable.List of elements in the
-   * stream.
-   *
-   * This will evaluate the stream immediately, and will hang in the
-   * case of infinite streams.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toScalaList: scala.collection.immutable.List[A] =
-    foldLeft(scala.collection.immutable.List.empty[A])((as,a) => (a :: as).reverse)
-
-  /**
-   * Basic string representation of a stream.
-   *
-   * This method will not force evaluation of any lazy part of a
-   * stream. As a result, you will see at most one element (the first
-   * one).
-   *
-   * Use .toString(n) to see the first n elements of the stream.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  override def toString: String =
-    this match {
-      case Cons(a, _) => "Streaming(" + a + ", ...)"
-      case Empty() => "Streaming()"
-      case Wait(_) => "Streaming(...)"
-    }
-
-  /**
-   * String representation of the first n elements of a stream.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toString(limit: Int = 10): String = {
-    import java.lang.StringBuffer
-    @tailrec def unroll(n: Int, sb: StringBuffer, s: Streaming[A]): String =
-      if (n <= 0) sb.append(", ...)").toString else s match {
-        case Empty() => sb.append(")").toString
-        case Wait(lt) => unroll(n, sb, lt.value)
-        case Cons(a, lt) => unroll(n - 1, sb.append(", " + a.toString), lt.value)
-      }
-    uncons match {
-      case None =>
-        "Streaming()"
-      case Some((a, lt)) =>
-        val sb = new StringBuffer().append("Streaming(" + a.toString)
-        unroll(limit - 1, sb, lt.value)
-    }
-  }
-
-  /**
-   * Provide an array of elements in the stream.
-   *
-   * This will evaluate the stream immediately, and will hang in the
-   * case of infinite streams.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toArray(implicit ct: ClassTag[A]): scala.Array[A] = {
-    @tailrec def unroll(buf: mutable.ArrayBuffer[A], s: Streaming[A]): scala.Array[A] =
-      s match {
-        case Empty() => buf.toArray
-        case Wait(lt) => unroll(buf, lt.value)
-        case Cons(a, lt) => unroll(buf += a, lt.value)
-      }
-    unroll(mutable.ArrayBuffer.empty[A], this)
-  }
-
-  /**
-   * Ensure that repeated traversals of the stream will not cause
-   * repeated tail computations.
-   *
-   * By default this structure does not memoize to avoid memory leaks
-   * when the head of the stream is retained. However, the user
-   * ultimately has control of the memoization approach based on what
-   * kinds of Eval instances they use.
-   *
-   * There are two calls to .memoize here -- one is a recursive call
-   * to this method (on the tail) and the other is a call to memoize
-   * the Eval instance holding the tail. For more information on how
-   * this works see cats.Eval.memoize.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def memoize: Streaming[A] =
-    this match {
-      case Empty() => Empty()
-      case Wait(lt) => Wait(lt.map(_.memoize).memoize)
-      case Cons(a, lt) => Cons(a, lt.map(_.memoize).memoize)
-    }
-
-  /**
-   * Compact removes "pauses" in the stream (represented as Wait(_)
-   * nodes).
-   *
-   * Normally, Wait(_) values are used to defer tail computation in
-   * cases where it is convenient to return a stream value where
-   * neither the head or tail are computed yet.
-   *
-   * In some cases (particularly if the stream is to be memoized) it
-   * may be desirable to ensure that these values are not retained.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def compact: Streaming[A] = {
-    @tailrec def unroll(s: Streaming[A]): Streaming[A] =
-      s match {
-        case Cons(a, lt) => Cons(a, lt.map(_.compact))
-        case Wait(lt) => unroll(lt.value)
-        case Empty() => Empty()
-      }
-    unroll(this)
-  }
 
 }
 
@@ -781,14 +285,6 @@ object Streaming extends StreamingInstances {
   def cons[A](a: A, ls: Eval[Streaming[A]]): Streaming[A] =
     Cons(a, ls)
 
-
-  /**
-   * Create a stream from two or more values.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def apply[A](a1: A, a2: A, as: A*): Streaming[A] =
-    cons(a1, cons(a2, fromVector(as.toVector)))
-
   /**
    * Defer stream creation.
    *
@@ -810,42 +306,6 @@ object Streaming extends StreamingInstances {
     Wait(ls)
 
   /**
-   * Create a stream from a vector.
-   *
-   * The stream will be eagerly evaluated.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def fromVector[A](as: scala.Vector[A]): Streaming[A] = {
-    def loop(s: Streaming[A], i: Int): Streaming[A] =
-      if (i < 0) s else loop(Cons(as(i), now(s)), i - 1)
-    loop(Empty(), as.length - 1)
-  }
-
-  /**
-   * Create a stream from a list.
-   *
-   * The stream will be eagerly evaluated.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def fromList[A](as: List[A]): Streaming[A] = {
-    def loop(s: Streaming[A], ras: List[A]): Streaming[A] =
-      ras match {
-        case Nil => s
-        case a :: rt => loop(Cons(a, now(s)), rt)
-      }
-    loop(Empty(), as.reverse)
-  }
-
-  /**
-   * Create a stream from an iterable.
-   *
-   * The stream will be eagerly evaluated.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def fromIterable[A](as: scala.collection.Iterable[A]): Streaming[A] =
-    fromIteratorUnsafe(as.iterator)
-
-  /**
    * Create a stream from an iterator.
    *
    * The stream will be created lazily, to support potentially large
@@ -859,57 +319,6 @@ object Streaming extends StreamingInstances {
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   def fromIteratorUnsafe[A](it: scala.collection.Iterator[A]): Streaming[A] =
     if (it.hasNext) Cons(it.next, Later(fromIteratorUnsafe(it))) else Empty()
-
-
-  /**
-   * Create a self-referential stream.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def knot[A](f: Eval[Streaming[A]] => Streaming[A], memo: Boolean = false): Streaming[A] = {
-    lazy val s: Eval[Streaming[A]] = if (memo) later(f(s)) else always(f(s))
-    s.value
-  }
-
-  /**
-   * Continually return a constant value.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def continually[A](a: A): Streaming[A] =
-    knot(s => Cons(a, s), memo = true)
-
-  /**
-   * Continually return the result of a thunk.
-   *
-   * This method only differs from `continually` in that the thunk may
-   * not be pure. Thus, repeated traversals may produce different
-   * results.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def thunk[A](f: () => A): Streaming[A] =
-    knot(s => Cons(f(), s), memo = false)
-
-  /**
-   * Produce an infinite stream of values given an initial value and a
-   * transformation function.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def infinite[A](a: A)(f: A => A): Streaming[A] =
-    Cons(a, always(infinite(f(a))(f)))
-
-  /**
-   * Stream of integers starting at n.
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def from(n: Int): Streaming[Int] =
-    infinite(n)(_ + 1)
-
-  /**
-   * Provide a stream of integers starting with `start` and ending
-   * with `end` (i.e. inclusive).
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def interval(start: Int, end: Int): Streaming[Int] =
-    if (start > end) Empty() else Cons(start, always(interval(start + 1, end)))
 
   /**
    * Produce a stream given an "unfolding" function.
@@ -925,99 +334,7 @@ object Streaming extends StreamingInstances {
     }
 }
 
-private[collections] sealed trait StreamingInstances extends StreamingInstances1 {
-
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  implicit val streamInstance: Traverse[Streaming] with Alternative[Streaming] with Monad[Streaming] with CoflatMap[Streaming] =
-    new Traverse[Streaming] with Alternative[Streaming] with Monad[Streaming] with CoflatMap[Streaming] {
-      def pure[A](a: A): Streaming[A] =
-        Streaming(a)
-
-      override def map[A, B](as: Streaming[A])(f: A => B): Streaming[B] =
-        as.map(f)
-
-      def flatMap[A, B](as: Streaming[A])(f: A => Streaming[B]): Streaming[B] =
-        as.flatMap(f)
-
-      def empty[A]: Streaming[A] =
-        Streaming.empty
-
-      def combineK[A](xs: Streaming[A], ys: Streaming[A]): Streaming[A] =
-        xs ++ ys
-
-      override def map2[A, B, Z](fa: Streaming[A], fb: Streaming[B])(f: (A, B) => Z): Streaming[Z] =
-        fa.flatMap(a => fb.map(b => f(a, b)))
-
-      override def tailRecM[A, B](a: A)(f: A => cats.collections.Streaming[scala.Either[A,B]]): Streaming[B] = {
-        import Streaming._
-          @tailrec def go(res: Streaming[B], stuff: Streaming[Streaming[scala.Either[A, B]]]): Streaming[B] =
-            stuff match {
-              case Empty() => res
-              case Wait(lt) => go(res, lt.value)
-              case Cons(work, tail) => work match {
-                case Empty() => go(res, tail.value)
-                case Wait(lt) => go(res, Cons(lt.value,tail))
-                case Cons(ab, abs) =>  ab match {
-                  case scala.Left(a) => go(res, Cons(f(a) ++ abs, tail))
-                  case scala.Right(b) => go(res ++ Streaming(b), Cons(abs.value, tail))
-                }
-              }
-            }
-        go(Streaming.empty, Streaming(f(a)))
-        }
-
-
-      def coflatMap[A, B](fa: Streaming[A])(f: Streaming[A] => B): Streaming[B] =
-        fa.tails.filter(_.nonEmpty).map(f)
-
-      def foldLeft[A, B](fa: Streaming[A], b: B)(f: (B, A) => B): B =
-        fa.foldLeft(b)(f)
-
-      def foldRight[A, B](fa: Streaming[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
-        fa.foldRight(lb)(f)
-
-      def traverse[G[_]: Applicative, A, B](fa: Streaming[A])(f: A => G[B]): G[Streaming[B]] = {
-        val G = Applicative[G]
-        def init: G[Streaming[B]] = G.pure(Streaming.empty[B])
-
-        // We use foldRight to avoid possible stack overflows. Since
-        // we don't want to return a Eval[_] instance, we call .value
-        // at the end.
-        foldRight(fa, Always(init)) { (a, lgsb) =>
-          G.map2Eval(f(a), lgsb)(Streaming.cons(_, _))
-        }.value
-      }
-
-      override def exists[A](fa: Streaming[A])(p: A => Boolean): Boolean =
-        fa.exists(p)
-
-      override def forall[A](fa: Streaming[A])(p: A => Boolean): Boolean =
-        fa.forall(p)
-
-      override def isEmpty[A](fa: Streaming[A]): Boolean =
-        fa.isEmpty
-    }
-
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  implicit def streamOrder[A: Order]: Order[Streaming[A]] =
-    new Order[Streaming[A]] {
-      def compare(x: Streaming[A], y: Streaming[A]): Int =
-        (x izipMap y)(_ compare _, _ => 1, _ => -1)
-          .find(_ != 0).getOrElse(0)
-    }
-}
-
-private[collections] sealed trait StreamingInstances1 extends StreamingInstances2 {
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  implicit def streamPartialOrder[A: PartialOrder]: PartialOrder[Streaming[A]] =
-    new PartialOrder[Streaming[A]] {
-      def partialCompare(x: Streaming[A], y: Streaming[A]): Double =
-        (x izipMap y)(_ partialCompare _, _ => 1.0, _ => -1.0)
-          .find(_ != 0.0).getOrElse(0.0)
-    }
-}
-
-private[collections] sealed trait StreamingInstances2 {
+private[collections] sealed trait StreamingInstances {
   @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
   implicit def streamEq[A: Eq]: Eq[Streaming[A]] =
     new Eq[Streaming[A]] {

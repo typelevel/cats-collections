@@ -158,7 +158,7 @@ trait AvlMapInstances {
         K.eqv(l._1, r._1) && V.eqv(l._2, r._2)
     }
 
-    // TODO requires an efficient implementation once Streaming is gone
+    // TODO should delegate to AvlSet#eq (TBD #120)
     override def eqv(l: AvlMap[K,V], r: AvlMap[K,V]): Boolean =
       Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
   }
