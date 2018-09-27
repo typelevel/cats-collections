@@ -336,7 +336,7 @@ sealed abstract class AvlSet[A] {
   private[collections] val height: Int
 }
 
-object AvlSet {
+object AvlSet extends AvlSetInstances {
 
   /**
    * Create a set with the given elements.
@@ -412,4 +412,11 @@ object AvlSet {
     override val height: Int = 0
   }
 
+}
+
+trait AvlSetInstances {
+  implicit def eqSet[A: Eq]: Eq[AvlSet[A]] = new Eq[AvlSet[A]] {
+    override def eqv(x: AvlSet[A], y: AvlSet[A]): Boolean =
+      iteratorEq(x.toIterator, y.toIterator)
+  }
 }

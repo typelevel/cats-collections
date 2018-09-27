@@ -149,18 +149,15 @@ object AvlMap extends AvlMapInstances {
 }
 
 trait AvlMapInstances {
-  import scala.util.{Either => SEither, Right => SRight, Left => SLeft}
-
-  implicit def eqMap[K: Eq, V: Eq](implicit K: Eq[K], V: Eq[V]): Eq[AvlMap[K,V]] = new Eq[AvlMap[K,V]] {
+  implicit def eqMap[K: Eq, V: Eq]: Eq[AvlMap[K,V]] = new Eq[AvlMap[K,V]] {
     // TODO get rid of this once cats has it:
     implicit val tupleEq: Eq[(K,V)] = new Eq[(K,V)] {
       override def eqv(l: (K,V), r: (K,V)): Boolean =
-        K.eqv(l._1, r._1) && V.eqv(l._2, r._2)
+        Eq[K].eqv(l._1, r._1) && Eq[V].eqv(l._2, r._2)
     }
 
-    // TODO should delegate to AvlSet#eq (TBD #120)
     override def eqv(l: AvlMap[K,V], r: AvlMap[K,V]): Boolean =
-      Streaming.streamEq[(K,V)].eqv(l.toStreaming, r.toStreaming)
+      Eq[AvlSet[(K, V)]].eqv(l.set, r.set)
   }
 
 
@@ -171,14 +168,14 @@ trait AvlMapInstances {
 
     override def map[A,B](fa: AvlMap[K,A])(f: A => B): AvlMap[K,B] = fa map f
 
-    override def tailRecM[A,B](a: A)(f: A => AvlMap[K,SEither[A,B]]): AvlMap[K,B] = {
-      @tailrec def extract(kv : (K, SEither[A,B])) : AvlSet[(K,B)] = kv._2 match {
-        case SLeft(a) =>
+    override def tailRecM[A,B](a: A)(f: A => AvlMap[K,Either[A,B]]): AvlMap[K,B] = {
+      @tailrec def extract(kv : (K, Either[A,B])) : AvlSet[(K,B)] = kv._2 match {
+        case Left(a) =>
           f(a).get(kv._1) match {
             case Some(x) => extract(kv._1 -> x)
             case _ => AvlSet.empty[(K,B)]
           }
-        case SRight(b) =>
+        case Right(b) =>
           AvlSet[(K,B)](kv._1 -> b)
       }
       new AvlMap[K,B](f(a).set.flatMap(extract))

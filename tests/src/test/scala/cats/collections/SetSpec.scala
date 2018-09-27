@@ -1,6 +1,8 @@
 package cats.collections
 package tests
 
+import cats.collections.arbitrary.set._
+import cats.kernel.Eq
 import cats.tests.CatsSuite
 
 class SetSpec extends CatsSuite {
@@ -15,6 +17,22 @@ class SetSpec extends CatsSuite {
 
   test("iterator works")(forAll { xs: AvlSet[Int] =>
     xs.toIterator.toList should be (xs.toList)
+  })
+
+  test("equality")(forAll { xs: List[Int] =>
+    val t1 = AvlSet.fromList(xs)
+    val t2 = AvlSet.fromList(xs.reverse)
+    whenever(t1 != t2) {
+      Eq[AvlSet[Int]].eqv(t1, t2) should be (true)
+    }
+  })
+
+  test("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
+    val t1 = AvlSet.fromList(xs)
+    val t2 = AvlSet.fromList(ys)
+    whenever(Set(xs: _*) != Set(ys: _*)) {
+      Eq[AvlSet[Int]].eqv(t1, t2) should be (false)
+    }
   })
 
   import AvlSet._
