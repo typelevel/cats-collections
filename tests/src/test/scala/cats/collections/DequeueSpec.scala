@@ -1,7 +1,7 @@
 package cats.collections
 package tests
 
-import cats.collections.tests.arbitrary.cogen._
+import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import scala.{annotation}

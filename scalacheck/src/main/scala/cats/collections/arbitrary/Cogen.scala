@@ -1,5 +1,5 @@
 package cats.collections
-package tests.arbitrary
+package arbitrary
 
 import cats.Foldable
 

@@ -9,7 +9,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(core, bench, tests, docs)
+  .aggregate(core, bench, scalacheck, tests, docs)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -31,8 +31,17 @@ lazy val core = project
   .settings(dogsSettings:_*)
   .settings(publishSettings)
 
-lazy val tests = project
+lazy val scalacheck = project
   .dependsOn(core)
+  .settings(moduleName := "cats-collections-scalacheck")
+  .settings(dogsSettings:_*)
+  .settings(publishSettings)
+  .settings(
+    libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalacheck
+  )
+
+lazy val tests = project
+  .dependsOn(scalacheck)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
