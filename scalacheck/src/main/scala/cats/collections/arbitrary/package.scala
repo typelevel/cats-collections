@@ -1,10 +1,10 @@
-package cats.collections.tests
+package cats.collections
 
 package object arbitrary {
   object all extends AllArbitrary
 
   object set extends ArbitrarySet
+  object map extends ArbitraryMap
   object iset extends ArbitraryISet
-  object streaming extends ArbitraryStreaming
   object cogen extends CogenInstances
 }

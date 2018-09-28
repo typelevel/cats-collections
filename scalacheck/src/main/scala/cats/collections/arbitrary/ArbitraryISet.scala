@@ -1,5 +1,5 @@
 package cats.collections
-package tests.arbitrary
+package arbitrary
 
 import org.scalacheck.{Gen, Arbitrary}
 import cats.Order

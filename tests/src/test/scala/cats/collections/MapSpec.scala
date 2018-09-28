@@ -4,7 +4,7 @@ package tests
 import cats._
 import cats.implicits._
 import cats.tests.CatsSuite
-import cats.collections.tests.arbitrary._
+import cats.collections.arbitrary._
 import cats.laws.discipline._
 
 

@@ -1,7 +1,7 @@
-package cats.collections.tests.arbitrary
+package cats.collections.arbitrary
 
 trait AllArbitrary
     extends ArbitrarySet
+    with ArbitraryMap
     with ArbitraryISet
-    with ArbitraryStreaming
     with CogenInstances
