@@ -1,7 +1,6 @@
 package cats.collections
 package tests
 
-import cats.implicits._
 import cats.tests.CatsSuite
 
 class DisjointSetsSpec extends CatsSuite {

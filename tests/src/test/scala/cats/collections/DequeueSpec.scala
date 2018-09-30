@@ -4,9 +4,7 @@ package tests
 import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
-import scala.{annotation}
 import cats._
-import cats.implicits._
 import cats.laws.discipline._
 import cats.tests.CatsSuite
 
