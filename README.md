@@ -1,6 +1,5 @@
 ## Cats-Collections
 
-[![Join the chat at https://gitter.im/typelevel/cats](https://badges.gitter.im/typelevel/cats.svg)](https://gitter.im/typelevel/cats?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://api.travis-ci.org/typelevel/cats-collections.png)](https://travis-ci.org/typelevel/cats-collections)
 [![codecov.io](http://codecov.io/github/typelevel/cats-collections/coverage.svg?branch=master)](http://codecov.io/github/typelevel/cats-collections?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/cats-collections-core_2.12.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/cats-collections-core_2.12) 
