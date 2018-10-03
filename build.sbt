@@ -1,3 +1,4 @@
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
@@ -9,7 +10,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(core, bench, scalacheck, tests, docs)
+  .aggregate(coreJVM, coreJS, bench, scalacheckJVM, scalacheckJS, testsJVM, testsJS, docs)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -26,12 +27,17 @@ lazy val `cats-collections` = project.in(file("."))
       commitNextVersion,
       pushChanges))
 
-lazy val core = project
+lazy val core = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .settings(moduleName := "cats-collections-core")
   .settings(dogsSettings:_*)
   .settings(publishSettings)
 
-lazy val scalacheck = project
+lazy val coreJVM = core.jvm
+lazy val coreJS = core.js
+
+lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .dependsOn(core)
   .settings(moduleName := "cats-collections-scalacheck")
   .settings(dogsSettings:_*)
@@ -40,7 +46,11 @@ lazy val scalacheck = project
     libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalacheck
   )
 
-lazy val tests = project
+lazy val scalacheckJVM = scalacheck.jvm
+lazy val scalacheckJS = scalacheck.js
+
+lazy val tests = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .dependsOn(scalacheck)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
@@ -48,20 +58,22 @@ lazy val tests = project
   .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-testkit" % V.cats % "test",
-      "org.typelevel" %% "cats-laws"    % V.cats
+      "org.typelevel" %%% "cats-testkit" % V.cats % "test",
+      "org.typelevel" %%% "cats-laws"    % V.cats
     )
   )
 
+lazy val testsJVM = tests.jvm
+lazy val testsJS = tests.js
+
 lazy val docs = project
-  .dependsOn(core)
+  .dependsOn(coreJVM)
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
 
-
 lazy val bench = project
   .settings(moduleName := "cats-collections-bench")
-  .dependsOn(core)
+  .dependsOn(coreJVM)
   .settings(noPublishSettings)
   .settings(
     buildSettings,
@@ -71,16 +83,14 @@ lazy val bench = project
   )
   .enablePlugins(JmhPlugin)
 
-lazy val botBuild = settingKey[Boolean]("Build by TravisCI instead of local dev environment")
-
 lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
 lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-    "org.typelevel"                  %% "cats-core"  % V.cats,
-    compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7"),
-    compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.1" cross CrossVersion.patch)
+      "org.typelevel"                  %%% "cats-core"     % V.cats,
+      compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7"),
+      compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.1" cross CrossVersion.patch)
     ),
     fork in test := true
   )
