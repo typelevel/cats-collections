@@ -1,6 +1,14 @@
 #!/bin/bash
 sbt_cmd="sbt ++$TRAVIS_SCALA_VERSION"
 
-coverage="$sbt_cmd coverage test coverageReport && bash <(curl -s https://codecov.io/bash)"
+export publish_cmd="publishLocal"
 
-eval $coverage
+if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]] && grep -v -q SNAPSHOT version.sbt; then
+  export publish_cmd="publish gitSnapshots"
+fi
+
+coverage="(export SCOVERAGEON=true; $sbt_cmd coverage tests/test coverageReport && bash <(curl -s https://codecov.io/bash) )"
+scala_jvm="$sbt_cmd validate"
+
+run_cmd="$coverage && $scala_jvm $publish_cmd"
+eval $run_cmd

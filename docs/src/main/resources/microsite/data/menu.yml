@@ -1,0 +1,27 @@
+options:
+  - title: Home
+    url: index.html
+
+  - title: Binary Heap
+    url: binaryheap.html
+
+  - title: Dequeue
+    url: dequeue.html
+
+  - title: Diet
+    url: diet.html
+
+  - title: Discrete
+    url: discrete.html
+
+  - title: Disjoin Sets
+    url: disjointsets.html
+
+  - title: ISet
+    url: iset.html
+
+  - title: Range
+    url: range.html
+
+  - title: Set
+    url: set.html
