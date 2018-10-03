@@ -7,7 +7,7 @@ if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]] && grep -
   export publish_cmd="publish gitSnapshots"
 fi
 
-coverage="(export SCOVERAGEON=true; $sbt_cmd coverage tests/test coverageReport && bash <(curl -s https://codecov.io/bash) )"
+coverage="(export SCOVERAGEON=true; $sbt_cmd coverage testsJVM/test coverageReport && bash <(curl -s https://codecov.io/bash) )"
 scala_jvm="$sbt_cmd validate"
 
 run_cmd="$coverage && $scala_jvm $publish_cmd"
