@@ -1,7 +1,11 @@
 package cats.collections
 
-import cats._, cats.data.NonEmptyList
+import cats._
+import cats.data.NonEmptyList
+
+import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
+import scala.collection.generic.CanBuildFrom
 
 /** Dequeue - A Double Ended Queue
 
@@ -87,11 +91,32 @@ sealed abstract class Dequeue[A] {
     */
   def :+(a: A): Dequeue[A] = snoc(a)
 
-  /**
-    * convert this queue to a stream of elements from front to back
-    */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toStreaming: Streaming[A] = Streaming.unfold(this)(_.uncons)
+  def toIterator: Iterator[A] = new Iterator[A] {
+    private var pos: Dequeue[A] = Dequeue.this
+
+    override def hasNext: Boolean = !pos.isEmpty
+
+    override def next(): A = pos.uncons match {
+      case None => throw new NoSuchElementException()
+      case Some((a, rest)) =>
+        pos = rest
+        a
+    }
+  }
+
+  def to[Col[_]](implicit cbf: CanBuildFrom[Nothing, A, Col[A]]): Col[A] = {
+    val builder = cbf()
+    @tailrec def go(cur: Dequeue[A]): Unit = cur.uncons match {
+      case Some((a, rest)) =>
+        builder += a
+        go(rest)
+      case _ =>
+    }
+    go(this)
+    builder.result()
+  }
+
+  def toList: List[A] = to[List]
 
   /**
     * Append another Dequeue to this dequeue
@@ -252,13 +277,6 @@ private[collections] case object EmptyDequeue extends Dequeue[Nothing] { self =>
   def unapply[A](q: Dequeue[A]): Boolean = q.isEmpty
 }
 
-
-private[collections] trait DequeueEqual[A] extends Eq[Dequeue[A]] {
-  implicit def A: Eq[A]
-  final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
-    Eq[Streaming[A]].eqv(a.toStreaming, b.toStreaming)
-}
-
 object Dequeue extends DequeueInstances {
   def apply[A](as: A*): Dequeue[A] = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
 
@@ -269,8 +287,9 @@ object Dequeue extends DequeueInstances {
 }
 
 sealed trait DequeueInstances {
-  implicit def dequeueEqual[A](implicit eqA: Eq[A]): Eq[Dequeue[A]] = new DequeueEqual[A] {
-    implicit def A = eqA
+  implicit def dequeueEqual[A](implicit eqA: Eq[A]): Eq[Dequeue[A]] = new Eq[Dequeue[A]] {
+    final override def eqv(a: Dequeue[A], b: Dequeue[A]): Boolean =
+      iteratorEq(a.toIterator, b.toIterator)
   }
 
   implicit def dequeueMonoid[A]: Monoid[Dequeue[A]] = new Monoid[Dequeue[A]] {
