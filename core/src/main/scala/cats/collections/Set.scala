@@ -6,8 +6,7 @@ import scala.annotation.tailrec
 import scala.collection.immutable.List
 import cats._
 import cats.implicits._
-
-import scala.collection.generic.CanBuildFrom
+import cats.collections.compat.Factory
 
 /**
  * An immutable, ordered, extensional set
@@ -251,8 +250,8 @@ sealed abstract class AvlSet[A] {
     * Converts this set into a Scala collection
     * O(n)
     */
-  def to[Col[_]](implicit cbf: CanBuildFrom[Nothing, A, Col[A]]): Col[A] = {
-    val builder = cbf()
+  def to[Col[_]](implicit cbf: Factory[A, Col[A]]): Col[A] = {
+    val builder = cbf.newBuilder
     this.foreach(builder += _)
     builder.result()
   }

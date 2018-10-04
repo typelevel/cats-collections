@@ -10,6 +10,7 @@ sudo: false
 scala:
 - 2.11.12
 - 2.12.6
+- 2.13.0-M4
 sbt_args: -J-Xss4m -J-Xmx6G -J-Xms1G
 jdk:
 - oraclejdk8

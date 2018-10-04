@@ -54,7 +54,7 @@ class DisjointSetsSpec extends CatsSuite {
     val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet)
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
-    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet) should be (groupByClassification)
+    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap should be (groupByClassification.toMap)
   }
 
 }
