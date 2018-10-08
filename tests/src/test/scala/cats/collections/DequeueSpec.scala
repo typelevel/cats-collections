@@ -91,7 +91,34 @@ class DequeueSpec extends CatsSuite {
     q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value should be (q.toList)
   })
 
+  test("toList")(forAll { (q: Dequeue[Int]) =>
+    q.toList should be (q.toIterator.toList)
+  })
+
+  test("toList/reverse")(forAll { (q: Dequeue[Int]) =>
+    q.reverse.toList should be (q.toIterator.toList.reverse)
+  })
+
+  test("toList/append")(forAll { (q1: Dequeue[Int], q2: Dequeue[Int]) =>
+    (q1 ++ q2).toList should be (q1.toList ::: q2.toList)
+  })
+
+  test("toList/Foldable consistency")(forAll { q: Dequeue[Int] =>
+    q.toList should be (Foldable[Dequeue].toList(q))
+  })
+
+  test("equality")(forAll { (xs: List[Int]) =>
+    val q1 = consL(xs, Dequeue.empty)
+    val q2 = snocL(xs.reverse, Dequeue.empty)
+    Eq[Dequeue[Int]].eqv(q1, q2) should be (true)
+  })
+
+  test("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
+    val q1 = consL(xs, Dequeue.empty)
+    val q2 = consL(ys, Dequeue.empty)
+    whenever(xs != ys) {
+      Eq[Dequeue[Int]].eqv(q1, q2) should be (false)
+    }
+  })
 
 }
-
-
