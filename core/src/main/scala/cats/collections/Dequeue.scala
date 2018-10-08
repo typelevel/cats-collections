@@ -5,7 +5,7 @@ import cats.data.NonEmptyList
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
-import scala.collection.generic.CanBuildFrom
+import cats.collections.compat.Factory
 
 /** Dequeue - A Double Ended Queue
 
@@ -104,8 +104,8 @@ sealed abstract class Dequeue[A] {
     }
   }
 
-  def to[Col[_]](implicit cbf: CanBuildFrom[Nothing, A, Col[A]]): Col[A] = {
-    val builder = cbf()
+  def to[Col[_]](implicit cbf: Factory[A, Col[A]]): Col[A] = {
+    val builder = cbf.newBuilder
     @tailrec def go(cur: Dequeue[A]): Unit = cur.uncons match {
       case Some((a, rest)) =>
         builder += a
