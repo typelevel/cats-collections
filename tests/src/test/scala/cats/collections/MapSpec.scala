@@ -50,7 +50,7 @@ class MapSpec extends CatsSuite {
     val sm = fromSetS(xs)
     val sm2 = fromSetS(xs2)
 
-    toSet(m ++ m2) should contain theSameElementsAs (sm ++ sm2).to[Set]
+    toSet(m ++ m2) should contain theSameElementsAs (sm ++ sm2).toSet
   })
 
   test("map works")(forAll {(xs: Set[(String,Int)]) =>
@@ -59,7 +59,7 @@ class MapSpec extends CatsSuite {
     val m = fromSet(xs)
     val sm = fromSetS(xs)
 
-    toSet(m map f) should contain theSameElementsAs (sm map f2).to[Set]
+    toSet(m map f) should contain theSameElementsAs (sm map f2).toSet
   })
 
   test("flatMap works")(forAll {(xs : Set[(String,Int)]) =>
@@ -67,7 +67,7 @@ class MapSpec extends CatsSuite {
     val f2: ((String,Int)) => Set[(String,Int)] = kv => Set(kv._1 -> (kv._2 + 1))
     val m = fromSet(xs)
     val sm = fromSetS(xs)
-    toSet(m flatMap f) should contain theSameElementsAs (sm flatMap f2).to[Set]
+    toSet(m flatMap f) should contain theSameElementsAs (sm flatMap f2).toSet
   })
 }
 

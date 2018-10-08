@@ -4,7 +4,7 @@ import ReleaseTransformations._
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.6",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value)
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0-M4")
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -32,6 +32,20 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "cats-collections-core")
   .settings(dogsSettings:_*)
   .settings(publishSettings)
+  .settings(
+    Compile / unmanagedSourceDirectories ++= {
+      val bd = baseDirectory.value
+      def extraDirs(suffix: String) =
+        CrossType.Pure.sharedSrcDir(bd, "main").toList map (f => file(f.getPath + suffix))
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, y)) if y <= 12 =>
+          extraDirs("-2.12-")
+        case Some((2, y)) if y >= 13 =>
+          extraDirs("-2.13+")
+        case _ => Nil
+      }
+    }
+  )
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -43,7 +57,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalacheck
+    libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
@@ -89,8 +103,7 @@ lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
       "org.typelevel"                  %%% "cats-core"     % V.cats,
-      compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.8"),
-      compilerPlugin("org.scalamacros" %% "paradise"       % "2.1.1" cross CrossVersion.patch)
+      compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.7")
     ),
     fork in test := true
   )
@@ -162,12 +175,21 @@ lazy val publishSettings = Seq(
 lazy val compilerFlags = Seq(
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, n)) if n <= 12 =>
+        Seq(
+          "-Ypartial-unification"              // Enable partial unification in type constructor inference
+        )
+      case _ =>
+        Seq()
+    }
+  ),
+  scalacOptions ++= (
+    CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, n)) if n <= 11 => // for 2.11 all we care about is capabilities, not warnings
         Seq(
           "-language:existentials",            // Existential types (besides wildcard types) can be written and inferred
           "-language:higherKinds",             // Allow higher-kinded types
           "-language:implicitConversions",     // Allow definition of implicit functions called views
-          "-Ypartial-unification"              // Enable partial unification in type constructor inference
         )
       case _ =>
         // TODO uncomment after 0.7.0 release
@@ -200,9 +222,7 @@ lazy val compilerFlags = Seq(
           "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
           "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
           "-Xlint:unsound-match",              // Pattern match may not be typesafe.
-          "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
           // "-Yno-imports",                      // No predef or default imports
-          "-Ypartial-unification",             // Enable partial unification in type constructor inference
           "-Ywarn-dead-code",                  // Warn when dead code is identified.
           "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
           "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.

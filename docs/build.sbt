@@ -48,8 +48,6 @@ scalacOptions := Seq(
   "-Xcheckinit",
   "-Xfuture",
   "-Xlint",
-  "-Xfatal-warnings",
-  "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
   "-Xfuture",
