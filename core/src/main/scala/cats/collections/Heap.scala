@@ -9,7 +9,7 @@ import cats._
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
  * their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based
- * on Vladimir Kostyukov's paper and it does support the basic operations on a heap without compromising performance.
+ * on [[https://arxiv.org/pdf/1312.4666.pdf Vladimir Kostyukov's paper]] and it does support the basic operations on a heap without compromising performance.
  *
  * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the
  * function `heapify`.
