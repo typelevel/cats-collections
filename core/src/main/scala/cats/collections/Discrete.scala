@@ -24,11 +24,10 @@ trait Discrete[A] {
 
 object Discrete {
   implicit def integralDiscrete[@specialized(Specializable.Integral) I](
-      implicit I: Integral[I]): Discrete[I] = 
+      implicit I: Integral[I]): Discrete[I] =
   new Discrete[I] {
     import Integral.Implicits._
     override def succ(x: I): I = x + I.one
     override def pred(x: I): I = x - I.one
   }
 }
-
