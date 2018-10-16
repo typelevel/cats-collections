@@ -23,14 +23,11 @@ trait Discrete[A] {
 }
 
 object Discrete {
-  implicit val intDiscrete: Discrete[Int] = new Discrete[Int] {
-    override def succ(x: Int): Int = x + 1
-    override def pred(x: Int): Int = x - 1
-  }
-
-  implicit val bigIntDiscrete: Discrete[BigInt] = new Discrete[BigInt] {
-    override def succ(x: BigInt): BigInt = x + 1
-    override def pred(x: BigInt): BigInt = x - 1
+  implicit def integralDiscrete[@specialized(Specializable.Integral) I](
+      implicit I: Integral[I]): Discrete[I] =
+  new Discrete[I] {
+    import Integral.Implicits._
+    override def succ(x: I): I = x + I.one
+    override def pred(x: I): I = x - I.one
   }
 }
-
