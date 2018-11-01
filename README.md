@@ -23,4 +23,4 @@ The `0.7.0` release is feature-wise virtually identical to the previous release 
 
 Contributions in all forms (including discussion, suggestions, bug reports, usage reports, pull requests, patches, etc) are welcome and encouraged from everyone!
 
-The dogs project demands that all activities surrounding the project follow the [Typelevel Code of Conduct](http://typelevel.org/conduct.html). If you witness any behavior from any individual which you feel might be harmful in any way or might not be a violation of the code of conduct, please speak up. Please contact any individual named in the Typelevel Code of Conduct so that it can be addressed as soon as possible.
+The cats-collection project demands that all activities surrounding the project follow the [Typelevel Code of Conduct](http://typelevel.org/conduct.html). If you witness any behavior from any individual which you feel might be harmful in any way or might not be a violation of the code of conduct, please speak up. Please contact any individual named in the Typelevel Code of Conduct so that it can be addressed as soon as possible.
