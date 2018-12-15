@@ -84,7 +84,7 @@ final case class Range[A](val start: A, val end: A) {
     * Return all the values in the Range as a List.
     */
   def toList(implicit enum: Discrete[A], order: Order[A]): List[A] =
-    toIterator.to[List]
+    toIterator.toList
 
   /**
     * Returns range [end, start]
