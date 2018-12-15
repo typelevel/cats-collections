@@ -4,7 +4,7 @@ package cats.collections
 /**
  * Represent discrete operations that can be performed on A
  */
-trait Discrete[A] {
+trait Discrete[@specialized(Specializable.Integral) A] {
 
   /**
    * Return the successor of x.
