@@ -93,6 +93,18 @@ class RangeTest extends CatsSuite {
     x3.toList should contain inOrderOnly(1, 2)
   }
 
+  test("return an iterator for the range") {
+    Range(0, 10).toIterator.toList shouldEqual List.range(0, 11) // [0, 10)
+  }
+
+  test("return an iterator for a reversed range") {
+    Range(10, 0).toIterator.toList shouldEqual List.range(10, -1, -1) // [10, -1)
+  }
+
+  test("return an iterator when the range contains a single value") {
+    Range(3, 3).toIterator.toList shouldEqual List(3)
+  }
+
   test("generate inverted range"){
     val range = Range(5, 1)
 
