@@ -88,16 +88,6 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
   }
 
   /**
-   * Return a stream of Key,Value pairs
-   * O(N)
-   */
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toStreaming: Streaming[(K,V)] =
-    foldRight(Eval.now(Streaming.empty[(K,V)])){ (a, ls) =>
-      Eval.now(Streaming.cons(a, ls))
-    }.value
-
-  /**
    * Return a scala.collection.immutable.Map
    */
   def toScalaMap: scala.collection.immutable.Map[K,V] =

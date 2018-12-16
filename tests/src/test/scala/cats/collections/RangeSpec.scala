@@ -47,10 +47,29 @@ class RangeTest extends CatsSuite {
     scala.Range(2, 21).toList.sorted should be (result)
   }
 
-  test("fold"){
+  test("foldLeft"){
     val range = Range(1, 100)
 
     range.foldLeft[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
+    range.foldLeft[Int](0, (_,b) => b) should be (100)
+  }
+
+  test("foldLeft in the right order"){
+    val range = Range(1, 100)
+
+    range.foldLeft[Int](0, (_,b) => b) should be (100)
+  }
+
+  test("foldRight"){
+    val range = Range(1, 100)
+
+    range.foldRight[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
+  }
+
+  test("foldRight in the right order"){
+    val range = Range(1, 100)
+
+    range.foldRight[Int](0, (a,_) => a) should be (1)
   }
 
   test("be able to diff (-)"){
@@ -72,6 +91,18 @@ class RangeTest extends CatsSuite {
     val Some((x3, None)) = range - Range(3, 12)
 
     x3.toList should contain inOrderOnly(1, 2)
+  }
+
+  test("return an iterator for the range") {
+    Range(0, 10).toIterator.toList shouldEqual List.range(0, 11) // [0, 10]
+  }
+
+  test("return an iterator for a reversed range") {
+    Range(10, 0).toIterator.toList shouldEqual List.range(10, -1, -1) // [10, 0]
+  }
+
+  test("return an iterator when the range contains a single value") {
+    Range(3, 3).toIterator.toList shouldEqual List(3)
   }
 
   test("generate inverted range"){

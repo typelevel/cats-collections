@@ -241,12 +241,12 @@ sealed abstract class Diet[A] {
   // TODO requires efficient implementations once Streaming is gone
   def foldRight[B](s: Eval[B])(f: (A, Eval[B]) => Eval[B])(implicit enumA: Discrete[A], orderA: Order[A]): Eval[B] = this match {
     case EmptyDiet() => s
-    case DietNode(rng, l, r) => l.foldRight(rng.toStreaming.foldRight(r.foldRight(s)(f))(f))(f)
+    case DietNode(rng, l, r) => l.foldRight(rng.foldRight(r.foldRight(s)(f), f))(f)
   }
 
   def foldLeft[B](s: B)(f: (B, A) => B)(implicit enumA: Discrete[A], orderA: Order[A]): B = this match {
     case EmptyDiet() =>  s
-    case DietNode(rng, l, r) => r.foldLeft(rng.toStreaming.foldLeft(l.foldLeft[B](s)(f))(f))(f)
+    case DietNode(rng, l, r) => r.foldLeft(rng.foldLeft(l.foldLeft[B](s)(f), f))(f)
   }
 
   def foldLeftRange[B](z: B)(f: (B, Range[A]) => B): B = this match {
@@ -258,14 +258,6 @@ sealed abstract class Diet[A] {
     case EmptyDiet() => z
     case DietNode(rng, l, r) => l.foldRightRange(f(rng, r.foldRightRange(z)(f)))(f)
   }
-
-  @deprecated("Streaming is obsolete. Use either fs2, Monix, or iteratees.", "cats-collections 0.7.0")
-  def toStreaming(implicit enum: Discrete[A], order: Order[A]): Streaming[A] =
-    this match {
-      case EmptyDiet() => Streaming.empty
-      case DietNode(rng,l,r) =>
-        l.toStreaming ++ rng.toStreaming ++ r.toStreaming
-    }
 }
 
 object Diet {
