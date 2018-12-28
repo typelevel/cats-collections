@@ -128,23 +128,25 @@ object TreeList extends TreeListInstances0 {
     }
     case class Root[A](value: A) extends Tree[Nat.Zero.type, A] {
       def depth: Nat.Zero.type = Nat.Zero
-      def size = 1L
+      def size: Long = 1L
       def get(idx: Long): Option[A] =
         if(idx == 0L) Some(value) else None
 
-      def map[B](fn: A => B) = Root(fn(value))
+      def map[B](fn: A => B): Tree[Nat.Zero.type, B] = Root(fn(value))
       def foldRight[B](fin: B)(fn: (A, B) => B): B = fn(value, fin)
       def foldMap[B: Semigroup](fn: A => B): B = fn(value)
     }
     case class Balanced[N <: Nat, A](value: A, left: Tree[N, A], right: Tree[N, A]) extends Tree[Nat.Succ[N], A] {
       val depth: Nat.Succ[N] = Nat.Succ(left.depth)
-      val size = 1L + left.size + right.size
+      val size: Long = 1L + left.size + right.size
       def get(idx: Long): Option[A] =
         if (idx == 0L) Some(value)
         else if (idx <= left.size) left.get(idx - 1)
         else right.get(idx - (left.size + 1))
 
-      def map[B](fn: A => B) = Balanced[N, B](fn(value), left.map(fn), right.map(fn))
+      def map[B](fn: A => B): Tree[Nat.Succ[N], B] =
+        Balanced[N, B](fn(value), left.map(fn), right.map(fn))
+
       def foldRight[B](fin: B)(fn: (A, B) => B): B = {
         val rightB = right.foldRight(fin)(fn)
         val leftB = left.foldRight(rightB)(fn)
@@ -302,7 +304,7 @@ object TreeList extends TreeListInstances0 {
     def isEmpty: Boolean = treeList.isEmpty
     def nonEmpty: Boolean = treeList.nonEmpty
 
-    def map[B](fn: A => B) = Trees(treeList.map(_.map(fn)))
+    def map[B](fn: A => B): TreeList[B] = Trees(treeList.map(_.map(fn)))
 
     def drop(n: Long): TreeList[A] = {
       @tailrec
