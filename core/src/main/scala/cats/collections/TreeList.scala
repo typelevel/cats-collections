@@ -1,6 +1,6 @@
 package cats.collections
 
-import cats.{Applicative, Alternative, CoflatMap, Eval, Eq, Monad, Monoid, Order, PartialOrder, Semigroup, Traverse}
+import cats.{Applicative, Alternative, CoflatMap, Eval, Eq, Monad, Monoid, Order, PartialOrder, Semigroup, Show, Traverse}
 
 import cats.implicits._
 import scala.annotation.tailrec
@@ -12,26 +12,101 @@ import scala.annotation.tailrec
  * A consequence of the log N complexity is that naive recursion on the inner
  * methods will (almost) never blow the stack since the depth of the structure
  * is log N, this greatly simplifies many methods
+ *
+ * This data-structure is useful when you want fast cons and uncons, but also
+ * want to index. It does not have an optimized concatenation. It can iterate
+ * in reverse order in O(N) time.
  */
 sealed abstract class TreeList[+A] {
+  /**
+   * This is like headOption and tailOption in one call. O(1)
+   */
   def uncons: Option[(A, TreeList[A])]
-  def cons[A1 >: A](a1: A1): TreeList[A1]
+  /**
+   * put an item on the front. O(1)
+   */
+  def prepend[A1 >: A](a1: A1): TreeList[A1]
+  /**
+   * lookup the given index in the list. O(log N).
+   * if the item is < 0 or >= size, return None
+   */
   def get(idx: Long): Option[A]
+  /**
+   * get the last element, if it is not empty. O(log N)
+   * a bit more efficient than get(size - 1)
+   */
   def lastOption: Option[A]
+  /**
+   * How many items are in this TreeList
+   */
   def size: Long
+  /**
+   * A strict, left-to-right fold
+   */
   def foldLeft[B](init: B)(fn: (B, A) => B): B
+  /**
+   * a strict, right-to-left fold.
+   * Note, cats.Foldable defines foldRight to work on Eval,
+   * we use a different name here not to collide with the cats
+   * syntax
+   */
   def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
+  /**
+   * standard map. O(N) operation.
+   * Since this preserves structure, it is more efficient than
+   * converting toIterator, mapping the iterator, and converting back
+   */
   def map[B](fn: A => B): TreeList[B]
+  /**
+   * We can efficiently drop things off the front without rebuilding
+   */
   def drop(n: Long): TreeList[A]
+  /**
+   * Get an iterator through the TreeList
+   */
   def toIterator: Iterator[A]
+  /**
+   * Get a reverse iterator through the TreeList
+   * not as efficient as going in the left to right order.
+   *
+   * It appears this is N log N in cost (although possible only N, as
+   * we have not proven the bound on cost)
+   *
+   * This is useful if you only want a few things from the right,
+   * if you need to iterate the entire list, it is better to
+   * to use toListReverse which is O(N)
+   *
+   * This is only a constant more efficent that iterating via random
+   * access using get
+   */
   def toReverseIterator: Iterator[A]
+  /**
+   * map to a type with a Monoid and combine in the order of the
+   * list
+   */
   def foldMap[B: Monoid](fn: A => B): B
+  /**
+   * returns true if size == 0. O(1)
+   */
   def isEmpty: Boolean
+  /**
+   * returns true if size != 0. O(1)
+   */
   def nonEmpty: Boolean
+  /**
+   * Convert to a scala standard List
+   */
   def toList: List[A]
 
   /**
-   * Split the list roughly in half
+   * Convert to a scala standard list, but reversed
+   */
+  def toListReverse: List[A]
+
+  /**
+   * return the right most full binary tree on the right, the rest on left
+   * val (l, r) = items.split
+   * assert((l ++ r) == items)
    */
   def split: (TreeList[A], TreeList[A])
 
@@ -39,7 +114,7 @@ sealed abstract class TreeList[+A] {
    * The following methods do not have an optimized
    * implementation and are expressed in terms of the above
    */
-  final def ::[A1 >: A](a1: A1): TreeList[A1] = cons(a1)
+  final def ::[A1 >: A](a1: A1): TreeList[A1] = prepend(a1)
 
   // This is a test method to ensure the invariant on depth is correct
   private[collections] def maxDepth: Int
@@ -61,31 +136,58 @@ sealed abstract class TreeList[+A] {
     strb.toString
   }
 
+  /**
+   * Concatenate two TreeLists. This requires doing as
+   * much work as this.size
+   */
   final def ++[A1 >: A](that: TreeList[A1]): TreeList[A1] = {
-    val thisIt = toReverseIterator
-    var res = that
-    while(thisIt.hasNext) {
-      res = thisIt.next() :: res
-    }
-    res
+    @tailrec
+    def loop(ls: List[A], that: TreeList[A1]): TreeList[A1] =
+      ls match {
+        case Nil => that
+        case h :: tail => loop(tail, h :: that)
+      }
+    loop(toListReverse, that)
   }
 
+  /**
+   * Standard flatMap on a List type.
+   */
   final def flatMap[B](fn: A => TreeList[B]): TreeList[B] = {
-    val revTrees = toReverseIterator.map(fn)
-    var res = TreeList.empty[B]
-    while(revTrees.hasNext) {
-      res = revTrees.next() ++ res
-    }
-    res
+    @tailrec
+    def loop(rev: List[A], acc: TreeList[B]): TreeList[B] =
+      rev match {
+        case Nil => acc
+        case h :: tail =>
+          loop(tail, fn(h) ++ acc)
+      }
+    loop(toListReverse, TreeList.Empty)
   }
 
+  /**
+   * O(N) reversal of the treeList
+   */
   final def reverse: TreeList[A] = {
     val revTrees = toIterator
-    var res = TreeList.empty[A]
+    var res: TreeList[A] = TreeList.Empty
     while(revTrees.hasNext) {
       res = revTrees.next() :: res
     }
     res
+  }
+
+  /**
+   * Take the first n things off the list. O(n)
+   */
+  final def take(n: Long): TreeList[A] = {
+    val takeIt = toIterator
+    var cnt = 0L
+    var res = List.empty[A]
+    while(takeIt.hasNext && cnt < n) {
+      res = takeIt.next() :: res
+      cnt += 1L
+    }
+    TreeList.fromListReverse(res)
   }
 }
 
@@ -186,14 +288,16 @@ object TreeList extends TreeListInstances0 {
 
       def hasNext: Boolean = nexts.nonEmpty
       def next(): A =
-        nexts match {
-          case Nil => throw new NoSuchElementException("TreeList.toIterator exhausted")
-          case Root(a) :: tail =>
-            nexts = tail
-            a
-          case Balanced(a, l, r) :: tail =>
-            nexts = l :: r :: tail
-            a
+        if (nexts.isEmpty) throw new NoSuchElementException("TreeList.toIterator exhausted")
+        else {
+          nexts.head match {
+            case Root(a) =>
+              nexts = nexts.tail
+              a
+            case Balanced(a, l, r) =>
+              nexts = l :: r :: nexts.tail
+              a
+          }
         }
     }
 
@@ -204,25 +308,37 @@ object TreeList extends TreeListInstances0 {
 
       def hasNext: Boolean = nexts.nonEmpty
 
+      /*
+       * The cost to call next when left most item has depth D is
+       * D. We know that D <= log_2 N, so in the worst case iteration
+       * is N log N. A tree has most items at the deepest levels,
+       * to this implies that we do need O(log N) work in the average
+       * case to access a next item
+       *
+       * On the other hand, we tear down depth as we do this and save
+       * that state for the future, so it could be that the total work
+       * is still O(N). This is an open question.
+       */
       @tailrec
       final def next(): A =
-        nexts match {
-          case Nil => throw new NoSuchElementException("TreeList.toReverseIterator exhausted")
-          case Root(a) :: tail =>
-            nexts = tail
-            a
-          case Balanced(a, l, r) :: tail =>
-            // switch the orde
-            nexts = r :: l :: Root(a) :: tail
-            next()
-        }
+        if (nexts.isEmpty) throw new NoSuchElementException("TreeList.toReverseIterator exhausted")
+        else
+          nexts.head match {
+            case Root(a) =>
+              nexts = nexts.tail
+              a
+            case Balanced(a, l, r) =>
+              // switch the order
+              nexts = r :: l :: Root(a) :: nexts.tail
+              next()
+          }
     }
   }
 
   import Impl._
 
-  private case class Trees[A](treeList: List[Tree[Nat, A]]) extends TreeList[A] {
-    def cons[A1 >: A](a1: A1): TreeList[A1] =
+  private final case class Trees[A](treeList: List[Tree[Nat, A]]) extends TreeList[A] {
+    def prepend[A1 >: A](a1: A1): TreeList[A1] =
       treeList match {
         case h1 :: h2 :: rest =>
           def go[N1 <: Nat, N2 <: Nat, A2 <: A](t1: Tree[N1, A2], t2: Tree[N2, A2]): TreeList[A1] =
@@ -329,16 +445,14 @@ object TreeList extends TreeListInstances0 {
       loop(n, treeList)
     }
 
-    /**
-     * return two lists such that the right is a full binary tree
-     * of size 2^n - 1 for some n
-     */
     def split: (TreeList[A], TreeList[A]) =
       treeList match {
         case Nil => (empty, empty)
         case Root(_) :: Nil => (this, empty)
-        case Balanced(a, l, r) :: Nil => (Trees(Root(a) :: l :: Nil), Trees(r :: Nil))
-        case moreThanOne => (Trees(moreThanOne.init), Trees(moreThanOne.last :: Nil))
+        case Balanced(a, l, r) :: Nil =>
+          (Trees(Root(a) :: l :: Nil), Trees(r :: Nil))
+        case moreThanOne =>
+          (Trees(moreThanOne.init), Trees(moreThanOne.last :: Nil))
       }
 
     def toIterator: Iterator[A] = new TreeListIterator(this)
@@ -349,6 +463,7 @@ object TreeList extends TreeListInstances0 {
 
     override def toList: List[A] = {
       val builder = List.newBuilder[A]
+      @tailrec
       def loop(treeList: List[Tree[Nat, A]]): Unit =
         treeList match {
           case Nil => ()
@@ -363,6 +478,19 @@ object TreeList extends TreeListInstances0 {
       builder.result()
     }
 
+    override def toListReverse: List[A] = {
+      @tailrec
+      def loop(treeList: List[Tree[Nat, A]], acc: List[A]): List[A] =
+        treeList match {
+          case Nil => acc
+          case Root(a) :: tail =>
+            loop(tail, a :: acc)
+          case Balanced(a, l, r) :: tail =>
+            loop(l :: r :: tail, a :: acc)
+        }
+      loop(treeList, Nil)
+    }
+
     private[collections] def maxDepth: Int = {
       val listLength = treeList.size
       val treeDepth = treeList.map(_.depth.value) match {
@@ -371,13 +499,6 @@ object TreeList extends TreeListInstances0 {
       }
       listLength + treeDepth
     }
-  }
-
-  implicit class InvariantTreeList[A](val treeList: TreeList[A]) extends AnyVal {
-    def traverse[F[_]: Applicative, B](fn: A => F[B]): F[TreeList[B]] =
-      treeList match {
-        case Trees(tls) => tls.traverse { tree => traverseTree(tree, fn) }.map(Trees(_))
-      }
   }
 
   def empty[A]: TreeList[A] = Empty
@@ -398,7 +519,7 @@ object TreeList extends TreeListInstances0 {
     def loop(rev: List[A], acc: TreeList[A]): TreeList[A] =
       rev match {
         case Nil => acc
-        case h :: tail => loop(tail, acc.cons(h))
+        case h :: tail => loop(tail, acc.prepend(h))
       }
 
     loop(list, empty)
@@ -428,6 +549,7 @@ object TreeList extends TreeListInstances0 {
       }
     }
 
+  // This is here because it needs to see Tree and Nat
   private[collections] def eqTree[A: Eq]: Eq[TreeList[A]] =
     Eq[List[Tree[Nat, A]]].contramap(toListOfTrees(_))
 
@@ -435,6 +557,12 @@ object TreeList extends TreeListInstances0 {
     new Monoid[TreeList[A]] {
       def empty: TreeList[A] = Empty
       def combine(l: TreeList[A], r: TreeList[A]) = l ++ r
+    }
+
+  implicit def catsCollectionTreeListShow[A: Show]: Show[TreeList[A]] =
+    Show.show[TreeList[A]] { ts =>
+      val sa = Show[A]
+      ts.toIterator.map(sa.show(_)).mkString("TreeList(", ", ", ")")
     }
 
   implicit val catsCollectionTreeListInstances: Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] =
