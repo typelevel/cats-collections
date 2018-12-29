@@ -196,16 +196,6 @@ object TreeList extends TreeListInstances0 {
     sealed trait Nat {
       def value: Int
     }
-    sealed abstract class NatEq[A <: Nat, B <: Nat] {
-      def subst[F[_ <: Nat]](f: F[A]): F[B]
-    }
-    object NatEq {
-      implicit def refl[A <: Nat]: NatEq[A, A] =
-        new NatEq[A, A] {
-          def subst[F[_ <: Nat]](f: F[A]): F[A] = f
-        }
-    }
-
     object Nat {
       case class Succ[P <: Nat](prev: P) extends Nat {
         val value: Int = prev.value + 1
@@ -213,10 +203,24 @@ object TreeList extends TreeListInstances0 {
       case object Zero extends Nat {
         def value: Int = 0
       }
+    }
+    sealed abstract class NatEq[A <: Nat, B <: Nat] {
+      def subst[F[_ <: Nat]](f: F[A]): F[B]
+    }
+
+    object NatEq {
+      implicit def refl[A <: Nat]: NatEq[A, A] =
+        new NatEq[A, A] {
+          def subst[F[_ <: Nat]](f: F[A]): F[A] = f
+        }
+
+      // Cache this so we avoid allocating repeatedly
+      private[this] val someRefl: Option[NatEq[Nat.Zero.type, Nat.Zero.type]] =
+        Some(refl[Nat.Zero.type])
 
       def maybeEq[N1 <: Nat, N2 <: Nat](n1: N1, n2: N2): Option[NatEq[N1, N2]] =
         // I don't see how to prove this in scala, but it is true
-        if (n1.value == n2.value) Some(NatEq.refl[N1].asInstanceOf[NatEq[N1, N2]])
+        if (n1.value == n2.value) someRefl.asInstanceOf[Option[NatEq[N1, N2]]]
         else None
     }
     sealed abstract class Tree[+N <: Nat, +A] {
@@ -342,7 +346,7 @@ object TreeList extends TreeListInstances0 {
       treeList match {
         case h1 :: h2 :: rest =>
           def go[N1 <: Nat, N2 <: Nat, A2 <: A](t1: Tree[N1, A2], t2: Tree[N2, A2]): TreeList[A1] =
-            Nat.maybeEq[N1, N2](t1.depth, t2.depth) match {
+            NatEq.maybeEq[N1, N2](t1.depth, t2.depth) match {
               case Some(eqv) =>
                 type T[N <: Nat] = Tree[N, A2]
                 Trees(Balanced[N2, A1](a1, eqv.subst[T](t1), t2) :: rest)
@@ -433,7 +437,9 @@ object TreeList extends TreeListInstances0 {
             else {
               h match {
                 case Root(_) =>
-                  loop(n - 1, tail)
+                  // $COVERAGE-OFF$
+                  sys.error(s"unreachable, $h has size == 1 which is <= n ($n)")
+                  // $COVERAGE-ON$
                 case Balanced(_, l, r) =>
                   if (n > l.size + 1L) loop(n - l.size - 1L, r :: tail)
                   else if (n > 1L) loop(n - 1L, l :: r :: tail)

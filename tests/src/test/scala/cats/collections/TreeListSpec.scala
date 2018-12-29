@@ -8,13 +8,9 @@ import org.scalacheck.{Arbitrary, Cogen}
 
 import cats.implicits._
 
+import cats.collections.arbitrary.ArbitraryTreeList._
+
 class TreeListSpec extends CatsSuite {
-  implicit def arbitraryTreeList[A: Arbitrary]: Arbitrary[TreeList[A]] =
-    Arbitrary(Arbitrary.arbitrary[List[A]].map(TreeList.fromListReverse(_)))
-
-  implicit def cogenTreeList[A: Cogen]: Cogen[TreeList[A]] =
-    Cogen[List[A]].contramap(_.toList)
-
   checkAll("Traverse[TreeList]",
     TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option])
 
