@@ -4,18 +4,33 @@ package tests
 import cats.{Eq, Order, PartialOrder, Monoid, Traverse}
 import cats.laws.discipline._
 import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Cogen}
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 import cats.implicits._
 
 import cats.collections.arbitrary.ArbitraryTreeList._
 
 class TreeListSpec extends CatsSuite {
+
+  implicit def arbPartialFn[A: Cogen, B: Arbitrary]: Arbitrary[PartialFunction[A, B]] =
+    Arbitrary(
+      Gen.zip(
+        Gen.choose(0, 32),
+        Gen.choose(Int.MinValue, Int.MaxValue),
+        Arbitrary.arbitrary[A => B]).map { case (shift, xor, fn) =>
+
+      { case a if (a.hashCode ^ xor) >>> shift == 0 => fn(a) }
+
+    })
+
   checkAll("Traverse[TreeList]",
     TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option])
 
   checkAll("Alternative[TreeList]",
     AlternativeTests[TreeList].alternative[Long, Int, String])
+
+  checkAll("FunctorFilter[TreeList]",
+    FunctorFilterTests[TreeList].functorFilter[Long, Int, String])
 
   checkAll("Monad[TreeList]",
     MonadTests[TreeList].monad[Long, Int, String])
@@ -213,5 +228,38 @@ class TreeListSpec extends CatsSuite {
 
   test("toListReverse == toList.reverse")(forAll { (xs: TreeList[Int]) =>
     assert(xs.toListReverse == xs.toList.reverse)
+  })
+
+  test("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
+    val idx = if (xs.size > 0) idx0 % xs.size else idx0
+    val xs1 = xs.updatedOrThis(idx, v)
+    if (0 <= idx && idx < xs.size) {
+      val ls = xs.toIterator.toVector
+      val ls1 = ls.updated(idx.toInt, v)
+      assert(xs1.toIterator.toVector == ls1)
+      assert(xs.updated(idx, v) == Some(xs1))
+    }
+    else {
+      assert(xs eq xs1)
+      assert(xs.updated(idx, v) == None)
+    }
+  })
+
+  test("we don't stack overflow on large sequences") {
+    val size = 100000
+    def buildFn(i: Int): Int => Int = { j: Int => i + j }
+    val bigList = (0 until size).iterator.map(buildFn).toList
+    // This does not work because the stack is as deep as the size of the list
+    assertThrows[StackOverflowError] {
+      assert(bigList.sequence.apply(0) == (0 until size).toList)
+    }
+    // Now this should not throw
+    val bigTreeList = TreeList.fromList(bigList)
+    assert(bigTreeList.sequence.apply(0) == TreeList.fromList((0 until size).toList))
+  }
+
+  test("filter/filterNot consistency")(forAll { (xs: TreeList[Int], fn: Int => Boolean) =>
+    testHomomorphism(xs)({ l => l.filter(fn).toList }, { _.toList.filter(fn) })
+    assert(xs.filterNot(fn) == xs.filter { a => !fn(a) })
   })
 }

@@ -1,6 +1,6 @@
 package cats.collections
 
-import cats.{Applicative, Alternative, CoflatMap, Eval, Eq, Monad, Monoid, Order, PartialOrder, Semigroup, Show, Traverse}
+import cats.{Applicative, Alternative, CoflatMap, Eval, Eq, Functor, FunctorFilter, Monad, Monoid, Order, PartialOrder, Semigroup, Show, Traverse}
 
 import cats.implicits._
 import scala.annotation.tailrec
@@ -11,7 +11,9 @@ import scala.annotation.tailrec
  *
  * A consequence of the log N complexity is that naive recursion on the inner
  * methods will (almost) never blow the stack since the depth of the structure
- * is log N, this greatly simplifies many methods
+ * is log N, this greatly simplifies many methods. A key example is that unlike
+ * List, using a TreeList you can sequence and traverse very large lists without
+ * blowing the stack since the stack depth is only log N.
  *
  * This data-structure is useful when you want fast cons and uncons, but also
  * want to index. It does not have an optimized concatenation. It can iterate
@@ -80,6 +82,14 @@ sealed abstract class TreeList[+A] {
    * access using get
    */
   def toReverseIterator: Iterator[A]
+  /**
+   * If the given index is in the list, update it, else
+   * return the current list with no change.
+   *
+   * O(log N)
+   */
+  def updatedOrThis[A1 >: A](idx: Long, value: A1): TreeList[A1]
+
   /**
    * map to a type with a Monoid and combine in the order of the
    * list
@@ -151,6 +161,37 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
+   * keep the elements that match a predicate
+   */
+  final def filter(fn: A => Boolean): TreeList[A] = {
+    val as = toIterator
+    var resList = List.empty[A]
+    var changed = false
+    while(as.hasNext) {
+      val a = as.next()
+      if (fn(a)) {
+        resList = a :: resList
+      } else { changed = true }
+    }
+    if (changed) TreeList.fromListReverse(resList)
+    else this
+  }
+
+  final def filterNot(fn: A => Boolean): TreeList[A] = {
+    val as = toIterator
+    var resList = List.empty[A]
+    var changed = false
+    while(as.hasNext) {
+      val a = as.next()
+      if (!fn(a)) {
+        resList = a :: resList
+      } else { changed = true }
+    }
+    if (changed) TreeList.fromListReverse(resList)
+    else this
+  }
+
+  /**
    * Standard flatMap on a List type.
    */
   final def flatMap[B](fn: A => TreeList[B]): TreeList[B] = {
@@ -189,6 +230,17 @@ sealed abstract class TreeList[+A] {
     }
     TreeList.fromListReverse(res)
   }
+
+  /**
+   * If the given index is in the list, update and return Some(updated).
+   * else return None
+   *
+   * O(log N)
+   */
+  final def updated[A1 >: A](idx: Long, value: A1): Option[TreeList[A1]] = {
+    val up = updatedOrThis(idx, value)
+    if (up eq this) None else Some(up)
+  }
 }
 
 object TreeList extends TreeListInstances0 {
@@ -199,9 +251,41 @@ object TreeList extends TreeListInstances0 {
     object Nat {
       case class Succ[P <: Nat](prev: P) extends Nat {
         val value: Int = prev.value + 1
+        override def hashCode: Int = value
+        // We don't want to use recursive equality matching
+        // since that would be O(N) for a Nat of value N
+        override def equals(that: Any): Boolean =
+          that match {
+            case s: Succ[_] => value == s.value
+            case _ => false
+          }
+
       }
       case object Zero extends Nat {
         def value: Int = 0
+      }
+
+      private[this] val memoUpTo: Int = 32
+      private[this] val memoNat: Array[Nat] = {
+        @tailrec
+        def build(n: Nat, acc: List[Nat], cnt: Int): Array[Nat] =
+          if (cnt >= memoUpTo) acc.reverse.toArray
+          else {
+            val s = Succ(n)
+            build(s, s :: acc, cnt + 1)
+          }
+
+        build(Zero, Nil, 0)
+      }
+
+      /**
+       * This is a memoized Succ constructor since
+       * we generally only build a small number of Succ instances
+       */
+      def succ[N <: Nat](n: N): Succ[N] = {
+        val v = n.value
+        if (v < memoUpTo) memoNat(v).asInstanceOf[Succ[N]]
+        else Succ(n)
       }
     }
     sealed abstract class NatEq[A <: Nat, B <: Nat] {
@@ -231,6 +315,7 @@ object TreeList extends TreeListInstances0 {
       def map[B](fn: A => B): Tree[N, B]
       def foldRight[B](fin: B)(fn: (A, B) => B): B
       def foldMap[B: Semigroup](fn: A => B): B
+      def updated[A1 >: A](idx: Long, a: A1): Tree[N, A1]
     }
     case class Root[A](value: A) extends Tree[Nat.Zero.type, A] {
       def depth: Nat.Zero.type = Nat.Zero
@@ -241,14 +326,21 @@ object TreeList extends TreeListInstances0 {
       def map[B](fn: A => B): Tree[Nat.Zero.type, B] = Root(fn(value))
       def foldRight[B](fin: B)(fn: (A, B) => B): B = fn(value, fin)
       def foldMap[B: Semigroup](fn: A => B): B = fn(value)
+      def updated[A1 >: A](idx: Long, a: A1): Tree[Nat.Zero.type, A1] =
+        if (idx == 0L) Root(a)
+        else this
     }
     case class Balanced[N <: Nat, A](value: A, left: Tree[N, A], right: Tree[N, A]) extends Tree[Nat.Succ[N], A] {
-      val depth: Nat.Succ[N] = Nat.Succ(left.depth)
-      val size: Long = 1L + left.size + right.size
+      // this should be a val, so we save the result and not do O(log N) work to compute it
+      // prefer accessing left even though right is the same size, since left
+      // is more likely to be accessed being at the front, we assume it should
+      // have better cache performance
+      val depth: Nat.Succ[N] = Nat.succ(left.depth)
+      val size: Long = 1L + (left.size << 1) // 2n + 1, since we have a balanced tree
       def get(idx: Long): Option[A] =
         if (idx == 0L) Some(value)
-        else if (idx <= left.size) left.get(idx - 1)
-        else right.get(idx - (left.size + 1))
+        else if (idx <= left.size) left.get(idx - 1L)
+        else right.get(idx - (left.size + 1L))
 
       def map[B](fn: A => B): Tree[Nat.Succ[N], B] =
         Balanced[N, B](fn(value), left.map(fn), right.map(fn))
@@ -262,6 +354,11 @@ object TreeList extends TreeListInstances0 {
         val sg = Semigroup[B]
         sg.combine(fn(value), sg.combine(left.foldMap(fn), right.foldMap(fn)))
       }
+
+      def updated[A1 >: A](idx: Long, a: A1): Tree[Nat.Succ[N], A1] =
+        if (idx == 0L) Balanced(a, left, right)
+        else if (idx <= left.size) copy(left = left.updated(idx - 1L, a))
+        else copy(right = right.updated(idx - (left.size + 1L), a))
     }
 
     def traverseTree[F[_]: Applicative, A, B, N <: Nat](ta: Tree[N, A], fn: A => F[B]): F[Tree[N, B]] =
@@ -464,6 +561,25 @@ object TreeList extends TreeListInstances0 {
     def toIterator: Iterator[A] = new TreeListIterator(this)
     def toReverseIterator: Iterator[A] = new TreeListReverseIterator(this)
 
+    def updatedOrThis[A1 >: A](idx: Long, a: A1): TreeList[A1] = {
+      @tailrec
+      def loop(idx: Long, treeList: List[Tree[Nat, A1]], front: List[Tree[Nat, A1]]): TreeList[A1] =
+        if (idx < 0L) this
+        else
+          treeList match {
+            case Nil => this
+            case h :: tail =>
+              if (h.size <= idx) loop(idx - h.size, tail, h :: front)
+              else {
+                val h1 = h.updated(idx, a)
+                // now rebuild the front of the list
+                Trees(front reverse_::: (h1 :: tail))
+              }
+          }
+
+      loop(idx, treeList, Nil)
+    }
+
     def foldMap[B: Monoid](fn: A => B): B =
       Monoid[B].combineAll(treeList.map(_.foldMap(fn)))
 
@@ -571,10 +687,8 @@ object TreeList extends TreeListInstances0 {
       ts.toIterator.map(sa.show(_)).mkString("TreeList(", ", ", ")")
     }
 
-  implicit val catsCollectionTreeListInstances: Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] =
-    new Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] {
-      def empty[A]: TreeList[A] = Empty
-
+  implicit val catsCollectionTreeListInstances: Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] with FunctorFilter[TreeList] =
+    new Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] with FunctorFilter[TreeList] {
       def coflatMap[A, B](fa: TreeList[A])(fn: TreeList[A] => B): TreeList[B] = {
         @tailrec
         def loop(fa: TreeList[A], revList: List[B]): TreeList[B] =
@@ -588,6 +702,8 @@ object TreeList extends TreeListInstances0 {
 
       def combineK[A](l: TreeList[A], r: TreeList[A]): TreeList[A] =
         l ++ r
+
+      def empty[A]: TreeList[A] = Empty
 
       override def exists[A](fa: TreeList[A])(fn: A => Boolean): Boolean =
         fa.toIterator.exists(fn)
@@ -617,6 +733,23 @@ object TreeList extends TreeListInstances0 {
         fa.toIterator.forall(fn)
       }
 
+      def functor: Functor[TreeList] = this
+
+      def mapFilter[A, B](ta: TreeList[A])(fn: A => Option[B]): TreeList[B] = {
+        val as = ta.toIterator
+        var resList = List.empty[B]
+        while(as.hasNext) {
+          fn(as.next()) match {
+            case Some(b) => resList = b :: resList
+            case None => ()
+          }
+        }
+        TreeList.fromListReverse(resList)
+      }
+
+      override def filter[A](ta: TreeList[A])(fn: A => Boolean): TreeList[A] =
+        ta.filter(fn)
+
       override def get[A](fa: TreeList[A])(idx: Long): Option[A] =
         fa.get(idx)
 
@@ -645,7 +778,7 @@ object TreeList extends TreeListInstances0 {
           case None => Eval.now(None)
           case Some((a, tail)) =>
             if (tail.isEmpty) Eval.now(Some(f(a)))
-            else tail.foldRight(Eval.now(f(a)))(g).map(Some(_))
+            else foldRight(tail, Eval.now(f(a)))(g).map(Some(_))
         }
 
       override def toList[A](fa: TreeList[A]): List[A] =
