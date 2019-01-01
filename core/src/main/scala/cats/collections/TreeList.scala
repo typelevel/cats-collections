@@ -251,21 +251,20 @@ object TreeList extends TreeListInstances0 {
     object Nat {
       case class Succ[P <: Nat](prev: P) extends Nat {
         val value: Int = prev.value + 1
-        override def hashCode: Int = value
-        // We don't want to use recursive equality matching
-        // since that would be O(N) for a Nat of value N
-        override def equals(that: Any): Boolean =
-          that match {
-            case s: Succ[_] => value == s.value
-            case _ => false
-          }
-
       }
       case object Zero extends Nat {
         def value: Int = 0
       }
 
-      private[this] val memoUpTo: Int = 32
+      /*
+       * We don't need to make this too large,
+       * it is the smallest items that are changing
+       * the most, at big depths, we don't win
+       * much by this memoization, and by making
+       * sure we exercise all branches we have better
+       * tested code
+       */
+      private[this] val memoUpTo: Int = 12
       private[this] val memoNat: Array[Nat] = {
         @tailrec
         def build(n: Nat, acc: List[Nat], cnt: Int): Array[Nat] =
@@ -327,8 +326,9 @@ object TreeList extends TreeListInstances0 {
       def foldRight[B](fin: B)(fn: (A, B) => B): B = fn(value, fin)
       def foldMap[B: Semigroup](fn: A => B): B = fn(value)
       def updated[A1 >: A](idx: Long, a: A1): Tree[Nat.Zero.type, A1] =
-        if (idx == 0L) Root(a)
-        else this
+        // we could check that idx == 0L here, but we have tests so no need to branch
+        // and have a false branch that is never taken
+        Root(a)
     }
     case class Balanced[N <: Nat, A](value: A, left: Tree[N, A], right: Tree[N, A]) extends Tree[Nat.Succ[N], A] {
       // this should be a val, so we save the result and not do O(log N) work to compute it

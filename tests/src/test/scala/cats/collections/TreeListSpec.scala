@@ -231,18 +231,24 @@ class TreeListSpec extends CatsSuite {
   })
 
   test("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
+    def test(idx: Long) = {
+      val xs1 = xs.updatedOrThis(idx, v)
+      if (0 <= idx && idx < xs.size) {
+        val ls = xs.toIterator.toVector
+        val ls1 = ls.updated(idx.toInt, v)
+        assert(xs1.toIterator.toVector == ls1)
+        assert(xs.updated(idx, v) == Some(xs1))
+      }
+      else {
+        assert(xs eq xs1)
+        assert(xs.updated(idx, v) == None)
+      }
+    }
+
     val idx = if (xs.size > 0) idx0 % xs.size else idx0
-    val xs1 = xs.updatedOrThis(idx, v)
-    if (0 <= idx && idx < xs.size) {
-      val ls = xs.toIterator.toVector
-      val ls1 = ls.updated(idx.toInt, v)
-      assert(xs1.toIterator.toVector == ls1)
-      assert(xs.updated(idx, v) == Some(xs1))
-    }
-    else {
-      assert(xs eq xs1)
-      assert(xs.updated(idx, v) == None)
-    }
+    test(idx)
+    // also test all valid lengths:
+    (-1L to xs.size).foreach(test(_))
   })
 
   test("we don't stack overflow on large sequences") {
