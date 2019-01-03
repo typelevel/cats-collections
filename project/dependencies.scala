@@ -1,7 +1,7 @@
 import sbt._
 
 object V {
-  val cats = "1.4.0"
+  val cats = "1.5.0"
 
   def scalaCheckVersion(scalaVersion: String): String =
     CrossVersion.partialVersion(scalaVersion) match {
