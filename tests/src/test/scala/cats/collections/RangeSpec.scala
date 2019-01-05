@@ -7,8 +7,6 @@ class RangeTest extends CatsSuite {
 
   import Range._
 
-  import cats.implicits._
-
   test("contain items within [start, end]"){
     val range = Range(1, 100)
 
