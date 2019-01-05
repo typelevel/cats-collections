@@ -16,8 +16,7 @@ import scala.annotation.tailrec
  * blowing the stack since the stack depth is only log N.
  *
  * This data-structure is useful when you want fast cons and uncons, but also
- * want to index. It does not have an optimized concatenation. It can iterate
- * in reverse order in O(N) time.
+ * want to index. It does not have an optimized concatenation.
  */
 sealed abstract class TreeList[+A] {
   /**
@@ -39,11 +38,11 @@ sealed abstract class TreeList[+A] {
    */
   def lastOption: Option[A]
   /**
-   * How many items are in this TreeList
+   * How many items are in this TreeList. O(log N)
    */
   def size: Long
   /**
-   * A strict, left-to-right fold
+   * A strict, left-to-right fold: O(N)
    */
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   /**
@@ -51,6 +50,8 @@ sealed abstract class TreeList[+A] {
    * Note, cats.Foldable defines foldRight to work on Eval,
    * we use a different name here not to collide with the cats
    * syntax
+   *
+   * O(N)
    */
   def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
   /**
@@ -61,10 +62,14 @@ sealed abstract class TreeList[+A] {
   def map[B](fn: A => B): TreeList[B]
   /**
    * We can efficiently drop things off the front without rebuilding
+   *
+   * O(n) operation (complexity is the number of things being dropped)
    */
   def drop(n: Long): TreeList[A]
   /**
    * Get an iterator through the TreeList
+   *
+   * We can iterate through in O(N) time
    */
   def toIterator: Iterator[A]
   /**
@@ -92,7 +97,7 @@ sealed abstract class TreeList[+A] {
 
   /**
    * map to a type with a Monoid and combine in the order of the
-   * list
+   * list, O(N)
    */
   def foldMap[B: Monoid](fn: A => B): B
   /**
@@ -104,12 +109,13 @@ sealed abstract class TreeList[+A] {
    */
   def nonEmpty: Boolean
   /**
-   * Convert to a scala standard List
+   * Convert to a scala standard List. O(N)
    */
   def toList: List[A]
 
   /**
    * Convert to a scala standard list, but reversed
+   * O(N)
    */
   def toListReverse: List[A]
 
@@ -117,16 +123,20 @@ sealed abstract class TreeList[+A] {
    * return the right most full binary tree on the right, the rest on left
    * val (l, r) = items.split
    * assert((l ++ r) == items)
+   *
+   * O(log N)
    */
   def split: (TreeList[A], TreeList[A])
 
   /*
    * The following methods do not have an optimized
    * implementation and are expressed in terms of the above
+   * O(1)
    */
   final def ::[A1 >: A](a1: A1): TreeList[A1] = prepend(a1)
 
   // This is a test method to ensure the invariant on depth is correct
+  // O(log N)
   private[collections] def maxDepth: Int
 
   override def toString: String = {
@@ -149,6 +159,8 @@ sealed abstract class TreeList[+A] {
   /**
    * Concatenate two TreeLists. This requires doing as
    * much work as this.size
+   *
+   * O(this.size)
    */
   final def ++[A1 >: A](that: TreeList[A1]): TreeList[A1] = {
     @tailrec
@@ -162,6 +174,7 @@ sealed abstract class TreeList[+A] {
 
   /**
    * keep the elements that match a predicate
+   * O(N)
    */
   final def filter(fn: A => Boolean): TreeList[A] = {
     val as = toIterator
@@ -177,7 +190,14 @@ sealed abstract class TreeList[+A] {
     else this
   }
 
+  /**
+   * same as filter(!fn(_))
+   * O(N)
+   */
   final def filterNot(fn: A => Boolean): TreeList[A] = {
+    // we reimplement this to avoid creating an extra
+    // closure since scala can't optimize function
+    // composition well
     val as = toIterator
     var resList = List.empty[A]
     var changed = false
@@ -193,6 +213,7 @@ sealed abstract class TreeList[+A] {
 
   /**
    * Standard flatMap on a List type.
+   * O(result.size + this.size)
    */
   final def flatMap[B](fn: A => TreeList[B]): TreeList[B] = {
     @tailrec
@@ -383,9 +404,8 @@ object TreeList extends TreeListInstances0 {
       }
 
     final class TreeListIterator[A](from: TreeList[A]) extends Iterator[A] {
-      private var nexts: List[Tree[Nat, A]] = from match {
-        case Trees(treeList) => treeList
-      }
+      private var nexts: List[Tree[Nat, A]] =
+        toListOfTrees(from)
 
       def hasNext: Boolean = nexts.nonEmpty
       def next(): A =
@@ -442,6 +462,8 @@ object TreeList extends TreeListInstances0 {
     def prepend[A1 >: A](a1: A1): TreeList[A1] =
       treeList match {
         case h1 :: h2 :: rest =>
+          // we introduce this method to be able to name the types on h1 and h2
+          // since we need to work with them in a few places
           def go[N1 <: Nat, N2 <: Nat, A2 <: A](t1: Tree[N1, A2], t2: Tree[N2, A2]): TreeList[A1] =
             NatEq.maybeEq[N1, N2](t1.depth, t2.depth) match {
               case Some(eqv) =>
@@ -533,14 +555,14 @@ object TreeList extends TreeListInstances0 {
             if (h.size <= n) loop(n - h.size, tail)
             else {
               h match {
-                case Root(_) =>
-                  // $COVERAGE-OFF$
-                  sys.error(s"unreachable, $h has size == 1 which is <= n ($n)")
-                  // $COVERAGE-ON$
                 case Balanced(_, l, r) =>
                   if (n > l.size + 1L) loop(n - l.size - 1L, r :: tail)
                   else if (n > 1L) loop(n - 1L, l :: r :: tail)
                   else Trees(l :: r :: tail)
+                case Root(_) =>
+                  // $COVERAGE-OFF$
+                  sys.error(s"unreachable, $h has size == 1 which is <= n ($n)")
+                  // $COVERAGE-ON$
               }
             }
         }
@@ -647,7 +669,7 @@ object TreeList extends TreeListInstances0 {
     loop(list, empty)
   }
 
-  private def toListOfTrees[A](ts: TreeList[A]): List[Tree[Nat, A]] =
+  @inline private def toListOfTrees[A](ts: TreeList[A]): List[Tree[Nat, A]] =
     ts match {
       case Trees(tl) => tl
     }
