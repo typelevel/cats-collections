@@ -198,9 +198,8 @@ lazy val compilerFlags = Seq(
           "-language:implicitConversions",     // Allow definition of implicit functions called views
         )
       case _ =>
-        // TODO uncomment after 0.7.0 release
         Seq(
-          //"-deprecation",                      // Emit warning and location for usages of deprecated APIs.
+          "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
           "-encoding", "utf-8",                // Specify character encoding used by source files.
           "-explaintypes",                     // Explain type errors in more detail.
           "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
@@ -209,7 +208,7 @@ lazy val compilerFlags = Seq(
           "-language:implicitConversions",     // Allow definition of implicit functions called views
           "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
           "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-          //"-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
+          "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
           "-Xfuture",                          // Turn on future language features.
           "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
           "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
@@ -226,7 +225,6 @@ lazy val compilerFlags = Seq(
           "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
           "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
           "-Xlint:type-parameter-shadow",      // A local type parameter shadows a type already in scope.
-          // "-Yno-imports",                      // No predef or default imports
           "-Ywarn-dead-code",                  // Warn when dead code is identified.
           "-Ywarn-extra-implicit",             // Warn when more than one implicit parameter section is defined.
           "-Ywarn-numeric-widen",              // Warn when numerics are widened.
@@ -241,20 +239,11 @@ lazy val compilerFlags = Seq(
         )
     }
   ),
-  scalacOptions in (Test, compile) --= (
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, n)) if n <= 11 =>
-        Seq("-Yno-imports")
-      case _ =>
-        Seq(
-          "-Ywarn-unused:privates",
-          "-Ywarn-unused:locals",
-          "-Ywarn-unused:imports",
-          "-Yno-imports"
-        )
-    }
+  scalacOptions in (Test, compile) --= Seq(
+    "-deprecation", // 2.13.0 collections
+    "-Xfatal-warnings"
   ),
-  scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports", "-Yno-imports"),
-  scalacOptions in (Compile, doc)     --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports", "-Yno-imports")
+  scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
+  scalacOptions in (Compile, doc)     --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports")
 )
 
