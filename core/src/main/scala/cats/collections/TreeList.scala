@@ -142,6 +142,7 @@ sealed abstract class TreeList[+A] {
   override def toString: String = {
     val strb = new java.lang.StringBuilder
     strb.append("TreeList(")
+    @tailrec
     def loop(first: Boolean, l: TreeList[A]): Unit =
       l.uncons match {
         case None => ()
@@ -677,19 +678,17 @@ object TreeList extends TreeListInstances0 {
   implicit def catsCollectionTreeListOrder[A: Order]: Order[TreeList[A]] =
     new Order[TreeList[A]] {
       val ordA: Order[A] = Order[A]
+      @tailrec
       def compare(l: TreeList[A], r: TreeList[A]): Int = {
-        @tailrec
-        def loop(l: TreeList[A], r: TreeList[A]): Int =
-          (l.uncons, r.uncons) match {
-            case (None, None) => 0
-            case (Some(_), None) => 1
-            case (None, Some(_)) => -1
-            case (Some((l0, l1)), Some((r0, r1))) =>
-              val c0 = ordA.compare(l0, r0)
-              if (c0 == 0) loop(l1, r1)
-              else c0
-          }
-        loop(l, r)
+        (l.uncons, r.uncons) match {
+          case (None, None) => 0
+          case (Some(_), None) => 1
+          case (None, Some(_)) => -1
+          case (Some((l0, l1)), Some((r0, r1))) =>
+            val c0 = ordA.compare(l0, r0)
+            if (c0 == 0) compare(l1, r1)
+            else c0
+        }
       }
     }
 
