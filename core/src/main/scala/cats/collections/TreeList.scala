@@ -23,6 +23,15 @@ sealed abstract class TreeList[+A] {
    * This is like headOption and tailOption in one call. O(1)
    */
   def uncons: Option[(A, TreeList[A])]
+
+  /**
+   * The first item if nonempty
+   */
+  def headOption: Option[A]
+  /**
+   * All but the first item if nonempty
+   */
+  def tailOption: Option[TreeList[A]]
   /**
    * put an item on the front. O(1)
    */
@@ -32,6 +41,11 @@ sealed abstract class TreeList[+A] {
    * if the item is < 0 or >= size, return None
    */
   def get(idx: Long): Option[A]
+  /**
+   * lookup the given index in the list. O(log N).
+   * if the item is < 0 or >= size, else throw
+   */
+  def getUnsafe(idx: Long): A
   /**
    * get the last element, if it is not empty. O(log N)
    * a bit more efficient than get(size - 1)
@@ -333,6 +347,7 @@ object TreeList extends TreeListInstances0 {
       def depth: N
       def size: Long // this is 2^(depth + 1) - 1
       def get(idx: Long): Option[A]
+      def getUnsafe(idx: Long): A
       def map[B](fn: A => B): Tree[N, B]
       def foldRight[B](fin: B)(fn: (A, B) => B): B
       def foldMap[B: Semigroup](fn: A => B): B
@@ -342,7 +357,10 @@ object TreeList extends TreeListInstances0 {
       def depth: Nat.Zero.type = Nat.Zero
       def size: Long = 1L
       def get(idx: Long): Option[A] =
-        if(idx == 0L) Some(value) else None
+        if (idx == 0L) Some(value) else None
+      def getUnsafe(idx: Long): A =
+        if (idx == 0L) value
+        else throw new NoSuchElementException("invalid index")
 
       def map[B](fn: A => B): Tree[Nat.Zero.type, B] = Root(fn(value))
       def foldRight[B](fin: B)(fn: (A, B) => B): B = fn(value, fin)
@@ -363,6 +381,11 @@ object TreeList extends TreeListInstances0 {
         if (idx == 0L) Some(value)
         else if (idx <= left.size) left.get(idx - 1L)
         else right.get(idx - (left.size + 1L))
+
+      def getUnsafe(idx: Long): A =
+        if (idx == 0L) value
+        else if (idx <= left.size) left.getUnsafe(idx - 1L)
+        else right.getUnsafe(idx - (left.size + 1L))
 
       def map[B](fn: A => B): Tree[Nat.Succ[N], B] =
         Balanced[N, B](fn(value), left.map(fn), right.map(fn))
@@ -476,33 +499,67 @@ object TreeList extends TreeListInstances0 {
           go(h1, h2)
         case lessThan2 => Trees(Root(a1) :: lessThan2)
       }
+
+    @inline private[this] def tailTreeList(head: Tree[Nat, A]): List[Tree[Nat, A]] =
+      // benchmarks show this to be faster, ugly, but faster
+      if (head.isInstanceOf[Root[_]]) {
+        treeList.tail
+      }
+      else {
+        val balanced = head.asInstanceOf[Balanced[Nat, A]]
+        balanced.left :: balanced.right :: treeList.tail
+      }
+
+
     def uncons: Option[(A, TreeList[A])] =
-      treeList match {
-        case Nil => None
-        case Root(a) :: rest => Some((a, Trees(rest)))
-        case Balanced(a, l, r) :: rest => Some((a, Trees(l :: r :: rest)))
+      if (treeList.nonEmpty) {
+        val h = treeList.head
+        Some((h.value, Trees(tailTreeList(h))))
+      }
+      else None
+
+    def headOption: Option[A] =
+      if (treeList.isEmpty) None
+      else Some(treeList.head.value)
+
+    def tailOption: Option[TreeList[A]] =
+      if (treeList.isEmpty) None
+      else {
+        val tl1 = tailTreeList(treeList.head)
+        Some(Trees(tl1))
       }
 
     def get(idx: Long): Option[A] = {
       @tailrec
       def loop(idx: Long, treeList: List[Tree[Nat, A]]): Option[A] =
-        if (idx < 0L) None
-        else
-          treeList match {
-            case Nil => None
-            case h :: tail =>
-              if (h.size <= idx) loop(idx - h.size, tail)
-              else h.get(idx)
-          }
+        if (treeList.nonEmpty) {
+          val h = treeList.head
+          if (h.size <= idx) loop(idx - h.size, treeList.tail)
+          else h.get(idx)
+        }
+        else None
 
       loop(idx, treeList)
+    }
+
+    def getUnsafe(idx0: Long): A = {
+      @tailrec
+      def loop(idx: Long, treeList: List[Tree[Nat, A]]): A = {
+        if (treeList.nonEmpty) {
+          val h = treeList.head
+          if (h.size <= idx) loop(idx - h.size, treeList.tail)
+          else h.getUnsafe(idx)
+        }
+        else throw new NoSuchElementException(s"invalid index: $idx0")
+      }
+
+      loop(idx0, treeList)
     }
 
     def lastOption: Option[A] = {
       @tailrec
       def loop(treeList: List[Tree[Nat, A]]): Option[A] =
         treeList match {
-          case Nil => None
           case head :: tail =>
             if (tail.isEmpty)
               head match {
@@ -510,6 +567,7 @@ object TreeList extends TreeListInstances0 {
                 case Balanced(_, _, r) => loop(r :: Nil)
               }
             else loop(tail)
+          case Nil => None
         }
       loop(treeList)
     }
@@ -517,21 +575,21 @@ object TreeList extends TreeListInstances0 {
     def size: Long = {
       @tailrec
       def loop(treeList: List[Tree[Nat, A]], acc: Long): Long =
-        treeList match {
-          case Nil => acc
-          case h :: tail => loop(tail, acc + h.size)
-        }
+        if (treeList.nonEmpty) loop(treeList.tail, acc + treeList.head.size)
+        else acc
       loop(treeList, 0L)
     }
 
     def foldLeft[B](init: B)(fn: (B, A) => B): B = {
       @tailrec
       def loop(init: B, rest: List[Tree[Nat, A]]): B =
-        rest match {
-          case Nil => init
-          case Root(a) :: tail => loop(fn(init, a), tail)
-          case Balanced(a, l, r) :: rest => loop(fn(init, a), l :: r :: rest)
+        if (rest.nonEmpty) {
+          rest.head match {
+            case Root(a) => loop(fn(init, a), rest.tail)
+            case Balanced(a, l, r) => loop(fn(init, a), l :: r :: rest.tail)
+          }
         }
+        else init
 
       loop(init, treeList)
     }
@@ -587,18 +645,17 @@ object TreeList extends TreeListInstances0 {
     def updatedOrThis[A1 >: A](idx: Long, a: A1): TreeList[A1] = {
       @tailrec
       def loop(idx: Long, treeList: List[Tree[Nat, A1]], front: List[Tree[Nat, A1]]): TreeList[A1] =
-        if (idx < 0L) this
-        else
-          treeList match {
-            case Nil => this
-            case h :: tail =>
-              if (h.size <= idx) loop(idx - h.size, tail, h :: front)
-              else {
-                val h1 = h.updated(idx, a)
-                // now rebuild the front of the list
-                Trees(front reverse_::: (h1 :: tail))
-              }
+        if (treeList.nonEmpty && (idx >= 0)) {
+          val h = treeList.head
+          val tail = treeList.tail
+          if (h.size <= idx) loop(idx - h.size, tail, h :: front)
+          else {
+            val h1 = h.updated(idx, a)
+            // now rebuild the front of the list
+            Trees(front reverse_::: (h1 :: tail))
           }
+        }
+        else this
 
       loop(idx, treeList, Nil)
     }
@@ -611,13 +668,13 @@ object TreeList extends TreeListInstances0 {
       @tailrec
       def loop(treeList: List[Tree[Nat, A]]): Unit =
         treeList match {
-          case Nil => ()
           case Root(a) :: tail =>
             builder += a
             loop(tail)
           case Balanced(a, l, r) :: tail =>
             builder += a
             loop(l :: r :: tail)
+          case Nil => ()
         }
       loop(treeList)
       builder.result()
@@ -627,11 +684,11 @@ object TreeList extends TreeListInstances0 {
       @tailrec
       def loop(treeList: List[Tree[Nat, A]], acc: List[A]): List[A] =
         treeList match {
-          case Nil => acc
           case Root(a) :: tail =>
             loop(tail, a :: acc)
           case Balanced(a, l, r) :: tail =>
             loop(l :: r :: tail, a :: acc)
+          case Nil => acc
         }
       loop(treeList, Nil)
     }
