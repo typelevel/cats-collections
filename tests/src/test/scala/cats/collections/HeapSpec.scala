@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
  * Created by nperez on 3/28/16.
  */
 class HeapSpec extends CatsSuite {
-  implicit override val generatorDrivenConfig =
+  implicit val propConfig =
     PropertyCheckConfig(minSuccessful = 200)
 
   test("sorted")(
@@ -89,7 +89,7 @@ class HeapSpec extends CatsSuite {
 
   test("height is O(log N) for all heaps") {
     forAll { (heap: Heap[Int]) =>
-      val bound = 1.0 * (math.log(heap.size.toDouble) / math.log(2.0) + 1)
+      val bound = math.log(heap.size.toDouble) / math.log(2.0) + 1.0
       assert(heap.isEmpty || heap.height.toDouble <= bound)
     }
   }
