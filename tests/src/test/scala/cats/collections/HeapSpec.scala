@@ -9,6 +9,9 @@ import org.scalacheck.{Arbitrary, Gen}
  * Created by nperez on 3/28/16.
  */
 class HeapSpec extends CatsSuite {
+  implicit override val generatorDrivenConfig =
+    PropertyCheckConfig(minSuccessful = 200)
+
   test("sorted")(
     forAll { (set: Set[Int]) =>
 
@@ -38,13 +41,23 @@ class HeapSpec extends CatsSuite {
       }
     val addOnly = listA.map(_.foldLeft(Heap.empty[A])(_.add(_)))
     val heapify = listA.map(Heap.fromIterable(_))
+    // This one is recursive and with small probability can get quite deep
     val addMoreAndRemove: Gen[Heap[A]] =
       for {
         extraSize <- Gen.choose(1, size + 1)
         withExtra <- Gen.lzy(heapGen[A](size + extraSize, agen))
       } yield (0 until extraSize).foldLeft(withExtra) { (h, _) => h.remove }
+    // we can also make smaller one and add to it:
+    val smallerAdd =
+      if (size > 0) {
+        for {
+          a <- agen
+          heap <- heapGen(size - 1, agen)
+        } yield heap + a
+      }
+      else Gen.const(Heap.empty[A])
 
-    Gen.frequency((1, addOnly), (1, startWith1), (2, heapify), (1, addMoreAndRemove))
+    Gen.frequency((2, addOnly), (3, startWith1), (5, heapify), (1, addMoreAndRemove), (1, smallerAdd))
   }
 
   implicit def arbHeap[A: Arbitrary: Order]: Arbitrary[Heap[A]] =
@@ -89,8 +102,22 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("Heap.getMin is the real minimum") {
+  test("getMin after removing one is >= before") {
     forAll { (heap: Heap[Int]) =>
+      val min0 = heap.getMin
+      val min1 = heap.remove.getMin
+
+      (min0, min1) match {
+        case (None, next) => assert(next.isEmpty)
+        case (_, None) => assert(heap.size == 1)
+        case (Some(m0), Some(m1)) =>
+          assert(m0 <= m1)
+      }
+    }
+  }
+
+  test("Heap.getMin is the real minimum") {
+    def heapLaw(heap: Heap[Int]) =
       heap.getMin match {
         case None => assert(heap.isEmpty)
         case Some(min) =>
@@ -99,6 +126,13 @@ class HeapSpec extends CatsSuite {
             min <= heap1.toList.min
           })
       }
+
+    forAll { (heap: Heap[Int]) =>
+      heapLaw(heap)
+      // even after removing this is true
+      heapLaw(heap.remove)
+      heapLaw(heap.remove.remove)
+      heapLaw(heap.remove.remove.remove)
     }
 
     assert(Heap.empty[Int].getMin.isEmpty)
