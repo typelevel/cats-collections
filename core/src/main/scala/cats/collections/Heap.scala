@@ -83,9 +83,15 @@ sealed abstract class Heap[A] {
   /**
    * Returns a sorted list of the elements within the heap.
    */
-  def toList(implicit order: Order[A]): List[A] = this match {
-    case Leaf() => Nil
-    case Branch(m, _, _, _, _) => m :: remove.toList
+  def toList(implicit order: Order[A]): List[A] = {
+    @annotation.tailrec
+    def loop(h: Heap[A], acc: List[A]): List[A] =
+      h match {
+        case Leaf() => acc.reverse
+        case Branch(m, _, _, _, _) => loop(h.remove, m :: acc)
+      }
+
+    loop(this, Nil)
   }
 
   /**
