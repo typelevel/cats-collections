@@ -37,7 +37,7 @@ class HeapSpec extends CatsSuite {
         case h :: tail => tail.foldLeft(Heap(h))(_.add(_))
       }
     val addOnly = listA.map(_.foldLeft(Heap.empty[A])(_.add(_)))
-    val heapify = listA.map(Heap.fromList(_))
+    val heapify = listA.map(Heap.fromIterable(_))
     val addMoreAndRemove: Gen[Heap[A]] =
       for {
         extraSize <- Gen.choose(1, size + 1)
@@ -83,7 +83,7 @@ class HeapSpec extends CatsSuite {
 
   test("heapify is the same as adding") {
     forAll { (init: List[Int]) =>
-      val heap1 = Heap.fromList(init)
+      val heap1 = Heap.fromIterable(init)
       val heap2 = init.foldLeft(Heap.empty[Int])(_.add(_))
       assert(heap1.toList == heap2.toList)
     }
@@ -102,5 +102,11 @@ class HeapSpec extends CatsSuite {
     }
 
     assert(Heap.empty[Int].getMin.isEmpty)
+  }
+
+  test("Heap.foldLeft is consistent with toList.foldLeft") {
+    forAll { (heap: Heap[Int], init: Long, fn: (Long, Int) => Long) =>
+      assert(heap.foldLeft(init)(fn) == heap.toList.foldLeft(init)(fn))
+    }
   }
 }

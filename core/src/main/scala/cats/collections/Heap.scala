@@ -19,18 +19,13 @@ sealed abstract class Heap[A] {
   import Heap._
 
   /**
-   * Internal representation of the min value to avoid deconstruction of `min: Option[A]` since min is heavily used.
-   */
-  private[collections] val min: A
-
-  /**
    * Returns min value on the heap.
    */
   def getMin: Option[A]
 
-  private[collections] def left: Heap[A]
-
-  private[collections] def right: Heap[A]
+  // this is size < 2^height - 1
+  // this is always false for empty, and sometimes false for non-empty
+  private[collections] def unbalanced: Boolean
 
   /**
    * Returns the size of the heap.
@@ -47,22 +42,23 @@ sealed abstract class Heap[A] {
    */
   def isEmpty: Boolean
 
-
   /**
    * Insert a new element into the heap.
    * Order O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Heap[A] =
-    if (isEmpty)
-      Heap(x, Leaf(), Leaf())
-    else if (left.size < (1 << left.height) - 1)
-      bubbleUp(min, left.add(x), right)
-    else if (right.size < (1 << right.height) - 1)
-      bubbleUp(min, left, right.add(x))
-    else if (right.height < left.height)
-      bubbleUp(min, left, right.add(x))
-    else
-      bubbleUp(min, left.add(x), right)
+    this match {
+      case Leaf() => Heap(x)
+      case Branch(min, left, right, _, _) =>
+        if (left.unbalanced)
+          bubbleUp(min, left.add(x), right)
+        else if (right.unbalanced)
+          bubbleUp(min, left, right.add(x))
+        else if (right.height < left.height)
+          bubbleUp(min, left, right.add(x))
+        else
+          bubbleUp(min, left.add(x), right)
+    }
 
 
   /**
@@ -94,6 +90,22 @@ sealed abstract class Heap[A] {
     loop(this, Nil)
   }
 
+
+  /**
+   * do a foldLeft in the same order as toList.
+   * requires an Order[A], which prevents us from making a Foldable[Heap] instance.
+   */
+  def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
+    @annotation.tailrec
+    def loop(h: Heap[A], init: B): B =
+      h match {
+        case Leaf() => init
+        case Branch(a, _, _, _, _) => loop(h.remove, fn(init, a))
+      }
+
+    loop(this, init)
+  }
+
   /**
    * Alias for add
    */
@@ -112,21 +124,23 @@ object Heap {
 
   def apply[A](x: A): Heap[A] = Branch(x, empty, empty, 1, 1)
 
+  // This should be private since it allows you to create Heaps that violate the invariant
+  // that min has a minimum value
   def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
     Branch(x, l, r, l.size + r.size + 1, scala.math.max(l.height, r.height) + 1)
 
   /**
    * alias for heapify
    */
-  def fromList[A](as: List[A])(implicit order: Order[A]): Heap[A] =
+  def fromIterable[A](as: Iterable[A])(implicit order: Order[A]): Heap[A] =
     heapify(as)
 
   /**
-   * Build a heap using a list.
+   * Build a heap using an Iterable
    * Order O(n)
    */
-  def heapify[A](a: List[A])(implicit order: Order[A]): Heap[A] = {
-    val ary = (a: List[Any]).toArray
+  def heapify[A](a: Iterable[A])(implicit order: Order[A]): Heap[A] = {
+    val ary = (a: Iterable[Any]).toArray
     def loop(i: Int): Heap[A] =
       if (i < ary.length) {
         // we only insert A values, but we don't have a ClassTag
@@ -146,9 +160,11 @@ object Heap {
     override def isEmpty: Boolean = false
 
     override def getMin: Option[A] = Some(min)
+
+    override def unbalanced: Boolean = size < (1 << height) - 1
   }
 
-  private[collections] case object Leaf extends Heap[Option[Nothing]] {
+  private[collections] case object Leaf extends Heap[Nothing] {
     def apply[A](): Heap[A] = this.asInstanceOf[Heap[A]]
 
     def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
@@ -157,21 +173,18 @@ object Heap {
 
     override def height: Int = 0
 
-    override def left: Heap[Option[Nothing]] = Leaf
-
-    override def right: Heap[Option[Nothing]] = Leaf
+    // 0 < 2^0 - 1, or 0 < 0, which is false
+    override def unbalanced: Boolean = false
 
     override def isEmpty: Boolean = true
 
-    override def getMin: Option[Option[Nothing]] = None
-
-    override private[collections] val min: Option[Nothing] = None
+    override def getMin: Option[Nothing] = None
   }
 
   private[collections] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, lt, rt, _, _), _) if order.gt(x , y) =>
+    case (Branch(y, lt, rt, _, _), _) if order.gt(x, y) =>
       Heap(y, Heap(x, lt, rt), r)
-    case (_, Branch(z, lt, rt, _, _)) if order.gt(x , z) =>
+    case (_, Branch(z, lt, rt, _, _)) if order.gt(x, z) =>
       Heap(z, l, Heap(x, lt, rt))
     case (_, _) => Heap(x, l, r)
   }
@@ -185,28 +198,44 @@ object Heap {
   }
 
   private[collections] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
-    if (h.isEmpty) {
-      Leaf()
-    }
-    else {
-      bubbleDown(h.min, h.left, h.right)
+    h match {
+      case Branch(min, left, right, _, _) =>
+        bubbleDown(min, left, right)
+      case Leaf() => Leaf()
     }
 
+  /*
+   * This implementation uses what is effectively flow typing which is
+   * hard to efficiently encode in scala, therefore, we instead include
+   * proofs (informal ones) as to why the casts inside here are safe
+   */
   private[collections] def mergeChildren[A](l: Heap[A], r: Heap[A]): Heap[A] =
     if (l.isEmpty && r.isEmpty) {
       Leaf()
     }
-    else if (l.size < (1 << l.height) - 1) {
-      floatLeft(l.min, mergeChildren(l.left, l.right), r)
+    else if (l.unbalanced) {
+      // empty Heaps are never unbalanced, so we can cast l to a branch:
+      val bl: Branch[A] = l.asInstanceOf[Branch[A]]
+      floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
     }
-    else if (r.size < (1 << r.height) - 1) {
-      floatRight(r.min, l, mergeChildren(r.left, r.right))
+    else if (r.unbalanced) {
+      // empty Heaps are never unbalanced, so we can cast r to a branch:
+      val br: Branch[A] = r.asInstanceOf[Branch[A]]
+      floatRight(br.min, l, mergeChildren(br.left, br.right))
     }
     else if (r.height < l.height) {
-      floatLeft(l.min, mergeChildren(l.left, l.right), r)
+      // l.height >= 1, because r.height >= 0, so, l must be a branch
+      val bl: Branch[A] = l.asInstanceOf[Branch[A]]
+      floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
     }
     else {
-      floatRight(r.min, l, mergeChildren(r.left, r.right))
+      // we know r.height >= l.height,
+      // we also know both r and l are not empty.
+      // since l and r are not both empty, if r is empty,
+      // then l is not, but then r.height == 0 >= (some number > 0),
+      // which is false, so this implies r must be a branch
+      val br: Branch[A] = r.asInstanceOf[Branch[A]]
+      floatRight(br.min, l, mergeChildren(br.left, br.right))
     }
 
   private[collections] def floatLeft[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = l match {
