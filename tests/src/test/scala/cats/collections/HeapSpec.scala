@@ -76,7 +76,7 @@ class HeapSpec extends CatsSuite {
 
   test("height is O(log N) for all heaps") {
     forAll { (heap: Heap[Int]) =>
-      val bound = 2.0 * (math.log(heap.size.toDouble) / math.log(2.0) + 1)
+      val bound = 1.0 * (math.log(heap.size.toDouble) / math.log(2.0) + 1)
       assert(heap.isEmpty || heap.height.toDouble <= bound)
     }
   }
