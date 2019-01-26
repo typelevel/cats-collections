@@ -64,21 +64,12 @@ sealed abstract class Heap[A] {
     else
       bubbleUp(min, left.add(x), right)
 
-  /**
-   * Build a heap using a list.
-   * Order O(n)
-   */
-  def heapify(a: List[A])(implicit order: Order[A]): Heap[A] = {
-    def loop(i: Int, xs: scala.List[A]): Heap[A] =
-      if (i < xs.length) {
-        bubbleDown(xs(i), loop(2 * i + 1, xs), loop(2 * i + 2, xs))
-      }
-      else {
-        Leaf()
-      }
 
-    loop(0, a)
-  }
+  /**
+   * Avoid this, it should really have been on the companion
+   */
+  def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
+    Heap.heapify(a)
 
   /**
    * Remove the min element from the heap (the root).
@@ -117,6 +108,33 @@ object Heap {
 
   def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
     Branch(x, l, r, l.size + r.size + 1, scala.math.max(l.height, r.height) + 1)
+
+  /**
+   * alias for heapify
+   */
+  def fromList[A](as: List[A])(implicit order: Order[A]): Heap[A] =
+    heapify(as)
+
+  /**
+   * Build a heap using a list.
+   * Order O(n)
+   */
+  def heapify[A](a: List[A])(implicit order: Order[A]): Heap[A] = {
+    val ary = (a: List[Any]).toArray
+    def loop(i: Int): Heap[A] =
+      if (i < ary.length) {
+        // we only insert A values, but we don't have a ClassTag
+        // so we can't create an array of type A.
+        // But since A was already boxed, and needs to be boxed in Heap
+        // this shouldn't cause a performance problem
+        bubbleDown(ary(i).asInstanceOf[A], loop((i << 1) + 1), loop((i + 1) << 1))
+      }
+      else {
+        Leaf()
+      }
+
+    loop(0)
+  }
 
   private[collections] case class Branch[A](min: A, left: Heap[A], right: Heap[A], size: Int, height: Int) extends Heap[A] {
     override def isEmpty: Boolean = false
