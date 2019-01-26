@@ -6,8 +6,6 @@ import cats.laws.discipline._
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
-import cats.implicits._
-
 import cats.collections.arbitrary.ArbitraryTreeList._
 
 class TreeListSpec extends CatsSuite {
@@ -104,10 +102,16 @@ class TreeListSpec extends CatsSuite {
 
   test("pattern matching works")(forAll { (xs: TreeList[Int]) =>
     xs match {
-      case TreeList.Empty => assert(xs.isEmpty)
+      case TreeList.Empty =>
+        assert(xs.uncons == None)
+        assert(xs.isEmpty)
+        assert(xs.headOption == None)
+        assert(xs.tailOption == None)
       case TreeList.NonEmpty(head, tail) =>
         assert(xs.nonEmpty)
         assert(Some((head, tail)) == xs.uncons)
+        assert(Some(head) == xs.headOption)
+        assert(Some(tail) == xs.tailOption)
     }
   })
 
@@ -170,10 +174,17 @@ class TreeListSpec extends CatsSuite {
   test("TreeList.get works")(forAll { (xs: TreeList[Int]) =>
     assert(xs.get(-1L) == None)
     assert(xs.get(xs.size) == None)
+    assertThrows[NoSuchElementException] {
+      xs.getUnsafe(-1L)
+    }
+    assertThrows[NoSuchElementException] {
+      xs.getUnsafe(xs.size)
+    }
 
     val list = xs.toList
     (0L until xs.size).foreach { idx =>
       assert(xs.get(idx) == Some(list(idx.toInt)))
+      assert(xs.getUnsafe(idx) == list(idx.toInt))
     }
   })
 
