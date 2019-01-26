@@ -1,7 +1,7 @@
 package cats.collections
 package tests
 
-import cats.Order
+import cats.{Order, Show}
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -107,6 +107,12 @@ class HeapSpec extends CatsSuite {
   test("Heap.foldLeft is consistent with toList.foldLeft") {
     forAll { (heap: Heap[Int], init: Long, fn: (Long, Int) => Long) =>
       assert(heap.foldLeft(init)(fn) == heap.toList.foldLeft(init)(fn))
+    }
+  }
+
+  test("Show[Heap[Int]] works like toList.mkString") {
+    forAll { (heap: Heap[Int]) =>
+      assert(Show[Heap[Int]].show(heap) == heap.toList.mkString("Heap(", ", ", ")"))
     }
   }
 }

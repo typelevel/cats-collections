@@ -249,9 +249,16 @@ object Heap {
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {
-    override def show(f: Heap[A]): String = f.toList match {
-      case Nil => "[]"
-      case h :: t => t.foldLeft("[" + s.show(h))((acc, r) => acc + ", " + s.show(r)) + "]"
+    override def show(f: Heap[A]): String = {
+      val sb = new java.lang.StringBuilder
+      sb.append("Heap(")
+      f.foldLeft(false) { (notFirst, a) =>
+        if (notFirst) sb.append(", ")
+        sb.append(s.show(a))
+        true
+      }
+      sb.append(")")
+      sb.toString
     }
   }
 }
