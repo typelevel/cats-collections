@@ -43,27 +43,36 @@ sealed abstract class Heap[A] {
   def isEmpty: Boolean
 
   /**
+   * Return true if this is not empty
+   */
+  def nonEmpty: Boolean = !isEmpty
+
+  /**
    * Insert a new element into the heap.
    * Order O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Heap[A] =
-    this match {
-      case Leaf() => Heap(x)
-      case Branch(min, left, right, _, _) =>
-        if (left.unbalanced)
-          bubbleUp(min, left.add(x), right)
-        else if (right.unbalanced)
-          bubbleUp(min, left, right.add(x))
-        else if (right.height < left.height)
-          bubbleUp(min, left, right.add(x))
-        else
-          bubbleUp(min, left.add(x), right)
+    if (isEmpty) Heap(x)
+    else {
+      // this is safe since we are non-empty
+      val branch = this.asInstanceOf[Branch[A]]
+      import branch.{min, left, right}
+      if (left.unbalanced)
+        bubbleUp(min, left.add(x), right)
+      else if (right.unbalanced)
+        bubbleUp(min, left, right.add(x))
+      else if (right.height < left.height)
+        bubbleUp(min, left, right.add(x))
+      else
+        bubbleUp(min, left.add(x), right)
     }
 
 
   /**
-   * Avoid this, it should really have been on the companion
+   * Avoid this, it should really have been on the companion because
+   * this totally ignores `this`.
    */
+  @deprecated("this method ignores `this` and is very easy to misuse. Use Heap.fromIterable", "0.8.0")
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
     Heap.heapify(a)
 
@@ -72,8 +81,8 @@ sealed abstract class Heap[A] {
    * Order O(log n)
    */
   def remove(implicit order: Order[A]): Heap[A] = this match {
-    case Leaf() =>  Leaf()
-    case Branch(_, l, r, _, _) => bubbleRootDown(mergeChildren(l, r))
+    case Branch(_, l, r) => bubbleRootDown(mergeChildren(l, r))
+    case Leaf()          => Leaf()
   }
 
   /**
@@ -83,13 +92,12 @@ sealed abstract class Heap[A] {
     @annotation.tailrec
     def loop(h: Heap[A], acc: List[A]): List[A] =
       h match {
-        case Leaf() => acc.reverse
-        case Branch(m, _, _, _, _) => loop(h.remove, m :: acc)
+        case Branch(m, _, _) => loop(h.remove, m :: acc)
+        case Leaf()          => acc.reverse
       }
 
     loop(this, Nil)
   }
-
 
   /**
    * do a foldLeft in the same order as toList.
@@ -99,8 +107,8 @@ sealed abstract class Heap[A] {
     @annotation.tailrec
     def loop(h: Heap[A], init: B): B =
       h match {
-        case Leaf() => init
-        case Branch(a, _, _, _, _) => loop(h.remove, fn(init, a))
+        case Branch(a, _, _) => loop(h.remove, fn(init, a))
+        case Leaf()          => init
       }
 
     loop(this, init)
@@ -122,12 +130,12 @@ object Heap {
 
   def empty[A]: Heap[A] = Leaf()
 
-  def apply[A](x: A): Heap[A] = Branch(x, empty, empty, 1, 1)
+  def apply[A](x: A): Heap[A] = Branch(x, empty, empty)
 
-  // This should be private since it allows you to create Heaps that violate the invariant
+  // This is private since it allows you to create Heaps that violate the invariant
   // that min has a minimum value
-  def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
-    Branch(x, l, r, l.size + r.size + 1, scala.math.max(l.height, r.height) + 1)
+  private def apply[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] =
+    Branch(x, l, r)
 
   /**
    * alias for heapify
@@ -156,7 +164,11 @@ object Heap {
     loop(0)
   }
 
-  private[collections] case class Branch[A](min: A, left: Heap[A], right: Heap[A], size: Int, height: Int) extends Heap[A] {
+  private[collections] case class Branch[A](min: A, left: Heap[A], right: Heap[A]) extends Heap[A] {
+    override val size = left.size + right.size + 1
+
+    override val height = scala.math.max(left.height, right.height) + 1
+
     override def isEmpty: Boolean = false
 
     override def getMin: Option[A] = Some(min)
@@ -182,26 +194,21 @@ object Heap {
   }
 
   private[collections] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, lt, rt, _, _), _) if order.gt(x, y) =>
-      Heap(y, Heap(x, lt, rt), r)
-    case (_, Branch(z, lt, rt, _, _)) if order.gt(x, z) =>
-      Heap(z, l, Heap(x, lt, rt))
-    case (_, _) => Heap(x, l, r)
+    case (Branch(y, lt, rt), _) if order.gt(x, y) => Heap(y, Heap(x, lt, rt), r)
+    case (_, Branch(z, lt, rt)) if order.gt(x, z) => Heap(z, l, Heap(x, lt, rt))
+    case (_, _)                                   => Heap(x, l, r)
   }
 
   private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, _, _, _, _), Branch(z, lt, rt, _, _))
-      if (order.lt(z , y) && order.gt(x , z))                 => Heap(z, l, bubbleDown(x, lt, rt))
-    case (Branch(y, lt, rt, _, _), _)
-      if order.gt(x , y)                                      => Heap(y, bubbleDown(x, lt, rt), r)
-    case (_, _)                                               => Heap(x, l, r)
+    case (Branch(y, _, _), Branch(z, lt, rt)) if (order.lt(z, y) && order.gt(x, z)) => Heap(z, l, bubbleDown(x, lt, rt))
+    case (Branch(y, lt, rt), _) if order.gt(x, y)                                   => Heap(y, bubbleDown(x, lt, rt), r)
+    case (_, _)                                                                     => Heap(x, l, r)
   }
 
   private[collections] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
     h match {
-      case Branch(min, left, right, _, _) =>
-        bubbleDown(min, left, right)
-      case Leaf() => Leaf()
+      case Branch(min, left, right) => bubbleDown(min, left, right)
+      case Leaf()                   => Leaf()
     }
 
   /*
@@ -239,13 +246,13 @@ object Heap {
     }
 
   private[collections] def floatLeft[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = l match {
-    case Branch(y, lt, rt, _, _) => Heap(y, Heap(x, lt, rt), r)
-    case _ => Heap(x, l, r)
+    case Branch(y, lt, rt) => Heap(y, Heap(x, lt, rt), r)
+    case _                 => Heap(x, l, r)
   }
 
   private[collections] def floatRight[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = r match {
-    case Branch(y, lt, rt, _, _) => Heap(y, l, Heap(x, lt, rt))
-    case _ => Heap(x, l, r)
+    case Branch(y, lt, rt) => Heap(y, l, Heap(x, lt, rt))
+    case _                 => Heap(x, l, r)
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {

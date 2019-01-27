@@ -10,7 +10,7 @@ import org.scalacheck.{Arbitrary, Gen}
  */
 class HeapSpec extends CatsSuite {
   implicit val propConfig =
-    PropertyCheckConfig(minSuccessful = 200)
+    PropertyCheckConfig(minSuccessful = 1000)
 
   test("sorted")(
     forAll { (set: Set[Int]) =>
@@ -62,7 +62,7 @@ class HeapSpec extends CatsSuite {
 
   implicit def arbHeap[A: Arbitrary: Order]: Arbitrary[Heap[A]] =
     Arbitrary {
-      Gen.choose(0, 10000).flatMap(heapGen[A](_, Arbitrary.arbitrary[A]))
+      Gen.sized(heapGen[A](_, Arbitrary.arbitrary[A]))
     }
 
   test("adding increases size") {
