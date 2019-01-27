@@ -26,7 +26,7 @@ class HeapSpec extends CatsSuite {
   test("heapify is sorted") {
     forAll { (set: Set[Int]) =>
       val setList = set.toList
-      val heap = Heap.empty[Int].heapify(setList)
+      val heap = Heap.heapify(setList)
 
       assert(heap.toList == setList.sorted)
     }
@@ -81,9 +81,11 @@ class HeapSpec extends CatsSuite {
     assert(Heap.empty[Int].remove == Heap.empty[Int])
   }
 
-  test("size is consistent with isEmpty") {
+  test("size is consistent with isEmpty/nonEmpty") {
     forAll { (heap: Heap[Int]) =>
       assert(heap.isEmpty == (heap.size == 0))
+      assert(heap.nonEmpty == (heap.size > 0))
+      assert(heap.isEmpty == (!heap.nonEmpty))
     }
   }
 
