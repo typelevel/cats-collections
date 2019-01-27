@@ -4,7 +4,9 @@
 
 package cats.collections
 
-import cats._
+import cats.{Order, UnorderedFoldable, Show}
+import cats.kernel.CommutativeMonoid
+import scala.annotation.tailrec
 
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
@@ -30,7 +32,7 @@ sealed abstract class Heap[A] {
   /**
    * Returns the size of the heap.
    */
-  def size: Int
+  def size: Long
 
   /**
    * Returns the height of the heap.
@@ -67,6 +69,23 @@ sealed abstract class Heap[A] {
         bubbleUp(min, left.add(x), right)
     }
 
+  /**
+   * Check to see if a predicate is ever true
+   */
+  def exists(fn: A => Boolean): Boolean =
+    this match {
+      case Branch(a, l, r) => fn(a) || l.exists(fn) || r.exists(fn)
+      case _ => false
+    }
+
+  /**
+   * Check to see if a predicate is always true
+   */
+  def forall(fn: A => Boolean): Boolean =
+    this match {
+      case Branch(a, l, r) => fn(a) && l.forall(fn) && r.forall(fn)
+      case _ => true
+    }
 
   /**
    * Avoid this, it should really have been on the companion because
@@ -86,10 +105,31 @@ sealed abstract class Heap[A] {
   }
 
   /**
+   * Aggregate with a commutative monoid, since the Heap is not totally
+   * ordered
+   */
+  final def unorderedFoldMap[B](fn: A => B)(implicit m: CommutativeMonoid[B]): B =
+    this match {
+      case Branch(min, left, right) =>
+        // This recursion is safe because the trees have depth ~ log(size)
+        m.combine(fn(min), m.combine(left.unorderedFoldMap(fn), right.unorderedFoldMap(fn)))
+      case _ => m.empty
+    }
+
+  /**
+   * Similar to unorderedFoldMap without a transformation
+   */
+  final def unorderedFold(implicit m: CommutativeMonoid[A]): A =
+    this match {
+      case Branch(min, left, right) => m.combine(min, m.combine(left.unorderedFold, right.unorderedFold))
+      case _ => m.empty
+    }
+
+  /**
    * Returns a sorted list of the elements within the heap.
    */
   def toList(implicit order: Order[A]): List[A] = {
-    @annotation.tailrec
+    @tailrec
     def loop(h: Heap[A], acc: List[A]): List[A] =
       h match {
         case Branch(m, _, _) => loop(h.remove, m :: acc)
@@ -102,9 +142,12 @@ sealed abstract class Heap[A] {
   /**
    * do a foldLeft in the same order as toList.
    * requires an Order[A], which prevents us from making a Foldable[Heap] instance.
+   *
+   * prefer unorderedFoldMap if you can express your operation as a commutative monoid
+   * since it is O(N) vs O(N log N) for this method
    */
   def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
-    @annotation.tailrec
+    @tailrec
     def loop(h: Heap[A], init: B): B =
       h match {
         case Branch(a, _, _) => loop(h.remove, fn(init, a))
@@ -165,7 +208,7 @@ object Heap {
   }
 
   private[collections] case class Branch[A](min: A, left: Heap[A], right: Heap[A]) extends Heap[A] {
-    override val size = left.size + right.size + 1
+    override val size = left.size + right.size + 1L
 
     override val height = scala.math.max(left.height, right.height) + 1
 
@@ -173,7 +216,7 @@ object Heap {
 
     override def getMin: Option[A] = Some(min)
 
-    override def unbalanced: Boolean = size < (1 << height) - 1
+    override def unbalanced: Boolean = size < (1L << height) - 1L
   }
 
   private[collections] case object Leaf extends Heap[Nothing] {
@@ -181,7 +224,7 @@ object Heap {
 
     def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
 
-    override def size: Int = 0
+    override def size: Long = 0L
 
     override def height: Int = 0
 
@@ -268,4 +311,38 @@ object Heap {
       sb.toString
     }
   }
+
+  implicit val catsCollectionHeapUnorderedFoldable: UnorderedFoldable[Heap] =
+    new UnorderedFoldable[Heap] {
+      def unorderedFoldMap[A, B: CommutativeMonoid](ha: Heap[A])(fn: A => B): B =
+        ha.unorderedFoldMap(fn)
+
+      override def unorderedFold[A: CommutativeMonoid](ha: Heap[A]): A =
+        ha.unorderedFold
+
+      override def isEmpty[A](h: Heap[A]) = h.isEmpty
+      override def nonEmpty[A](h: Heap[A]) = h.nonEmpty
+      override def exists[A](ha: Heap[A])(fn: A => Boolean) = ha.exists(fn)
+      override def forall[A](ha: Heap[A])(fn: A => Boolean) = ha.forall(fn)
+      override def size[A](h: Heap[A]) = h.size
+    }
+
+  private[collections] class HeapOrder[A](implicit ordA: Order[A]) extends Order[Heap[A]] {
+    @tailrec
+    final def compare(left: Heap[A], right: Heap[A]): Int =
+      (left.getMin, right.getMin) match {
+        case (None, None) => 0
+        case (None, Some(_)) => -1
+        case (Some(_), None) => 1
+        case (Some(l), Some(r)) =>
+          val c = ordA.compare(l, r)
+          if (c != 0) c
+          else compare(left.remove, right.remove)
+    }
+  }
+  /**
+   * This is the same order as you would get by doing `.toList` and ordering by that
+   */
+  implicit def catsCollectionHeapOrder[A: Order]: Order[Heap[A]] =
+    new HeapOrder[A]
 }

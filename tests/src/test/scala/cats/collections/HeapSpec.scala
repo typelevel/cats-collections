@@ -2,8 +2,10 @@ package cats.collections
 package tests
 
 import cats.{Order, Show}
+import cats.laws.discipline.UnorderedFoldableTests
+import cats.kernel.laws.discipline.OrderTests
 import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 /**
  * Created by nperez on 3/28/16.
@@ -11,26 +13,6 @@ import org.scalacheck.{Arbitrary, Gen}
 class HeapSpec extends CatsSuite {
   implicit val propConfig =
     PropertyCheckConfig(minSuccessful = 1000)
-
-  test("sorted")(
-    forAll { (set: Set[Int]) =>
-
-      val heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
-
-      val exp = set.toList
-
-      heap.toList should be(exp.sorted)
-
-    })
-
-  test("heapify is sorted") {
-    forAll { (set: Set[Int]) =>
-      val setList = set.toList
-      val heap = Heap.heapify(setList)
-
-      assert(heap.toList == setList.sorted)
-    }
-  }
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {
     val listA = Gen.listOfN(size, agen)
@@ -64,6 +46,34 @@ class HeapSpec extends CatsSuite {
     Arbitrary {
       Gen.sized(heapGen[A](_, Arbitrary.arbitrary[A]))
     }
+
+  implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
+    Cogen[List[A]].contramap { h: Heap[A] => h.toList }
+
+  checkAll("UnorderedFoldable[Heap]",
+    UnorderedFoldableTests[Heap].unorderedFoldable[Long, Int])
+
+  checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
+
+  test("sorted")(
+    forAll { (set: Set[Int]) =>
+
+      val heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
+
+      val exp = set.toList
+
+      heap.toList should be(exp.sorted)
+
+    })
+
+  test("heapify is sorted") {
+    forAll { (set: Set[Int]) =>
+      val setList = set.toList
+      val heap = Heap.heapify(setList)
+
+      assert(heap.toList == setList.sorted)
+    }
+  }
 
   test("adding increases size") {
     forAll { (heap: Heap[Int], x: Int) =>
@@ -149,6 +159,12 @@ class HeapSpec extends CatsSuite {
   test("Show[Heap[Int]] works like toList.mkString") {
     forAll { (heap: Heap[Int]) =>
       assert(Show[Heap[Int]].show(heap) == heap.toList.mkString("Heap(", ", ", ")"))
+    }
+  }
+
+  test("Order[Heap[Int]] works like List[Int]") {
+    forAll { (a: Heap[Int], b: Heap[Int]) =>
+      assert(Order[Heap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
     }
   }
 }
