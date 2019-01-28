@@ -12,7 +12,7 @@ class DietSpec extends CatsSuite {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration.copy(
-      minSuccessful = if (Platform.isJvm) 10000 else 500
+      minSuccessful = if (Platform.isJvm) 4000 else 500
     )
 
   sealed trait Item {
@@ -198,7 +198,13 @@ class DietSpec extends CatsSuite {
     }
   })
 
-  test("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
+  def testIfNotCoverage(text: String)(testFun: => Unit): Unit =
+    if (sys.env.get("SCOVERAGEON") == Some("true"))
+      ignore(text)(testFun)
+    else
+      test(text)(testFun)
+
+  testIfNotCoverage("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
     d.toList.foreach(elem =>
       // there may be structural changes, so fall back to list comparison
       d.add(elem).toList should be(d.toList)
