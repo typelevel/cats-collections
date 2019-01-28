@@ -7,12 +7,12 @@ import cats.kernel.laws.discipline.OrderTests
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
 
-/**
- * Created by nperez on 3/28/16.
- */
 class HeapSpec extends CatsSuite {
-  implicit val propConfig =
-    PropertyCheckConfig(minSuccessful = 1000)
+
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    checkConfiguration.copy(
+      minSuccessful = 1000
+    )
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {
     val listA = Gen.listOfN(size, agen)

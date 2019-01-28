@@ -1,342 +1,87 @@
 package cats.collections
 package tests
 
+import catalysts.Platform
 import cats._
+import cats.collections.arbitrary.cogen._
 import org.scalacheck._
+import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
 
 class DietSpec extends CatsSuite {
 
-  //  Properties("Diet")  with DogMatcher {
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    checkConfiguration.copy(
+      minSuccessful = if (Platform.isJvm) 4000 else 500
+    )
 
-  // we'll pick 8 ranges between 0 and 1000,
-  // 5 which we'll add, then 3 which we'll remove
-  case class Ranges(a1: (Int, Int),
-                    a2: (Int, Int),
-                    a3: (Int, Int),
-                    a4: (Int, Int),
-                    a5: (Int, Int),
-                    r1: (Int, Int),
-                    r2: (Int, Int),
-                    r3: (Int, Int)
-                     ) {
-    def in(i: Int)(r: (Int, Int)): Boolean = i >= r._1 && i <= r._2
-
-    // test if we think any given I *should* be returns as in the Diet
-    def contains(i: Int) = {
-      val f = in(i) _
-      (f(a1) | f(a2) | f(a3) | f(a4) | f(a5)) && !(f(r1) | f(r2) | f(r3))
+  sealed trait Item {
+    def toSet: Set[Int]
+    def addToDiet(d: Diet[Int]): Diet[Int]
+    def removeFromDiet(d: Diet[Int]): Diet[Int]
+  }
+  object Item {
+    case class Single(n: Int) extends Item {
+      def toSet: Set[Int] = Set(n)
+      def addToDiet(d: Diet[Int]): Diet[Int] = d.add(n)
+      def removeFromDiet(d: Diet[Int]): Diet[Int] = d.remove(n)
     }
-
-  def render: List[(Int,Int)] = {
-    val adds = List(a1,a2,a3,a4,a5)
-    val removes = List(r1,r2,r3)
-
-    for {
-      a <- adds
-      r <- removes
-      l <- (Range(a._1, a._2) - Range(r._1, r._2)) match {
-        case None => List.empty
-        case Some((l, None)) => List((l.start, l.end))
-        case Some((l, Some(r))) => List((l.start, l.end),(r.start, r.end))
-      }
-    } yield l
-  }
-
-  def min: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
-    b match {
-      case None => Some(a._1)
-      case Some(x) => Some(x min a._1)
-    })
-
-  def max: Option[Int] = render.foldLeft[Option[Int]](None)((b,a) =>
-    b match {
-      case None => Some(a._2)
-      case Some(x) => Some(x max a._2)
-    })
-  }
-
-  def orderedTuple(x: Int, y: Int): (Int, Int) =
-    if (Order[Int].compare(x, y) > 0)
-      y -> x
-    else
-      x -> y
-
-  implicit val arbNine = //: Arbitrary[Ranges] = Arbitrary(
-    for {
-      i1 <- Gen.choose(0, 9999)
-      i2 <- Gen.choose(0, 9999)
-      i3 <- Gen.choose(0, 9999)
-      i4 <- Gen.choose(0, 9999)
-      i5 <- Gen.choose(0, 9999)
-      i6 <- Gen.choose(0, 9999)
-      i7 <- Gen.choose(0, 9999)
-      i8 <- Gen.choose(0, 9999)
-      i9 <- Gen.choose(0, 9999)
-      i10 <- Gen.choose(0, 9999)
-      i11 <- Gen.choose(0, 9999)
-      i12 <- Gen.choose(0, 9999)
-      i13 <- Gen.choose(0, 9999)
-      i14 <- Gen.choose(0, 9999)
-      i15 <- Gen.choose(0, 9999)
-      i16 <- Gen.choose(0, 9999)
-    } yield Ranges(orderedTuple(i1, i2),
-      orderedTuple(i3, i4),
-      orderedTuple(i5, i6),
-      orderedTuple(i7, i8),
-      orderedTuple(i9, i10),
-      orderedTuple(i11, i12),
-      orderedTuple(i13, i14),
-      orderedTuple(i15, i16))
-
-
-  def fromRanges(r: Ranges): Diet[Int] = {
-    def remove(d: Diet[Int], i: (Int, Int)): Diet[Int] = d - Range(i._1, i._2)
-
-    val d = Diet.empty[Int].addRange(Range(r.a1._1, r.a1._2))
-      .addRange(Range(r.a2._1, r.a2._2))
-      .addRange(Range(r.a3._1, r.a3._2))
-      .addRange(Range(r.a4._1, r.a4._2))
-      .addRange(Range(r.a5._1, r.a5._2))
-
-    remove(remove(remove(d, r.r1), r.r2), r.r3)
-  }
-
-  test("diet")(forAll(arbNine) { r =>
-    val d = fromRanges(r)
-
-    (0 to 1000).toList.foreach { i =>
-      if (d.contains(i) != r.contains(i)) {
-        println(s"for $i, got ${d.contains(i)} expected ${r.contains(i)}")
-      }
+    case class Multiple(x: Int, y: Int) extends Item {
+      def toRange: Range[Int] = Range(x, y)
+      def toSet: Set[Int] =
+        if (x <= y) (x to y).toSet
+        else (y to x).toSet
+      def addToDiet(d: Diet[Int]): Diet[Int] = d.addRange(toRange)
+      def removeFromDiet(d: Diet[Int]): Diet[Int] = d.removeRange(toRange)
     }
-    (0 to 1000).toList.forall(i => {
-      d.contains(i) == r.contains(i)
-    })
-    ()
-  })
+  }
 
-  test("min")(forAll(arbNine)(rs => rs.min ==  fromRanges(rs).min))
-  test("max")(forAll(arbNine)(rs => rs.max ==  fromRanges(rs).max))
+  implicit val arbItem: Arbitrary[Item] =
+    Arbitrary(
+      Gen.oneOf(
+        Gen.choose(0, 999).map(Item.Single),
+        for (min <- Gen.choose(0, 999); max <- Gen.choose(0, 999)) yield Item.Multiple(min, max)
+      )
+    )
 
-  test("merge")(forAll(arbNine, arbNine)  { (r1, r2) =>
-    val d = Diet.empty[Int] ++ fromRanges(r1) ++ fromRanges(r2)
-
-    (0 to 1000).toList.foreach {i =>
-      if(d.contains(i) != (r1.contains(i) || r2.contains(i)))
-        println(s"for $i, got ${d.contains(i)} expected ${r1.contains(i)} || ${r2.contains(i)}")
+  case class Ranges(rs: List[(Boolean, Item)]) {
+    def isEmpty: Boolean = toSet.isEmpty
+    def toSet: Set[Int] = rs.foldLeft(Set.empty[Int]) { (set, r) =>
+      val s = r._2.toSet
+      if (r._1) set.union(s)
+      else set.diff(s)
     }
-
-    (0 to 1000).toList.forall(i => d.contains(i) == (r1.contains(i) || r2.contains(i) ))
-    ()
-  })
-
-
-//  property("match") = forAll{ (r: Ranges) =>
-//    val d = fromRanges(r)
-//
-//    val matcher = matchTo(d)
-//
-//    matcher.apply(d).matches == true
-//  }
-}
-/*
-class DietTest extends DogsSuite {
-  import Diet._
-
-  test("join nodes when item adj to existing seq"){
-    val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
-
-    val result = diet.intervals.map(l => l.generate)
-
-    result should matchTo(List[List[Int]](List(1, 2, 3), List(5, 6), List(8)))
+    def toDiet: Diet[Int] = rs.foldLeft(Diet.empty[Int]) { (diet, r) =>
+      if (r._1) r._2.addToDiet(diet)
+      else r._2.removeFromDiet(diet)
+    }
   }
 
-  test("be always sorted"){
-    val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
+  implicit val arbRanges: Arbitrary[Ranges] =
+    Arbitrary(
+      Gen.listOf {
+        for {
+          inout <- Gen.oneOf(true, false)
+          item <- Arbitrary.arbitrary[Item]
+        } yield (inout, item)
+      }.map(Ranges)
+    )
 
-    val sorted = diet.toList()
+  implicit val arbDiet: Arbitrary[Diet[Int]] = Arbitrary(arbRanges.arbitrary.map(_.toDiet))
 
-    sorted should matchTo(List(1, 2, 3, 5, 6, 8))
-  }
+  // TODO requires a reasonable implementation!
+  implicit def dietEq: Eq[Diet[Int]] = Eq.instance((x, y) => x.toList == y.toList)
 
-  test("add disjoint range"){
+  test("shown empty"){
     val diet = Diet.empty[Int]
 
-    val result = diet.addRange(Range(0, 100))
-
-    val other = result.intervals.map(l => l.generate)
-
-    other should matchTo(List(Range(0, 100).toList))
+    diet.show should be ("{ }")
   }
 
-  test("join disjoint range"){
-    val diet = Diet.empty[Int] + 5 + 6 + 7 + 1 + 2
+  test("shown all intervals"){
+    val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
 
-    val other = diet + 3 + 4
-
-    other.toList should matchTo(List(1, 2, 3, 4, 5, 6, 7))
-  }
-
-  test("contain items from range"){
-    val diet = Diet.empty[Int].addRange(Range(5, 10)).addRange(Range(1, 3)).addRange(Range(12, 20))
-
-    diet.contains(1) should be (true)
-    diet.contains(2) should be (true)
-    diet.contains(3) should be (true)
-
-    diet.contains(4) should be (false)
-
-    diet.contains(6) should be (true)
-
-    diet.contains(15) should be (true)
-  }
-
-  test("return empty when removing from empty"){
-    Diet.empty[Int].remove(1) should be (EmptyDiet())
-  }
-
-  test("not be modified when removing non existed item"){
-
-    val diet = Diet.empty[Int] + 1 +2 + 3 + 5
-
-    diet.remove(4) should be (diet)
-  }
-
-  test("be spl"){
-    val diet = Diet.empty[Int] + 1 +2 + 3 + 5
-
-    val other = diet.remove(2).intervals.map(x => x.generate)
-
-    other should contain  inOrder (scala.List(1), scala.List(3), scala.List(5))
-  }
-
-  test("map"){
-    val diet = Diet.empty[Int] + 1 +2 + 8 + 5
-
-    val other = diet.map(x => x + 2).intervals.map(x => x.generate)
-
-    other should matchTo(List[List[Int]](List(3,4), List(7), List(10)))
-  }
-
-  test("foldLeft"){
-    val diet = Diet.empty[Int] + 1 +2 + 8 + 5
-
-    diet.foldLeft(10)(_ + _) should be (26)
-    diet.foldRight(10)(_ + _) should be (26)
-  }
-
-  test("contain range"){
-    val x = Diet.empty[Int] + Range(20, 30)
-
-    x.containsRange(Range(20, 30)) should be (true)
-    x.containsRange(Range(25, 26)) should be (true)
-    x.containsRange(Range(1,10)) should be (false)
-
-    val s = x + Range(10, 15)
-
-    s.containsRange(Range(9, 15)) should be (false)
-    s.containsRange(Range(10, 15)) should be (true)
-    s.containsRange(Range(9, 16)) should be (false)
-  }
-}
-
-class DietTestJoin extends DogsSuite {
-  test("return the same diet when join to empty range"){
-    val diet = Diet.empty[Int] + 20 + 30
-
-    val range = Range.empty[Int]
-
-    diet.addRange(range) should be (diet)
-  }
-
-  test("return a diet with range when added to empty diet"){
-    val diet = Diet.empty[Int]
-
-    val range = Range(20, 30)
-
-    val other = diet.addRange(range)
-
-    other.min should be (Some(20))
-    other.max should be (Some(30))
-  }
-
-  test("increase range to the left"){
-    val diet = Diet.empty[Int] + 20 + 21
-    val range = Range(15, 19)
-
-    val other = diet.addRange(range)
-
-    other.intervals(0).generate should matchTo(List(15, 16, 17, 18, 19, 20, 21))
-  }
-
-  test("create disjoint range to the left"){
-    val diet = Diet.empty[Int] + 20 + 21
-    val range = Range(15, 18)
-
-    val sets = diet.addRange(range).intervals.map(r=>r.generate)
-
-    sets(0) should matchTo(List(15, 16, 17, 18))
-    sets(1) should matchTo(List(20, 21))
-  }
-
-  test("increase range to the right"){
-    val diet = Diet.empty[Int] + 20 + 22
-    val range = Range(21, 30)
-
-    val other = diet.addRange(range).intervals.map(r => r.generate)
-
-    other should matchTo(List(Range(20, 30).toList))
-  }
-
-  test("join to an empty diet"){
-    val diet = Diet.empty[Int] + Range(20, 30)
-
-    val other = diet ++ Diet.empty[Int]
-
-    other should be (diet)
-  }
-
-  test("join to another diet"){
-    val diet = Diet.empty[Int] + Range(20, 30)
-
-    val other = diet ++ (Diet.empty[Int] + Range(25, 35) + Range(5, 10) + Range(15, 22))
-
-    val sets = other.intervals.map(r => r.generate)
-
-    sets should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
-
-    val otherSets = diet | other
-
-    otherSets.intervals.map(r => r.generate) should matchTo(List(Range(5, 10).toList, Range(15, 35).toList))
-  }
-
-  test("intersect with another diet"){
-    val diet = Diet.empty[Int] + Range(20, 30)
-
-    (diet & Diet.empty[Int]).intervals.length should be (0)
-
-    (diet & diet) should be(diet)
-
-    (diet & (Diet.empty[Int] + Range(15, 25) + Range(28, 32))).toList should
-      matchTo(List (20, 21, 22, 23, 24, 25, 28, 29, 30))
-
-    (diet & (Diet.empty[Int] + Range(10, 15))).toList should matchTo(El[Int])
-  }
-}
-
-class DietTestRemove extends DogsSuite {
-  import Diet._
-
-  test("return empty when removing from empty"){
-
-    (Diet.empty[Int] - Range(10, 100)) should be (EmptyDiet())
-  }
-
-  test("remove inner range"){
-    val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
-
-    diet.toList() should matchTo(List(20, 21, 28, 29, 30))
+    diet.show should be ("{ [1, 10] [20, 100] }")
   }
 
   test("remove side ranges"){
@@ -346,30 +91,141 @@ class DietTestRemove extends DogsSuite {
       + Range(12, 18)
       + Range(23, 30)
       + Range(40, 50)
-      + Range(35, 48)
-      + Range(55, 60))
+      + Range(35, 48))
       - Range(15, 18)
       - Range(25, 60))
 
-    diet.toList() should matchTo(List(9, 10, 12, 13, 14, 20, 21, 23, 24))
+    diet.toList should be(List(9, 10, 12, 13, 14, 20, 21, 23, 24))
   }
+
+  test("return empty when removing from empty"){
+    (Diet.empty[Int] - Range(10, 100)) should be (Diet.EmptyDiet())
+  }
+
+  test("remove inner range"){
+    val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
+
+    diet.toList should be(List(20, 21, 28, 29, 30))
+  }
+
+  test("insert/remove")(forAll { (rs: Ranges) =>
+    rs.toDiet.toList should be(rs.toSet.toList.sorted)
+  })
+
+  test("distinct")(forAll { (rs: Ranges) =>
+    val list = rs.toDiet.toList
+    list.distinct should be(list)
+  })
+
+  test("min")(forAll { (rs: Ranges) =>
+    whenever(!rs.isEmpty) {
+      rs.toDiet.min should be(Some(rs.toSet.min))
+    }
+  })
+
+  test("max")(forAll { (rs: Ranges) =>
+    whenever(!rs.isEmpty) {
+      rs.toDiet.max should be(Some(rs.toSet.max))
+    }
+  })
+
+  test("min/max empty") {
+    Diet.empty[Int].min should be(None)
+    Diet.empty[Int].max should be(None)
+  }
+
+  test("foldLeft")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
+    rs.toDiet.foldLeft(start)(f) should be(rs.toSet.toList.sorted.foldLeft(start)(f))
+  })
+
+  test("foldLeft/toList")(forAll { (rs: Ranges) =>
+    rs.toDiet.foldLeft(List.empty[Int])(_ :+ _) should be(rs.toDiet.toList)
+  })
+
+  test("foldRight")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
+    rs.toDiet.foldRight(Eval.now(start))((v, acc) => acc.map(f(v, _))).value should be(rs.toSet.toList.sorted.foldRight(start)(f))
+  })
+
+  test("foldRight/toList")(forAll { (rs: Ranges) =>
+    rs.toDiet.foldRight(Eval.now(List.empty[Int]))((v, acc) => acc.map(v :: _)).value should be(rs.toDiet.toList)
+  })
+
+  test("merge")(forAll { (rs1: Ranges, rs2: Ranges) =>
+    val diet1 = rs1.toDiet
+    val diet2 = rs2.toDiet
+    (diet1 ++ diet2).toList should be((rs1.toSet ++ rs2.toSet).toList.sorted)
+  })
+
+  test("intersection range")(forAll { (rs: Ranges, m: Int, n: Int) =>
+    whenever(m >= n) {
+      val diet = rs.toDiet
+      val r = Range(n, m)
+      (diet & r).toList should be(diet.toList.filter(r.contains))
+    }
+  })
+
+  test("intersection diet")(forAll { (rs1: Ranges, rs2: Ranges) =>
+    (rs1.toDiet & rs2.toDiet).toList should be((rs1.toSet intersect rs2.toSet).toList.sorted)
+  })
+
+  test("join disjoint range"){
+    val diet = Diet.empty[Int] + 5 + 6 + 7 + 1 + 2
+
+    val other = diet + 3 + 4
+
+    other.toList should be(List(1, 2, 3, 4, 5, 6, 7))
+  }
+
+  test("contains")(forAll { (rs: Ranges) =>
+    val diet = rs.toDiet
+    val set = rs.toSet
+    set.foreach(elem =>
+      assert(diet.contains(elem))
+    )
+  })
+
+  test("not contains")(forAll { (rs: Ranges, elem: Int) =>
+    val diet = rs.toDiet
+    val set = rs.toSet
+    whenever(!set.contains(elem)) {
+      assert(!diet.contains(elem))
+    }
+  })
+
+  test("not be modified when removing non-existent item")(forAll { (d: Diet[Int], elem: Int) =>
+    whenever(!d.contains(elem)) {
+      assert(d.remove(elem) == d)
+    }
+  })
+
+  def testIfNotCoverage(text: String)(testFun: => Unit): Unit =
+    if (sys.env.get("SCOVERAGEON") == Some("true"))
+      ignore(text)(testFun)
+    else
+      test(text)(testFun)
+
+  testIfNotCoverage("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
+    d.toList.foreach(elem =>
+      // there may be structural changes, so fall back to list comparison
+      d.add(elem).toList should be(d.toList)
+    )
+  })
+
+  def invariant[A](d: Diet[A])(implicit order: Order[A], enum: Discrete[A]): Boolean = d match {
+    case Diet.DietNode(rng, left, right) =>
+      order.lteqv(rng.start, rng.end) &&
+        left.toList.forall(order.lt(_, rng.start)) &&
+        right.toList.forall(order.gt(_, rng.end)) &&
+        invariant(left) &&
+        invariant(right)
+    case _ =>
+      true
+  }
+
+  test("invariant")(forAll { (d: Diet[Int]) =>
+    assert(invariant(d))
+  })
+
+  checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)
+
 }
-
-class DietTestShow extends DogsSuite {
-
-  import Diet._
-  import cats.implicits._
-
-  test("shown empty"){
-    val diet = Diet.empty[Int]
-
-    diet.show should be ("{}")
-  }
-
-  test("shown all intervals"){
-    val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
-
-    diet.show should be ("{[1, 10], [20, 100]}")
-  }
-}
- */
