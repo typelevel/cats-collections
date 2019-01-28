@@ -5,12 +5,12 @@ import cats.{Order, Show}
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Gen}
 
-/**
- * Created by nperez on 3/28/16.
- */
 class HeapSpec extends CatsSuite {
-  implicit val propConfig =
-    PropertyCheckConfig(minSuccessful = 1000)
+
+  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
+    checkConfiguration.copy(
+      minSuccessful = 1000
+    )
 
   test("sorted")(
     forAll { (set: Set[Int]) =>
