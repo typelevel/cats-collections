@@ -55,7 +55,7 @@ sealed abstract class Diet[A] {
   // adjacent to our greatest Range)
   private def noMoreThan(a: A)(implicit order: Order[A], enum: Discrete[A]): (Diet[A], A) =
     this match {
-      case DietNode(rng,l,r) =>
+      case DietNode(rng, l, r) =>
         if(order.gt(a, rng.end)) {
           val (r2, a2) = r.noMoreThan(a)
           (DietNode(rng,l,r2), order.min(a, a2))
@@ -85,7 +85,7 @@ sealed abstract class Diet[A] {
   // helper method for addRange which does the actual insertion
   private[collections] def insertRange(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Diet[A] =
     this match {
-      case EmptyDiet() =>  DietNode(range, EmptyDiet(), EmptyDiet())
+      case EmptyDiet() => Diet.fromRange(range)
 
       case DietNode(rng, l, r)  =>
         val (r1,r2) = (rng + range)
@@ -273,6 +273,9 @@ sealed abstract class Diet[A] {
 
 object Diet {
   def empty[A]: Diet[A] = EmptyDiet()
+
+  def fromRange[A : Discrete](range: Range[A]): Diet[A] =
+    DietNode(range, empty, empty)
 
   private[collections] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
     override val isEmpty: Boolean = false
