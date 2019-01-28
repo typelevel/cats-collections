@@ -157,7 +157,7 @@ class DietSpec extends CatsSuite {
   })
 
   test("intersection range")(forAll { (rs: Ranges, m: Int, n: Int) =>
-    whenever(m > n) {
+    whenever(m >= n) {
       val diet = rs.toDiet
       val r = Range(n, m)
       (diet & r).toList should be(diet.toList.filter(r.contains))
