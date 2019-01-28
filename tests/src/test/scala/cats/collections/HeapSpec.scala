@@ -1,7 +1,7 @@
 package cats.collections
 package tests
 
-import cats.{Order, Show}
+import cats.{Order, Show, UnorderedFoldable}
 import cats.laws.discipline.UnorderedFoldableTests
 import cats.kernel.laws.discipline.OrderTests
 import cats.tests.CatsSuite
@@ -56,22 +56,22 @@ class HeapSpec extends CatsSuite {
   checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
 
   test("sorted")(
-    forAll { (set: Set[Int]) =>
+    forAll { (list: List[Int]) =>
 
-      val heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
+      val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-      val exp = set.toList
-
-      heap.toList should be(exp.sorted)
+      heap.toList should be(list.sorted)
 
     })
 
   test("heapify is sorted") {
-    forAll { (set: Set[Int]) =>
-      val setList = set.toList
-      val heap = Heap.heapify(setList)
+    forAll { (list: List[Int]) =>
+      val heap = Heap.heapify(list)
+      val heapList = heap.toList
+      val heap1 = Heap.heapify(heapList)
 
-      assert(heap.toList == setList.sorted)
+      assert(heapList == list.sorted)
+      assert(Order[Heap[Int]].eqv(heap, heap1))
     }
   }
 
@@ -165,6 +165,37 @@ class HeapSpec extends CatsSuite {
   test("Order[Heap[Int]] works like List[Int]") {
     forAll { (a: Heap[Int], b: Heap[Int]) =>
       assert(Order[Heap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
+    }
+  }
+
+  test("UnorderedFoldable[Heap].size is correct") {
+    forAll { (a: Heap[Int]) =>
+      val uof = UnorderedFoldable[Heap]
+      assert(uof.size(a) == a.size)
+      assert(uof.unorderedFoldMap(a)(_ => 1L) == a.size)
+      assert(a.size == a.toList.size.toLong)
+    }
+  }
+
+  test("Heap.exists is correct") {
+    forAll { (a: Heap[Int], fn: Int => Boolean) =>
+      assert(a.exists(fn) == a.toList.exists(fn))
+    }
+  }
+
+  test("Heap.forall is correct") {
+    forAll { (a: Heap[Int], fn: Int => Boolean) =>
+      assert(a.forall(fn) == a.toList.forall(fn))
+    }
+  }
+
+  test("Heap.empty is less than nonEmpty") {
+    forAll { (item: Int, heap: Heap[Int]) =>
+      val ord = Order[Heap[Int]]
+      assert(ord.lteqv(Heap.empty, heap))
+      assert(ord.lt(Heap.empty, Heap.empty + item))
+      assert(ord.gteqv(heap, Heap.empty))
+      assert(ord.gt(Heap.empty + item, Heap.empty))
     }
   }
 }
