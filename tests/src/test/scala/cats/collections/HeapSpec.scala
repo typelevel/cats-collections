@@ -1,9 +1,11 @@
 package cats.collections
 package tests
 
-import cats.{Order, Show}
+import cats.{Order, Show, UnorderedFoldable}
+import cats.laws.discipline.UnorderedFoldableTests
+import cats.kernel.laws.discipline.OrderTests
 import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 
 /**
  * Created by nperez on 3/28/16.
@@ -11,26 +13,6 @@ import org.scalacheck.{Arbitrary, Gen}
 class HeapSpec extends CatsSuite {
   implicit val propConfig =
     PropertyCheckConfig(minSuccessful = 1000)
-
-  test("sorted")(
-    forAll { (set: Set[Int]) =>
-
-      val heap = set.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
-
-      val exp = set.toList
-
-      heap.toList should be(exp.sorted)
-
-    })
-
-  test("heapify is sorted") {
-    forAll { (set: Set[Int]) =>
-      val setList = set.toList
-      val heap = Heap.heapify(setList)
-
-      assert(heap.toList == setList.sorted)
-    }
-  }
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {
     val listA = Gen.listOfN(size, agen)
@@ -64,6 +46,34 @@ class HeapSpec extends CatsSuite {
     Arbitrary {
       Gen.sized(heapGen[A](_, Arbitrary.arbitrary[A]))
     }
+
+  implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
+    Cogen[List[A]].contramap { h: Heap[A] => h.toList }
+
+  checkAll("UnorderedFoldable[Heap]",
+    UnorderedFoldableTests[Heap].unorderedFoldable[Long, Int])
+
+  checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
+
+  test("sorted")(
+    forAll { (list: List[Int]) =>
+
+      val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
+
+      heap.toList should be(list.sorted)
+
+    })
+
+  test("heapify is sorted") {
+    forAll { (list: List[Int]) =>
+      val heap = Heap.heapify(list)
+      val heapList = heap.toList
+      val heap1 = Heap.heapify(heapList)
+
+      assert(heapList == list.sorted)
+      assert(Order[Heap[Int]].eqv(heap, heap1))
+    }
+  }
 
   test("adding increases size") {
     forAll { (heap: Heap[Int], x: Int) =>
@@ -149,6 +159,43 @@ class HeapSpec extends CatsSuite {
   test("Show[Heap[Int]] works like toList.mkString") {
     forAll { (heap: Heap[Int]) =>
       assert(Show[Heap[Int]].show(heap) == heap.toList.mkString("Heap(", ", ", ")"))
+    }
+  }
+
+  test("Order[Heap[Int]] works like List[Int]") {
+    forAll { (a: Heap[Int], b: Heap[Int]) =>
+      assert(Order[Heap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
+    }
+  }
+
+  test("UnorderedFoldable[Heap].size is correct") {
+    forAll { (a: Heap[Int]) =>
+      val uof = UnorderedFoldable[Heap]
+      assert(uof.size(a) == a.size)
+      assert(uof.unorderedFoldMap(a)(_ => 1L) == a.size)
+      assert(a.size == a.toList.size.toLong)
+    }
+  }
+
+  test("Heap.exists is correct") {
+    forAll { (a: Heap[Int], fn: Int => Boolean) =>
+      assert(a.exists(fn) == a.toList.exists(fn))
+    }
+  }
+
+  test("Heap.forall is correct") {
+    forAll { (a: Heap[Int], fn: Int => Boolean) =>
+      assert(a.forall(fn) == a.toList.forall(fn))
+    }
+  }
+
+  test("Heap.empty is less than nonEmpty") {
+    forAll { (item: Int, heap: Heap[Int]) =>
+      val ord = Order[Heap[Int]]
+      assert(ord.lteqv(Heap.empty, heap))
+      assert(ord.lt(Heap.empty, Heap.empty + item))
+      assert(ord.gteqv(heap, Heap.empty))
+      assert(ord.gt(Heap.empty + item, Heap.empty))
     }
   }
 }
