@@ -214,8 +214,8 @@ class DietSpec extends CatsSuite {
   def invariant[A](d: Diet[A])(implicit order: Order[A], enum: Discrete[A]): Boolean = d match {
     case Diet.DietNode(rng, left, right) =>
       order.lteqv(rng.start, rng.end) &&
-        left.toList.forall(order.lt(_, rng.start)) &&
-        right.toList.forall(order.gt(_, rng.end)) &&
+        left.toList.forall(order.lt(_, enum.pred(rng.start))) &&
+        right.toList.forall(order.gt(_, enum.succ(rng.end))) &&
         invariant(left) &&
         invariant(right)
     case _ =>
