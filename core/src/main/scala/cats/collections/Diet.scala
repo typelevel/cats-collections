@@ -49,15 +49,10 @@ sealed abstract class Diet[A] {
     }
   }
 
-  // helper method for insertRange.
-  // our parent includes a Range which starts with `a`. We must return
-  // a new copy of our tree which contains no ranges greater than `a`
-  // and a new lower bound for our parent range (in case a was
-  // adjacent to our greatest Range)
   private def noMoreThan(a: A)(implicit order: Order[A], enum: Discrete[A]): (Diet[A], A) =
     this match {
       case DietNode(rng,l,r) =>
-        if(order.gt(a, rng.end)) {
+        if(order.gt(a, enum.succ(rng.end))) {
           val (r2, a2) = r.noMoreThan(a)
           (DietNode(rng,l,r2), order.min(a, a2))
         }
@@ -66,15 +61,10 @@ sealed abstract class Diet[A] {
       case x => (x,a)
     }
 
-  // helper method for insertRange.
-  // our parent includes a Range which ends with `a`. We must return a
-  // new copy of our tree which contains no ranges less than `a` and a
-  // new upper bound for our parent range (in case a was adjacent to
-  // our leaast Range)
   private def noLessThan(a: A)(implicit order: Order[A], enum: Discrete[A]): (Diet[A], A) =
     this match {
       case DietNode(rng,l,r) =>
-        if(order.lt(a, rng.start)) {
+        if(order.lt(a, enum.pred(rng.start))) {
           val (l2, a2) = l.noLessThan(a)
           (DietNode(rng,l2,r), order.max(a, a2))
         }
@@ -100,7 +90,7 @@ sealed abstract class Diet[A] {
               DietNode(r1, l, r.addRangeIncreasing(r2))
             else
               DietNode(r2, l.addRangeIncreasing(r1), r)
-          }
+        }
     }
 
   /**

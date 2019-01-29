@@ -12,7 +12,7 @@ class DietSpec extends CatsSuite {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration.copy(
-      minSuccessful = if (Platform.isJvm) 4000 else 500
+      minSuccessful = if (Platform.isJvm) 10000 else 500
     )
 
   sealed trait Item {
@@ -198,18 +198,17 @@ class DietSpec extends CatsSuite {
     }
   })
 
-  def testIfNotCoverage(text: String)(testFun: => Unit): Unit =
-    if (sys.env.get("SCOVERAGEON") == Some("true"))
-      ignore(text)(testFun)
-    else
-      test(text)(testFun)
+  {
+    implicit val generatorDrivenConfig: PropertyCheckConfiguration =
+      checkConfiguration.copy(minSuccessful = 300)
 
-  testIfNotCoverage("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
-    d.toList.foreach(elem =>
-      // there may be structural changes, so fall back to list comparison
-      d.add(elem).toList should be(d.toList)
-    )
-  })
+    test("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
+      d.toList.foreach(elem =>
+        // there may be structural changes, so fall back to list comparison
+        d.add(elem).toList should be(d.toList)
+      )
+    })
+  }
 
   def invariant[A](d: Diet[A])(implicit order: Order[A], enum: Discrete[A]): Boolean = d match {
     case Diet.DietNode(rng, left, right) =>
@@ -222,8 +221,13 @@ class DietSpec extends CatsSuite {
       true
   }
 
-  test("invariant")(forAll { (d: Diet[Int]) =>
-    assert(invariant(d))
+  test("invariant regression") {
+    val diet = Diet.empty[Int] + Range(1, 3) - 2 + 2
+    assert(invariant(diet))
+  }
+
+  test("invariant")(forAll { (rs: Ranges) =>
+    assert(invariant(rs.toDiet))
   })
 
   checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)
