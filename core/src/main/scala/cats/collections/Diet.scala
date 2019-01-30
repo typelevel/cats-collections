@@ -175,6 +175,9 @@ sealed abstract class Diet[A] {
    */
   def -(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] = removeRange(range)
 
+  def --(that: Diet[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] =
+    that.foldLeftRange(this)(_ - _)
+
   /**
    * Returns the union of this Diet with another Diet.
    */
