@@ -7,6 +7,7 @@ import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
+import algebra.laws._
 
 class DietSpec extends CatsSuite {
 
@@ -237,5 +238,7 @@ class DietSpec extends CatsSuite {
   })
 
   checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)
+  checkAll("Diet[Int]", RingLaws[Diet[Int]].semiring)
+  checkAll("Diet[Int]", LogicLaws[Diet[Int]].generalizedBool)
 
 }

@@ -3,6 +3,8 @@ package cats.collections
 import scala.annotation.tailrec
 import cats._
 import cats.kernel.CommutativeMonoid
+import algebra.ring.Semiring
+import algebra.lattice._
 
 /**
  * Discrete Interval Encoding Tree (Diet).
@@ -317,4 +319,18 @@ object Diet {
     def empty = Diet.empty
     def combine(x: Diet[A], y: Diet[A]) = x ++ y
   }
+
+  implicit def dietSemiring[A](implicit enum: Discrete[A], order: Order[A]): Semiring[Diet[A]] = new Semiring[Diet[A]] {
+    def zero = Diet.empty
+    def plus(x: Diet[A], y: Diet[A]) = x ++ y
+    def times(x: Diet[A], y: Diet[A]) = x & y
+  }
+
+  implicit def dietLattice[A](implicit enum: Discrete[A], order: Order[A]): GenBool[Diet[A]] = new GenBool[Diet[A]] {
+    def zero = Diet.empty
+    def or(x: Diet[A], y: Diet[A]) = x ++ y
+    def and(x: Diet[A], y: Diet[A]) = x & y
+    def without(x: Diet[A], y: Diet[A]) = x -- y
+  }
+
 }
