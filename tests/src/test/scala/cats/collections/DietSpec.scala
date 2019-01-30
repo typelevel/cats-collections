@@ -7,6 +7,7 @@ import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
+import algebra.laws._
 
 class DietSpec extends CatsSuite {
 
@@ -208,6 +209,12 @@ class DietSpec extends CatsSuite {
         d.add(elem).toList should be(d.toList)
       )
     })
+
+    test("--")(forAll { (d1: Diet[Int], d2: Diet[Int]) =>
+      val d = d1 -- d2
+      d2.toList.foreach(elem => assert(!d.contains(elem)))
+      d1.toList.foreach(elem => assert(d2.contains(elem) || d.contains(elem)))
+    })
   }
 
   def invariant[A](d: Diet[A])(implicit order: Order[A], enum: Discrete[A]): Boolean = d match {
@@ -231,5 +238,7 @@ class DietSpec extends CatsSuite {
   })
 
   checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)
+  checkAll("Diet[Int]", RingLaws[Diet[Int]].semiring)
+  checkAll("Diet[Int]", LogicLaws[Diet[Int]].generalizedBool)
 
 }

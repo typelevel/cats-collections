@@ -73,7 +73,8 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-testkit" % V.cats % "test",
-      "org.typelevel" %%% "cats-laws"    % V.cats
+      "org.typelevel" %%% "cats-laws"    % V.cats % "test",
+      "org.typelevel" %%% "algebra-laws" % V.algebra % "test"
     )
   )
 
@@ -102,7 +103,8 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-      "org.typelevel"                  %%% "cats-core"     % V.cats,
+      "org.typelevel" %%% "cats-core" % V.cats,
+      "org.typelevel" %%% "algebra"   % V.algebra,
       compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.9")
     ),
     fork in test := true
