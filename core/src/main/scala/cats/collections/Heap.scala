@@ -21,9 +21,14 @@ sealed abstract class Heap[A] {
   import Heap._
 
   /**
-   * Returns min value on the heap.
+   * Returns min value on the heap, if it exists
    */
-  def getMin: Option[A]
+  final def getMin: Option[A] = minimumOption
+
+  /**
+   * Returns min value on the heap, if it exists
+   */
+  def minimumOption: Option[A]
 
   // this is size < 2^height - 1
   // this is always false for empty, and sometimes false for non-empty
@@ -187,6 +192,27 @@ object Heap {
     heapify(as)
 
   /**
+   * this is useful for finding the k maximum values in O(N) times for N items
+   * same as as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N)
+   * for a full sort. When N is very large, this can be a very large savings
+   */
+  def takeLargest[A](as: Iterable[A], count: Int)(implicit order: Order[A]): Heap[A] =
+    if (count <= 0) empty
+    else {
+      var heap = empty[A]
+      val iter = as.iterator
+      while (iter.hasNext) {
+        val a = iter.next()
+        heap =
+          if (heap.size < count) heap + a
+          else if (order.lt(heap.asInstanceOf[Branch[A]].min, a)) heap.remove + a
+          else heap
+      }
+
+      heap
+    }
+
+  /**
    * Build a heap using an Iterable
    * Order O(n)
    */
@@ -214,7 +240,7 @@ object Heap {
 
     override def isEmpty: Boolean = false
 
-    override def getMin: Option[A] = Some(min)
+    override def minimumOption: Option[A] = Some(min)
 
     override def unbalanced: Boolean = size < (1L << height) - 1L
   }
@@ -233,7 +259,7 @@ object Heap {
 
     override def isEmpty: Boolean = true
 
-    override def getMin: Option[Nothing] = None
+    override def minimumOption: Option[Nothing] = None
   }
 
   private[collections] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {

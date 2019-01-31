@@ -114,10 +114,10 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("getMin after removing one is >= before") {
+  test("minimumOption after removing one is >= before") {
     forAll { (heap: Heap[Int]) =>
-      val min0 = heap.getMin
-      val min1 = heap.remove.getMin
+      val min0 = heap.minimumOption
+      val min1 = heap.remove.minimumOption
 
       (min0, min1) match {
         case (None, next) => assert(next.isEmpty)
@@ -128,9 +128,9 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("Heap.getMin is the real minimum") {
+  test("Heap.minimumOption is the real minimum") {
     def heapLaw(heap: Heap[Int]) =
-      heap.getMin match {
+      heap.minimumOption match {
         case None => assert(heap.isEmpty)
         case Some(min) =>
           val heap1 = heap.remove
@@ -147,7 +147,7 @@ class HeapSpec extends CatsSuite {
       heapLaw(heap.remove.remove.remove)
     }
 
-    assert(Heap.empty[Int].getMin.isEmpty)
+    assert(Heap.empty[Int].minimumOption.isEmpty)
   }
 
   test("Heap.foldLeft is consistent with toList.foldLeft") {
@@ -196,6 +196,12 @@ class HeapSpec extends CatsSuite {
       assert(ord.lt(Heap.empty, Heap.empty + item))
       assert(ord.gteqv(heap, Heap.empty))
       assert(ord.gt(Heap.empty + item, Heap.empty))
+    }
+  }
+
+  test("takeLargest is the same as sort.reverse.take") {
+    forAll { (as: Iterable[Int], k: Int) =>
+      assert(Heap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k))
     }
   }
 }
