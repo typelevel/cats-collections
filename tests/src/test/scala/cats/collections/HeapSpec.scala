@@ -204,4 +204,10 @@ class HeapSpec extends CatsSuite {
       assert(Heap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k))
     }
   }
+
+  test("Heap.toPairingHeap.toList == Heap.toList") {
+    forAll { (h: Heap[Int]) =>
+      assert(h.toPairingHeap.toList == h.toList)
+    }
+  }
 }

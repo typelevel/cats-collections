@@ -172,6 +172,17 @@ sealed abstract class Heap[A] {
    */
   def --(implicit order: Order[A]): Heap[A] = remove
 
+  /**
+   * convert to a PairingHeap which can do fast merges,
+   * this is an O(N) operation
+   */
+  def toPairingHeap: PairingHeap[A] =
+    if (isEmpty) PairingHeap.empty
+    else {
+      val thisBranch = this.asInstanceOf[Branch[A]]
+      import thisBranch.{min, left, right}
+      PairingHeap.Tree(min, left.toPairingHeap :: right.toPairingHeap :: Nil)
+    }
 }
 
 object Heap {

@@ -225,7 +225,7 @@ object PairingHeap {
       heap
     }
 
-  private case class Tree[A](min: A, subtrees: List[PairingHeap[A]]) extends PairingHeap[A] {
+  private[collections] final case class Tree[A](min: A, subtrees: List[PairingHeap[A]]) extends PairingHeap[A] {
     override val size = {
       @tailrec
       def loop(ts: List[PairingHeap[A]], acc: Long): Long =
@@ -271,7 +271,7 @@ object PairingHeap {
       }
   }
 
-  private case object Leaf extends PairingHeap[Nothing] {
+  private final case object Leaf extends PairingHeap[Nothing] {
     def apply[A](): PairingHeap[A] = this.asInstanceOf[PairingHeap[A]]
 
     def unapply[A](heap: PairingHeap[A]): Boolean = heap.isEmpty
