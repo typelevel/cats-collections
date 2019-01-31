@@ -141,6 +141,8 @@ sealed abstract class PairingHeap[A] {
    * Alias for add
    */
   def +(x: A)(implicit order: Order[A]): PairingHeap[A] = add(x)
+
+  private[collections] def subtrees: List[PairingHeap[A]]
 }
 
 object PairingHeap {
@@ -273,6 +275,8 @@ object PairingHeap {
     def apply[A](): PairingHeap[A] = this.asInstanceOf[PairingHeap[A]]
 
     def unapply[A](heap: PairingHeap[A]): Boolean = heap.isEmpty
+
+    override def subtrees: List[PairingHeap[Nothing]] = Nil
 
     override def size: Long = 0L
 

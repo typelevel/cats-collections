@@ -202,12 +202,12 @@ class PairingHeapSpec extends CatsSuite {
     }
   }
 
-  test("PairingHeap.combineAll (remove) does < 2 log_2 N work") {
-    forAll { (heaps: List[PairingHeap[Int]]) =>
-      val totalSize = heaps.map(_.size).sum
+  test("PairingHeap.combineAll (remove) does < log_2 N + 8 work") {
+    forAll { (heap: PairingHeap[Int]) =>
+      val totalSize = heap.size
 
-      val bound = if (totalSize > 0) (math.log(totalSize.toDouble) + 1.0).toInt else 1
-      assert(PairingHeap.combineAllIterCount(heaps.iterator, 0) <= 2.0 * bound)
+      val bound = if (totalSize > 0) (math.log(totalSize.toDouble) + 8.0).toInt else 1
+      assert(PairingHeap.combineAllIterCount(heap.subtrees.iterator, 0) <= bound)
     }
   }
 
