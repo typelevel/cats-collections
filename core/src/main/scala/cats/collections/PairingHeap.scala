@@ -165,16 +165,17 @@ object PairingHeap {
     }
 
   @tailrec
-  private def combineAllIter[A: Order](iter: Iterator[PairingHeap[A]], tail: List[PairingHeap[A]]): PairingHeap[A] =
+  private def combineAllIter[A: Order](iter: Iterator[PairingHeap[A]], pairs: List[PairingHeap[A]]): PairingHeap[A] =
     if (iter.isEmpty) {
-      combineLoop(tail, empty[A])
+      combineLoop(pairs, empty[A])
     }
     else {
       val p0 = iter.next()
-      if (iter.isEmpty) combineLoop(tail, p0)
+      if (iter.isEmpty) combineLoop(pairs, p0)
       else {
         val p1 = iter.next()
-        combineAllIter(iter, p1 :: p0 :: tail)
+        val pair = p0.combine(p1) // this is where the name pairing heap comes from
+        combineAllIter(iter, pair :: pairs)
       }
     }
 
