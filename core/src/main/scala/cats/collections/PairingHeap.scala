@@ -347,7 +347,5 @@ object PairingHeap {
     new CommutativeMonoid[PairingHeap[A]] {
       def empty = PairingHeap.empty[A]
       def combine(a: PairingHeap[A], b: PairingHeap[A]) = a.combine(b)
-      override def combineAll(as: TraversableOnce[PairingHeap[A]]): PairingHeap[A] =
-        combineAllIter(as.toIterator, Nil)
     }
 }
