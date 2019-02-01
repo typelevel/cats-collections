@@ -178,20 +178,6 @@ object PairingHeap {
       }
     }
 
-  // this is a combineall that only counts the number of combines is needs
-  // to do for testing
-  // this should be kept in sync with combineAllIter
-  private[collections] def combineAllIterCount[A: Order](iter: Iterator[PairingHeap[A]], cnt: Int): Int =
-    if (iter.isEmpty) cnt
-    else {
-      iter.next()
-      if (iter.isEmpty) cnt + 1
-      else {
-        iter.next()
-        combineAllIterCount(iter, cnt + 2)
-      }
-    }
-
   /**
    * build a heap from a list of items, O(N)
    */

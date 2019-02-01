@@ -207,7 +207,7 @@ class PairingHeapSpec extends CatsSuite {
       val totalSize = heap.size
 
       val bound = if (totalSize > 0) (math.log(totalSize.toDouble) + 8.0).toInt else 1
-      assert(PairingHeap.combineAllIterCount(heap.subtrees.iterator, 0) <= bound)
+      assert(heap.subtrees.size <= bound)
     }
   }
 
