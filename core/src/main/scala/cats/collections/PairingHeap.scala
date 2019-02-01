@@ -26,7 +26,7 @@ sealed abstract class PairingHeap[A] {
     if (this.isEmpty) apply(x)
     else {
       val thisTree = this.asInstanceOf[Tree[A]]
-      if (order.lteqv(x, thisTree.min)) Tree(x, this :: Nil)
+      if (order.lt(x, thisTree.min)) Tree(x, this :: Nil)
       else Tree(thisTree.min, Tree(x, Nil) :: thisTree.subtrees)
     }
 

@@ -204,11 +204,33 @@ class PairingHeapSpec extends CatsSuite {
 
   test("PairingHeap.combineAll (remove) does < log_2 N + 8 work") {
     forAll { (heap: PairingHeap[Int]) =>
-      val totalSize = heap.size
+      def isGood(heap: PairingHeap[Int]): Unit = {
+        val totalSize = heap.size
 
-      val bound = if (totalSize > 0) (math.log(totalSize.toDouble) + 8.0).toInt else 1
-      assert(heap.subtrees.size <= bound)
+        val bound = if (totalSize > 0) (math.log(totalSize.toDouble) + 8.0).toInt else 1
+        assert(heap.subtrees.size <= bound)
+        heap.subtrees.foreach(isGood(_))
+      }
+
+      isGood(heap)
     }
+  }
+
+  test("PairingHeap satisfies the heap property") {
+    def isHeap[A: Order](h: PairingHeap[A]): Unit =
+      h.minimumOption match {
+        case None =>
+          assert(h.subtrees.isEmpty)
+          assert(h.isEmpty)
+          ()
+        case Some(m) =>
+          h.subtrees.foreach { sh =>
+            sh.minimumOption.foreach { sm => assert(Order[A].lteqv(m, sm)) }
+            isHeap(sh)
+          }
+      }
+
+    forAll { (h: PairingHeap[Int]) => isHeap(h) }
   }
 
   test("takeLargest is the same as sort.reverse.take") {
