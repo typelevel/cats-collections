@@ -1,7 +1,7 @@
 package cats.collections
 
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, /*Cogen, */Gen, Properties, Test}
+import org.scalacheck.{Arbitrary, Properties, Test}
 import Arbitrary.{arbitrary => arb}
 
 object BitSetTest extends Properties("BitSet") {
@@ -9,18 +9,8 @@ object BitSetTest extends Properties("BitSet") {
   override def overrideParameters(p: Test.Parameters): Test.Parameters =
     p.withMinSuccessfulTests(500)
 
-  case class N(value: Int) {
-    override def toString: String = value.toString
-  }
-
-  implicit val arbN: Arbitrary[N] =
-    Arbitrary(Gen.choose(0, Int.MaxValue).map(N(_)))
-
-  def build(xs: List[N]): BitSet =
-    xs.foldLeft(BitSet.empty)((bs, n) => bs + n.value)
-
   implicit val arbBitSet: Arbitrary[BitSet] =
-    Arbitrary(arb[List[N]].map(xs => BitSet(xs.map(_.value): _*)))
+    Arbitrary(arb[List[Int]].map(xs => BitSet(xs: _*)))
 
   property("(x = y) = (x.toSet = y.toSet)") =
     forAll { (x: BitSet, y: BitSet) =>
@@ -35,8 +25,7 @@ object BitSetTest extends Properties("BitSet") {
     }
 
   property("BitSet(set: _*).toSet = set") =
-    forAll { (ns0: Set[N]) =>
-      val ns = ns0.map(_.value)
+    forAll { (ns: Set[Int]) =>
       val x = BitSet(ns.toList: _*)
       x.toSet == ns && ns.forall(x(_))
     }
@@ -77,52 +66,50 @@ object BitSetTest extends Properties("BitSet") {
     }
 
   property("(x + a)(a)") =
-    forAll { (x: BitSet, a: N) =>
-      val y = x + a.value
-      y(a.value) :| s"$y(${a.value})"
+    forAll { (x: BitSet, a: Int) =>
+      val y = x + a
+      y(a) :| s"$y(${a})"
     }
 
   property("!(x - a)(a)") =
-    forAll { (x: BitSet, a: N) =>
-      !(x - a.value)(a.value)
+    forAll { (x: BitSet, a: Int) =>
+      !(x - a)(a)
     }
 
   property("x + a - a == x - a") =
-    forAll { (x: BitSet, a: N) =>
-      ((x + a.value) - a.value) == (x - a.value)
+    forAll { (x: BitSet, a: Int) =>
+      ((x + a) - a) == (x - a)
     }
 
   property("x + a + a = x + a") =
-    forAll { (x: BitSet, a: N) =>
-      val once = x + a.value
-      (once + a.value) == once
+    forAll { (x: BitSet, a: Int) =>
+      val once = x + a
+      (once + a) == once
     }
 
   property("x - a - a = x - a") =
-    forAll { (x: BitSet, a: N) =>
-      val once = x - a.value
-      (once - a.value) == once
+    forAll { (x: BitSet, a: Int) =>
+      val once = x - a
+      (once - a) == once
     }
 
   property("x.toSet + a == (x + a).toSet") =
-    forAll { (x: BitSet, a: N) =>
-      x.toSet + a.value == (x + a.value).toSet
+    forAll { (x: BitSet, a: Int) =>
+      x.toSet + a == (x + a).toSet
     }
 
   property("x.toSet - a == (x - a).toSet") =
-    forAll { (x: BitSet, a: N) =>
-      x.toSet - a.value == (x - a.value).toSet
+    forAll { (x: BitSet, a: Int) =>
+      x.toSet - a == (x - a).toSet
     }
 
   property("+ is commutative") =
-    forAll { (ns0: List[N]) =>
-      val ns = ns0.map(_.value)
+    forAll { (ns: List[Int]) =>
       BitSet(ns: _*) == BitSet(ns.reverse: _*)
     }
 
   property("- is commutative") =
-    forAll { (x: BitSet, ns0: List[N]) =>
-      val ns = ns0.map(_.value)
+    forAll { (x: BitSet, ns: List[Int]) =>
       ns.foldLeft(x)(_ - _) == ns.reverse.foldLeft(x)(_ - _)
     }
 
