@@ -14,22 +14,25 @@ import BitSet.{Branch, Empty, Leaf}
  * A fast, immutable BitSet.
  *
  * A Bitset is a specialized type of set that tracks the `Int` values
- * it contains: for each integer value, a BitSet use a single bit to
- * track whether it is present (1) or absent (0). An empty bitset is a
- * (sparse) bitset whose bits are all assumed to be zero.
+ * it contains: for each integer value, a BitSet uses a single bit to
+ * track whether the value is present (1) or absent (0). Bitsets are
+ * often sparse, since "missing" bits can be assumed to be zero.
  *
  * Unlike scala's default immutable this BitSet does not do a full
  * copy on each added value.
  *
- * Interally the implementation is a tree. Its leaves use an
- * Array[Long] value to hold up to 2048 bits, and its branches use an
- * Array[BitSet] to hold up to 32 subtrees. It treats the values it
- * stores as 32-bit unsigned values, which is relevant to the internal
- * addressing methods as well as the order used by `iterator`.
+ * Interally the implementation is a tree. Each leaf uses an
+ * Array[Long] value to hold up to 2048 bits, and each branch uses an
+ * Array[BitSet] to hold up to 32 subtrees (null subtrees are treated
+ * as empty).
  *
- * The benchmarks suggest this is MUCH faster than Scala's built-in
- * bitset for cases where you may need many modifications and merges,
- * (for example in a BloomFilter).
+ * Bitset treats the values it stores as 32-bit unsigned values, which
+ * is relevant to the internal addressing methods as well as the order
+ * used by `iterator`.
+ *
+ * The benchmarks suggest this bitset is MUCH faster than Scala's
+ * built-in bitset for cases where you may need many modifications and
+ * merges, (for example in a BloomFilter).
  */
 sealed abstract class BitSet { lhs =>
 
@@ -54,7 +57,7 @@ sealed abstract class BitSet { lhs =>
    * Offset, limit, and height are related:
    *
    *     limit = offset + (32^height) * 2048
-   *     limit > offset
+   *     limit > offset (assuming both values are unsigned)
    *
    * Like `offset`, `limit` is interpreted as a 32-bit unsigned
    * integer.
