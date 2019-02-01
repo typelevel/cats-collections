@@ -244,7 +244,7 @@ sealed abstract class BitSet { lhs =>
     }
 
   /**
-   * Returns false this bitset contains values, true otherwise.
+   * Returns false if this bitset contains values, true otherwise.
    */
   def isEmpty: Boolean =
     this match {
@@ -258,7 +258,7 @@ sealed abstract class BitSet { lhs =>
     }
 
   /**
-   * Returns true this bitset contains values, false otherwise.
+   * Returns true if this bitset contains values, false otherwise.
    */
   def nonEmpty: Boolean = !isEmpty
 
