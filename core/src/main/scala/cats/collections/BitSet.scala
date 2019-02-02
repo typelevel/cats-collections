@@ -240,16 +240,7 @@ sealed abstract class BitSet { lhs =>
   /**
    * Returns false if this bitset contains values, true otherwise.
    */
-  def isEmpty: Boolean =
-    this match {
-      case Leaf(_, vs) =>
-        vs.forall(_ == 0L)
-      case Branch(_, _, cs) =>
-        cs.forall {
-          case null => true
-          case c => c.isEmpty
-        }
-    }
+  def isEmpty: Boolean
 
   /**
    * Returns true if this bitset contains values, false otherwise.
@@ -272,6 +263,8 @@ sealed abstract class BitSet { lhs =>
    * how the bitset is encoded in a tree, showing leaves and branches.
    */
   private[collections] def structure: String =
+    // This is for debugging, we don't care about coverage here
+    // $COVERAGE-OFF$
     this match {
       case Branch(o, h, cs) =>
         val s = cs.iterator
@@ -283,6 +276,7 @@ sealed abstract class BitSet { lhs =>
       case Leaf(o, v) =>
         s"Leaf($o, $v)"
     }
+    // $COVERAGE-ON$
 
   /**
    * Universal equality.
@@ -366,29 +360,7 @@ object BitSet {
   @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
     (n - o) >>> (h * 5 + 6)
 
-  /**
-   * Given an offset (`o`) and a height (`h`) representing a subtree,
-   * compute the array index used this subtree in its parent tree.
-   */
-  @inline private[collections] def parentOffset(o: Int, h: Int): Int =
-    o & -(1 << (h * 5 + 16))
-
   case class InternalError(msg: String) extends Exception(msg)
-
-  /**
-   * Construct the leaf containing the given value `n`.
-   *
-   * Since leaves have zero height, we can divide a value by 2048
-   * (i.e. >> 11) to determine its offset.
-   */
-  private[collections] def leafFor(n: Int): BitSet = {
-    val offset = n >>> 11
-    val i = (n - offset) >>> 5
-    val j = (n - offset) & 63
-    val vs = new Array[Long](32)
-    vs(i) = 1L << j
-    Leaf(offset, vs)
-  }
 
   /**
    * Return a branch containing the given bitset `b` and value `n`.
@@ -439,8 +411,6 @@ object BitSet {
 
     @inline private[collections] def limit: Long = offset + (1L << (height * 5 + 11))
 
-    //require(limit > offset, s"$limit > $offset (at height=$height)")
-
     @inline private[collections] def index(n: Int): Int = (n - offset) >>> (height * 5 + 6)
     @inline private[collections] def valid(i: Int): Boolean = 0 <= i && i < 32
     @inline private[collections] def invalid(i: Int): Boolean = i < 0 || 32 <= i
@@ -451,6 +421,17 @@ object BitSet {
         val c = children(i)
         c != null && c(n)
       }
+    }
+
+    def isEmpty: Boolean = {
+      var idx = 0
+      var empty = true
+      while((idx < children.length) && empty) {
+        val c = children(idx)
+        empty = (c == null) || c.isEmpty
+        idx += 1
+      }
+      empty
     }
 
     def newChild(i: Int): BitSet = {
@@ -568,7 +549,6 @@ object BitSet {
 
     private[collections] def +=(n: Int): Unit = {
       val i = index(n)
-      //require(valid(i))
       val c0 = children(i)
       if (c0 == null) {
         val c = newChild(i)
@@ -660,8 +640,6 @@ object BitSet {
 
     @inline private[collections] def index(n: Int): Int = (n - offset) >>> 6
     @inline private[collections] def bit(n: Int): Int = (n - offset) & 63
-    @inline private[collections] def valid(i: Int): Boolean = 0 <= i && i < 2048
-    @inline private[collections] def invalid(i: Int): Boolean = i < 0 || 2048 <= i
 
     def height: Int = 0
 
@@ -706,6 +684,16 @@ object BitSet {
           Leaf(offset, vs)
         }
       }
+    }
+
+    def isEmpty: Boolean = {
+      var idx = 0
+      var empty = true
+      while ((idx < values.length) && empty) {
+        empty = (values(idx) == 0L)
+        idx += 1
+      }
+      empty
     }
 
     def size: Int = {

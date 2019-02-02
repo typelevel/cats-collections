@@ -1,13 +1,34 @@
 package cats.collections
 
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Properties}
+import org.scalacheck.{Arbitrary, Gen, Properties}
 import Arbitrary.{arbitrary => arb}
 
 object BitSetTest extends Properties("BitSet") {
 
   implicit val arbBitSet: Arbitrary[BitSet] =
-    Arbitrary(arb[List[Int]].map(xs => BitSet(xs: _*)))
+    Arbitrary {
+      val recur = Gen.lzy(arbBitSet.arbitrary)
+
+      def onPair(fn: (BitSet, BitSet) => BitSet): Gen[BitSet] =
+        for {
+          a <- recur
+          b <- recur
+        } yield fn(a, b)
+
+      Gen.frequency(
+        (5, arb[List[Int]].map(xs => BitSet(xs: _*))),
+        (5, Gen.sized { max => arb[Int].map { init => BitSet((init until (init + max)): _*) } }),
+        (1, onPair( _ | _)),
+        (1, onPair( _ & _))
+      )
+    }
+
+  property("limit/height consistency") =
+    forAll { (x: BitSet) =>
+      import x.{limit, offset, height}
+      (limit == (offset + (1L << (5 * height + 11)))) && (limit > offset)
+    }
 
   property("(x = y) = (x.toSet = y.toSet)") =
     forAll { (x: BitSet, y: BitSet) =>
@@ -58,6 +79,16 @@ object BitSetTest extends Properties("BitSet") {
   property("x.isEmpty = (x.size = 0)") =
     forAll { (x: BitSet) =>
       x.isEmpty == (x.size == 0)
+    }
+
+  property("!x.isEmpty == x.nonEmpty") =
+    forAll { (x: BitSet) =>
+      x.nonEmpty == (!x.isEmpty)
+    }
+
+  property("BitSet.empty contains nothing") =
+    forAll { (x: Int) =>
+      !BitSet.empty(x)
     }
 
   property("x.iterator.forall(x(_))") =
@@ -142,6 +173,13 @@ object BitSetTest extends Properties("BitSet") {
       } catch { case (e: Throwable) => e.printStackTrace; throw e }
     }
 
+  property("(x | y)(z) == x(z) || y(z)") =
+    forAll { (x: BitSet, y: BitSet, z: Int) =>
+      def law(z: Int): Boolean = (x | y)(z) == (x(z) || y(z))
+
+      law(z) && x.iterator.forall(law) && y.iterator.forall(law)
+    }
+
   property("x & x = x") =
     forAll { (x: BitSet) =>
       val y = x & x
@@ -162,6 +200,14 @@ object BitSetTest extends Properties("BitSet") {
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
       ((x & y) & z) == (x & (y & z))
     }
+
+  property("(x & y)(z) == x(z) && y(z)") =
+    forAll { (x: BitSet, y: BitSet, z: Int) =>
+      def law(z: Int): Boolean = (x & y)(z) == (x(z) && y(z))
+
+      law(z) && x.iterator.forall(law) && y.iterator.forall(law)
+    }
+
 
   property("(x & (y | z) = (x & y) | (x & z)") =
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
