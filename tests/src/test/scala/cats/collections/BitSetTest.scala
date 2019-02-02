@@ -315,4 +315,17 @@ object BitSetTest extends Properties("BitSet") {
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
+  property("(x intersects y) = (y intersets x)") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x intersects y
+      val rhs = y intersects x
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x intersects y) = (x & y).nonEmpty") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x intersects y
+      val rhs = (x & y).nonEmpty
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
 }

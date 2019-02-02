@@ -118,10 +118,9 @@ sealed abstract class BitSet { lhs =>
   /**
    * Returns whether the two bitsets intersect or not.
    *
-   * Equivalent to (x & y).nonEmpty but potentially faster.
+   * Equivalent to (x & y).nonEmpty but faster.
    */
-  def intersects(rhs: BitSet): Boolean =
-    (this & rhs).nonEmpty
+  def intersects(rhs: BitSet): Boolean
 
   /**
    * Return the exclusive-or of two bitsets as a new immutable bitset.
@@ -606,6 +605,35 @@ object BitSet {
         Branch(offset, height, cs)
       }
 
+    def intersects(rhs: BitSet): Boolean =
+      if (height > rhs.height) {
+        if (rhs.offset < offset || limit <= rhs.offset) {
+          false
+        } else {
+          // this branch contains rhs, so find its index
+          val i = index(rhs.offset)
+          val c0 = children(i)
+          if (c0 != null) c0 intersects rhs else false
+        }
+      } else if (height < rhs.height) {
+        // use commuativity to handle this in previous case
+        rhs intersects this
+      } else if (offset != rhs.offset) {
+        // same height, but non-overlapping
+        false
+      } else {
+        // height == rhs.height, so we know rhs is a Branch.
+        val Branch(_, _, rcs) = rhs
+        var i = 0
+        while (i < 32) {
+          val x = children(i)
+          val y = rcs(i)
+          if (x != null && y != null && (x intersects y)) return true
+          i += 1
+        }
+        false
+      }
+
     def ^(rhs: BitSet): BitSet =
       if (this eq rhs) {
         newEmpty(offset)
@@ -887,6 +915,23 @@ object BitSet {
           }
         case Branch(_, _, _) =>
           rhs & this
+      }
+
+    def intersects(rhs: BitSet): Boolean =
+      rhs match {
+        case Leaf(o, values2) =>
+          if (o != offset) {
+            false
+          } else {
+            var i = 0
+            while (i < 32) {
+              if ((values(i) & values2(i)) != 0L) return true
+              i += 1
+            }
+            false
+          }
+        case Branch(_, _, _) =>
+          rhs intersects this
       }
 
     def ^(rhs: BitSet): BitSet =
