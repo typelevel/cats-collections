@@ -393,20 +393,11 @@ object BitSet {
   case class InternalError(msg: String) extends Exception(msg)
 
   /**
-   * Construct the leaf containing the given value `n`.
+   * Construct a parent for the given bitset.
    *
-   * Since leaves have zero height, we can divide a value by 2048
-   * (i.e. >> 11) to determine its offset.
+   * The parent is guaranteed to be correctly aligned, and to have a
+   * height one greater than the given bitset.
    */
-  private[collections] def leafFor(n: Int): BitSet = {
-    val offset = n >>> 11
-    val i = (n - offset) >>> 5
-    val j = (n - offset) & 63
-    val vs = new Array[Long](32)
-    vs(i) = 1L << j
-    Leaf(offset, vs)
-  }
-
   private[collections] def parentFor(b: BitSet): BitSet = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 11))
@@ -1019,7 +1010,7 @@ object BitSet {
         val itx = x.iterator
         val ity = y.iterator
         while (itx.hasNext && ity.hasNext) {
-          val c = Integer.compare(itx.next, ity.next)
+          val c = Integer.compare(itx.next(), ity.next())
           if (c != 0) return c
         }
         if (itx.hasNext) 1
