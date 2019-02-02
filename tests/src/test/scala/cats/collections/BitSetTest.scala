@@ -1,13 +1,10 @@
 package cats.collections
 
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Properties, Test}
+import org.scalacheck.{Arbitrary, Properties}
 import Arbitrary.{arbitrary => arb}
 
 object BitSetTest extends Properties("BitSet") {
-
-  override def overrideParameters(p: Test.Parameters): Test.Parameters =
-    p.withMinSuccessfulTests(500)
 
   implicit val arbBitSet: Arbitrary[BitSet] =
     Arbitrary(arb[List[Int]].map(xs => BitSet(xs: _*)))
@@ -43,7 +40,10 @@ object BitSetTest extends Properties("BitSet") {
 
   property("(x = y) = (x.## = y.##)") =
     forAll { (x: BitSet, y: BitSet) =>
-      (x == y) == (x.## == y.##) // only approximately true
+      // This is only approximately true, but failures are very rare,
+      // and without something like this its easy to end up with real
+      // hashing bugs.
+      (x == y) == (x.## == y.##)
     }
 
   property("x.compact = x") =

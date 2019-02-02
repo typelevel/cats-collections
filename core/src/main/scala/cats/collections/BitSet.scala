@@ -235,13 +235,7 @@ sealed abstract class BitSet { lhs =>
    * different `Set` implementation.
    */
   def toSet: Set[Int] =
-    new Set[Int] {
-      def contains(i: Int) = lhs(i)
-      def iterator = lhs.iterator
-      def +(i: Int) = (lhs + i).toSet
-      def -(i: Int) = (lhs - i).toSet
-      override def empty = Empty.toSet
-    }
+    new compat.BitSetWrapperSet(this)
 
   /**
    * Returns false if this bitset contains values, true otherwise.
@@ -325,7 +319,7 @@ sealed abstract class BitSet { lhs =>
     var hash: Int = 1500450271 // prime number
     val it = iterator
     while (it.hasNext) {
-      hash = (hash * it.next) + 1023465798 // prime number
+      hash = (hash * 1023465798) + it.next // prime number
     }
     hash
   }
