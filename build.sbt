@@ -57,7 +57,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
