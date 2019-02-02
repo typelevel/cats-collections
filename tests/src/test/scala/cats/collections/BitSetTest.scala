@@ -252,11 +252,25 @@ object BitSetTest extends Properties("BitSet") {
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
+  property("(x ^ y)(n) = x(n) ^ y(n)") =
+    forAll { (x: BitSet, y: BitSet, n: Int) =>
+      val lhs = (x ^ y)(n)
+      val rhs = x(n) ^ y(n)
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
   property("(x ^ y) = ((x -- (x & y)) | (y -- (x & y)))") =
     forAll { (x: BitSet, y: BitSet) =>
       val xy = x & y
       val lhs = x ^ y
       val rhs = (x -- xy) | (y -- xy)
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x -- y)(n) = x(n) && (!y(n))") =
+    forAll { (x: BitSet, y: BitSet, n: Int) =>
+      val lhs = (x -- y)(n)
+      val rhs = x(n) && (!y(n))
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
@@ -315,7 +329,7 @@ object BitSetTest extends Properties("BitSet") {
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
-  property("(x intersects y) = (y intersets x)") =
+  property("(x intersects y) = (y intersects x)") =
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = x intersects y
       val rhs = y intersects x
