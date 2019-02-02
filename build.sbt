@@ -57,7 +57,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
@@ -71,6 +71,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(noPublishSettings)
   .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "100"), // increase for stress tests
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-testkit" % V.cats % "test",
       "org.typelevel" %%% "cats-laws"    % V.cats % "test",
