@@ -295,7 +295,7 @@ sealed abstract class BitSet { lhs =>
         val it0 = this.iterator
         val it1 = t.iterator
         while (it0.hasNext && it1.hasNext) {
-          if (it0.next != it1.next) return false
+          if (it0.next() != it1.next()) return false
         }
         it0.hasNext == it1.hasNext
       case _ =>
@@ -313,7 +313,7 @@ sealed abstract class BitSet { lhs =>
     var hash: Int = 1500450271 // prime number
     val it = iterator
     while (it.hasNext) {
-      hash = (hash * 1023465798) + it.next // prime number
+      hash = (hash * 1023465798) + it.next() // prime number
     }
     hash
   }
@@ -347,8 +347,9 @@ object BitSet {
    */
   def apply(xs: Int*): BitSet = {
     var bs = newEmpty(0)
-    xs.foreach { n =>
-      bs = bs.mutableAdd(n)
+    val iter = xs.iterator
+    while(iter.hasNext) {
+      bs = bs.mutableAdd(iter.next())
     }
     bs
   }
@@ -425,13 +426,13 @@ object BitSet {
 
     def isEmpty: Boolean = {
       var idx = 0
-      var empty = true
-      while((idx < children.length) && empty) {
+      while(idx < children.length) {
         val c = children(idx)
-        empty = (c == null) || c.isEmpty
+        val empty = (c == null) || c.isEmpty
+        if (!empty) return false
         idx += 1
       }
-      empty
+      true
     }
 
     def newChild(i: Int): BitSet = {
@@ -688,12 +689,12 @@ object BitSet {
 
     def isEmpty: Boolean = {
       var idx = 0
-      var empty = true
-      while ((idx < values.length) && empty) {
-        empty = (values(idx) == 0L)
+      while (idx < values.length) {
+        val empty = (values(idx) == 0L)
+        if (!empty) return false
         idx += 1
       }
-      empty
+      true
     }
 
     def size: Int = {
