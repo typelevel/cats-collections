@@ -63,6 +63,21 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
 
+lazy val laws = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .dependsOn(core)
+  .settings(moduleName := "cats-collections-laws")
+  .settings(dogsSettings:_*)
+  .settings(publishSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-laws"    % V.cats
+      )
+  )
+
+lazy val lawsJVM = laws.jvm
+lazy val lawsJS = laws.js
+
 lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .dependsOn(scalacheck)
