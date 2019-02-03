@@ -23,11 +23,22 @@ object BitSetTest extends Properties("BitSet") {
           b <- arb[Int]
         } yield fn(a, b)
 
+      val genOffset: Gen[Int] =
+        Gen.choose(0, 1 << 16).map { multiple =>
+          2048 * multiple
+        }
+
+      // intentionally create top level items without 0 offset
+      // to exercise more code paths that won't actually be hit in
+      // real code but are hard to statically prove won't be hit
+      val emptyOffset: Gen[BitSet] = genOffset.map(BitSet.newEmpty(_))
+
       Gen.frequency(
         (10, arb[List[Int]].map(xs => BitSet(xs: _*))),
         // create a consecutive run:
         (10, Gen.sized { max => arb[Int].map { init => BitSet((init until (init + max)): _*) } }),
         (1, BitSet.empty),
+        (1, emptyOffset),
         (1, onPair( _ | _)),
         (1, onPair( _ & _)),
         (1, onPair( _ ^ _)),
@@ -73,14 +84,16 @@ object BitSetTest extends Properties("BitSet") {
       x.iterator.size == x.size
     }
 
-  // we have to comment this out because it fails maybe every 700 or so trials
-  // property("(x = y) = (x.## = y.##)") =
-  //   forAll { (x: BitSet, y: BitSet) =>
-  //     // This is only approximately true, but failures are very rare,
-  //     // and without something like this its easy to end up with real
-  //     // hashing bugs.
-  //     ((x == y) == (x.## == y.##))
-  //   }
+  property("(x = y) = (x.## = y.##)") =
+    forAll(Gen.listOfN(100, arb[(BitSet, BitSet)])) { pairs =>
+      // This is only approximately true, but failures are very rare,
+      // and without something like this its easy to end up with real
+      // hashing bugs.
+      def good(x: BitSet, y: BitSet) = (x == y) == (x.## == y.##)
+
+      // collisions should happen less than 5% of the time
+      pairs.count { case (a, b) => good(a, b) } > 95
+    }
 
   property("x.compact = x") =
     forAll { (x: BitSet) =>
