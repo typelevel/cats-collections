@@ -1,5 +1,6 @@
 package cats.collections
 
+import cats.Order
 import java.lang.Long.bitCount
 import scala.annotation.tailrec
 
@@ -114,6 +115,31 @@ sealed abstract class BitSet { lhs =>
    */
   def &(rhs: BitSet): BitSet
 
+  /**
+   * Returns whether the two bitsets intersect or not.
+   *
+   * Equivalent to (x & y).nonEmpty but faster.
+   */
+  def intersects(rhs: BitSet): Boolean
+
+  /**
+   * Return the exclusive-or of two bitsets as a new immutable bitset.
+   */
+  def ^(rhs: BitSet): BitSet
+
+  /**
+   * Return this bitset minus the bits contained in the other bitset
+   * as a new immutable bitset.
+   *
+   * The resulting bitset will contain exactly those values which do
+   * appear in the left-hand side but do not appear in the right-hand
+   * side.
+   *
+   * If the bitsets do not intersect, the left-hand side will be
+   * returned.
+   */
+  def --(rhs: BitSet): BitSet
+
   // Internal mutability
   //
   // The following three methods (`+=`, `-=`, and `mutableAdd`) all
@@ -204,7 +230,7 @@ sealed abstract class BitSet { lhs =>
    * its subtrees. For leaves it returns the number of bits set in the
    * leaf (i.e. the number of values the leaf contains).
    */
-  def size: Int
+  def size: Long
 
   /**
    * Iterate across all values in the bitset.
@@ -273,8 +299,11 @@ sealed abstract class BitSet { lhs =>
           .map { case (c, i) => s"$i -> ${c.structure}" }
           .mkString("Array(", ", ", ")")
         s"Branch($o, $h, $s)"
-      case Leaf(o, v) =>
-        s"Leaf($o, $v)"
+      case Leaf(o, vs) =>
+        val s = vs.zipWithIndex.collect {
+          case (n, i) if n != 0 => s"$i -> $n"
+        }.mkString("{", ", ", "}")
+        s"Leaf($o, $s)"
     }
     // $COVERAGE-ON$
 
@@ -362,6 +391,21 @@ object BitSet {
     (n - o) >>> (h * 5 + 6)
 
   case class InternalError(msg: String) extends Exception(msg)
+
+  /**
+   * Construct a parent for the given bitset.
+   *
+   * The parent is guaranteed to be correctly aligned, and to have a
+   * height one greater than the given bitset.
+   */
+  private[collections] def parentFor(b: BitSet): BitSet = {
+    val h = b.height + 1
+    val o = b.offset & -(1 << (h * 5 + 11))
+    val cs = new Array[BitSet](32)
+    val i = (b.offset - o) >>> (h * 5 + 6)
+    cs(i) = b
+    Branch(o, h, cs)
+  }
 
   /**
    * Return a branch containing the given bitset `b` and value `n`.
@@ -480,7 +524,9 @@ object BitSet {
     }
 
     def |(rhs: BitSet): BitSet =
-      if (height > rhs.height) {
+      if (this eq rhs) {
+        this
+      } else if (height > rhs.height) {
         if (rhs.offset < offset || limit <= rhs.offset) {
           // this branch doesn't contain rhs
           BitSet.adoptedUnion(this, rhs)
@@ -519,7 +565,9 @@ object BitSet {
       }
 
     def &(rhs: BitSet): BitSet =
-      if (height > rhs.height) {
+      if (this eq rhs) {
+        this
+      } else if (height > rhs.height) {
         if (rhs.offset < offset || limit <= rhs.offset) {
           Empty
         } else {
@@ -546,6 +594,125 @@ object BitSet {
           i += 1
         }
         Branch(offset, height, cs)
+      }
+
+    def intersects(rhs: BitSet): Boolean =
+      if (height > rhs.height) {
+        if (rhs.offset < offset || limit <= rhs.offset) {
+          false
+        } else {
+          // this branch contains rhs, so find its index
+          val i = index(rhs.offset)
+          val c0 = children(i)
+          if (c0 != null) c0 intersects rhs else false
+        }
+      } else if (height < rhs.height) {
+        // use commuativity to handle this in previous case
+        rhs intersects this
+      } else if (offset != rhs.offset) {
+        // same height, but non-overlapping
+        false
+      } else {
+        // height == rhs.height, so we know rhs is a Branch.
+        val Branch(_, _, rcs) = rhs
+        var i = 0
+        while (i < 32) {
+          val x = children(i)
+          val y = rcs(i)
+          if (x != null && y != null && (x intersects y)) return true
+          i += 1
+        }
+        false
+      }
+
+    def ^(rhs: BitSet): BitSet =
+      if (this eq rhs) {
+        newEmpty(offset)
+      } else if (height > rhs.height) {
+        if (rhs.offset < offset || limit <= rhs.offset) {
+          this | rhs
+        } else {
+          // this branch contains rhs, so find its index
+          val i = index(rhs.offset)
+          val c0 = children(i)
+          if (c0 != null) {
+            val cc = c0 ^ rhs
+            if (c0 eq cc) this else replace(i, cc)
+          } else {
+            var cc = rhs
+            while (cc.height < height - 1) cc = BitSet.parentFor(cc)
+            replace(i, cc)
+          }
+        }
+      } else if (height < rhs.height) {
+        // use commuativity to handle this in previous case
+        rhs ^ this
+      } else if (offset != rhs.offset) {
+        // same height, but non-overlapping
+        this | rhs
+      } else {
+        // height == rhs.height, so we know rhs is a Branch.
+        val Branch(_, _, rcs) = rhs
+        val cs = new Array[BitSet](32)
+        var i = 0
+        while (i < 32) {
+          val c0 = children(i)
+          val c1 = rcs(i)
+          cs(i) = if (c1 == null) c0 else if (c0 == null) c1 else c0 ^ c1
+          i += 1
+        }
+        Branch(offset, height, cs)
+      }
+
+    def --(rhs: BitSet): BitSet =
+      rhs match {
+        case _ if this eq rhs =>
+          Empty
+        case b @ Branch(_, _, _) if height < b.height =>
+          if (offset < b.offset || b.limit <= offset) this
+          else this -- b.children(b.index(offset))
+        case b @ Branch(_, _, _) if height == b.height =>
+          if (offset != b.offset) {
+            this
+          } else {
+            var newChildren: Array[BitSet] = null
+            var i = 0
+            while (i < 32) {
+              val c0 = children(i)
+              val c1 = b.children(i)
+              val cc = if (c0 == null || c1 == null) c0 else c0 -- c1
+              if (!(c0 eq cc)) {
+                if (newChildren == null) {
+                  newChildren = new Array[BitSet](32)
+                  var j = 0
+                  while (j < i) {
+                    newChildren(j) = children(j)
+                    j += 1
+                  }
+                }
+                newChildren(i) = cc
+              } else if (newChildren != null) {
+                newChildren(i) = c0
+              }
+              i += 1
+            }
+            if (newChildren == null) this
+            else Branch(offset, height, newChildren)
+          }
+        case _ /* height > rhs.height */ =>
+          if (rhs.offset < offset || limit <= rhs.offset) {
+            this
+          } else {
+            // this branch contains rhs, so find its index
+            val i = index(rhs.offset)
+            val c = children(i)
+            if (c == null) {
+              this
+            } else {
+              val cc = c -- rhs
+              if (c eq cc) this else replace(i, cc)
+            }
+          }
       }
 
     private[collections] def +=(n: Int): Unit = {
@@ -623,9 +790,9 @@ object BitSet {
         case c => c.reverseIterator
       }
 
-    def size: Int = {
+    def size: Long = {
       var i = 0
-      var n = 0
+      var n = 0L
       while (i < 32) {
         val c = children(i)
         if (c != null) n += c.size
@@ -697,8 +864,8 @@ object BitSet {
       true
     }
 
-    def size: Int = {
-      var c = 0
+    def size: Long = {
+      var c = 0L
       var i = 0
       while (i < 32) {
         c += bitCount(values(i))
@@ -724,7 +891,9 @@ object BitSet {
     def &(rhs: BitSet): BitSet =
       rhs match {
         case Leaf(o, values2) =>
-          if (o != offset) {
+          if (this eq rhs) {
+            this
+          } else if (o != offset) {
             Empty
           } else {
             val vs = new Array[Long](32)
@@ -737,6 +906,67 @@ object BitSet {
           }
         case Branch(_, _, _) =>
           rhs & this
+      }
+
+    def intersects(rhs: BitSet): Boolean =
+      rhs match {
+        case Leaf(o, values2) =>
+          if (o != offset) {
+            false
+          } else {
+            var i = 0
+            while (i < 32) {
+              if ((values(i) & values2(i)) != 0L) return true
+              i += 1
+            }
+            false
+          }
+        case Branch(_, _, _) =>
+          rhs intersects this
+      }
+
+    def ^(rhs: BitSet): BitSet =
+      rhs match {
+        case Leaf(o, values2) =>
+          if (this eq rhs) {
+            newEmpty(offset)
+          } else if (o != offset) {
+            this | rhs
+          } else {
+            val vs = new Array[Long](32)
+            var i = 0
+            while (i < 32) {
+              vs(i) = values(i) ^ values2(i)
+              i += 1
+            }
+            Leaf(offset, vs)
+          }
+        case Branch(_, _, _) =>
+          rhs ^ this
+      }
+
+    def --(rhs: BitSet): BitSet =
+      rhs match {
+        case Leaf(o, values2) =>
+          if (o != offset) {
+            this
+          } else {
+            val vs = new Array[Long](32)
+            var i = 0
+            while (i < 32) {
+              vs(i) = values(i) & (~values2(i))
+              i += 1
+            }
+            Leaf(offset, vs)
+          }
+        case b @ Branch(_, _, _) =>
+          val j = b.index(offset)
+          if (0 <= j && j < 32) {
+            val c = b.children(j)
+            if (c == null) this else this -- c
+          } else {
+            this
+          }
       }
 
     private[collections] def +=(n: Int): Unit = {
@@ -773,6 +1003,24 @@ object BitSet {
     def reverseIterator: Iterator[Int] =
       new LeafReverseIterator(offset, values)
   }
+
+  implicit val orderForBitSet: Order[BitSet] =
+    new Order[BitSet] {
+      def compare(x: BitSet, y: BitSet): Int = {
+        val itx = x.iterator
+        val ity = y.iterator
+        while (itx.hasNext && ity.hasNext) {
+          val c = Integer.compare(itx.next(), ity.next())
+          if (c != 0) return c
+        }
+        if (itx.hasNext) 1
+        else if (ity.hasNext) -1
+        else 0
+      }
+    }
+
+  implicit val orderingForBitSet: Ordering[BitSet] =
+    orderForBitSet.toOrdering
 
   /**
    * Efficient, low-level iterator for BitSet.Leaf values.

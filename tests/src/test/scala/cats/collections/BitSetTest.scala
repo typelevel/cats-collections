@@ -1,5 +1,6 @@
 package cats.collections
 
+import cats.implicits._
 import org.scalacheck.Prop._
 import org.scalacheck.{Arbitrary, Gen, Properties}
 import Arbitrary.{arbitrary => arb}
@@ -220,6 +221,125 @@ object BitSetTest extends Properties("BitSet") {
     forAll { (x: BitSet) =>
       val lhs = x.iterator.toList.reverse
       val rhs = x.reverseIterator.toList
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("((x ^ y) ^ z) = (x ^ (y ^ z))") =
+    forAll { (x: BitSet, y: BitSet, z: BitSet) =>
+      val lhs = ((x ^ y) ^ z)
+      val rhs = (x ^ (y ^ z))
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x ^ y) = (y ^ x)") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = (x ^ y)
+      val rhs = (y ^ x)
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x ^ x) = 0") =
+    forAll { (x: BitSet) =>
+      val lhs = (x ^ x)
+      val rhs = BitSet.empty
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x ^ 0) = x") =
+    forAll { (x: BitSet) =>
+      val lhs = (x ^ BitSet.empty)
+      val rhs = x
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x ^ y)(n) = x(n) ^ y(n)") =
+    forAll { (x: BitSet, y: BitSet, n: Int) =>
+      val lhs = (x ^ y)(n)
+      val rhs = x(n) ^ y(n)
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x ^ y) = ((x -- (x & y)) | (y -- (x & y)))") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val xy = x & y
+      val lhs = x ^ y
+      val rhs = (x -- xy) | (y -- xy)
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x -- y)(n) = x(n) && (!y(n))") =
+    forAll { (x: BitSet, y: BitSet, n: Int) =>
+      val lhs = (x -- y)(n)
+      val rhs = x(n) && (!y(n))
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x -- y).toSet = (x.toSet -- y.toSet)") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = (x -- y).toSet
+      val rhs = x.toSet -- y.toSet
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("x -- x = 0") =
+    forAll { (x: BitSet) =>
+      val lhs = x -- x
+      val rhs = BitSet.empty
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("0 -- x = 0") =
+    forAll { (x: BitSet) =>
+      val lhs = BitSet.empty -- x
+      val rhs = BitSet.empty
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("x -- BitSet(n) = x - n") =
+    forAll { (x: BitSet, n: Int) =>
+      val lhs = x -- BitSet(n)
+      val rhs = x - n
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("x -- 0 = x") =
+    forAll { (x: BitSet) =>
+      val lhs = x -- BitSet.empty
+      (lhs == x) :| s"$lhs == $x"
+    }
+
+  property("x -- y -- y = x -- y") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x -- y -- y
+      val rhs = x -- y
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("test order") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x compare y
+      val rhs = x.iterator.toList compare y.iterator.toList
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("test ordering") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = BitSet.orderingForBitSet.compare(x, y)
+      val rhs = x.iterator.toList compare y.iterator.toList
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x intersects y) = (y intersects x)") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x intersects y
+      val rhs = y intersects x
+      (lhs == rhs) :| s"$lhs == $rhs"
+    }
+
+  property("(x intersects y) = (x & y).nonEmpty") =
+    forAll { (x: BitSet, y: BitSet) =>
+      val lhs = x intersects y
+      val rhs = (x & y).nonEmpty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 }
