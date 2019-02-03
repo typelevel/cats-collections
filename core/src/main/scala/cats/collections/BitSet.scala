@@ -596,13 +596,21 @@ object BitSet {
         val Branch(_, _, rcs) = rhs
         val cs = new Array[BitSet](32)
         var i = 0
+        var nonEmpty = false
         while (i < 32) {
           val x = children(i)
           val y = rcs(i)
-          if (x != null && y != null) cs(i) = x & y
+          if (x != null && y != null) {
+            val xy = x & y
+            if (!(xy eq Empty)) {
+              nonEmpty = true
+              cs(i) = xy
+            }
+          }
           i += 1
         }
-        Branch(offset, height, cs)
+        if (nonEmpty) Branch(offset, height, cs)
+        else Empty
       }
 
     def intersects(rhs: BitSet): Boolean =
@@ -639,7 +647,11 @@ object BitSet {
         // TODO: it is unclear why BitSet.Empty isn't okay here.
         // Tests pass if we do it, but it seems a pretty minor optimization
         // If we need some invariant, we should have a test for it.
-        newEmpty(offset)
+        // newEmpty(offset)
+        //
+        // a motivation to use Empty here is to avoid always returning
+        // aligned offsets, which make some of the branches below unreachable
+        BitSet.Empty
       } else if (height > rhs.height) {
         if (rhs.offset < offset || limit <= rhs.offset) {
           this | rhs
@@ -953,7 +965,11 @@ object BitSet {
             // TODO: it is unclear why BitSet.Empty isn't okay here.
             // Tests pass if we do it, but it seems a pretty minor optimization
             // If we need some invariant, we should have a test for it.
-            newEmpty(offset)
+            // newEmpty(offset)
+            //
+            // a motivation to use Empty here is to avoid always returning
+            // aligned offsets, which make some of the branches below unreachable
+            BitSet.Empty
           } else if (o != offset) {
             this | rhs
           } else {
