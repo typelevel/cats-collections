@@ -2,7 +2,7 @@ package cats.collections
 
 import cats.implicits._
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Gen, Properties}
+import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import Arbitrary.{arbitrary => arb}
 
 object BitSetTest extends Properties("BitSet") {
@@ -18,10 +18,14 @@ object BitSetTest extends Properties("BitSet") {
         } yield fn(a, b)
 
       Gen.frequency(
-        (5, arb[List[Int]].map(xs => BitSet(xs: _*))),
-        (5, Gen.sized { max => arb[Int].map { init => BitSet((init until (init + max)): _*) } }),
+        (10, arb[List[Int]].map(xs => BitSet(xs: _*))),
+        (10, Gen.sized { max => arb[Int].map { init => BitSet((init until (init + max)): _*) } }),
+        (1, BitSet.empty),
         (1, onPair( _ | _)),
-        (1, onPair( _ & _))
+        (1, onPair( _ & _)),
+        (1, onPair( _ ^ _)),
+        (1, onPair( _ -- _)),
+        (1, recur.map(_.compact))
       )
     }
 
@@ -176,7 +180,9 @@ object BitSetTest extends Properties("BitSet") {
 
   property("(x | y)(z) == x(z) || y(z)") =
     forAll { (x: BitSet, y: BitSet, z: Int) =>
-      def law(z: Int): Boolean = (x | y)(z) == (x(z) || y(z))
+      // do apply first in case we mutate erroneously
+      def law(z: Int): Boolean =
+        (x(z) || y(z)) == (x | y)(z)
 
       law(z) && x.iterator.forall(law) && y.iterator.forall(law)
     }
@@ -204,7 +210,9 @@ object BitSetTest extends Properties("BitSet") {
 
   property("(x & y)(z) == x(z) && y(z)") =
     forAll { (x: BitSet, y: BitSet, z: Int) =>
-      def law(z: Int): Boolean = (x & y)(z) == (x(z) && y(z))
+      // do apply first in case we mutate erroneously
+      def law(z: Int): Boolean =
+        (x(z) && y(z)) == (x & y)(z)
 
       law(z) && x.iterator.forall(law) && y.iterator.forall(law)
     }
@@ -254,8 +262,9 @@ object BitSetTest extends Properties("BitSet") {
 
   property("(x ^ y)(n) = x(n) ^ y(n)") =
     forAll { (x: BitSet, y: BitSet, n: Int) =>
-      val lhs = (x ^ y)(n)
+      // do apply first in case we mutate erroneously
       val rhs = x(n) ^ y(n)
+      val lhs = (x ^ y)(n)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
@@ -269,8 +278,9 @@ object BitSetTest extends Properties("BitSet") {
 
   property("(x -- y)(n) = x(n) && (!y(n))") =
     forAll { (x: BitSet, y: BitSet, n: Int) =>
-      val lhs = (x -- y)(n)
+      // do apply first in case we mutate erroneously
       val rhs = x(n) && (!y(n))
+      val lhs = (x -- y)(n)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
 
@@ -342,4 +352,38 @@ object BitSetTest extends Properties("BitSet") {
       val rhs = (x & y).nonEmpty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+
+  property("we never mutate the original item on +/-") =
+    forAll { (x: BitSet, y: Int) =>
+      def law(x: BitSet, ys: Set[Int], op: String)(fn: (BitSet, Int) => BitSet): Prop = {
+        ys.map { y =>
+          val init = x.iterator.toSet
+          fn(x, y)
+          val fin = x.iterator.toSet
+          (init == fin) :| s"$op for $y caused mutation: init: $init final: $fin"
+        }
+        .reduce(_ && _)
+      }
+
+      // try adding items close to x so they collide on the same lines
+      law(x, x.iterator.map(_ + 1).toSet + y, "+")(_ + _) &&
+        law(x, x.iterator.map(_ + 1).toSet + y, "-")(_ - _)
+    }
+
+  property("we never mutate the original item on |, &, ^, --") =
+    forAll { (x: BitSet, y: BitSet) =>
+      def law(a: BitSet, b: BitSet, nm: String)(op: (BitSet, BitSet) => BitSet): Prop = {
+        val inita = a.iterator.toSet
+        val initb = b.iterator.toSet
+        val _ = op(a, b)
+        ((a.iterator.toSet == inita) :| s"$a was initially $inita before $nm") &&
+        ((b.iterator.toSet == initb) :| s"$b was initially $initb before $nm")
+      }
+
+      law(x, y, "|")(_ | _) &&
+      law(x, y, "&")(_ & _) &&
+      law(x, y, "^")(_ ^ _) &&
+      law(x, y, "--")(_ -- _)
+    }
+
 }

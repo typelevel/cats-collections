@@ -374,14 +374,16 @@ object BitSet {
   /**
    * Construct an immutable bitset from the given integer values.
    */
-  def apply(xs: Int*): BitSet = {
-    var bs = newEmpty(0)
-    val iter = xs.iterator
-    while(iter.hasNext) {
-      bs = bs.mutableAdd(iter.next())
+  def apply(xs: Int*): BitSet =
+    if (xs.isEmpty) Empty
+    else {
+      var bs = newEmpty(0)
+      val iter = xs.iterator
+      while(iter.hasNext) {
+        bs = bs.mutableAdd(iter.next())
+      }
+      bs
     }
-    bs
-  }
 
   /**
    * Given a value (`n`), and offset (`o`) and a height (`h`), compute
@@ -417,9 +419,11 @@ object BitSet {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 11))
     val cs = new Array[BitSet](32)
-    val i = (b.offset - o) >>> (h * 5 + 6)
-    cs(i) = b
     val parent = Branch(o, h, cs)
+    val i = (b.offset - o) >>> (h * 5 + 6)
+    // this looks unsafe since we are going to mutate parent which points
+    // to b, but critically we never mutate the Array containing b
+    cs(i) = b
     val j = BitSet.index(n, o, h)
     if (j < 0 || 32 <= j) {
       adoptedPlus(parent, n)
@@ -436,19 +440,24 @@ object BitSet {
    * the range of `b`. It will return the smallest branch that
    * contains both `b` and `rhs`.
    */
-  private def adoptedUnion(b: BitSet, rhs: BitSet): Branch = {
+  private def adoptedUnion(b: BitSet, rhs: BitSet): BitSet = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 11))
     val cs = new Array[BitSet](32)
+    val parent = Branch(o, h, cs)
     val i = (b.offset - o) >>> (h * 5 + 6)
     cs(i) = b
-    val parent = Branch(o, h, cs)
     val j = BitSet.index(rhs.offset, o, h)
     if (j < 0 || 32 <= j || rhs.height > parent.height) {
       adoptedUnion(parent, rhs)
     } else {
-      parent |= rhs
-      parent
+      // we don't own parent, because it points to b
+      // so we can't use mutating union here:
+      // If we can be sure that b and rhs don't share structure that will be mutated
+      // then we could mutate:
+      // parent |= rhs
+      // parent
+      parent | rhs
     }
   }
 
@@ -627,6 +636,9 @@ object BitSet {
 
     def ^(rhs: BitSet): BitSet =
       if (this eq rhs) {
+        // TODO: it is unclear why BitSet.Empty isn't okay here.
+        // Tests pass if we do it, but it seems a pretty minor optimization
+        // If we need some invariant, we should have a test for it.
         newEmpty(offset)
       } else if (height > rhs.height) {
         if (rhs.offset < offset || limit <= rhs.offset) {
@@ -670,7 +682,10 @@ object BitSet {
           Empty
         case b @ Branch(_, _, _) if height < b.height =>
           if (offset < b.offset || b.limit <= offset) this
-          else this -- b.children(b.index(offset))
+          else {
+            val c = b.children(b.index(offset))
+            if (c == null) this else this -- c
+          }
         case b @ Branch(_, _, _) if height == b.height =>
           if (offset != b.offset) {
             this
@@ -885,6 +900,12 @@ object BitSet {
           }
           Leaf(offset, vs)
         case _ =>
+          // TODO: this is the only branch where
+          // we could have overlapping positions.
+          // if we could be more careful we could
+          // allow some mutations in adoptedUnion
+          // since we know we never mutate the
+          // overlapping part.
           BitSet.adoptedUnion(this, rhs)
       }
 
@@ -929,6 +950,9 @@ object BitSet {
       rhs match {
         case Leaf(o, values2) =>
           if (this eq rhs) {
+            // TODO: it is unclear why BitSet.Empty isn't okay here.
+            // Tests pass if we do it, but it seems a pretty minor optimization
+            // If we need some invariant, we should have a test for it.
             newEmpty(offset)
           } else if (o != offset) {
             this | rhs
