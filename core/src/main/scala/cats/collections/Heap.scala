@@ -75,6 +75,18 @@ sealed abstract class Heap[A] {
     }
 
   /**
+   * Add a collection of items in. This is O(N log N) if as is size N
+   */
+  def addAll(as: Iterable[A])(implicit order: Order[A]): Heap[A] = {
+    val ait = as.iterator
+    var heap = this
+    while(ait.hasNext) {
+      heap = heap + ait.next()
+    }
+    heap
+  }
+
+  /**
    * Check to see if a predicate is ever true
    */
   def exists(fn: A => Boolean): Boolean =
@@ -166,6 +178,11 @@ sealed abstract class Heap[A] {
    * Alias for add
    */
   def +(x: A)(implicit order: Order[A]): Heap[A] = add(x)
+
+  /**
+   * Alias for addAll
+   */
+  def ++(as: Iterable[A])(implicit order: Order[A]): Heap[A] = addAll(as)
 
   /**
    * Alias for remove
@@ -367,15 +384,19 @@ object Heap {
   private[collections] class HeapOrder[A](implicit ordA: Order[A]) extends Order[Heap[A]] {
     @tailrec
     final def compare(left: Heap[A], right: Heap[A]): Int =
-      (left.getMin, right.getMin) match {
-        case (None, None) => 0
-        case (None, Some(_)) => -1
-        case (Some(_), None) => 1
-        case (Some(l), Some(r)) =>
-          val c = ordA.compare(l, r)
-          if (c != 0) c
-          else compare(left.remove, right.remove)
-    }
+      if (left.isEmpty) {
+        if (right.isEmpty) 0
+        else -1
+      }
+      else if (right.isEmpty) 1
+      else {
+        // both are not empty
+        val lb = left.asInstanceOf[Branch[A]]
+        val rb = right.asInstanceOf[Branch[A]]
+        val c = ordA.compare(lb.min, rb.min)
+        if (c != 0) c
+        else compare(left.remove, right.remove)
+      }
   }
   /**
    * This is the same order as you would get by doing `.toList` and ordering by that
