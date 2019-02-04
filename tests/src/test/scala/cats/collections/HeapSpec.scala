@@ -39,7 +39,12 @@ class HeapSpec extends CatsSuite {
       }
       else Gen.const(Heap.empty[A])
 
-    Gen.frequency((2, addOnly), (3, startWith1), (5, heapify), (1, addMoreAndRemove), (1, smallerAdd))
+    Gen.frequency(
+      (2, addOnly),
+      (3, startWith1),
+      (5, heapify),
+      (1, addMoreAndRemove),
+      (1, smallerAdd))
   }
 
   implicit def arbHeap[A: Arbitrary: Order]: Arbitrary[Heap[A]] =
@@ -82,6 +87,30 @@ class HeapSpec extends CatsSuite {
     }
   }
 
+  test("add is the same as +") {
+    forAll { (heap: Heap[Int], x: Int) =>
+      val heap1 = heap + x
+      val heap2 = heap.add(x)
+      assert(Order[Heap[Int]].eqv(heap1, heap2))
+    }
+  }
+
+  test("addAll is the same as ++") {
+    forAll { (heap: Heap[Int], x: List[Int]) =>
+      val heap1 = heap ++ x
+      val heap2 = heap.addAll(x)
+      assert(Order[Heap[Int]].eqv(heap1, heap2))
+    }
+  }
+
+  test("addAll is the same as folding with add") {
+    forAll { (heap: Heap[Int], x: List[Int]) =>
+      val heap1 = heap.addAll(x)
+      val heap2 = x.foldLeft(heap)(_.add(_))
+      assert(Order[Heap[Int]].eqv(heap1, heap2))
+    }
+  }
+
   test("remove decreases size") {
     forAll { (heap: Heap[Int]) =>
       val heap1 = heap.remove
@@ -99,7 +128,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("height is O(log N) for all heaps") {
+  test("height is <= log_2 N + 1 for all heaps") {
     forAll { (heap: Heap[Int]) =>
       val bound = math.log(heap.size.toDouble) / math.log(2.0) + 1.0
       assert(heap.isEmpty || heap.height.toDouble <= bound)
@@ -114,10 +143,10 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("getMin after removing one is >= before") {
+  test("minimumOption after removing one is >= before") {
     forAll { (heap: Heap[Int]) =>
-      val min0 = heap.getMin
-      val min1 = heap.remove.getMin
+      val min0 = heap.minimumOption
+      val min1 = heap.remove.minimumOption
 
       (min0, min1) match {
         case (None, next) => assert(next.isEmpty)
@@ -128,9 +157,9 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("Heap.getMin is the real minimum") {
+  test("Heap.minimumOption is the real minimum") {
     def heapLaw(heap: Heap[Int]) =
-      heap.getMin match {
+      heap.minimumOption match {
         case None => assert(heap.isEmpty)
         case Some(min) =>
           val heap1 = heap.remove
@@ -147,7 +176,7 @@ class HeapSpec extends CatsSuite {
       heapLaw(heap.remove.remove.remove)
     }
 
-    assert(Heap.empty[Int].getMin.isEmpty)
+    assert(Heap.empty[Int].minimumOption.isEmpty)
   }
 
   test("Heap.foldLeft is consistent with toList.foldLeft") {
@@ -187,6 +216,41 @@ class HeapSpec extends CatsSuite {
       assert(ord.lt(Heap.empty, Heap.empty + item))
       assert(ord.gteqv(heap, Heap.empty))
       assert(ord.gt(Heap.empty + item, Heap.empty))
+    }
+  }
+
+  test("takeLargest is the same as sort.reverse.take") {
+    forAll { (as: Iterable[Int], k: Int) =>
+      assert(Heap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k))
+    }
+  }
+
+  test("Heap.toPairingHeap.toList == Heap.toList") {
+    forAll { (h: Heap[Int]) =>
+      assert(h.toPairingHeap.toList == h.toList)
+    }
+  }
+
+  test("Heap property is always maintained") {
+    def law[A](h: Heap[A], outer: Heap[A])(implicit ord: Order[A]): Unit =
+      h match {
+        case Heap.Leaf() => ()
+        case Heap.Branch(min, left, right) =>
+          lazy val heapStr = if (outer != h) s"in $outer, subheap $h" else h.toString
+          left.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on left") }
+          right.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on right") }
+          // we expect fully balanced heaps, but we put the size on the left first:
+          assert(left.size >= right.size,
+            s"$heapStr has left size = ${left.size} vs right size = ${right.size}")
+          assert((left.height == right.height) || (left.height == right.height + 1),
+            s"$heapStr has unbalanced height: ${left.height} vs ${right.height}")
+
+          law(left, outer)
+          law(right, outer)
+      }
+
+    forAll { (h: Heap[Int]) =>
+      law(h, h)
     }
   }
 }
