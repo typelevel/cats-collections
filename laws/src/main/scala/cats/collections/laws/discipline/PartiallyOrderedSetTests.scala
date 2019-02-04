@@ -36,6 +36,7 @@ trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
         "contains matches toSortedList" -> forAll(laws.containsMatchesToList[A] _),
         "empty is Monoid.empty" -> (laws.emptyIsEmpty[A]: Prop),
         "add increases size" -> forAll(laws.addIncreasesSize[A] _),
+        "minimumOption is the min" -> forAll(laws.minimumOptionIsTheMinimum[A] _),
         "remove decreases size" -> forAll(laws.removeDecreasesSize[A] _),
         "remove min never decreases min" -> forAll(laws.removeMinNeverDecreasesMin[A] _),
         "addAll + toSortedList same as sorting" -> forAll(laws.addAllListSameAsSort[A] _),
