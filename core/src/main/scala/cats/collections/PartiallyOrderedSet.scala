@@ -15,6 +15,11 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
   def add[A](fa: F[A], a: A)(implicit order: Order[A]): F[A]
 
   /**
+   * use the heap property to be more efficient than toSortedList to check containment
+   */
+  def contains[A](fa: F[A], a: A)(implicit order: Order[A]): Boolean
+
+  /**
    * return an empty F
    */
   def empty[A]: F[A]
@@ -63,25 +68,29 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
   /**
    * remove as many as needed until size <= maxSize
    */
-  def takeLargest[A](fa: F[A], maxSize: Long)(implicit order: Order[A]): F[A] = {
-    var surplus = size(fa) - maxSize
-    var res = fa
-    while (surplus > 0) {
-      res = removeMin(res)
-      surplus -= 1
+  def takeLargest[A](fa: F[A], maxSize: Long)(implicit order: Order[A]): F[A] =
+    if (maxSize <= 0) empty[A]
+    else {
+      var surplus = size(fa) - maxSize
+      var res = fa
+      while (surplus > 0) {
+        res = removeMin(res)
+        surplus -= 1
+      }
+      res
     }
-    res
-  }
 
   /**
    * same as takeLargest(add(fa, item), maxSize)
    */
-  def addIfLarger[A](fa: F[A], maxSize: Long, item: A)(implicit order: Order[A]): F[A] = {
-    val sz = size(fa)
-    if (sz < maxSize) add(fa, item)
-    else if (order.lt(minimumOption(fa).get, item)) add(removeMin(fa), item)
-    else fa
-  }
+  def addIfLarger[A](fa: F[A], maxSize: Long, item: A)(implicit order: Order[A]): F[A] =
+    if (maxSize <= 0) empty[A]
+    else {
+      val sz = size(fa)
+      if (sz < maxSize) add(fa, item)
+      else if (order.lt(minimumOption(fa).get, item)) add(removeMin(fa), item)
+      else fa
+    }
 
   /**
    * return a sorted list of all items in fa
@@ -120,4 +129,8 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
             else compare(removeMin(left), removeMin(right))
       }
     }
+}
+
+object PartiallyOrderedSet {
+  def apply[F[_]](implicit pos: PartiallyOrderedSet[F]): PartiallyOrderedSet[F] = pos
 }

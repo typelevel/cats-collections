@@ -1,6 +1,7 @@
-package cats.collections
+package cats.collections.laws
 
 import cats.Order
+import cats.collections.PartiallyOrderedSet
 import cats.laws.{IsEq, IsEqArrow, UnorderedFoldableLaws}
 import cats.kernel.CommutativeMonoid
 
@@ -15,6 +16,9 @@ class MinimalPartialOrderedSetProxy[F[_]](pos: PartiallyOrderedSet[F]) extends P
 
   def add[A](fa: F[A], a: A)(implicit order: Order[A]): F[A] =
     pos.add(fa, a)
+
+  def contains[A: Order](fa: F[A], a: A): Boolean =
+    pos.contains(fa, a)
 
   def empty[A]: F[A] = pos.empty
 
@@ -33,6 +37,10 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
 
   private def proxy: PartiallyOrderedSet[F] = new MinimalPartialOrderedSetProxy(F)
 
+  // This should be on UnorderdFoldable but was omitted
+  def sizeMatchesUnorderedFoldMap[A](fa: F[A]): Boolean =
+    F.size(fa) == F.unorderedFoldMap(fa)(_ => 1L)
+
   def addEmptyIsSingleton[A: Order](a: A): IsEq[F[A]] =
     F.add(F.empty[A], a) <-> F.singleton(a)
 
@@ -44,6 +52,9 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
 
   def addIncreasesSize[A: Order](fa: F[A], a: A): Boolean =
     F.size(fa) == (F.size(F.add(fa, a)) - 1L)
+
+  def containsMatchesToList[A: Order](fa: F[A], a: A): Boolean =
+    F.contains(fa, a) == (F.toSortedList(fa).exists { aa => Order[A].eqv(aa, a) })
 
   def removeDecreasesSize[A: Order](fa: F[A]): Boolean =
     F.isEmpty(fa) || (F.size(fa) == (F.size(F.removeMin(fa)) + 1L))

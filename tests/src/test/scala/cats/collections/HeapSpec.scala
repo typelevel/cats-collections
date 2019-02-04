@@ -1,8 +1,8 @@
 package cats.collections
 package tests
 
-import cats.{Order, Show, UnorderedFoldable}
-import cats.laws.discipline.UnorderedFoldableTests
+import cats.{Order, Show}
+import cats.collections.laws.discipline.PartiallyOrderedSetTests
 import cats.kernel.laws.discipline.OrderTests
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
@@ -50,8 +50,8 @@ class HeapSpec extends CatsSuite {
   implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
     Cogen[List[A]].contramap { h: Heap[A] => h.toList }
 
-  checkAll("UnorderedFoldable[Heap]",
-    UnorderedFoldableTests[Heap].unorderedFoldable[Long, Int])
+  checkAll("PartiallyOrderedSet[Heap]",
+    PartiallyOrderedSetTests[Heap].partiallyOrderedSet[Long, Int])
 
   checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
 
@@ -165,15 +165,6 @@ class HeapSpec extends CatsSuite {
   test("Order[Heap[Int]] works like List[Int]") {
     forAll { (a: Heap[Int], b: Heap[Int]) =>
       assert(Order[Heap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
-    }
-  }
-
-  test("UnorderedFoldable[Heap].size is correct") {
-    forAll { (a: Heap[Int]) =>
-      val uof = UnorderedFoldable[Heap]
-      assert(uof.size(a) == a.size)
-      assert(uof.unorderedFoldMap(a)(_ => 1L) == a.size)
-      assert(a.size == a.toList.size.toLong)
     }
   }
 

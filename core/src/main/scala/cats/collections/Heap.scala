@@ -4,7 +4,7 @@
 
 package cats.collections
 
-import cats.{Order, UnorderedFoldable, Show}
+import cats.{Order, Show}
 import cats.kernel.CommutativeMonoid
 import scala.annotation.tailrec
 
@@ -67,6 +67,23 @@ sealed abstract class Heap[A] {
         bubbleUp(min, left, right.add(x))
       else
         bubbleUp(min, left.add(x), right)
+    }
+
+  /**
+   * This is O(N) in the worst case, but we use the
+   * heap property to be lazy
+   */
+  def contains(a: A)(implicit order: Order[A]): Boolean =
+    if (isEmpty) false
+    else {
+      val br = this.asInstanceOf[Branch[A]]
+      val c = order.compare(a, br.min)
+      if (c < 0) false // a is less than the min
+      else if (c == 0) true // a == min
+      else {
+        // check left and right
+        br.left.contains(a) || br.right.contains(a)
+      }
     }
 
   /**
@@ -312,8 +329,8 @@ object Heap {
     }
   }
 
-  implicit val catsCollectionHeapUnorderedFoldable: UnorderedFoldable[Heap] =
-    new UnorderedFoldable[Heap] {
+  implicit val catsCollectionHeapPartiallyOrderedSet: PartiallyOrderedSet[Heap] =
+    new PartiallyOrderedSet[Heap] {
       def unorderedFoldMap[A, B: CommutativeMonoid](ha: Heap[A])(fn: A => B): B =
         ha.unorderedFoldMap(fn)
 
@@ -325,6 +342,24 @@ object Heap {
       override def exists[A](ha: Heap[A])(fn: A => Boolean) = ha.exists(fn)
       override def forall[A](ha: Heap[A])(fn: A => Boolean) = ha.forall(fn)
       override def size[A](h: Heap[A]) = h.size
+
+      // PartiallyOrderedSet methods
+      override def add[A](fa: Heap[A], a: A)(implicit order: Order[A]): Heap[A] =
+        fa.add(a)
+      override def contains[A](fa: Heap[A], a: A)(implicit order: Order[A]): Boolean =
+        fa.contains(a)
+      override def build[A](as: Iterable[A])(implicit order: Order[A]): Heap[A] =
+        Heap.fromIterable(as)
+      override def empty[A]: Heap[A] = Heap.empty[A]
+      override def minimumOption[A](fa: Heap[A]): Option[A] = fa.getMin
+      override def removeMin[A](fa: Heap[A])(implicit order: Order[A]): Heap[A] = fa.remove
+      override def singleton[A](a: A): Heap[A] = Heap(a)
+      override def toSortedList[A: Order](fa: Heap[A]): List[A] =
+        fa.toList
+      override def sortedFoldLeft[A: Order, B](fa: Heap[A], init: B)(fn: (B, A) => B): B =
+        fa.foldLeft(init)(fn)
+
+      override def order[A: Order] = new HeapOrder[A]
     }
 
   private[collections] class HeapOrder[A](implicit ordA: Order[A]) extends Order[Heap[A]] {

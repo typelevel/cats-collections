@@ -10,7 +10,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(coreJVM, coreJS, bench, scalacheckJVM, scalacheckJS, testsJVM, testsJS, docs)
+  .aggregate(coreJVM, coreJS, bench, scalacheckJVM, scalacheckJS, testsJVM, testsJS, docs, lawsJVM, lawsJS)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -80,7 +80,7 @@ lazy val lawsJS = laws.js
 
 lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
-  .dependsOn(scalacheck)
+  .dependsOn(scalacheck, laws)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
