@@ -4,7 +4,6 @@ package bench
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import org.openjdk.jmh.infra.Blackhole
 import scala.util.Random
-import scalaz.{IList, Diev}
 import cats._
 import cats.implicits._
 
