@@ -52,7 +52,7 @@ object BitSetTest extends Properties("BitSet") {
   property("limit/height consistency") =
     forAll { (x: BitSet) =>
       import x.{limit, offset, height}
-      (limit == (offset + (1L << (5 * height + 11)))) && (limit > offset)
+      (limit == (offset + (1L << (5 * height + 10)))) && (limit > offset)
     }
 
   property("(x = y) = (x.toSet = y.toSet)") =

@@ -1,7 +1,7 @@
 package cats.collections
 
 import cats.Order
-import java.lang.Long.bitCount
+import java.lang.Integer.bitCount
 import scala.annotation.tailrec
 
 import BitSet.{Branch, Empty, Leaf}
@@ -23,7 +23,7 @@ import BitSet.{Branch, Empty, Leaf}
  * copy on each added value.
  *
  * Interally the implementation is a tree. Each leaf uses an
- * Array[Long] value to hold up to 2048 bits, and each branch uses an
+ * Array[Int] value to hold up to 1024 bits, and each branch uses an
  * Array[BitSet] to hold up to 32 subtrees (null subtrees are treated
  * as empty).
  *
@@ -40,7 +40,7 @@ sealed abstract class BitSet { lhs =>
   /**
    * Offset is the first value that this subtree contains.
    *
-   * Offset will always be a multiple of 2048 (2^11).
+   * Offset will always be a multiple of 1024 (2^11).
    *
    * The `offset` is interpreted as a 32-bit unsigned integer. In
    * other words, `(offset & 0xffffffffL)` will return the equivalent
@@ -53,11 +53,11 @@ sealed abstract class BitSet { lhs =>
    * supports.
    *
    * In other words, the last value in the subtree's range is `limit - 1`.
-   * Like `offset`, `limit` will always be a multiple of 2048.
+   * Like `offset`, `limit` will always be a multiple of 1024.
    *
    * Offset, limit, and height are related:
    *
-   *     limit = offset + (32^height) * 2048
+   *     limit = offset + (32^height) * 1024
    *     limit > offset (assuming both values are unsigned)
    *
    * Like `offset`, `limit` is interpreted as a 32-bit unsigned
@@ -73,7 +73,7 @@ sealed abstract class BitSet { lhs =>
    * height=5 will have limit=68719476736, which exceeds the largest
    * unsigned 32-bit value we might want to store (4294967295).
    *
-   * The calculation `(32^height) * 2048` tells you how many values a
+   * The calculation `(32^height) * 1024` tells you how many values a
    * subtree contains (i.e. how many bits it holds).
    */
   private[collections] def height: Int
@@ -355,11 +355,33 @@ object BitSet {
    */
   def empty: BitSet = Empty
 
+  @inline def alloc(): Array[Int] = new Array[Int](32)
+
+  private val zeroVector: Array[Int] = alloc()
+
   /**
    * Singleton value representing an empty bitset.
    */
   final val Empty: BitSet =
-    newEmpty(0)
+    Leaf(0, zeroVector)
+
+  private val oneVectors: Array[Array[Int]] = {
+    val widthOfVec = 32
+    val bitsPerInt = 32
+    val vvs = new Array[Array[Int]](widthOfVec * bitsPerInt)
+
+    var n = 0
+    while (n < vvs.length) {
+      val i = index(n, 0, 0)
+      val j = bit(n, 0)
+      val vs = alloc()
+      vs(i) |= (1 << j)
+      vvs(n) = vs
+      n += 1
+    }
+
+    vvs
+  }
 
   /**
    * Returns an empty leaf.
@@ -369,7 +391,7 @@ object BitSet {
    * be added, `empty` should be used instead.
    */
   private[collections] def newEmpty(offset: Int): BitSet =
-    Leaf(offset, new Array[Long](32))
+    Leaf(offset, alloc())
 
   /**
    * Construct an immutable bitset from the given integer values.
@@ -390,7 +412,8 @@ object BitSet {
    * the array index used to store the given value's bit.
    */
   @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
-    (n - o) >>> (h * 5 + 6)
+    (n - o) >>> (h * 5 + 5)
+  @inline private[collections] def bit(n: Int, o: Int): Int = (n - o) & 31
 
   case class InternalError(msg: String) extends Exception(msg)
 
@@ -402,9 +425,9 @@ object BitSet {
    */
   private[collections] def parentFor(b: BitSet): BitSet = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << (h * 5 + 10))
     val cs = new Array[BitSet](32)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = (b.offset - o) >>> (h * 5 + 5)
     cs(i) = b
     Branch(o, h, cs)
   }
@@ -417,10 +440,10 @@ object BitSet {
    */
   private def adoptedPlus(b: BitSet, n: Int): Branch = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << (h * 5 + 10))
     val cs = new Array[BitSet](32)
     val parent = Branch(o, h, cs)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = (b.offset - o) >>> (h * 5 + 5)
     // this looks unsafe since we are going to mutate parent which points
     // to b, but critically we never mutate the Array containing b
     cs(i) = b
@@ -442,10 +465,10 @@ object BitSet {
    */
   private def adoptedUnion(b: BitSet, rhs: BitSet): BitSet = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << (h * 5 + 10))
     val cs = new Array[BitSet](32)
     val parent = Branch(o, h, cs)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = (b.offset - o) >>> (h * 5 + 5)
     cs(i) = b
     val j = BitSet.index(rhs.offset, o, h)
     if (j < 0 || 32 <= j || rhs.height > parent.height) {
@@ -463,9 +486,9 @@ object BitSet {
 
   private case class Branch(offset: Int, height: Int, children: Array[BitSet]) extends BitSet {
 
-    @inline private[collections] def limit: Long = offset + (1L << (height * 5 + 11))
+    @inline private[collections] def limit: Long = offset + (1L << (height * 5 + 10))
 
-    @inline private[collections] def index(n: Int): Int = (n - offset) >>> (height * 5 + 6)
+    @inline private[collections] def index(n: Int): Int = (n - offset) >>> (height * 5 + 5)
     @inline private[collections] def valid(i: Int): Boolean = 0 <= i && i < 32
     @inline private[collections] def invalid(i: Int): Boolean = i < 0 || 32 <= i
 
@@ -489,7 +512,7 @@ object BitSet {
     }
 
     def newChild(i: Int): BitSet = {
-      val o = offset + i * (1 << height * 5 + 6)
+      val o = offset + i * (1 << height * 5 + 5)
       if (height == 1) BitSet.newEmpty(o)
       else Branch(o, height - 1, new Array[BitSet](32))
     }
@@ -829,12 +852,12 @@ object BitSet {
     }
   }
 
-  private case class Leaf(offset: Int, private val values: Array[Long]) extends BitSet {
+  private case class Leaf(offset: Int, private val values: Array[Int]) extends BitSet {
 
-    @inline private[collections] def limit: Long = offset + 2048L
+    @inline private[collections] def limit: Long = offset + 1024L
 
-    @inline private[collections] def index(n: Int): Int = (n - offset) >>> 6
-    @inline private[collections] def bit(n: Int): Int = (n - offset) & 63
+    @inline private[collections] def index(n: Int): Int = (n - offset) >>> 5
+    @inline private[collections] def bit(n: Int): Int = (n - offset) & 31
 
     def height: Int = 0
 
@@ -843,8 +866,8 @@ object BitSet {
       (0 <= i && i < 32) && (((values(i) >>> bit(n)) & 1) == 1)
     }
 
-    def arrayCopy: Array[Long] = {
-      val vs = new Array[Long](32)
+    def arrayCopy: Array[Int] = {
+      val vs = alloc()
       System.arraycopy(values, 0, vs, 0, 32)
       vs
     }
@@ -852,13 +875,19 @@ object BitSet {
     def +(n: Int): BitSet = {
       val i = index(n)
       if (0 <= i && i < 32) {
-        val mask = 1L << bit(n)
-        val vsi = values(i)
-        if ((vsi & mask) == 1L) this
+        if (values eq BitSet.zeroVector) {
+          // we already have all the single bit values
+          Leaf(offset, BitSet.oneVectors(n - offset))
+        }
         else {
-          val vs = arrayCopy
-          vs(i) = vsi | mask
-          Leaf(offset, vs)
+          val mask = 1 << bit(n)
+          val vsi = values(i)
+          if ((vsi & mask) == 1L) this
+          else {
+            val vs = arrayCopy
+            vs(i) = vsi | mask
+            Leaf(offset, vs)
+          }
         }
       } else {
         BitSet.adoptedPlus(this, n)
@@ -870,7 +899,7 @@ object BitSet {
       if (i < 0 || 32 <= i) {
         this
       } else {
-        val mask = (1L << bit(n))
+        val mask = 1 << bit(n)
         val vsi = values(i)
         if ((vsi & mask) == 0L) this
         else {
@@ -881,36 +910,43 @@ object BitSet {
       }
     }
 
-    def isEmpty: Boolean = {
-      var idx = 0
-      while (idx < values.length) {
-        val empty = (values(idx) == 0L)
-        if (!empty) return false
-        idx += 1
+    def isEmpty: Boolean =
+      (values eq BitSet.zeroVector) || {
+        var idx = 0
+        while (idx < values.length) {
+          val empty = (values(idx) == 0L)
+          if (!empty) return false
+          idx += 1
+        }
+        true
       }
-      true
-    }
 
-    def size: Long = {
-      var c = 0L
-      var i = 0
-      while (i < 32) {
-        c += bitCount(values(i))
-        i += 1
+    def size: Long =
+      if (values eq BitSet.zeroVector) 0L
+      else {
+        var c = 0L
+        var i = 0
+        while (i < 32) {
+          c += bitCount(values(i))
+          i += 1
+        }
+        c
       }
-      c
-    }
 
     def |(rhs: BitSet): BitSet =
       rhs match {
         case Leaf(`offset`, values2) =>
-          val vs = new Array[Long](32)
-          var i = 0
-          while (i < 32) {
-            vs(i) = values(i) | values2(i)
-            i += 1
+          if (values2 eq BitSet.zeroVector) this
+          else if (values eq BitSet.zeroVector) rhs
+          else {
+            val vs = alloc()
+            var i = 0
+            while (i < 32) {
+              vs(i) = values(i) | values2(i)
+              i += 1
+            }
+            Leaf(offset, vs)
           }
-          Leaf(offset, vs)
         case _ =>
           // TODO: this is the only branch where
           // we could have overlapping positions.
@@ -928,8 +964,15 @@ object BitSet {
             this
           } else if (o != offset) {
             Empty
-          } else {
-            val vs = new Array[Long](32)
+          } else if (values eq BitSet.zeroVector) {
+            // we are zero
+            this
+          }
+          else if (values2 eq BitSet.zeroVector) {
+            rhs
+          }
+          else {
+            val vs = alloc()
             var i = 0
             while (i < 32) {
               vs(i) = values(i) & values2(i)
@@ -973,7 +1016,7 @@ object BitSet {
           } else if (o != offset) {
             this | rhs
           } else {
-            val vs = new Array[Long](32)
+            val vs = alloc()
             var i = 0
             while (i < 32) {
               vs(i) = values(i) ^ values2(i)
@@ -991,7 +1034,7 @@ object BitSet {
           if (o != offset) {
             this
           } else {
-            val vs = new Array[Long](32)
+            val vs = alloc()
             var i = 0
             while (i < 32) {
               vs(i) = values(i) & (~values2(i))
@@ -1012,13 +1055,13 @@ object BitSet {
     private[collections] def +=(n: Int): Unit = {
       val i = index(n)
       val j = bit(n)
-      values(i) |= (1L << j)
+      values(i) |= (1 << j)
     }
 
     private[collections] def mutableAdd(n: Int): BitSet = {
       val i = index(n)
       if (0 <= i && i < 32) {
-        values(i) |= (1L << bit(n))
+        values(i) |= (1 << bit(n))
         this
       } else {
         BitSet.adoptedPlus(this, n)
@@ -1068,15 +1111,15 @@ object BitSet {
    * As mentioned in `BitSet.iterator`, this method will return values
    * in unsigned order (e.g. Int.MaxValue comes before Int.MinValue).
    */
-  private class LeafIterator(offset: Int, values: Array[Long]) extends Iterator[Int] {
+  private class LeafIterator(offset: Int, values: Array[Int]) extends Iterator[Int] {
     var i: Int = 0
-    var x: Long = values(0)
+    var x: Int = values(0)
     var n: Int = offset
 
     @tailrec private def search(): Unit =
       if (x == 0 && i < 31) {
         i += 1
-        n = offset + i * 64
+        n = offset + i * 32
         x = values(i)
         search()
       } else ()
@@ -1106,15 +1149,15 @@ object BitSet {
    * This class is very similar to LeafIterator but returns values in
    * the reverse order.
    */
-  private class LeafReverseIterator(offset: Int, values: Array[Long]) extends Iterator[Int] {
+  private class LeafReverseIterator(offset: Int, values: Array[Int]) extends Iterator[Int] {
     var i: Int = 31
-    var x: Long = values(31)
-    var n: Int = offset + (i + 1) * 64 - 1
+    var x: Int = values(31)
+    var n: Int = offset + (i + 1) * 32 - 1
 
     @tailrec private def search(): Unit =
       if (x == 0 && i > 0) {
         i -= 1
-        n = offset + (i + 1) * 64 - 1
+        n = offset + (i + 1) * 32 - 1
         x = values(i)
         search()
       } else ()

@@ -13,11 +13,11 @@ import scala.util.Random
 class BitSetBenchmarks {
 
   // ranges from 0.0 to 1.0.
-  @Param(Array("0.5"))
+  @Param(Array("0.0625"))
   var density: Double = _
 
   // creates bitsets of size 2^k (2^10 = 1024, 2^20 = ~1M).
-  @Param(Array("10"))
+  @Param(Array("14"))
   var exponent: Int = _
 
   var size: Int = _
@@ -66,65 +66,65 @@ class BitSetBenchmarks {
     }
   }
 
-  @Benchmark
-  def buildSci(): immutable.BitSet =
-    immutable.BitSet(values: _*)
+  // @Benchmark
+  // def buildSci(): immutable.BitSet =
+  //   immutable.BitSet(values: _*)
 
-  @Benchmark
-  def buildScm(): mutable.BitSet =
-    mutable.BitSet(values: _*)
+  // @Benchmark
+  // def buildScm(): mutable.BitSet =
+  //   mutable.BitSet(values: _*)
 
-  @Benchmark
-  def buildIset(): immutable.Set[Int] =
-    immutable.Set[Int](values: _*)
+  // @Benchmark
+  // def buildIset(): immutable.Set[Int] =
+  //   immutable.Set[Int](values: _*)
 
   @Benchmark
   def buildCcbs(): _root_.cats.collections.BitSet =
     _root_.cats.collections.BitSet(values: _*)
 
-  @Benchmark
-  def foldIntoSci(): immutable.BitSet =
-    values.foldLeft(immutable.BitSet.empty)(_ + _)
+  // @Benchmark
+  // def foldIntoSci(): immutable.BitSet =
+  //   values.foldLeft(immutable.BitSet.empty)(_ + _)
 
-  @Benchmark
-  def foldIntoScm(): mutable.BitSet = {
-    val b = mutable.BitSet.empty
-    values.foreach(b += _)
-    b
-  }
+  // @Benchmark
+  // def foldIntoScm(): mutable.BitSet = {
+  //   val b = mutable.BitSet.empty
+  //   values.foreach(b += _)
+  //   b
+  // }
 
-  @Benchmark
-  def foldIntoIset(): immutable.Set[Int] =
-    values.foldLeft(immutable.Set.empty[Int])(_ + _)
+  // @Benchmark
+  // def foldIntoIset(): immutable.Set[Int] =
+  //   values.foldLeft(immutable.Set.empty[Int])(_ + _)
 
   @Benchmark
   def foldIntoCcbs(): _root_.cats.collections.BitSet =
     values.foldLeft(_root_.cats.collections.BitSet.empty)(_ + _)
 
-  @Benchmark
-  def lookupSci(): Int = indices.count(i => sci(i))
+  // @Benchmark
+  // def lookupSci(): Int = indices.count(i => sci(i))
 
-  @Benchmark
-  def lookupScm(): Int = indices.count(i => scm(i))
+  // @Benchmark
+  // def lookupScm(): Int = indices.count(i => scm(i))
 
-  @Benchmark
-  def lookupIset(): Int = indices.count(i => iset(i))
+  // @Benchmark
+  // def lookupIset(): Int = indices.count(i => iset(i))
 
   @Benchmark
   def lookupCcbs(): Int = indices.count(i => ccbs(i))
 
-  @Benchmark
-  def mergeSci(): immutable.BitSet = sci | sci2
+  // @Benchmark
+  // def mergeSci(): immutable.BitSet = sci | sci2
 
-  @Benchmark
-  def mergeScm(): mutable.BitSet = {
-    val x = scm.clone
-    x |= scm2
-    x
-  }
+  // @Benchmark
+  // def mergeScm(): mutable.BitSet = {
+  //   val x = scm.clone
+  //   x |= scm2
+  //   x
+  // }
 
-  @Benchmark
-  def mergeIset(): immutable.Set[Int] = iset | iset2
+  // @Benchmark
+  // def mergeIset(): immutable.Set[Int] = iset | iset2
 
   @Benchmark
   def mergeCcbs(): _root_.cats.collections.BitSet = ccbs | ccbs2
