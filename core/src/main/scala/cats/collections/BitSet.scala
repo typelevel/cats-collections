@@ -93,6 +93,60 @@ sealed abstract class BitSet { lhs =>
   def +(n: Int): BitSet
 
   /**
+   * Return a bitset that contains all elements of `ns`.
+   *
+   * (b ++ ns) is equivalent to ns.foldLeft(b)(_ + _) but more efficient.
+   */
+  final def ++(ns: Array[Int]): BitSet = {
+    var bs = BitSet.copyOf(this)
+    var i = 0
+    while (i < ns.length) {
+      bs = bs.mutableAdd(ns(i))
+      i += 1
+    }
+    bs
+  }
+
+  /**
+   * Return a bitset that contains all elements of `ns`.
+   *
+   * (b ++ ns) is equivalent to ns.foldLeft(b)(_ + _) but more efficient.
+   */
+  final def ++(ns: Iterable[Int]): BitSet = {
+    var bs = BitSet.copyOf(this)
+    val it = ns.iterator
+    while (it.hasNext) bs = bs.mutableAdd(it.next)
+    bs
+  }
+
+  /**
+   * Return a bitset that does not contain any element of `ns`.
+   *
+   * (b -- ns) is equivalent to ns.foldLeft(b)(_ - _) but more efficient.
+   */
+  final def --(ns: Array[Int]): BitSet = {
+    val bs = BitSet.copyOf(this)
+    var i = 0
+    while (i < ns.length) {
+      bs -= ns(i)
+      i += 1
+    }
+    bs
+  }
+
+  /**
+   * Return a bitset that does nto contain any element of `ns`.
+   *
+   * (b -- ns) is equivalent to ns.foldLeft(b)(_ - _) but more efficient.
+   */
+  final def --(ns: Iterable[Int]): BitSet = {
+    val bs = BitSet.copyOf(this)
+    val it = ns.iterator
+    while (it.hasNext) bs -= it.next
+    bs
+  }
+
+  /**
    * Return a bitset that does not contain `n` and whose other values
    * are identical to this one's. If this bitset does not contain `n`
    * then this method does nothing.
@@ -138,11 +192,23 @@ sealed abstract class BitSet { lhs =>
    * If the bitsets do not intersect, the left-hand side will be
    * returned.
    */
-  def --(rhs: BitSet): BitSet
+  def &~(rhs: BitSet): BitSet
+
+  /**
+   * Returns whether this bitset is entirely contained in `rhs` or not.
+   */
+  final def subsetOf(rhs: BitSet): Boolean =
+    (this &~ rhs).isEmpty
+
+  /**
+   * Returns whether this bitset contains all of `rhs` or not.
+   */
+  final def supersetOf(rhs: BitSet): Boolean =
+    (rhs &~ this).isEmpty
 
   // Internal mutability
   //
-  // The following three methods (`+=`, `-=`, and `mutableAdd`) all
+  // The following three methods (`+=`, `|=`, and `mutableAdd`) all
   // potentially mutate `this`.
   //
   // These methods are used internally by BitSet's public methods to
@@ -158,6 +224,13 @@ sealed abstract class BitSet { lhs =>
    * is in this node's range (i.e. `offset <= n < limit`).
    */
   private[collections] def +=(n: Int): Unit
+
+  /**
+   * Remove a single value `n` from this bitset.
+   *
+   * This method modifies this bitset.
+   */
+  private[collections] def -=(n: Int): Unit
 
   /**
    * Add all values from `rhs` to this bitset.
@@ -193,7 +266,7 @@ sealed abstract class BitSet { lhs =>
    * Empty branches are not usually observable but would result in
    * increased memory usage.
    */
-  def compact: BitSet = {
+  final def compact: BitSet = {
     def recur(x: BitSet): BitSet =
       x match {
         case leaf @ Leaf(_, _) =>
@@ -260,7 +333,7 @@ sealed abstract class BitSet { lhs =>
    * other operations (for example `map`) may copy these values into a
    * different `Set` implementation.
    */
-  def toSet: Set[Int] =
+  final def toSet: Set[Int] =
     new compat.BitSetWrapperSet(this)
 
   /**
@@ -271,7 +344,7 @@ sealed abstract class BitSet { lhs =>
   /**
    * Returns true if this bitset contains values, false otherwise.
    */
-  def nonEmpty: Boolean = !isEmpty
+  final def nonEmpty: Boolean = !isEmpty
 
   /**
    * Produce a string representation of this BitSet.
@@ -397,12 +470,25 @@ object BitSet {
    * Construct an immutable bitset from the given integer values.
    */
   def apply(xs: Int*): BitSet =
-    if (xs.isEmpty) Empty
+    fromIterable(xs)
+
+  def fromIterable(ns: Iterable[Int]): BitSet =
+    if (ns.isEmpty) Empty
     else {
       var bs = newEmpty(0)
-      val iter = xs.iterator
-      while(iter.hasNext) {
-        bs = bs.mutableAdd(iter.next())
+      val it = ns.iterator
+      while (it.hasNext) bs = bs.mutableAdd(it.next())
+      bs
+    }
+
+  def fromArray(ns: Array[Int]): BitSet =
+    if (ns.length == 0) Empty
+    else {
+      var bs = newEmpty(0)
+      var i = 0
+      while (i < ns.length) {
+        bs = bs.mutableAdd(ns(i))
+        i += 1
       }
       bs
     }
@@ -483,6 +569,31 @@ object BitSet {
       parent | rhs
     }
   }
+
+  /**
+   * Make a full copy of this BitSet.
+   *
+   * This method is used to create fresh arrays that are safe to
+   * modify (guaranteed not to be shared). This method defeats any
+   * structural sharing that was going on -- it uses extra space in
+   * exchange for saving extra time during a bulk operation.
+   */
+  protected def copyOf(b: BitSet): BitSet =
+    b match {
+      case Leaf(o, vs) =>
+        val vs2 = new Array[Int](vs.length)
+        System.arraycopy(vs, 0, vs2, 0, vs.length)
+        Leaf(o, vs2)
+      case Branch(o, h, cs) =>
+        val cs2 = new Array[BitSet](cs.length)
+        var i = 0
+        while (i < cs.length) {
+          val c = cs(i)
+          if (c != null) cs2(i) = copyOf(c)
+          i += 1
+        }
+        Branch(o, h, cs2)
+    }
 
   private case class Branch(offset: Int, height: Int, children: Array[BitSet]) extends BitSet {
 
@@ -711,7 +822,7 @@ object BitSet {
         Branch(offset, height, cs)
       }
 
-    def --(rhs: BitSet): BitSet =
+    def &~(rhs: BitSet): BitSet =
       rhs match {
         case _ if this eq rhs =>
           Empty
@@ -719,7 +830,7 @@ object BitSet {
           if (offset < b.offset || b.limit <= offset) this
           else {
             val c = b.children(b.index(offset))
-            if (c == null) this else this -- c
+            if (c == null) this else this &~ c
           }
         case b @ Branch(_, _, _) if height == b.height =>
           if (offset != b.offset) {
@@ -730,7 +841,7 @@ object BitSet {
             while (i < 32) {
               val c0 = children(i)
               val c1 = b.children(i)
-              val cc = if (c0 == null || c1 == null) c0 else c0 -- c1
+              val cc = if (c0 == null || c1 == null) c0 else c0 &~ c1
               if (!(c0 eq cc)) {
                 if (newChildren == null) {
                   newChildren = new Array[BitSet](32)
@@ -759,7 +870,7 @@ object BitSet {
             if (c == null) {
               this
             } else {
-              val cc = c -- rhs
+              val cc = c &~ rhs
               if (c eq cc) this else replace(i, cc)
             }
           }
@@ -774,6 +885,15 @@ object BitSet {
         c += n
       } else {
         c0 += n
+      }
+    }
+
+    private[collections] def -=(n: Int): Unit = {
+      val i = index(n)
+      if (i < 0 || 32 <= i) ()
+      else {
+        val c = children(i)
+        if (c != null) c -= n
       }
     }
 
@@ -1028,7 +1148,7 @@ object BitSet {
           rhs ^ this
       }
 
-    def --(rhs: BitSet): BitSet =
+    def &~(rhs: BitSet): BitSet =
       rhs match {
         case Leaf(o, values2) =>
           if (o != offset) {
@@ -1046,7 +1166,7 @@ object BitSet {
           val j = b.index(offset)
           if (0 <= j && j < 32) {
             val c = b.children(j)
-            if (c == null) this else this -- c
+            if (c == null) this else this &~ c
           } else {
             this
           }
@@ -1056,6 +1176,12 @@ object BitSet {
       val i = index(n)
       val j = bit(n)
       values(i) |= (1 << j)
+    }
+
+    private[collections] def -=(n: Int): Unit = {
+      val i = index(n)
+      if (i < 0 || 32 <= i) ()
+      else values(i) &= ~(1 << bit(n))
     }
 
     private[collections] def mutableAdd(n: Int): BitSet = {
