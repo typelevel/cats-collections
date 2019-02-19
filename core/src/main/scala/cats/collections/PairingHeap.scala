@@ -1,6 +1,6 @@
 package cats.collections
 
-import cats.{Order, UnorderedFoldable, Show}
+import cats.{Order, Show}
 import cats.kernel.CommutativeMonoid
 import scala.annotation.tailrec
 
@@ -28,6 +28,40 @@ sealed abstract class PairingHeap[A] {
       val thisTree = this.asInstanceOf[Tree[A]]
       if (order.lt(x, thisTree.min)) Tree(x, this :: Nil)
       else Tree(thisTree.min, Tree(x, Nil) :: thisTree.subtrees)
+    }
+
+  /*
+   * Add a collection of items in. This is O(N) if as is size N
+   */
+  def addAll(as: Iterable[A])(implicit order: Order[A]): PairingHeap[A] = {
+    val ait = as.iterator
+    var heap = this
+    while(ait.hasNext) {
+      heap = heap + ait.next()
+    }
+    heap
+  }
+
+  /**
+   * This is O(N) in the worst case, but we use the
+   * heap property to be lazy
+   */
+  def contains(a: A)(implicit order: Order[A]): Boolean =
+    if (isEmpty) false
+    else {
+      val c = order.compare(a, this.asInstanceOf[Tree[A]].min)
+      if (c < 0) false // a is less than the min
+      else if (c == 0) true // a == min
+      else {
+        @tailrec
+        def loop(ts: List[PairingHeap[A]]): Boolean =
+          ts match {
+            case Nil => false
+            case h :: tail => h.contains(a) || loop(tail)
+          }
+
+        loop(subtrees)
+      }
     }
 
   /**
@@ -292,8 +326,8 @@ object PairingHeap {
     }
   }
 
-  implicit val catsCollectionPairingHeapUnorderedFoldable: UnorderedFoldable[PairingHeap] =
-    new UnorderedFoldable[PairingHeap] {
+  implicit val catsCollectionPairingHeapPartiallyOrderedSet: PartiallyOrderedSet[PairingHeap] =
+    new PartiallyOrderedSet[PairingHeap] {
       def unorderedFoldMap[A, B: CommutativeMonoid](ha: PairingHeap[A])(fn: A => B): B =
         ha.unorderedFoldMap(fn)
 
@@ -305,6 +339,25 @@ object PairingHeap {
       override def exists[A](ha: PairingHeap[A])(fn: A => Boolean) = ha.exists(fn)
       override def forall[A](ha: PairingHeap[A])(fn: A => Boolean) = ha.forall(fn)
       override def size[A](h: PairingHeap[A]) = h.size
+      // PartiallyOrderedSet methods
+      override def add[A](fa: PairingHeap[A], a: A)(implicit order: Order[A]): PairingHeap[A] =
+        fa.add(a)
+      override def addAll[A: Order](fa: PairingHeap[A], as: Iterable[A]): PairingHeap[A] =
+        fa.addAll(as)
+      override def contains[A](fa: PairingHeap[A], a: A)(implicit order: Order[A]): Boolean =
+        fa.contains(a)
+      override def build[A](as: Iterable[A])(implicit order: Order[A]): PairingHeap[A] =
+        PairingHeap.fromIterable(as)
+      override def empty[A]: PairingHeap[A] = PairingHeap.empty[A]
+      override def minimumOption[A](fa: PairingHeap[A]): Option[A] = fa.minimumOption
+      override def removeMin[A](fa: PairingHeap[A])(implicit order: Order[A]): PairingHeap[A] = fa.remove
+      override def singleton[A](a: A): PairingHeap[A] = PairingHeap(a)
+      override def toSortedList[A: Order](fa: PairingHeap[A]): List[A] =
+        fa.toList
+      override def sortedFoldLeft[A: Order, B](fa: PairingHeap[A], init: B)(fn: (B, A) => B): B =
+        fa.foldLeft(init)(fn)
+
+      override def order[A: Order] = new PairingHeapOrder[A]
     }
 
   private[collections] class PairingHeapOrder[A](implicit ordA: Order[A]) extends Order[PairingHeap[A]] {

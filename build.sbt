@@ -10,7 +10,7 @@ lazy val buildSettings = Seq(
 lazy val `cats-collections` = project.in(file("."))
   .settings(buildSettings:_*)
   .settings(noPublishSettings)
-  .aggregate(coreJVM, coreJS, bench, scalacheckJVM, scalacheckJS, testsJVM, testsJS, docs)
+  .aggregate(coreJVM, coreJS, bench, scalacheckJVM, scalacheckJS, testsJVM, testsJS, docs, lawsJVM, lawsJS)
   .settings(
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -63,9 +63,24 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
 
+lazy val laws = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .dependsOn(core)
+  .settings(moduleName := "cats-collections-laws")
+  .settings(dogsSettings:_*)
+  .settings(publishSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "org.typelevel" %%% "cats-laws"    % V.cats
+      )
+  )
+
+lazy val lawsJVM = laws.jvm
+lazy val lawsJS = laws.js
+
 lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
-  .dependsOn(scalacheck)
+  .dependsOn(scalacheck, laws)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)

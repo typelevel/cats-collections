@@ -1,8 +1,8 @@
 package cats.collections
 package tests
 
-import cats.{Order, Show, UnorderedFoldable}
-import cats.laws.discipline.UnorderedFoldableTests
+import cats.{Order, Show}
+import cats.collections.laws.discipline.PartiallyOrderedSetTests
 import cats.kernel.laws.discipline.{CommutativeMonoidTests, OrderTests}
 import cats.tests.CatsSuite
 import org.scalacheck.{Arbitrary, Cogen, Gen}
@@ -58,8 +58,8 @@ class PairingHeapSpec extends CatsSuite {
   implicit def cogenPairingHeap[A: Cogen: Order]: Cogen[PairingHeap[A]] =
     Cogen[List[A]].contramap { h: PairingHeap[A] => h.toList }
 
-  checkAll("UnorderedFoldable[PairingHeap]",
-    UnorderedFoldableTests[PairingHeap].unorderedFoldable[Long, Int])
+  checkAll("PartiallyOrderedSet[PairingHeap]",
+    PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])
 
   checkAll("Order[PairingHeap[Int]]", OrderTests[PairingHeap[Int]].order)
 
@@ -83,22 +83,6 @@ class PairingHeapSpec extends CatsSuite {
       assert(heapList == list.sorted)
       assert(Order[PairingHeap[Int]].eqv(heap, heap1))
     }
-  }
-
-  test("adding increases size") {
-    forAll { (heap: PairingHeap[Int], x: Int) =>
-      val heap1 = heap + x
-      assert(heap1.size == (heap.size + 1))
-    }
-  }
-
-  test("remove decreases size") {
-    forAll { (heap: PairingHeap[Int]) =>
-      val heap1 = heap.remove
-      assert((heap1.size == (heap.size - 1)) || (heap1.isEmpty && heap.isEmpty))
-    }
-
-    assert(PairingHeap.empty[Int].remove == PairingHeap.empty[Int])
   }
 
   test("size is consistent with isEmpty/nonEmpty") {
@@ -168,15 +152,6 @@ class PairingHeapSpec extends CatsSuite {
   test("Order[PairingHeap[Int]] works like List[Int]") {
     forAll { (a: PairingHeap[Int], b: PairingHeap[Int]) =>
       assert(Order[PairingHeap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
-    }
-  }
-
-  test("UnorderedFoldable[PairingHeap].size is correct") {
-    forAll { (a: PairingHeap[Int]) =>
-      val uof = UnorderedFoldable[PairingHeap]
-      assert(uof.size(a) == a.size)
-      assert(uof.unorderedFoldMap(a)(_ => 1L) == a.size)
-      assert(a.size == a.toList.size.toLong)
     }
   }
 
