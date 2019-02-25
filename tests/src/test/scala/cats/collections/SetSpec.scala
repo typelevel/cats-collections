@@ -1,6 +1,7 @@
 package cats.collections
 package tests
 
+import cats.Show
 import cats.collections.arbitrary.set._
 import cats.kernel.Eq
 import cats.tests.CatsSuite
@@ -114,5 +115,9 @@ class SetSpec extends CatsSuite {
     val xt = AvlSet.fromFoldable(xs)
 
     xt.toScalaSet should be(xs.toSet)
+  })
+
+  test("Show instance is consistent with toString") (forAll{ (as: AvlSet[Int]) =>
+    as.toString should be(Show[AvlSet[Int]].show(as))
   })
 }

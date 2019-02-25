@@ -427,6 +427,6 @@ trait AvlSetInstances {
 
   implicit def showSet[A: Show]: Show[AvlSet[A]] = new Show[AvlSet[A]] {
     override def show(t: AvlSet[A]): String =
-      t.toIterator.map(_.show).mkString("AvlSet(", ", ", ")")
+      t.toIterator.map(_.show).mkString("Set(", ",", ")")
   }
 }
