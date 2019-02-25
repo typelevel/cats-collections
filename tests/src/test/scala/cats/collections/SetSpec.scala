@@ -109,4 +109,10 @@ class SetSpec extends CatsSuite {
 
     (xt map f).toScalaSet should be(xs map f)
   })
+
+  test("fromFoldable works") (forAll{ (xs: List[Int]) =>
+    val xt = AvlSet.fromFoldable(xs)
+
+    xt.toScalaSet should be(xs.toSet)
+  })
 }

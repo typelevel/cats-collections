@@ -347,6 +347,12 @@ object AvlSet extends AvlSetInstances {
     as.foldLeft[AvlSet[A]](empty)(_ + _)
 
   /**
+    * Create a set from any collection of elements which has a [[cats.Foldable]] instance.
+    */
+  def fromFoldable[F[_], A: Order](as: F[A])(implicit fa: Foldable[F]): AvlSet[A] =
+    fa.foldLeft[A, AvlSet[A]](as, empty)(_ + _)
+
+  /**
    * The empty set.
    */
   def empty[A]: AvlSet[A] = BTNil()
@@ -417,5 +423,10 @@ trait AvlSetInstances {
   implicit def eqSet[A: Eq]: Eq[AvlSet[A]] = new Eq[AvlSet[A]] {
     override def eqv(x: AvlSet[A], y: AvlSet[A]): Boolean =
       iteratorEq(x.toIterator, y.toIterator)
+  }
+
+  implicit def showSet[A: Show]: Show[AvlSet[A]] = new Show[AvlSet[A]] {
+    override def show(t: AvlSet[A]): String =
+      t.toIterator.map(_.show).mkString("AvlSet(", ", ", ")")
   }
 }
