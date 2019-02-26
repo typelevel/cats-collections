@@ -178,10 +178,6 @@ lazy val publishSettings = Seq(
   pomExtra := (
     <developers>
       <developer>
-        <name>Stew O'Connor</name>
-        <url>https://github.com/stew/</url>
-      </developer>
-      <developer>
         <id>anicolaspp</id>
         <name>Nicolas A Perez</name>
         <url>https://github.com/anicolaspp/</url>
