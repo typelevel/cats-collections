@@ -76,13 +76,13 @@ class DietSpec extends CatsSuite {
   test("shown empty"){
     val diet = Diet.empty[Int]
 
-    diet.show should be ("{ }")
+    diet.show should be ("Diet( )")
   }
 
   test("shown all intervals"){
     val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
 
-    diet.show should be ("{ [1, 10] [20, 100] }")
+    diet.show should be ("Diet( [1, 10] [20, 100] )")
   }
 
   test("remove side ranges"){

@@ -312,7 +312,7 @@ object Diet {
   }
 
   implicit def dietShowable[A](implicit s: Show[Range[A]]): Show[Diet[A]] = new Show[Diet[A]] {
-    override def show(f: Diet[A]): String = f.foldLeftRange("{")((str,rng) => str + " " + s.show(rng)) + " }"
+    override def show(f: Diet[A]): String = f.foldLeftRange("Diet(")((str,rng) => str + " " + s.show(rng)) + " )"
   }
 
   implicit def dietCommutativeMonoid[A](implicit enum: Discrete[A], order: Order[A]): CommutativeMonoid[Diet[A]] = new CommutativeMonoid[Diet[A]] {
