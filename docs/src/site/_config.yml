@@ -1,6 +1,0 @@
-name: Dogs Documentation
-highlighter: pygments
-baseurl: /dogs
-apidocs: /dogs/api/
-sources: https://github.com/stew/dogs/blob/master/
-

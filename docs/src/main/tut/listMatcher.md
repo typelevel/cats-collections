@@ -1,6 +1,6 @@
 ---
-layout: default
-title:  "Option"
+layout: page
+title:  "List"
 source: "core/src/main/scala/Option.scala"
 ------------------------------------------
 
@@ -10,7 +10,7 @@ source: "core/src/main/scala/Option.scala"
   
 ## Supported Operations
  
-- matchTo:  Match the `dogs.List[A]` to another `dogs.List[A]`. Note
+- matchTo:  Match the `cats.collections.List[A]` to another `cats.collections.List[A]`. Note
 that we need to know how to compare elements of type `A`. This is
 described by `Order[A]`.
 

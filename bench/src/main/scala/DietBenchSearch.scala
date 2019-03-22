@@ -2,7 +2,7 @@
  * Created by anicolaspp on 2/18/16.
  */
 
-package dogs
+package cats.collections
 package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
@@ -14,8 +14,6 @@ import cats.implicits._
 
 @State(Scope.Benchmark)
 class DietBenchSearch {
-
-  import dogs.Predef._
 
   implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
 

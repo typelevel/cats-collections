@@ -1,22 +1,41 @@
-import com.typesafe.sbt.SbtSite.SiteKeys._
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import sbtunidoc.Plugin.UnidocKeys._
+import microsites._
 
-name := "dogs-docs"
+name := "cats-collections-docs"
 
-site.settings
+lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
-tutSettings
-
-site.addMappingsToSiteDir(tut, "tut")
-
-ghpages.settings
+enablePlugins(MicrositesPlugin)
 
 ghpagesNoJekyll := false
+micrositeName := "cats-collections"
+micrositeDescription := "pure functional data structures for Scala"
+micrositeBaseUrl := "/cats-collections/"
+micrositeHomepage := "http://typelevel.org/cats-collections/"
+micrositeGithubOwner := "typelevel"
+micrositeGithubRepo := "cats-collections"
+micrositeExtraMdFiles := Map(
+  file("README.md") -> ExtraMdFileConfig(
+    "index.md",
+    "docs",
+    Map("title" -> "Home", "layout" -> "docs")
+  )
+)
 
-includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.yml" | "*.md"
+micrositePalette := Map(
+  "brand-primary" -> "#5B5988",
+  "brand-secondary" -> "#292E53",
+  "brand-tertiary" -> "#222749",
+  "gray-dark" -> "#49494B",
+  "gray" -> "#7B7B7E",
+  "gray-light" -> "#E5E5E6",
+  "gray-lighter" -> "#F4F3F4",
+  "white-color" -> "#FFFFFF")
 
-git.remoteRepo := "git@github.com:stew/dogs.git"
+includeFilter in Jekyll := (includeFilter in makeSite).value
+
+fork in tut := true
+
+git.remoteRepo := "git@github.com:typelevel/cats-collections.git"
 
 scalacOptions := Seq(
   "-feature",
@@ -29,10 +48,7 @@ scalacOptions := Seq(
   "-Xcheckinit",
   "-Xfuture",
   "-Xlint",
-  "-Xfatal-warnings",
-  "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-value-discard",
   "-Xfuture",
-  "-Yno-predef")
-
+  "-nowarn")
