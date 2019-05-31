@@ -3,7 +3,7 @@ import ReleaseTransformations._
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.6",
+  scalaVersion in Global := "2.12.8",
   crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0-M5")
 )
 
