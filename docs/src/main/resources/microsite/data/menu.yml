@@ -23,5 +23,5 @@ options:
   - title: Range
     url: range.html
 
-  - title: Set
+  - title: AvlSet
     url: set.html
