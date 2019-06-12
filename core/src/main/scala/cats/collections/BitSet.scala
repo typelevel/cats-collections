@@ -22,7 +22,7 @@ import BitSet.{Branch, Empty, Leaf}
  * Unlike scala's default immutable this BitSet does not do a full
  * copy on each added value.
  *
- * Interally the implementation is a tree. Each leaf uses an
+ * Internally the implementation is a tree. Each leaf uses an
  * Array[Long] value to hold up to 2048 bits, and each branch uses an
  * Array[BitSet] to hold up to 32 subtrees (null subtrees are treated
  * as empty).
