@@ -1,11 +1,11 @@
 ---
 layout: docs
-title:  "Set"
+title:  "AvlSet"
 source: "core/src/main/scala/Set.scala"
 ---
-# Set
+# AvlSet
 
-`Set` is a tree-based set which stores [Order](order)able elements in
+`AvlSet` is a tree-based set which stores Orderable elements in
 a [AVL balanced binary tree](https://en.wikipedia.org/wiki/AVL_tree).
 
 This set is an
