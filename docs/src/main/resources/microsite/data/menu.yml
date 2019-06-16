@@ -17,8 +17,8 @@ options:
   - title: Disjoin Sets
     url: disjointsets.html
 
-  - title: ISet
-    url: iset.html
+  - title: Predicate
+    url: predicate.html
 
   - title: Range
     url: range.html

@@ -242,9 +242,9 @@ sealed abstract class AvlSet[A] {
 
 
   /**
-   * Return an ISet (intentional set) with the same members as this set
+   * Return an Predicate with the same members as this set
    */
-  def iset(implicit order: Order[A]): ISet[A] = ISet(contains)
+  def predicate(implicit order: Order[A]): Predicate[A] = Predicate(contains)
 
   /**
     * Converts this set into a Scala collection
