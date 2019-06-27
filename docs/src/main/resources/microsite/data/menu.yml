@@ -14,7 +14,7 @@ options:
   - title: Discrete
     url: discrete.html
 
-  - title: Disjoin Sets
+  - title: Disjoint Sets
     url: disjointsets.html
 
   - title: Predicate
