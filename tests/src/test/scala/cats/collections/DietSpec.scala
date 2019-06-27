@@ -1,9 +1,7 @@
 package cats.collections
 package tests
 
-import catalysts.Platform
 import cats._
-import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
@@ -13,7 +11,7 @@ class DietSpec extends CatsSuite {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration.copy(
-      minSuccessful = if (Platform.isJvm) 10000 else 500
+      minSuccessful = if (BuildInfo.isJvm) 10000 else 500
     )
 
   sealed trait Item {

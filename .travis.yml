@@ -1,6 +1,5 @@
 cache:
   directories:
-  - "$HOME/.sbt/0.13/dependency"
   - "$HOME/.sbt/boot/scala*"
   - "$HOME/.sbt/launchers"
   - "$HOME/.ivy2/cache"
@@ -10,7 +9,7 @@ sudo: false
 scala:
 - 2.11.12
 - 2.12.8
-- 2.13.0-M5
+- 2.13.0
 sbt_args: -J-Xss4m -J-Xmx6G -J-Xms1G
 jdk:
 - oraclejdk8
