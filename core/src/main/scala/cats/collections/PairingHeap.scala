@@ -14,7 +14,7 @@ import scala.annotation.tailrec
  *
  * Additionally, it supports an efficient O(1) combine operation
  */
-sealed abstract class PairingHeap[A] {
+sealed abstract class PairingHeap[+A] {
 
   import PairingHeap._
 
@@ -22,7 +22,7 @@ sealed abstract class PairingHeap[A] {
    * insert an item into the heap
    * O(1)
    */
-  def add(x: A)(implicit order: Order[A]): PairingHeap[A] =
+  def add[AA >: A](x: AA)(implicit order: Order[AA]): PairingHeap[AA] =
     if (this.isEmpty) apply(x)
     else {
       val thisTree = this.asInstanceOf[Tree[A]]
@@ -33,9 +33,9 @@ sealed abstract class PairingHeap[A] {
   /*
    * Add a collection of items in. This is O(N) if as is size N
    */
-  def addAll(as: Iterable[A])(implicit order: Order[A]): PairingHeap[A] = {
+  def addAll[AA >: A](as: Iterable[AA])(implicit order: Order[AA]): PairingHeap[AA] = {
     val ait = as.iterator
-    var heap = this
+    var heap: PairingHeap[AA] = this
     while(ait.hasNext) {
       heap = heap + ait.next()
     }
@@ -46,7 +46,7 @@ sealed abstract class PairingHeap[A] {
    * This is O(N) in the worst case, but we use the
    * heap property to be lazy
    */
-  def contains(a: A)(implicit order: Order[A]): Boolean =
+  def contains[AA >: A](a: AA)(implicit order: Order[AA]): Boolean =
     if (isEmpty) false
     else {
       val c = order.compare(a, this.asInstanceOf[Tree[A]].min)
@@ -93,9 +93,9 @@ sealed abstract class PairingHeap[A] {
    * Returns a sorted list of the elements within the heap.
    * O(N log N)
    */
-  def toList(implicit order: Order[A]): List[A] = {
+  def toList[AA >: A](implicit order: Order[AA]): List[AA] = {
     @tailrec
-    def loop(h: PairingHeap[A], acc: List[A]): List[A] =
+    def loop(h: PairingHeap[AA], acc: List[AA]): List[AA] =
       h match {
         case Tree(m, _) => loop(h.remove, m :: acc)
         case Leaf()          => acc.reverse
@@ -107,7 +107,7 @@ sealed abstract class PairingHeap[A] {
   /**
    * Merge two heaps, this is O(1) work
    */
-  def combine(that: PairingHeap[A])(implicit order: Order[A]): PairingHeap[A]
+  def combine[AA >: A](that: PairingHeap[AA])(implicit order: Order[AA]): PairingHeap[AA]
 
   /**
    * Check to see if a predicate is ever true
@@ -135,11 +135,11 @@ sealed abstract class PairingHeap[A] {
   /**
    * Similar to unorderedFoldMap without a transformation
    */
-  def unorderedFold(implicit m: CommutativeMonoid[A]): A =
+  def unorderedFold[AA >: A](implicit m: CommutativeMonoid[AA]): AA =
     if (isEmpty) m.empty
     else {
       val thisTree = this.asInstanceOf[Tree[A]]
-      m.combine(thisTree.min, m.combineAll(thisTree.subtrees.map(_.unorderedFold)))
+      m.combine(thisTree.min, m.combineAll(thisTree.subtrees.map(_.unorderedFold[AA])))
     }
 
   /**
@@ -149,9 +149,9 @@ sealed abstract class PairingHeap[A] {
    * prefer unorderedFoldMap if you can express your operation as a commutative monoid
    * since it is O(N) vs O(N log N) for this method
    */
-  def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
+  def foldLeft[AA >: A, B](init: B)(fn: (B, AA) => B)(implicit order: Order[AA]): B = {
     @tailrec
-    def loop(h: PairingHeap[A], acc: B): B =
+    def loop(h: PairingHeap[AA], acc: B): B =
       h match {
         case Tree(m, _) => loop(h.remove, fn(acc, m))
         case Leaf()          => acc
@@ -164,17 +164,17 @@ sealed abstract class PairingHeap[A] {
    * if not empty, remove the min, else return empty
    * this is thought to be O(log N) (but not proven to be so)
    */
-  def remove(implicit order: Order[A]): PairingHeap[A] =
+  def remove[AA >: A](implicit order: Order[AA]): PairingHeap[AA] =
     if (isEmpty) this
     else {
       val thisTree = this.asInstanceOf[Tree[A]]
-      combineAll(thisTree.subtrees)
+      combineAll[AA](thisTree.subtrees)
     }
 
   /**
    * Alias for add
    */
-  def +(x: A)(implicit order: Order[A]): PairingHeap[A] = add(x)
+  def +[AA >: A](x: AA)(implicit order: Order[AA]): PairingHeap[AA] = add(x)
 
   private[collections] def subtrees: List[PairingHeap[A]]
 }
@@ -283,7 +283,7 @@ object PairingHeap {
         loop(subtrees)
       }
 
-    override def combine(that: PairingHeap[A])(implicit order: Order[A]): PairingHeap[A] =
+    override def combine[AA >: A](that: PairingHeap[AA])(implicit order: Order[AA]): PairingHeap[AA] =
       if (that.isEmpty) this
       else {
         val thatTree = that.asInstanceOf[Tree[A]]
@@ -293,7 +293,7 @@ object PairingHeap {
   }
 
   private final case object Leaf extends PairingHeap[Nothing] {
-    def apply[A](): PairingHeap[A] = this.asInstanceOf[PairingHeap[A]]
+    def apply[A](): PairingHeap[A] = this
 
     def unapply[A](heap: PairingHeap[A]): Boolean = heap.isEmpty
 
@@ -309,7 +309,7 @@ object PairingHeap {
 
     override def forall(fn: Nothing => Boolean): Boolean = true
 
-    override def combine(that: PairingHeap[Nothing])(implicit order: Order[Nothing]): PairingHeap[Nothing] = that
+    override def combine[AA](that: PairingHeap[AA])(implicit order: Order[AA]): PairingHeap[AA] = that
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[PairingHeap[A]] = new Show[PairingHeap[A]] {
