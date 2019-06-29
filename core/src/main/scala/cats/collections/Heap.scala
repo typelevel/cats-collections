@@ -16,7 +16,7 @@ import scala.annotation.tailrec
  * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the
  * function `heapify`.
  */
-sealed abstract class Heap[A] {
+sealed abstract class Heap[+A] {
 
   import Heap._
 
@@ -58,7 +58,7 @@ sealed abstract class Heap[A] {
    * Insert a new element into the heap.
    * Order O(log n)
    */
-  def add(x: A)(implicit order: Order[A]): Heap[A] =
+  def add[AA >: A](x: AA)(implicit order: Order[AA]): Heap[AA] =
     if (isEmpty) Heap(x)
     else {
       // this is safe since we are non-empty
@@ -77,9 +77,9 @@ sealed abstract class Heap[A] {
   /*
    * Add a collection of items in. This is O(N log N) if as is size N
    */
-  def addAll(as: Iterable[A])(implicit order: Order[A]): Heap[A] = {
+  def addAll[AA >: A](as: Iterable[AA])(implicit order: Order[AA]): Heap[AA] = {
     val ait = as.iterator
-    var heap = this
+    var heap: Heap[AA] = this
     while(ait.hasNext) {
       heap = heap + ait.next()
     }
@@ -90,7 +90,7 @@ sealed abstract class Heap[A] {
    * This is O(N) in the worst case, but we use the
    * heap property to be lazy
    */
-  def contains(a: A)(implicit order: Order[A]): Boolean =
+  def contains[AA >: A](a: AA)(implicit order: Order[AA]): Boolean =
     if (isEmpty) false
     else {
       val br = this.asInstanceOf[Branch[A]]
@@ -126,15 +126,15 @@ sealed abstract class Heap[A] {
    * this totally ignores `this`.
    */
   @deprecated("this method ignores `this` and is very easy to misuse. Use Heap.fromIterable", "0.8.0")
-  def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
+  def heapify[AA >: A](a: List[AA])(implicit order: Order[AA]): Heap[AA] =
     Heap.heapify(a)
 
   /**
    * Remove the min element from the heap (the root).
    * Order O(log n)
    */
-  def remove(implicit order: Order[A]): Heap[A] = this match {
-    case Branch(_, l, r) => bubbleRootDown(mergeChildren(l, r))
+  def remove[AA >: A](implicit order: Order[AA]): Heap[AA] = this match {
+    case Branch(_, l, r) => bubbleRootDown[AA](mergeChildren(l, r))
     case Leaf()          => Leaf()
   }
 
@@ -153,18 +153,18 @@ sealed abstract class Heap[A] {
   /**
    * Similar to unorderedFoldMap without a transformation
    */
-  final def unorderedFold(implicit m: CommutativeMonoid[A]): A =
+  final def unorderedFold[AA >: A](implicit m: CommutativeMonoid[AA]): AA =
     this match {
-      case Branch(min, left, right) => m.combine(min, m.combine(left.unorderedFold, right.unorderedFold))
+      case Branch(min, left, right) => m.combine(min, m.combine(left.unorderedFold[AA], right.unorderedFold[AA]))
       case _ => m.empty
     }
 
   /**
    * Returns a sorted list of the elements within the heap.
    */
-  def toList(implicit order: Order[A]): List[A] = {
+  def toList[AA >: A](implicit order: Order[AA]): List[AA] = {
     @tailrec
-    def loop(h: Heap[A], acc: List[A]): List[A] =
+    def loop(h: Heap[AA], acc: List[AA]): List[AA] =
       h match {
         case Branch(m, _, _) => loop(h.remove, m :: acc)
         case Leaf()          => acc.reverse
@@ -180,9 +180,10 @@ sealed abstract class Heap[A] {
    * prefer unorderedFoldMap if you can express your operation as a commutative monoid
    * since it is O(N) vs O(N log N) for this method
    */
-  def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
+  // TODO ceedubs should this be (B, A) or (B, AA)?
+  def foldLeft[AA >: A, B](init: B)(fn: (B, AA) => B)(implicit order: Order[AA]): B = {
     @tailrec
-    def loop(h: Heap[A], init: B): B =
+    def loop(h: Heap[AA], init: B): B =
       h match {
         case Branch(a, _, _) => loop(h.remove, fn(init, a))
         case Leaf()          => init
@@ -194,28 +195,28 @@ sealed abstract class Heap[A] {
   /**
    * Alias for add
    */
-  def +(x: A)(implicit order: Order[A]): Heap[A] = add(x)
+  def +[AA >: A](x: AA)(implicit order: Order[AA]): Heap[AA] = add(x)
 
   /**
    * Alias for addAll
    */
-  def ++(as: Iterable[A])(implicit order: Order[A]): Heap[A] = addAll(as)
+  def ++[AA >: A](as: Iterable[AA])(implicit order: Order[AA]): Heap[AA] = addAll(as)
 
   /**
    * Alias for remove
    */
-  def --(implicit order: Order[A]): Heap[A] = remove
+  def --[AA >: A](implicit order: Order[AA]): Heap[AA] = remove[AA]
 
   /**
    * convert to a PairingHeap which can do fast merges,
    * this is an O(N) operation
    */
-  def toPairingHeap: PairingHeap[A] =
+  def toPairingHeap[AA >: A]: PairingHeap[AA] =
     if (isEmpty) PairingHeap.empty
     else {
       val thisBranch = this.asInstanceOf[Branch[A]]
       import thisBranch.{min, left, right}
-      PairingHeap.Tree(min, left.toPairingHeap :: right.toPairingHeap :: Nil)
+      PairingHeap.Tree(min, left.toPairingHeap[AA] :: right.toPairingHeap[AA] :: Nil)
     }
 }
 

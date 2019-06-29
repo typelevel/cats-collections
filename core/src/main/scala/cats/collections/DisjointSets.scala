@@ -109,7 +109,7 @@ object DisjointSets extends DisjointSetsStates {
     AvlMap(labels.map(l => l -> Entry(0, l)):_*)
   )
 
-  private case class Entry[T](rank: Int, parent: T)
+  private case class Entry[+T](rank: Int, parent: T)
 }
 
 
