@@ -107,6 +107,10 @@ class DequeueSpec extends CatsSuite {
     q.toList should be (Foldable[Dequeue].toList(q))
   })
 
+  test("toList/toStream consistency")(forAll { q: Dequeue[Int] =>
+    q.toList should be (q.to[Stream, Int].toList)
+  })
+
   test("equality")(forAll { (xs: List[Int]) =>
     val q1 = consL(xs, Dequeue.empty)
     val q2 = snocL(xs.reverse, Dequeue.empty)
