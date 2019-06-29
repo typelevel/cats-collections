@@ -48,26 +48,26 @@ class RangeTest extends CatsSuite {
   test("foldLeft"){
     val range = Range(1, 100)
 
-    range.foldLeft[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
-    range.foldLeft[Int](0, (_,b) => b) should be (100)
+    range.foldLeft[Int, Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
+    range.foldLeft[Int, Int](0, (_,b) => b) should be (100)
   }
 
   test("foldLeft in the right order"){
     val range = Range(1, 100)
 
-    range.foldLeft[Int](0, (_,b) => b) should be (100)
+    range.foldLeft[Int, Int](0, (_,b) => b) should be (100)
   }
 
   test("foldRight"){
     val range = Range(1, 100)
 
-    range.foldRight[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
+    range.foldRight[Int, Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
   }
 
   test("foldRight in the right order"){
     val range = Range(1, 100)
 
-    range.foldRight[Int](0, (a,_) => a) should be (1)
+    range.foldRight[Int, Int](0, (a,_) => a) should be (1)
   }
 
   test("be able to diff (-)"){
