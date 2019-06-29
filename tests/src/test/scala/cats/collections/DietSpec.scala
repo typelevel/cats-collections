@@ -235,6 +235,28 @@ class DietSpec extends CatsSuite {
     assert(invariant(rs.toDiet))
   })
 
+  test("one and fromRange are consistent")(forAll { (x: Int) =>
+    Diet.fromRange(Range(x, x)) should ===(Diet.one(x))
+  })
+
+  test("fromRange contains consistent with Range contains")(forAll { (x: Byte, y: Byte, z: Byte) =>
+    val range = if (x < y) Range(x, y) else Range(y, x)
+    Diet.fromRange(range).contains(z) should ===(range.contains(z))
+  })
+
+  test("one and contains are consistent")(forAll { (x: Int, y: Int) =>
+    Diet.one(x).contains(y) should ===(x == y)
+  })
+
+  test("one toList")(forAll { (x: Int) =>
+    Diet.one(x).toList should ===(x :: Nil)
+  })
+
+  test("range toList")(forAll { (x: Byte, y: Byte) =>
+    val range = if (x < y) Range(x, y) else Range(y, x)
+    Diet.fromRange(range).toList should ===(range.toList)
+  })
+
   checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)
   checkAll("Diet[Int]", RingLaws[Diet[Int]].semiring)
   checkAll("Diet[Int]", LogicLaws[Diet[Int]].generalizedBool)

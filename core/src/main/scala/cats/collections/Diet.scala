@@ -277,6 +277,16 @@ sealed abstract class Diet[A] {
 object Diet {
   def empty[A]: Diet[A] = EmptyDiet()
 
+  /**
+   * Create a Diet that contains only a single `A` element.
+   */
+  def one[A](a: A): Diet[A] = DietNode(Range(a, a), empty, empty)
+
+  /**
+   * Create a Diet that consists of a single range of `A` elements.
+   */
+  def fromRange[A](range: Range[A]): Diet[A] = DietNode(range, empty, empty)
+
   private[collections] case class DietNode[A](focus: Range[A], left: Diet[A], right: Diet[A]) extends Diet[A] {
     override val isEmpty: Boolean = false
   }
