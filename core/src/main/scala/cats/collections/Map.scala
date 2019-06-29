@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 /**
  * A tree based immutable map.
  */
-class AvlMap[K,V](val set: AvlSet[(K,V)]) {
+class AvlMap[K,+V](val set: AvlSet[(K,V)]) {
 
   /**
    * Map a function on all the values in the map.
@@ -44,7 +44,7 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
    * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist.
    * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
    */
-  def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): AvlMap[K, V] =
+  def alter[VV >: V](k: K)(f: Option[VV] => Option[VV])(implicit K: Order[K]): AvlMap[K, VV] =
     f(get(k)) map { v => this + (k -> v) } getOrElse this
 
   /**
@@ -57,7 +57,7 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
    * Add a key value pair to the map.
    * O(log n)
    */
-  def +(kv: (K,V))(implicit K: Order[K]): AvlMap[K,V] = new AvlMap(set + kv)
+  def +[VV >: V](kv: (K,VV))(implicit K: Order[K]): AvlMap[K,VV] = new AvlMap(set + kv)
 
   /**
    * Get the value for the given key, if it exists.
@@ -75,7 +75,7 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
    * Merge this map with another map.
    * O(n log n)
    */
-  def ++(other: AvlMap[K,V])(implicit K: Order[K]): AvlMap[K,V] = new AvlMap(set ++ other.set)
+  def ++[VV >: V](other: AvlMap[K,VV])(implicit K: Order[K]): AvlMap[K,VV] = new AvlMap(set ++ other.set)
 
   /**
    * Return a list of Key,Value pairs
@@ -100,8 +100,8 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
    * using the provided Semigroup.
    * O(log n)
    */
-  def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): AvlMap[K,V] =
-    new AvlMap(set.updateKey(key, value))
+  def updateAppend[VV >: V](key: K, value: VV)(implicit K: Order[K], V: Semigroup[VV]): AvlMap[K,VV] =
+    new AvlMap(set.updateKey[K, VV, (K, VV)](key, value))
 
   //
   // Fetch a Key/Value pair from the map if the key is present.
