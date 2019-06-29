@@ -14,7 +14,7 @@ import cats.collections.compat.Factory
  * This data-structure maintains balance using the
  * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
  */
-sealed abstract class AvlSet[A] {
+sealed abstract class AvlSet[+A] {
   import AvlSet._
 
   /**
@@ -119,7 +119,7 @@ sealed abstract class AvlSet[A] {
    * Returns `true` if the given element is in the set.
    * O(log n)
    */
-  def contains(x: A)(implicit order: Order[A]): Boolean = this match {
+  def contains[AA >: A](x: AA)(implicit order: Order[AA]): Boolean = this match {
     case Branch(a, l, r) => order.compare(x, a) match {
       case 0 => true
       case o if o < 0 => l.contains(x)
@@ -132,7 +132,7 @@ sealed abstract class AvlSet[A] {
    * Add's the given element to the set if it is not already present.
    * O(log n)
    */
-  def add(x: A)(implicit order: Order[A]): Branch[A] =
+  def add[AA >: A](x: AA)(implicit order: Order[AA]): Branch[AA] =
     (this match {
       case Branch(a, l, r) =>  order.compare(x, a) match {
         case 0 => Branch(x, l, r)
@@ -147,14 +147,14 @@ sealed abstract class AvlSet[A] {
    * Add's the given element to the set if it is not already present.
    * O(log n)
    */
-  def +(x: A)(implicit order: Order[A]): AvlSet[A] = add(x)
+  def +[AA >: A](x: AA)(implicit order: Order[AA]): AvlSet[AA] = add(x)
 
   /**
    * Return a set which does not contain the given element.
    * O(log n)
    */
-  def remove(x: A)(implicit order: Order[A]): AvlSet[A] =
-    this match {
+  def remove[AA >: A](x: AA)(implicit order: Order[AA]): AvlSet[AA] =
+    (this: AvlSet[AA]) match {
       case Branch(a, l, r) =>
         order.compare(x, a) match {
           case 0 => r.min match {
@@ -188,23 +188,23 @@ sealed abstract class AvlSet[A] {
    * the given set.
    * O(n log n)
    */
-  def union(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = another.foldLeft(this)(_ + _)
+  def union[AA >: A](another: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] = another.foldLeft[AvlSet[AA]](this)(_ + _)
 
   /**
    * Return a set containing the union of elements with this set and
    * the given set.
    * O(n log n)
    */
-  def |(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this union another
+  def |[AA >: A](another: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] = this union another
 
   /**
    * Return a set containing the intersection of elements with this set and
    * the given set.
    * O(n log n)
    */
-  def intersect(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = {
-    def _intersect(small: AvlSet[A], large: AvlSet[A]): AvlSet[A] =
-      small.foldLeft[AvlSet[A]](empty)((t,a) => if(large.contains(a)) t + a else t)
+  def intersect[AA >: A](another: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] = {
+    def _intersect(small: AvlSet[AA], large: AvlSet[AA]): AvlSet[AA] =
+      small.foldLeft[AvlSet[AA]](empty)((t,a) => if(large.contains(a)) t + a else t)
 
     if (this.size < another.size)
       _intersect(this, another)
@@ -217,40 +217,40 @@ sealed abstract class AvlSet[A] {
    * the given set.
    * O(n log n)
    */
-  def &(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this intersect another
+  def &[AA >: A](another: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] = this intersect another
 
   /**
    * Return a set containing the union of elements with this set and
    * the given set.
    * O(n log n)
    */
-  def ++(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this union another
+  def ++[AA >: A](another: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] = this union another
 
   /**
    * Return a set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def diff(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
-    removals.foldLeft(this)(_ remove _)
+  def diff[AA >: A](removals: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] =
+    removals.foldLeft[AvlSet[AA]](this)(_ remove _)
 
   /**
    * Return a set that has any elements appearing in the removals set removed
    * O(n log n)
    */
-  def -(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
-    removals.foldLeft(this)(_ remove _)
+  def -[AA >: A](removals: AvlSet[AA])(implicit order: Order[AA]): AvlSet[AA] =
+    removals.foldLeft[AvlSet[AA]](this)(_ remove _)
 
 
   /**
    * Return an Predicate with the same members as this set
    */
-  def predicate(implicit order: Order[A]): Predicate[A] = Predicate(contains)
+  def predicate[AA >: A](implicit order: Order[AA]): Predicate[AA] = Predicate(contains(_))
 
   /**
     * Converts this set into a Scala collection
     * O(n)
     */
-  def to[Col[_]](implicit cbf: Factory[A, Col[A]]): Col[A] = {
+  def to[Col[_], AA >: A](implicit cbf: Factory[AA, Col[AA]]): Col[AA] = {
     val builder = cbf.newBuilder
     this.foreach(builder += _)
     builder.result()
@@ -260,13 +260,13 @@ sealed abstract class AvlSet[A] {
     * Return the sorted list of elements.
     * O(n)
     */
-  def toList: List[A] = to[List]
+  def toList: List[A] = to[List, A]
 
   /**
    * Return a Scala set containing the elements in the set
    * O(n)
    */
-  def toScalaSet: Set[A] = to[Set]
+  def toScalaSet[AA >: A]: Set[AA] = to[Set, AA]
 
   def toIterator: Iterator[A] = new Iterator[A] {
     var stack: List[Either[A, AvlSet[A]]] = List(Right(AvlSet.this))
@@ -319,16 +319,16 @@ sealed abstract class AvlSet[A] {
     go(this)
   }
 
-  private[collections] def updateKey[K,V](key: K, value: V)(implicit order: Order[K], ev: A =:= (K,V), V: Semigroup[V]): AvlSet[A] = {
-    (this match {
+  private[collections] def updateKey[K,V, AA >: A](key: K, value: V)(implicit order: Order[K], ev: AA =:= (K,V), V: Semigroup[V]): AvlSet[AA] = {
+    ((this: AvlSet[AA]) match {
       case Branch(a, l, r) =>  order.compare(key, ev(a)._1) match {
         case 0 =>
           val (k,v) = ev(a)
-          Branch((k -> V.combine(v,value)).asInstanceOf[A], l, r)
+          Branch((k -> V.combine(v,value)).asInstanceOf[AA], l, r)
         case o if o < 0 => Branch(a, l.updateKey(key, value), r)
         case _ => Branch(a, l, r.updateKey(key,value))
       }
-      case _ =>  Branch((key -> value).asInstanceOf[A], AvlSet.empty, AvlSet.empty)
+      case _ =>  Branch((key -> value).asInstanceOf[AA], AvlSet.empty, AvlSet.empty)
     }).balance
   }
 

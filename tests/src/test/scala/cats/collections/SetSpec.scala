@@ -52,7 +52,7 @@ class SetSpec extends CatsSuite {
     val tree = AvlSet(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
-    val ours: Set[Int] = filtered.to[Set]
+    val ours: Set[Int] = filtered.to[Set, Int]
     val theirs: Set[Int] = xs.collect{ case (i, true) => i }.toSet
 
     ours should be (theirs)
