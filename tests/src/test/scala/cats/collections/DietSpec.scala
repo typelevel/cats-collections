@@ -3,7 +3,6 @@ package tests
 
 import catalysts.Platform
 import cats._
-import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
