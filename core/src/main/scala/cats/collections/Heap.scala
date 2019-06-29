@@ -292,7 +292,7 @@ object Heap {
   }
 
   private[collections] case object Leaf extends Heap[Nothing] {
-    def apply[A](): Heap[A] = this.asInstanceOf[Heap[A]]
+    def apply[A](): Heap[A] = this
 
     def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
 

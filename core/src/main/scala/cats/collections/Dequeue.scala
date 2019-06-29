@@ -273,7 +273,7 @@ private[collections] case object EmptyDequeue extends Dequeue[Nothing] { self =>
 
   override def toString: String = "EmptyDequeue"
 
-  def apply[A](): Dequeue[A] = self.asInstanceOf[Dequeue[A]]
+  def apply[A](): Dequeue[A] = self
   def unapply[A](q: Dequeue[A]): Boolean = q.isEmpty
 }
 

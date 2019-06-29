@@ -409,7 +409,7 @@ object AvlSet extends AvlSetInstances {
   private[collections] case object BTNil extends AvlSet[Nothing] {
     override def isEmpty: Boolean = true
 
-    def apply[A](): AvlSet[A] = this.asInstanceOf[AvlSet[A]]
+    def apply[A](): AvlSet[A] = this
 
     def unapply[A](a: AvlSet[A]): Boolean = a.isEmpty
 
