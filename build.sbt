@@ -169,7 +169,6 @@ lazy val publishSettings = Seq(
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   publishArtifact in Test := false,
   homepage := Some(url("https://github.com/typelevel/cats-collections")),
   pomIncludeRepository := Function.const(false),
