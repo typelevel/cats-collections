@@ -120,6 +120,24 @@ class HeapSpec extends CatsSuite {
     assert(Heap.empty[Int].remove == Heap.empty[Int])
   }
 
+  test("pop and remove return the same heap") {
+    forAll { (heap: Heap[Int]) =>
+      val heap1 = heap.remove
+      heap.pop.map(_._2) match {
+        case Some(heap2) => assert(Order[Heap[Int]].eqv(heap1, heap2))
+        case None => assert(heap1.isEmpty)
+      }
+    }
+  }
+
+  test("pop returns the minimum element") {
+    forAll { (heap: Heap[Int]) =>
+      val min1 = heap.pop.map(_._1)
+      val min2 = heap.minimumOption
+      assert(min1 == min2)
+    }
+  }
+
   test("size is consistent with isEmpty/nonEmpty") {
     forAll { (heap: Heap[Int]) =>
       assert(heap.isEmpty == (heap.size == 0))

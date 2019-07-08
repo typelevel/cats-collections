@@ -213,4 +213,22 @@ class PairingHeapSpec extends CatsSuite {
       assert(PairingHeap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k))
     }
   }
+
+  test("pop and remove return the same heap") {
+    forAll { (heap: PairingHeap[Int]) =>
+      val heap1 = heap.remove
+      heap.pop.map(_._2) match {
+        case Some(heap2) => assert(Order[PairingHeap[Int]].eqv(heap1, heap2))
+        case None => assert(heap1.isEmpty)
+      }
+    }
+  }
+
+  test("pop returns the minimum element") {
+    forAll { (heap: PairingHeap[Int]) =>
+      val min1 = heap.pop.map(_._1)
+      val min2 = heap.minimumOption
+      assert(min1 == min2)
+    }
+  }
 }

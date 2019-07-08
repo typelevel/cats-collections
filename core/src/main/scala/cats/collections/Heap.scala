@@ -130,6 +130,15 @@ sealed abstract class Heap[A] {
     Heap.heapify(a)
 
   /**
+   * Remove the min element from the heap (the root) and return it along with the updated heap.
+   * Order O(log n)
+   */
+  def pop(implicit order: Order[A]): Option[(A, Heap[A])] = this match {
+    case Branch(m, l, r) => Some((m, bubbleRootDown(mergeChildren(l, r))))
+    case Leaf()          => None
+  }
+
+  /**
    * Remove the min element from the heap (the root).
    * Order O(log n)
    */
