@@ -1,22 +1,24 @@
-cache:
-  directories:
-  - "$HOME/.sbt/boot/scala*"
-  - "$HOME/.sbt/launchers"
-  - "$HOME/.ivy2/cache"
-  - "$HOME/.nvm"
 language: scala
+
 sudo: false
+
 scala:
-- 2.11.12
-- 2.12.8
-- 2.13.0
-sbt_args: -J-Xss4m -J-Xmx6G -J-Xms1G
-jdk:
-- oraclejdk8
+  - 2.11.12
+  - 2.12.8
+  - 2.13.0
+
+jdk: oraclejdk8
+
 env:
   global:
-  - TRAVIS_NODE_VERSION="4"
-  - secure: PTfof4ERTjHSqiBOB/ppgnV8BEaJkYfj8MnJeOG2I1RhYJy9Q8GntNDfj2HM+Xj0JNZjSeEiQU+MhzxlR4aLuIv1Rz0CsgZTyNMIvCZbLGYUyI+zlc2UTWH8EYd4M1ImBeeEugX1MyAUnJVZQYUl63D+j6WpHZZAjzcjitAwHtBNCv5TX6MpbXn4mmv+Rl1HCnei6N7LxXlXIjiQX8vzvjjQgIPxm4ToIvpDZPpvzjOI5zT9yS26G9AWjCgMgPkbmbDA5m0b0u6sg9kKGHrdTTiEUjE6ciY9nyDd2YZAY5i6Kbwgnxy8vG+u1OLv2tFiF32sPbzlUMpcnTP2cwEtaR+YNJ3Q66LGS2Tds9G/jMHs/t/cV/HxLN7lHyw4KclTZOm3nyjjjB44P6YyKa6yCUdC0hpiCNjMocvhQd0bqWPvJttN0wuaFaMSTRsWDqJTRpqD1LeW6dXf2Q6EHsta2shawZTF1lp59me8ho4sG48nxVRschOfdSbr0Q+AbgaeDKHvj8S1hxEw0/oyuWIabzPv3VfiorLrjIGKj15eleYa2oL0xYMNROnrX80A0X1/ZMwGGNuA7M7R9jjP9vAyUG5OOpj5KLcIH6QsOe+j8+zPtAE9MLnNSqYHrekr9K+teq3SOBkiogb6kHgi5LsMElAlIG7CTfRsh/QkHd6sibI=
-  - secure: PiRFZWoMFdzgmSISSGgneWmD766ogU5f4Wv8qWwGbFXWLuGUS9rEOGO7GQaX5iB3TV0DpemW+mklysVes7zf6Ma/7G4spDg2AvhjKQU2sH4Jf7GTnzkhzo13UR/ogPI0vS6q0X9tqio21SCDLPjymidKA4rGoiBdaB0/5QKInrlQVpOhi4vOuW8mpa5dNHqBWXXvEr0+vQNoi6s9eB+D66gLdLxUtGYqUO7cjCNu4kt1P/+6jD7KlH1WlXCzs9XMeD5cE6k9dwbA8kQJw/Xm3XW5j6xAAGNbSLkyzmp8YtA/ZOksqQ7X4ggKi9zK0wzCHU1V5FlBzv/WyRkPyLHMxJh9QZ+ashtqwW6K1k8DIQDiEyuMlWKth5LSwc4KlT62lzxSeQgzSHeXObniTo6enqjl/NJ3jIPmRvgNfGGyfFht+m6ZGRTdPuXJ0NHk8sUAyp04FtBUgrU49mqiU5Wjkj0NxgHTKOPS/N2534OHKQr8jKFLjt6JnUyUlWGOCmx9AFs3+b2G7BTLPJiuTA8dGAPrfMWf7RtF0/szk3SoKNg9loXzQjI0yurtqEdXkRWb3f4N81TWwAhndeJapcR1aBNrZXHx7GTuzFMk8bXOJ5DjJ8iU8vv/X7SMRofe6nZg6vL9FIOS7tm60tSft4jS3p4FA8VfhKd0eqCOipk7R88=
-script:
-- scripts/travis-build.sh
+    - TRAVIS_NODE_VERSION="4"
+
+script: scripts/travis-build.sh
+
+cache:
+  directories:
+    - "$HOME/.cache/coursier"
+    - "$HOME/.sbt/boot/scala*"
+    - "$HOME/.sbt/launchers"
+    - "$HOME/.ivy2/cache"
+    - "$HOME/.nvm"

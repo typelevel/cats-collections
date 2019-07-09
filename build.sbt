@@ -145,20 +145,8 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val tagName = Def.setting{
- s"v${if (releaseUseGlobalVersion.value) (version in ThisBuild).value else version.value}"
+  s"v${if (releaseUseGlobalVersion.value) (version in ThisBuild).value else version.value}"
 }
-
-lazy val credentialSettings = Seq(
-  // For Travis CI - see http://www.cakesolutions.net/teamblogs/publishing-artefacts-to-oss-sonatype-nexus-using-sbt-and-travis-ci
-  credentials ++= (for {
-    username <- Option(System.getenv().get("SONATYPE_USERNAME"))
-    password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
-)
-
-credentials in ThisBuild += Credentials(
-  Option(System.getProperty("build.publish.credentials")) map (new File(_)) getOrElse (Path.userHome / ".ivy2" / ".credentials")
-)
 
 lazy val publishSettings = Seq(
   publishTo in ThisBuild := {
@@ -174,7 +162,7 @@ lazy val publishSettings = Seq(
   pomIncludeRepository := Function.const(false),
   licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT-"),
                   "BSD-3" -> url("https://opensource.org/licenses/BSD-3-Clause")),
-  scmInfo := Some(ScmInfo(url("https://github.com/typeleve/cats-collections"), "scm:git:git@github.com:typelevel/cats-collections.git")),
+  scmInfo := Some(ScmInfo(url("https://github.com/typelevel/cats-collections"), "scm:git:git@github.com:typelevel/cats-collections.git")),
   autoAPIMappings := true,
   releaseProcess := Nil,
   pomExtra := (
@@ -186,7 +174,7 @@ lazy val publishSettings = Seq(
       </developer>
     </developers>
   )
-) ++ credentialSettings
+)
 
 lazy val compilerFlags = Seq(
   scalacOptions ++= (
