@@ -47,7 +47,8 @@ trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
         "addIfLarger matches default impl" -> forAll(laws.addIfLargerMatchesProxy[A] _),
         "toSortedList matches default impl" -> forAll(laws.toSortedListMatchesProxy[A] _),
         "addAllLargest matches default impl" -> forAll(laws.addAllLargestMatchesProxy[A] _),
-        "unadd matches default impl" -> forAll(laws.unaddMatchesProxy[A] _)
+        "unadd matches default impl" -> forAll(laws.unaddMatchesProxy[A] _),
+        "pop matches default impl" -> forAll(laws.popMatchesProxy[A] _)
       ) ++ OrderTests[F[A]].order.props
     }
   }
