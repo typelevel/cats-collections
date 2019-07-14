@@ -212,7 +212,6 @@ lazy val compilerFlags = Seq(
           "-language:implicitConversions",     // Allow definition of implicit functions called views
           "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
           "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-          "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
           "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
           "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
           "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
@@ -242,11 +241,7 @@ lazy val compilerFlags = Seq(
         )
     }
   ),
-  scalacOptions in (Test, compile) --= Seq(
-    "-deprecation", // 2.13.0 collections
-    "-Xfatal-warnings"
-  ),
-  scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
-  scalacOptions in (Compile, doc)     --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports")
+  scalacOptions in (Test, compile)    -= "-deprecation", // 2.13.0 collections
+  scalacOptions in (Compile, console) -= "-Ywarn-unused:imports",
+  scalacOptions in (Compile, doc)     -= "-Ywarn-unused:imports"
 )
-
