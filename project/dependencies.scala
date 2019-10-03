@@ -1,7 +1,8 @@
 import sbt._
 
 object V {
-  val cats = "2.0.0-M4"
+  val cats = "2.0.0"
+  val catsTestkit = "1.0.0-RC1"
   val algebra = "2.0.0-M2"
 
   def scalaCheckVersion(scalaVersion: String): String =

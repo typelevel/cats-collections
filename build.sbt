@@ -91,7 +91,8 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-testkit" % V.cats % "test",
       "org.typelevel" %%% "cats-laws"    % V.cats % "test",
-      "org.typelevel" %%% "algebra-laws" % V.algebra % "test"
+      "org.typelevel" %%% "algebra-laws" % V.algebra % "test",
+      "org.typelevel" %% "cats-testkit-scalatest" % V.catsTestkit % "test"
     ),
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq(BuildInfoKey.constant(("isJvm", crossProjectPlatform.value == JVMPlatform)))
