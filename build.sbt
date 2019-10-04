@@ -144,10 +144,6 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val tagName = Def.setting{
-  s"v${if (releaseUseGlobalVersion.value) (version in ThisBuild).value else version.value}"
-}
-
 lazy val publishSettings = Seq(
   publishTo in ThisBuild := {
     val nexus = "https://oss.sonatype.org/"
