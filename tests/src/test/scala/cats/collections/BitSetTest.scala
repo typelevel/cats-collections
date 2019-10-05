@@ -1,11 +1,16 @@
 package cats.collections
+package tests
 
-import cats.implicits._
-import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
+import org.scalacheck.Prop.propBoolean
+import org.scalacheck.{Arbitrary, Gen, Prop}
 import Arbitrary.{arbitrary => arb}
+import cats.tests.CatsSuite
 
-object BitSetTest extends Properties("BitSet") {
+class BitSetTest extends CatsSuite {
+
+  implicit val generatorConfig = PropertyCheckConfiguration(
+    minSuccessful = 1000
+  )
 
   implicit val arbBitSet: Arbitrary[BitSet] =
     Arbitrary {
@@ -49,141 +54,164 @@ object BitSetTest extends Properties("BitSet") {
       )
     }
 
-  property("limit/height consistency") =
+  test("limit/height consistency") {
     forAll { (x: BitSet) =>
       import x.{limit, offset, height}
       (limit == (offset + (1L << (5 * height + 11)))) && (limit > offset)
     }
+  }
 
-  property("(x = y) = (x.toSet = y.toSet)") =
+  test("(x = y) = (x.toSet = y.toSet)") {
     forAll { (x: BitSet, y: BitSet) =>
       val xs = x.toSet
       val ys = y.toSet
       ((x == y) == (xs == ys)) :| s"($x == $y) == ($xs == $ys)"
     }
+  }
 
-  property("x.toSet == x.iterator.toSet") =
+  test("x.toSet == x.iterator.toSet") {
     forAll { (x: BitSet) =>
       (x.toSet == x.iterator.toSet) :| s"$x toSet == iterator.toSet"
     }
+  }
 
-  property("BitSet(set: _*).toSet = set") =
+  test("BitSet(set: _*).toSet = set") {
     forAll { (ns: Set[Int]) =>
       val x = BitSet(ns.toList: _*)
       x.toSet == ns && ns.forall(x(_))
     }
+  }
 
-  property("BitSet(x.toSet: _*) = x") =
+  test("BitSet(x.toSet: _*) = x") {
     forAll { (x: BitSet) =>
       val y = BitSet(x.iterator.toList: _*)
       x == y
     }
+  }
 
-  property("x.iterator.size = x.size") =
+  test("x.iterator.size = x.size") {
     forAll { (x: BitSet) =>
       x.iterator.size == x.size
     }
+  }
 
-  property("(x = y) = (x.## = y.##)") =
+  test("(x = y) = (x.## = y.##)") {
     forAll(Gen.listOfN(100, arb[(BitSet, BitSet)])) { pairs =>
       // This is only approximately true, but failures are very rare,
       // and without something like this its easy to end up with real
       // hashing bugs.
-      def good(x: BitSet, y: BitSet) = (x == y) == (x.## == y.##)
+      def good(x: BitSet, y: BitSet): Boolean = (x == y) == (x.## == y.##)
 
       // collisions should happen less than 5% of the time
       pairs.count { case (a, b) => good(a, b) } > 95
     }
+  }
 
-  property("x.compact = x") =
+  test("x.compact = x") {
     forAll { (x: BitSet) =>
       x.compact == x
     }
-  property("x.isEmpty == (x.compact eq BitSet.Empty)") =
+  }
+
+  test("x.isEmpty == (x.compact eq BitSet.Empty)") {
     forAll { (x: BitSet) =>
       (x.isEmpty == (x.compact eq BitSet.Empty)) :| s"$x isEmpty but not compact to Empty"
     }
+  }
 
-  property("x.isEmpty = (x.size = 0)") =
-    forAll { (x: BitSet) =>
-      x.isEmpty == (x.size == 0)
-    }
+  test("x.isEmpty = (x.size = 0)") {
 
-  property("!x.isEmpty == x.nonEmpty") =
+  }
+
+  test("!x.isEmpty == x.nonEmpty") {
     forAll { (x: BitSet) =>
       x.nonEmpty == (!x.isEmpty)
     }
+  }
 
-  property("BitSet.empty contains nothing") =
+  test("BitSet.empty contains nothing") {
     forAll { (x: Int) =>
       !BitSet.empty(x)
     }
+  }
 
-  property("x.iterator.forall(x(_))") =
+  test("x.iterator.forall(x(_))") {
     forAll { (x: BitSet) =>
       x.iterator.forall(x(_))
     }
+  }
 
-  property("(x + a)(a)") =
+  test("(x + a)(a)") {
     forAll { (x: BitSet, a: Int) =>
       val y = x + a
       y(a) :| s"$y(${a})"
     }
+  }
 
-  property("!(x - a)(a)") =
+  test("!(x - a)(a)") {
     forAll { (x: BitSet, a: Int) =>
       !(x - a)(a)
     }
+  }
 
-  property("x + a - a == x - a") =
+  test("x + a - a == x - a") {
     forAll { (x: BitSet, a: Int) =>
       ((x + a) - a) == (x - a)
     }
+  }
 
-  property("x + a + a = x + a") =
+  test("x + a + a = x + a") {
     forAll { (x: BitSet, a: Int) =>
       val once = x + a
       (once + a) == once
     }
+  }
 
-  property("x - a - a = x - a") =
+  test("x - a - a = x - a") {
     forAll { (x: BitSet, a: Int) =>
       val once = x - a
       (once - a) == once
     }
+  }
 
-  property("x.toSet + a == (x + a).toSet") =
+  test("x.toSet + a == (x + a).toSet") {
     forAll { (x: BitSet, a: Int) =>
       x.toSet + a == (x + a).toSet
     }
+  }
 
-  property("x.toSet - a == (x - a).toSet") =
+  test("x.toSet - a == (x - a).toSet") {
     forAll { (x: BitSet, a: Int) =>
       x.toSet - a == (x - a).toSet
     }
+  }
 
-  property("+ is commutative") =
+  test("+ is commutative") {
     forAll { (ns: List[Int]) =>
       BitSet(ns: _*) == BitSet(ns.reverse: _*)
     }
+  }
 
-  property("- is commutative") =
+  test("- is commutative") {
     forAll { (x: BitSet, ns: List[Int]) =>
       ns.foldLeft(x)(_ - _) == ns.reverse.foldLeft(x)(_ - _)
     }
+  }
 
-  property("x | x = x") =
+  test("x | x = x") {
     forAll { (x: BitSet) =>
       (x | x) == x
     }
+  }
 
-  property("x | Empty = x") =
+  test("x | Empty = x") {
     forAll { (x: BitSet) =>
       val y = x | BitSet.empty
       (y == x) :| s"$y ==\n$x"
     }
+  }
 
-  property("x | y = y | x") =
+  test("x | y = y | x") {
     forAll { (x: BitSet, y: BitSet) =>
       try {
         val lhs = x | y
@@ -191,8 +219,9 @@ object BitSetTest extends Properties("BitSet") {
         (lhs == rhs) :| s"$lhs == $rhs"
       } catch { case (e: Throwable) => e.printStackTrace; throw e }
     }
+  }
 
-  property("(x | y) | z = x | (y | z)") =
+  test("(x | y) | z = x | (y | z)") {
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
       try {
         val lhs = ((x | y) | z).compact
@@ -200,8 +229,9 @@ object BitSetTest extends Properties("BitSet") {
         (lhs == rhs) :| s"$lhs == $rhs"
       } catch { case (e: Throwable) => e.printStackTrace; throw e }
     }
+  }
 
-  property("(x | y)(z) == x(z) || y(z)") =
+  test("(x | y)(z) == x(z) || y(z)") {
     forAll { (x: BitSet, y: BitSet, z: Int) =>
       // do apply first in case we mutate erroneously
       def law(z: Int): Boolean =
@@ -209,29 +239,34 @@ object BitSetTest extends Properties("BitSet") {
 
       law(z) && x.iterator.forall(law) && y.iterator.forall(law)
     }
+  }
 
-  property("x & x = x") =
+  test("x & x = x") {
     forAll { (x: BitSet) =>
       val y = x & x
       (y == x) :| s"$y ==\n$x"
     }
+  }
 
-  property("x & Empty = Empty") =
+  test("x & Empty = Empty") {
     forAll { (x: BitSet) =>
       (x & BitSet.empty) == BitSet.empty
     }
+  }
 
-  property("x & y = y & x") =
+  test("x & y = y & x") {
     forAll { (x: BitSet, y: BitSet) =>
       (x & y) == (y & x)
     }
+  }
 
-  property("(x & y) & z = x & (y & z)") =
+  test("(x & y) & z = x & (y & z)") {
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
       ((x & y) & z) == (x & (y & z))
     }
+  }
 
-  property("(x & y)(z) == x(z) && y(z)") =
+  test("(x & y)(z) == x(z) && y(z)") {
     forAll { (x: BitSet, y: BitSet, z: Int) =>
       // do apply first in case we mutate erroneously
       def law(z: Int): Boolean =
@@ -239,144 +274,164 @@ object BitSetTest extends Properties("BitSet") {
 
       law(z) && x.iterator.forall(law) && y.iterator.forall(law)
     }
+  }
 
 
-  property("(x & (y | z) = (x & y) | (x & z)") =
+  test("(x & (y | z) = (x & y) | (x & z)") {
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
       val lhs = x & (y | z)
       val rhs = (x & y) | (x & z)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("x.iterator.toList.reverse = x.reverseIterator.toList") =
+  test("x.iterator.toList.reverse = x.reverseIterator.toList") {
     forAll { (x: BitSet) =>
       val lhs = x.iterator.toList.reverse
       val rhs = x.reverseIterator.toList
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("((x ^ y) ^ z) = (x ^ (y ^ z))") =
+  test("((x ^ y) ^ z) = (x ^ (y ^ z))") {
     forAll { (x: BitSet, y: BitSet, z: BitSet) =>
       val lhs = ((x ^ y) ^ z)
       val rhs = (x ^ (y ^ z))
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x ^ y) = (y ^ x)") =
+  test("(x ^ y) = (y ^ x)") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = (x ^ y)
       val rhs = (y ^ x)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x ^ x) = 0") =
+  test("(x ^ x) = 0") {
     forAll { (x: BitSet) =>
       val lhs = (x ^ x)
       val rhs = BitSet.empty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x ^ 0) = x") =
+  test("(x ^ 0) = x") {
     forAll { (x: BitSet) =>
       val lhs = (x ^ BitSet.empty)
       val rhs = x
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x ^ y)(n) = x(n) ^ y(n)") =
+  test("(x ^ y)(n) = x(n) ^ y(n)") {
     forAll { (x: BitSet, y: BitSet, n: Int) =>
       // do apply first in case we mutate erroneously
       val rhs = x(n) ^ y(n)
       val lhs = (x ^ y)(n)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x ^ y) = ((x -- (x & y)) | (y -- (x & y)))") =
+  test("(x ^ y) = ((x -- (x & y)) | (y -- (x & y)))") {
     forAll { (x: BitSet, y: BitSet) =>
       val xy = x & y
       val lhs = x ^ y
       val rhs = (x -- xy) | (y -- xy)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x -- y)(n) = x(n) && (!y(n))") =
+  test("(x -- y)(n) = x(n) && (!y(n))") {
     forAll { (x: BitSet, y: BitSet, n: Int) =>
       // do apply first in case we mutate erroneously
       val rhs = x(n) && (!y(n))
       val lhs = (x -- y)(n)
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x -- y).toSet = (x.toSet -- y.toSet)") =
+  test("(x -- y).toSet = (x.toSet -- y.toSet)") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = (x -- y).toSet
       val rhs = x.toSet -- y.toSet
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("x -- x = 0") =
+  test("x -- x = 0") {
     forAll { (x: BitSet) =>
       val lhs = x -- x
       val rhs = BitSet.empty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("0 -- x = 0") =
+  test("0 -- x = 0") {
     forAll { (x: BitSet) =>
       val lhs = BitSet.empty -- x
       val rhs = BitSet.empty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("x -- BitSet(n) = x - n") =
+  test("x -- BitSet(n) = x - n") {
     forAll { (x: BitSet, n: Int) =>
       val lhs = x -- BitSet(n)
       val rhs = x - n
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("x -- 0 = x") =
+  test("x -- 0 = x") {
     forAll { (x: BitSet) =>
       val lhs = x -- BitSet.empty
       (lhs == x) :| s"$lhs == $x"
     }
+  }
 
-  property("x -- y -- y = x -- y") =
+  test("x -- y -- y = x -- y") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = x -- y -- y
       val rhs = x -- y
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("test order") =
+  test("test order") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = x compare y
       val rhs = x.iterator.toList compare y.iterator.toList
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("test ordering") =
+  test("test ordering") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = BitSet.orderingForBitSet.compare(x, y)
       val rhs = x.iterator.toList compare y.iterator.toList
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x intersects y) = (y intersects x)") =
+  test("(x intersects y) = (y intersects x)") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = x intersects y
       val rhs = y intersects x
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("(x intersects y) = (x & y).nonEmpty") =
+  test("(x intersects y) = (x & y).nonEmpty") {
     forAll { (x: BitSet, y: BitSet) =>
       val lhs = x intersects y
       val rhs = (x & y).nonEmpty
       (lhs == rhs) :| s"$lhs == $rhs"
     }
+  }
 
-  property("we never mutate the original item on +/-") =
+  test("we never mutate the original item on +/-") {
     forAll { (x: BitSet, y: Int) =>
       def law(x: BitSet, ys: Set[Int], op: String)(fn: (BitSet, Int) => BitSet): Prop = {
         ys.map { y =>
@@ -385,28 +440,30 @@ object BitSetTest extends Properties("BitSet") {
           val fin = x.iterator.toSet
           (init == fin) :| s"$op for $y caused mutation: init: $init final: $fin"
         }
-        .reduce(_ && _)
+          .reduce(_ && _)
       }
 
       // try adding items close to x so they collide on the same lines
       law(x, x.iterator.map(_ + 1).toSet + y, "+")(_ + _) &&
         law(x, x.iterator.map(_ + 1).toSet + y, "-")(_ - _)
     }
+  }
 
-  property("we never mutate the original item on |, &, ^, --") =
+  test("we never mutate the original item on |, &, ^, --") {
     forAll { (x: BitSet, y: BitSet) =>
       def law(a: BitSet, b: BitSet, nm: String)(op: (BitSet, BitSet) => BitSet): Prop = {
         val inita = a.iterator.toSet
         val initb = b.iterator.toSet
         val _ = op(a, b)
         ((a.iterator.toSet == inita) :| s"$a was initially $inita before $nm") &&
-        ((b.iterator.toSet == initb) :| s"$b was initially $initb before $nm")
+          ((b.iterator.toSet == initb) :| s"$b was initially $initb before $nm")
       }
 
       law(x, y, "|")(_ | _) &&
-      law(x, y, "&")(_ & _) &&
-      law(x, y, "^")(_ ^ _) &&
-      law(x, y, "--")(_ -- _)
+        law(x, y, "&")(_ & _) &&
+        law(x, y, "^")(_ ^ _) &&
+        law(x, y, "--")(_ -- _)
     }
+  }
 
 }
