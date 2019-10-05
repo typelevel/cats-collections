@@ -120,7 +120,9 @@ class BitSetTest extends CatsSuite {
   }
 
   test("x.isEmpty = (x.size = 0)") {
-
+    forAll { (x: BitSet) =>
+      x.isEmpty == (x.size == 0)
+    }
   }
 
   test("!x.isEmpty == x.nonEmpty") {
