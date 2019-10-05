@@ -1,6 +1,11 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
+val catsVersion = "2.0.0"
+val catsTestkitScalatestVersion = "1.0.0-RC1"
+val scalacheckVersion = "1.14.2"
+val algebraVersion = "2.0.0"
+
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.8",
@@ -57,7 +62,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.14.2"
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
@@ -70,9 +75,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-laws"    % V.cats
-      )
+    libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
 
 lazy val lawsJVM = laws.jvm
@@ -89,10 +92,9 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-testkit" % V.cats % "test",
-      "org.typelevel" %%% "cats-laws"    % V.cats % "test",
-      "org.typelevel" %%% "algebra-laws" % V.algebra % "test",
-      "org.typelevel" %%% "cats-testkit-scalatest" % V.catsTestkit % "test"
+      "org.typelevel" %%% "cats-laws"              % catsVersion                 % "test",
+      "org.typelevel" %%% "algebra-laws"           % algebraVersion              % "test",
+      "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test"
     ),
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq(BuildInfoKey.constant(("isJvm", crossProjectPlatform.value == JVMPlatform)))
@@ -123,9 +125,9 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % V.cats,
-      "org.typelevel" %%% "algebra"   % V.algebra,
-      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.10.3")
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "org.typelevel" %%% "algebra"   % algebraVersion,
+      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.0" cross CrossVersion.full)
     ),
     fork in test := true
   )
