@@ -29,7 +29,7 @@ import cats.collections.compat.Factory
  * either side which would leave that side empty constructs the
   * resulting queue by taking elements from the opposite side
   */
-sealed abstract class Dequeue[A] {
+sealed abstract class Dequeue[+A] {
   def isEmpty: Boolean
 
   def frontOption: Option[A]
@@ -66,7 +66,7 @@ sealed abstract class Dequeue[A] {
   /**
     * enqueue to the front of the queue
     */
-  def cons(a: A): Dequeue[A] = this match {
+  def cons[AA >: A](a: AA): Dequeue[AA] = this match {
     case SingletonDequeue(single) => FullDequeue(NonEmptyList(a, List.empty), 1, NonEmptyList(single, List.empty), 1 )
     case FullDequeue(front, fs, back, bs) => FullDequeue(NonEmptyList(a, front.toList), fs+1, back, bs)
     case _ => SingletonDequeue(a)
@@ -75,7 +75,7 @@ sealed abstract class Dequeue[A] {
   /**
     * enqueue on to the back of the queue
     */
-  def snoc(a: A): Dequeue[A] = this match {
+  def snoc[AA >: A](a: AA): Dequeue[AA] = this match {
     case SingletonDequeue(single) => FullDequeue(NonEmptyList(single, List.empty), 1, NonEmptyList(a, List.empty), 1 )
     case FullDequeue(front, fs, back, bs) => FullDequeue(front, fs, NonEmptyList(a, back.toList), bs+1)
     case _ => SingletonDequeue(a)
@@ -84,12 +84,12 @@ sealed abstract class Dequeue[A] {
   /**
     * alias for cons
     */
-  def +:(a: A): Dequeue[A] = cons(a)
+  def +:[AA >: A](a: AA): Dequeue[AA] = cons(a)
 
   /**
     * alias for snoc
     */
-  def :+(a: A): Dequeue[A] = snoc(a)
+  def :+[AA >: A](a: AA): Dequeue[AA] = snoc(a)
 
   def toIterator: Iterator[A] = new Iterator[A] {
     private var pos: Dequeue[A] = Dequeue.this
@@ -104,7 +104,7 @@ sealed abstract class Dequeue[A] {
     }
   }
 
-  def to[Col[_]](implicit cbf: Factory[A, Col[A]]): Col[A] = {
+  def to[Col[_], AA >: A](implicit cbf: Factory[AA, Col[AA]]): Col[AA] = {
     val builder = cbf.newBuilder
     @tailrec def go(cur: Dequeue[A]): Unit = cur.uncons match {
       case Some((a, rest)) =>
@@ -116,12 +116,12 @@ sealed abstract class Dequeue[A] {
     builder.result()
   }
 
-  def toList: List[A] = to[List]
+  def toList: List[A] = to[List, A]
 
   /**
     * Append another Dequeue to this dequeue
     */
-  def ++(other: Dequeue[A]): Dequeue[A] = this match {
+  def ++[AA >: A](other: Dequeue[AA]): Dequeue[AA] = this match {
     case SingletonDequeue(a) => a +: other
     case FullDequeue(f,fs,b,bs) => other match {
       case SingletonDequeue(a) => this :+ a
@@ -273,15 +273,15 @@ private[collections] case object EmptyDequeue extends Dequeue[Nothing] { self =>
 
   override def toString: String = "EmptyDequeue"
 
-  def apply[A](): Dequeue[A] = self.asInstanceOf[Dequeue[A]]
+  def apply[A](): Dequeue[A] = self
   def unapply[A](q: Dequeue[A]): Boolean = q.isEmpty
 }
 
 object Dequeue extends DequeueInstances {
-  def apply[A](as: A*): Dequeue[A] = as.foldLeft[Dequeue[A]](empty)((q,a) ⇒ q :+ a)
+  def apply[A](as: A*): Dequeue[A] = as.foldLeft[Dequeue[A]](empty)((q,a) => q :+ a)
 
   def fromFoldable[F[_],A](fa: F[A])(implicit F: Foldable[F]): Dequeue[A] =
-    F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) ⇒ q :+ a)
+    F.foldLeft[A,Dequeue[A]](fa,empty)((q,a) => q :+ a)
 
   def empty[A]: Dequeue[A] = EmptyDequeue()
 }

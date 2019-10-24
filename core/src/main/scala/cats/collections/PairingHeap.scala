@@ -161,6 +161,15 @@ sealed abstract class PairingHeap[A] {
   }
 
   /**
+   * Remove the min element from the heap (the root) and return it along with the updated heap.
+   * Order O(log n)
+   */
+  def pop(implicit order: Order[A]): Option[(A, PairingHeap[A])] = this match {
+    case Tree(m, subtrees) => Some((m, combineAll(subtrees)))
+    case Leaf()            => None
+  }
+
+  /**
    * if not empty, remove the min, else return empty
    * this is thought to be O(log N) (but not proven to be so)
    */

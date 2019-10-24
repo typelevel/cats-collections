@@ -6,6 +6,8 @@ lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site t
 
 enablePlugins(MicrositesPlugin)
 
+mdocAutoDependency := false
+
 ghpagesNoJekyll := false
 micrositeName := "cats-collections"
 micrositeDescription := "pure functional data structures for Scala"

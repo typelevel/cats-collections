@@ -107,4 +107,7 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
 
   def unaddMatchesProxy[A: Order](fa: F[A]): IsEq[Option[(A, F[A])]] =
     F.unadd(fa) <-> proxy.unadd(fa)
+
+  def popMatchesProxy[A: Order](fa: F[A]): IsEq[Option[(A, F[A])]] =
+    F.pop(fa) <-> proxy.pop(fa)
 }

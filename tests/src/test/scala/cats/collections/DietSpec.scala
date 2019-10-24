@@ -1,9 +1,7 @@
 package cats.collections
 package tests
 
-import catalysts.Platform
 import cats._
-import cats.collections.arbitrary.cogen._
 import org.scalacheck._
 import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
@@ -13,7 +11,7 @@ class DietSpec extends CatsSuite {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
     checkConfiguration.copy(
-      minSuccessful = if (Platform.isJvm) 10000 else 500
+      minSuccessful = if (BuildInfo.isJvm) 10000 else 500
     )
 
   sealed trait Item {
@@ -235,6 +233,28 @@ class DietSpec extends CatsSuite {
 
   test("invariant")(forAll { (rs: Ranges) =>
     assert(invariant(rs.toDiet))
+  })
+
+  test("one and fromRange are consistent")(forAll { (x: Int) =>
+    Diet.fromRange(Range(x, x)) should ===(Diet.one(x))
+  })
+
+  test("fromRange contains consistent with Range contains")(forAll { (x: Byte, y: Byte, z: Byte) =>
+    val range = if (x < y) Range(x, y) else Range(y, x)
+    Diet.fromRange(range).contains(z) should ===(range.contains(z))
+  })
+
+  test("one and contains are consistent")(forAll { (x: Int, y: Int) =>
+    Diet.one(x).contains(y) should ===(x == y)
+  })
+
+  test("one toList")(forAll { (x: Int) =>
+    Diet.one(x).toList should ===(x :: Nil)
+  })
+
+  test("range toList")(forAll { (x: Byte, y: Byte) =>
+    val range = if (x < y) Range(x, y) else Range(y, x)
+    Diet.fromRange(range).toList should ===(range.toList)
   })
 
   checkAll("Diet[Int]", CommutativeMonoidTests[Diet[Int]].commutativeMonoid)

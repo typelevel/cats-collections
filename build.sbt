@@ -1,10 +1,15 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
+val catsVersion = "2.0.0"
+val catsTestkitScalatestVersion = "1.0.0-RC1"
+val scalacheckVersion = "1.14.2"
+val algebraVersion = "2.0.0"
+
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.6",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0-M5")
+  scalaVersion in Global := "2.12.8",
+  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0")
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -57,7 +62,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += "org.scalacheck" %%% "scalacheck" % V.scalaCheckVersion(scalaVersion.value)
+    libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
 
 lazy val scalacheckJVM = scalacheck.jvm
@@ -70,9 +75,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(publishSettings)
   .settings(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-laws"    % V.cats
-      )
+    libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
 
 lazy val lawsJVM = laws.jvm
@@ -80,6 +83,7 @@ lazy val lawsJS = laws.js
 
 lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
+  .enablePlugins(BuildInfoPlugin)
   .dependsOn(scalacheck, laws)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
@@ -88,10 +92,12 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-testkit" % V.cats % "test",
-      "org.typelevel" %%% "cats-laws"    % V.cats % "test",
-      "org.typelevel" %%% "algebra-laws" % V.algebra % "test"
-    )
+      "org.typelevel" %%% "cats-laws"              % catsVersion                 % "test",
+      "org.typelevel" %%% "algebra-laws"           % algebraVersion              % "test",
+      "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test"
+    ),
+    buildInfoPackage := "cats.collections",
+    buildInfoKeys := Seq(BuildInfoKey.constant(("isJvm", crossProjectPlatform.value == JVMPlatform)))
   )
 
 lazy val testsJVM = tests.jvm
@@ -110,7 +116,7 @@ lazy val bench = project
     buildSettings,
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.27"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.29"
   )
   .enablePlugins(JmhPlugin)
 
@@ -119,9 +125,9 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 lazy val commonSettings =
   compilerFlags ++ Seq(
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % V.cats,
-      "org.typelevel" %%% "algebra"   % V.algebra,
-      compilerPlugin("org.spire-math"  %% "kind-projector" % "0.9.9")
+      "org.typelevel" %%% "cats-core" % catsVersion,
+      "org.typelevel" %%% "algebra"   % algebraVersion,
+      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.0" cross CrossVersion.full)
     ),
     fork in test := true
   )
@@ -141,22 +147,6 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val tagName = Def.setting{
- s"v${if (releaseUseGlobalVersion.value) (version in ThisBuild).value else version.value}"
-}
-
-lazy val credentialSettings = Seq(
-  // For Travis CI - see http://www.cakesolutions.net/teamblogs/publishing-artefacts-to-oss-sonatype-nexus-using-sbt-and-travis-ci
-  credentials ++= (for {
-    username <- Option(System.getenv().get("SONATYPE_USERNAME"))
-    password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq
-)
-
-credentials in ThisBuild += Credentials(
-  Option(System.getProperty("build.publish.credentials")) map (new File(_)) getOrElse (Path.userHome / ".ivy2" / ".credentials")
-)
-
 lazy val publishSettings = Seq(
   publishTo in ThisBuild := {
     val nexus = "https://oss.sonatype.org/"
@@ -166,13 +156,12 @@ lazy val publishSettings = Seq(
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   publishArtifact in Test := false,
   homepage := Some(url("https://github.com/typelevel/cats-collections")),
   pomIncludeRepository := Function.const(false),
   licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT-"),
                   "BSD-3" -> url("https://opensource.org/licenses/BSD-3-Clause")),
-  scmInfo := Some(ScmInfo(url("https://github.com/typeleve/cats-collections"), "scm:git:git@github.com:typelevel/cats-collections.git")),
+  scmInfo := Some(ScmInfo(url("https://github.com/typelevel/cats-collections"), "scm:git:git@github.com:typelevel/cats-collections.git")),
   autoAPIMappings := true,
   releaseProcess := Nil,
   pomExtra := (
@@ -184,7 +173,7 @@ lazy val publishSettings = Seq(
       </developer>
     </developers>
   )
-) ++ credentialSettings
+)
 
 lazy val compilerFlags = Seq(
   scalacOptions ++= (
@@ -222,8 +211,6 @@ lazy val compilerFlags = Seq(
           "-language:implicitConversions",     // Allow definition of implicit functions called views
           "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
           "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
-          "-Xfatal-warnings",                  // Fail the compilation if there are any warnings.
-          "-Xfuture",                          // Turn on future language features.
           "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
           "-Xlint:constant",                   // Evaluation of a constant arithmetic expression results in an error.
           "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
@@ -253,11 +240,7 @@ lazy val compilerFlags = Seq(
         )
     }
   ),
-  scalacOptions in (Test, compile) --= Seq(
-    "-deprecation", // 2.13.0 collections
-    "-Xfatal-warnings"
-  ),
-  scalacOptions in (Compile, console) --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports"),
-  scalacOptions in (Compile, doc)     --= Seq("-Xfatal-warnings", "-Ywarn-unused:imports")
+  scalacOptions in (Test, compile)    -= "-deprecation", // 2.13.0 collections
+  scalacOptions in (Compile, console) -= "-Ywarn-unused:imports",
+  scalacOptions in (Compile, doc)     -= "-Ywarn-unused:imports"
 )
-

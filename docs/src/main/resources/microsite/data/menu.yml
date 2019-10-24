@@ -14,14 +14,14 @@ options:
   - title: Discrete
     url: discrete.html
 
-  - title: Disjoin Sets
+  - title: Disjoint Sets
     url: disjointsets.html
 
-  - title: ISet
-    url: iset.html
+  - title: Predicate
+    url: predicate.html
 
   - title: Range
     url: range.html
 
-  - title: Set
+  - title: AvlSet
     url: set.html

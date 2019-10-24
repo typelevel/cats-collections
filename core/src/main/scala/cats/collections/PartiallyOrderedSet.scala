@@ -107,7 +107,14 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
   /**
    * Same as get the minimimumOption and removinging the minimum
    */
+  @deprecated("Use pop instead", "2019-07-10")
   def unadd[A](fa: F[A])(implicit order: Order[A]): Option[(A, F[A])] =
+    minimumOption(fa).map { min => (min, removeMin(fa)) }
+
+  /**
+   * Same as get the minimimumOption and removinging the minimum
+   */
+  def pop[A](fa: F[A])(implicit order: Order[A]): Option[(A, F[A])] =
     minimumOption(fa).map { min => (min, removeMin(fa)) }
 
   /**

@@ -1,7 +1,7 @@
 package cats.collections
 
 import cats.implicits._
-import org.scalacheck.Prop._
+import org.scalacheck.Prop.{forAll, propBoolean}
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import Arbitrary.{arbitrary => arb}
 
@@ -385,7 +385,7 @@ object BitSetTest extends Properties("BitSet") {
           val fin = x.iterator.toSet
           (init == fin) :| s"$op for $y caused mutation: init: $init final: $fin"
         }
-        .reduce(_ && _)
+          .reduce(_ && _)
       }
 
       // try adding items close to x so they collide on the same lines
@@ -400,13 +400,13 @@ object BitSetTest extends Properties("BitSet") {
         val initb = b.iterator.toSet
         val _ = op(a, b)
         ((a.iterator.toSet == inita) :| s"$a was initially $inita before $nm") &&
-        ((b.iterator.toSet == initb) :| s"$b was initially $initb before $nm")
+          ((b.iterator.toSet == initb) :| s"$b was initially $initb before $nm")
       }
 
       law(x, y, "|")(_ | _) &&
-      law(x, y, "&")(_ & _) &&
-      law(x, y, "^")(_ ^ _) &&
-      law(x, y, "--")(_ -- _)
+        law(x, y, "&")(_ & _) &&
+        law(x, y, "^")(_ ^ _) &&
+        law(x, y, "--")(_ -- _)
     }
 
 }
