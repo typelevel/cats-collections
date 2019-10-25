@@ -137,6 +137,8 @@ object Range {
     }
   }
 
-  implicit def eqRange[A: Eq]: Eq[Range[A]] =
-    (x: Range[A], y: Range[A]) => Eq[A].eqv(x.start, y.start) && Eq[A].eqv(x.end, y.end)
+  implicit def eqRange[A: Eq]: Eq[Range[A]] = new Eq[Range[A]] {
+    override def eqv(x: Range[A], y: Range[A]): Boolean =
+      Eq[A].eqv(x.start, y.start) && Eq[A].eqv(x.end, y.end)
+  }
 }
