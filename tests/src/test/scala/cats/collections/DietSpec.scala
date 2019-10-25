@@ -149,6 +149,13 @@ class DietSpec extends CatsSuite {
     }
   })
 
+  test("diet eq") {
+    val diet = (1 to 100).filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
+    val inverted = (1 to 100).reverse.filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
+
+    dietEq.eqv(diet, inverted) should be (true)
+  }
+
   test("remove inner range") {
     val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
 
