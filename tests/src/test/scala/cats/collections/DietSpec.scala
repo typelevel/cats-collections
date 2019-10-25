@@ -69,7 +69,7 @@ class DietSpec extends CatsSuite {
   implicit val arbDiet: Arbitrary[Diet[Int]] = Arbitrary(arbRanges.arbitrary.map(_.toDiet))
 
   // TODO requires a reasonable implementation!
-  implicit def dietEq: Eq[Diet[Int]] = Eq.instance((x, y) => x.toList == y.toList)
+  implicit def dietEq: Eq[Diet[Int]] = Diet.eqDiet //Eq.instance((x, y) => x.toList == y.toList)
 
   test("shown empty"){
     val diet = Diet.empty[Int]
@@ -99,6 +99,13 @@ class DietSpec extends CatsSuite {
 
   test("return empty when removing from empty"){
     (Diet.empty[Int] - Range(10, 100)) should be (Diet.EmptyDiet())
+  }
+
+  test("diet eq") {
+    val diet = (1 to 100).filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
+    val inverted = (1 to 100).reverse.filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
+
+    dietEq.eqv(diet, inverted) should be (true)
   }
 
   test("remove inner range"){
