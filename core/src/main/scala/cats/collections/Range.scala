@@ -58,33 +58,14 @@ final case class Range[A](val start: A, val end: A) {
    * instance, otherwise it uses the start's successor.
    */
   def toIterator(implicit discrete: Discrete[A], order: Order[A]): Iterator[A] = {
-    val op: A => A = a => if (order.lteqv(a, end)) discrete.succ(a) else discrete.pred(a)
+    val next: A => A = a => if (order.lteqv(a, end)) discrete.succ(a) else discrete.pred(a)
 
-    Stream.iterate(start)(op).filter(concurrent => order.lteqv(concurrent, end)).iterator
-
+    Stream
+      .iterate(start)(next)
+      .takeWhile(concurrent => !order.eqv(concurrent, end))
+      .append(Seq(end))
+      .iterator
   }
-
-  //    new Iterator[A] {
-  //      private var current: A = start
-  //      private var reachedEnd: Boolean = false
-  //
-  //      override def hasNext: Boolean =
-  //        !reachedEnd
-  //
-  //      override def next(): A =
-  //        if (reachedEnd) throw new NoSuchElementException()
-  //        else {
-  //          val r = current
-  //          // increment current
-  //          if (order.lteqv(r, end)) current = discrete.succ(current)
-  //          else current = discrete.pred(current)
-  //          // when current equals end flip the reachedEnd flag
-  //          if (order.eqv(r, end)) {
-  //            reachedEnd = true
-  //          }
-  //          r
-  //        }
-  //      }
 
   /**
    * Return all the values in the Range as a List.
