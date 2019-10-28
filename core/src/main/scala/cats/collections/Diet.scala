@@ -234,15 +234,7 @@ sealed abstract class Diet[A] {
     case DietNode(_, _, r) => r.max
   }
 
-  //  @deprecated("the semantics of this method are unclear and unspecified, avoid!", "0.8.0")
-  /**
-   * Mapping over the elements of Trees is very important.
-   * This function transforms every element of the Diet unsing the function f and keeps the same
-   * Diet Structure.
-   *
-   * @param f
-   * @tparam B
-   */
+  @deprecated("the semantics of this method are unclear and unspecified, avoid!", "0.8.0")
   def map[B: Discrete : Order](f: A => B): Diet[B] = this match {
     case EmptyDiet() => Diet.empty[B]
     case DietNode(Range(a, b), l, r) => {

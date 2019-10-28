@@ -7,6 +7,8 @@ import cats.kernel.laws.discipline._
 import cats.tests.CatsSuite
 import algebra.laws._
 
+import scala.util.Random
+
 class DietSpec extends CatsSuite {
 
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
@@ -16,23 +18,34 @@ class DietSpec extends CatsSuite {
 
   sealed trait Item {
     def toSet: Set[Int]
+
     def addToDiet(d: Diet[Int]): Diet[Int]
+
     def removeFromDiet(d: Diet[Int]): Diet[Int]
   }
+
   object Item {
+
     case class Single(n: Int) extends Item {
       def toSet: Set[Int] = Set(n)
+
       def addToDiet(d: Diet[Int]): Diet[Int] = d.add(n)
+
       def removeFromDiet(d: Diet[Int]): Diet[Int] = d.remove(n)
     }
+
     case class Multiple(x: Int, y: Int) extends Item {
       def toRange: Range[Int] = Range(x, y)
+
       def toSet: Set[Int] =
         if (x <= y) (x to y).toSet
         else (y to x).toSet
+
       def addToDiet(d: Diet[Int]): Diet[Int] = d.addRange(toRange)
+
       def removeFromDiet(d: Diet[Int]): Diet[Int] = d.removeRange(toRange)
     }
+
   }
 
   implicit val arbItem: Arbitrary[Item] =
@@ -45,11 +58,13 @@ class DietSpec extends CatsSuite {
 
   case class Ranges(rs: List[(Boolean, Item)]) {
     def isEmpty: Boolean = toSet.isEmpty
+
     def toSet: Set[Int] = rs.foldLeft(Set.empty[Int]) { (set, r) =>
       val s = r._2.toSet
       if (r._1) set.union(s)
       else set.diff(s)
     }
+
     def toDiet: Diet[Int] = rs.foldLeft(Diet.empty[Int]) { (diet, r) =>
       if (r._1) r._2.addToDiet(diet)
       else r._2.removeFromDiet(diet)
@@ -68,25 +83,24 @@ class DietSpec extends CatsSuite {
 
   implicit val arbDiet: Arbitrary[Diet[Int]] = Arbitrary(arbRanges.arbitrary.map(_.toDiet))
 
-  // TODO requires a reasonable implementation!
-  implicit def dietEq: Eq[Diet[Int]] = Diet.eqDiet //Eq.instance((x, y) => x.toList == y.toList)
+  implicit def dietEq: Eq[Diet[Int]] = Diet.eqDiet
 
-  test("shown empty"){
+  test("shown empty") {
     val diet = Diet.empty[Int]
 
-    diet.show should be ("Diet( )")
+    diet.show should be("Diet( )")
   }
 
-  test("shown all intervals"){
+  test("shown all intervals") {
     val diet = Diet.empty[Int] + Range(1, 10) + Range(20, 100)
 
-    diet.show should be ("Diet( [1, 10] [20, 100] )")
+    diet.show should be("Diet( [1, 10] [20, 100] )")
   }
 
-  test("remove side ranges"){
+  test("remove side ranges") {
     val diet = ((Diet.empty[Int]
       + Range(20, 21)
-      + Range(9,10)
+      + Range(9, 10)
       + Range(12, 18)
       + Range(23, 30)
       + Range(40, 50)
@@ -97,18 +111,45 @@ class DietSpec extends CatsSuite {
     diet.toList should be(List(9, 10, 12, 13, 14, 20, 21, 23, 24))
   }
 
-  test("return empty when removing from empty"){
-    (Diet.empty[Int] - Range(10, 100)) should be (Diet.EmptyDiet())
+  test("return empty when removing from empty") {
+    (Diet.empty[Int] - Range(10, 100)) should be(Diet.EmptyDiet())
   }
 
   test("diet eq") {
-    val diet = (1 to 100).filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
-    val inverted = (1 to 100).reverse.filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
+    val diet = (1 to 100).filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _)
+    val inverted = (1 to 100).reverse.filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _)
 
-    dietEq.eqv(diet, inverted) should be (true)
+    dietEq.eqv(diet, inverted) should be(true)
   }
 
-  test("remove inner range"){
+  test("same ranges define the same diet")(forAll { rs: Ranges =>
+    val ranges = rs.rs.map(_._2)
+    val reversed = rs.rs.reverse.map(_._2)
+
+    val d1 = ranges.foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
+    val d2 = reversed.foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
+
+    dietEq.eqv(d1, d2) should be(true)
+  })
+
+  test("reshaping results on the same diet")(forAll { rs: Ranges =>
+
+    val d1 = rs.rs.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
+
+    val ranges = Random.shuffle(rs.rs)
+
+    val d2 = ranges.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
+
+    dietEq.eqv(d1, d2) should be(true)
+  })
+
+  test("different set of ranges ==> different diets")(forAll { (a: Ranges, b: Ranges) =>
+    whenever(a.toSet.size != b.toSet.size) {
+      dietEq.eqv(a.toDiet, b.toDiet) should be(false)
+    }
+  })
+
+  test("remove inner range") {
     val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
 
     diet.toList should be(List(20, 21, 28, 29, 30))
@@ -174,7 +215,7 @@ class DietSpec extends CatsSuite {
     (rs1.toDiet & rs2.toDiet).toList should be((rs1.toSet intersect rs2.toSet).toList.sorted)
   })
 
-  test("join disjoint range"){
+  test("join disjoint range") {
     val diet = Diet.empty[Int] + 5 + 6 + 7 + 1 + 2
 
     val other = diet + 3 + 4
