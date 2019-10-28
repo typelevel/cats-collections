@@ -67,6 +67,11 @@ final case class Range[A](val start: A, val end: A) {
       .iterator
   }
 
+    Stream.iterate(start)(next).filter(concurrent => order.lteqv(concurrent, end)).iterator
+
+  }
+
+
   /**
    * Return all the values in the Range as a List.
    */
