@@ -80,7 +80,7 @@ sealed abstract class Heap[A] {
   def addAll(as: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ait = as.iterator
     var heap = this
-    while(ait.hasNext) {
+    while (ait.hasNext) {
       heap = heap + ait.next()
     }
     heap
@@ -129,13 +129,26 @@ sealed abstract class Heap[A] {
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
     Heap.heapify(a)
 
+  def toIterator(implicit order: Order[A]): Iterator[A] = {
+    @scala.annotation.tailrec
+    def build(heap: Heap[A], acc: Stream[A]): Stream[A] = heap match {
+      case Leaf() => acc
+      case b@Branch(_, _, _) => b.pop match {
+        case Some((m, h)) => build(h, acc.append(Seq(m)))
+        case None => acc
+      }
+    }
+
+    build(this, Stream.empty).toIterator
+  }
+
   /**
    * Remove the min element from the heap (the root) and return it along with the updated heap.
    * Order O(log n)
    */
   def pop(implicit order: Order[A]): Option[(A, Heap[A])] = this match {
     case Branch(m, l, r) => Some((m, bubbleRootDown(mergeChildren(l, r))))
-    case Leaf()          => None
+    case Leaf() => None
   }
 
   /**
@@ -144,7 +157,7 @@ sealed abstract class Heap[A] {
    */
   def remove(implicit order: Order[A]): Heap[A] = this match {
     case Branch(_, l, r) => bubbleRootDown(mergeChildren(l, r))
-    case Leaf()          => Leaf()
+    case Leaf() => Leaf()
   }
 
   /**
@@ -176,7 +189,7 @@ sealed abstract class Heap[A] {
     def loop(h: Heap[A], acc: List[A]): List[A] =
       h match {
         case Branch(m, _, _) => loop(h.remove, m :: acc)
-        case Leaf()          => acc.reverse
+        case Leaf() => acc.reverse
       }
 
     loop(this, Nil)
@@ -194,7 +207,7 @@ sealed abstract class Heap[A] {
     def loop(h: Heap[A], init: B): B =
       h match {
         case Branch(a, _, _) => loop(h.remove, fn(init, a))
-        case Leaf()          => init
+        case Leaf() => init
       }
 
     loop(this, init)
@@ -272,6 +285,7 @@ object Heap {
    */
   def heapify[A](a: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ary = (a: Iterable[Any]).toArray
+
     def loop(i: Int): Heap[A] =
       if (i < ary.length) {
         // we only insert A values, but we don't have a ClassTag
@@ -319,19 +333,19 @@ object Heap {
   private[collections] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
     case (Branch(y, lt, rt), _) if order.gt(x, y) => Heap(y, Heap(x, lt, rt), r)
     case (_, Branch(z, lt, rt)) if order.gt(x, z) => Heap(z, l, Heap(x, lt, rt))
-    case (_, _)                                   => Heap(x, l, r)
+    case (_, _) => Heap(x, l, r)
   }
 
   private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
     case (Branch(y, _, _), Branch(z, lt, rt)) if (order.lt(z, y) && order.gt(x, z)) => Heap(z, l, bubbleDown(x, lt, rt))
-    case (Branch(y, lt, rt), _) if order.gt(x, y)                                   => Heap(y, bubbleDown(x, lt, rt), r)
-    case (_, _)                                                                     => Heap(x, l, r)
+    case (Branch(y, lt, rt), _) if order.gt(x, y) => Heap(y, bubbleDown(x, lt, rt), r)
+    case (_, _) => Heap(x, l, r)
   }
 
   private[collections] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
     h match {
       case Branch(min, left, right) => bubbleDown(min, left, right)
-      case Leaf()                   => Leaf()
+      case Leaf() => Leaf()
     }
 
   /*
@@ -370,12 +384,12 @@ object Heap {
 
   private[collections] def floatLeft[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = l match {
     case Branch(y, lt, rt) => Heap(y, Heap(x, lt, rt), r)
-    case _                 => Heap(x, l, r)
+    case _ => Heap(x, l, r)
   }
 
   private[collections] def floatRight[A](x: A, l: Heap[A], r: Heap[A]): Heap[A] = r match {
     case Branch(y, lt, rt) => Heap(y, l, Heap(x, lt, rt))
-    case _                 => Heap(x, l, r)
+    case _ => Heap(x, l, r)
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[Heap[A]] = new Show[Heap[A]] {
@@ -401,26 +415,39 @@ object Heap {
         ha.unorderedFold
 
       override def isEmpty[A](h: Heap[A]) = h.isEmpty
+
       override def nonEmpty[A](h: Heap[A]) = h.nonEmpty
+
       override def exists[A](ha: Heap[A])(fn: A => Boolean) = ha.exists(fn)
+
       override def forall[A](ha: Heap[A])(fn: A => Boolean) = ha.forall(fn)
+
       override def size[A](h: Heap[A]) = h.size
 
       // PartiallyOrderedSet methods
       override def add[A](fa: Heap[A], a: A)(implicit order: Order[A]): Heap[A] =
         fa.add(a)
+
       override def addAll[A: Order](fa: Heap[A], as: Iterable[A]): Heap[A] =
         fa.addAll(as)
+
       override def contains[A](fa: Heap[A], a: A)(implicit order: Order[A]): Boolean =
         fa.contains(a)
+
       override def build[A](as: Iterable[A])(implicit order: Order[A]): Heap[A] =
         Heap.fromIterable(as)
+
       override def empty[A]: Heap[A] = Heap.empty[A]
+
       override def minimumOption[A](fa: Heap[A]): Option[A] = fa.getMin
+
       override def removeMin[A](fa: Heap[A])(implicit order: Order[A]): Heap[A] = fa.remove
+
       override def singleton[A](a: A): Heap[A] = Heap(a)
+
       override def toSortedList[A: Order](fa: Heap[A]): List[A] =
         fa.toList
+
       override def sortedFoldLeft[A: Order, B](fa: Heap[A], init: B)(fn: (B, A) => B): B =
         fa.foldLeft(init)(fn)
 
@@ -444,6 +471,7 @@ object Heap {
         else compare(left.remove, right.remove)
       }
   }
+
   /**
    * This is the same order as you would get by doing `.toList` and ordering by that
    */

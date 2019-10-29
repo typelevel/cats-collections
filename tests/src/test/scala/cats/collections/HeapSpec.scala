@@ -47,12 +47,12 @@ class HeapSpec extends CatsSuite {
       (1, smallerAdd))
   }
 
-  implicit def arbHeap[A: Arbitrary: Order]: Arbitrary[Heap[A]] =
+  implicit def arbHeap[A: Arbitrary : Order]: Arbitrary[Heap[A]] =
     Arbitrary {
       Gen.sized(heapGen[A](_, Arbitrary.arbitrary[A]))
     }
 
-  implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
+  implicit def cogenHeap[A: Cogen : Order]: Cogen[Heap[A]] =
     Cogen[List[A]].contramap { h: Heap[A] => h.toList }
 
   checkAll("PartiallyOrderedSet[Heap]",
@@ -271,4 +271,35 @@ class HeapSpec extends CatsSuite {
       law(h, h)
     }
   }
+
+  test("toIterator maintains order")(forAll { heap: Heap[Int] =>
+    val numbers = heap.toIterator.toList
+
+    numbers should contain inOrderElementsOf (numbers.sorted)
+  })
+
+  test("toIterator maintains the inverse order")(forAll { xs: List[Int] =>
+    whenever(xs.size > 1) {
+      val order = Order.from[Int]((a, b) => a.compareTo(b) * -1)
+      val inverseOrder = Order.from[Int]((a, b) => a.compareTo(b))
+
+      val heap = Heap.fromIterable(xs)(order)
+
+      val it = heap.toIterator(order)
+      var min = it.next()
+
+      while (it.hasNext) {
+        val current = it.next()
+
+        order.gteqv(current, min) should be (true)
+        inverseOrder.lteqv(current, min) should be (true)
+
+        min = current
+      }
+    }
+  })
+
+  test("toIterator should match with toList")(forAll {heap: Heap[Int] =>
+    heap.toIterator.toList === heap.toList
+  })
 }
