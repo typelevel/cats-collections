@@ -184,16 +184,7 @@ sealed abstract class Heap[A] {
   /**
    * Returns a sorted list of the elements within the heap.
    */
-  def toList(implicit order: Order[A]): List[A] = {
-    @tailrec
-    def loop(h: Heap[A], acc: List[A]): List[A] =
-      h match {
-        case Branch(m, _, _) => loop(h.remove, m :: acc)
-        case Leaf() => acc.reverse
-      }
-
-    loop(this, Nil)
-  }
+  def toList(implicit order: Order[A]): List[A] = toIterator.toList
 
   /**
    * do a foldLeft in the same order as toList.
