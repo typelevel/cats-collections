@@ -149,40 +149,6 @@ class DietSpec extends CatsSuite {
     }
   })
 
-  test("diet eq") {
-    val diet = (1 to 100).filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
-    val inverted = (1 to 100).reverse.filter(_ % 2 == 0).foldLeft(Diet.empty[Int])(_ add _ )
-
-    dietEq.eqv(diet, inverted) should be(true)
-  }
-
-  test("same ranges define the same diet")(forAll { rs: Ranges =>
-    val ranges = rs.rs.map(_._2)
-    val reversed = rs.rs.reverse.map(_._2)
-
-    val d1 = ranges.foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
-    val d2 = reversed.foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
-
-    dietEq.eqv(d1, d2) should be(true)
-  })
-
-  test("reshaping results on the same diet")(forAll { rs: Ranges =>
-
-    val d1 = rs.rs.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
-
-    val ranges = Random.shuffle(rs.rs)
-
-    val d2 = ranges.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
-
-    dietEq.eqv(d1, d2) should be(true)
-  })
-
-  test("different set of ranges ==> different diets")(forAll { (a: Ranges, b: Ranges) =>
-    whenever(a.toSet.size != b.toSet.size) {
-      dietEq.eqv(a.toDiet, b.toDiet) should be(false)
-    }
-  })
-
   test("remove inner range") {
     val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
 
