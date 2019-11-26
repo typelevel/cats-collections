@@ -370,7 +370,7 @@ object AvlSet extends AvlSetInstances {
     // given the allowed amount of imbalance.
     // Returns -1 when a left rotation is called for.
     // Returns 0 when a right rotation is called for.
-    // Returns 1 when the tree is withing the allowance.
+    // Returns 1 when the tree is within the allowance.
     private def rotation(l: Int, r: Int, allow: Int): Int =
       if(l - r > allow ) 1
       else if(r - l > allow) -1

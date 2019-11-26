@@ -97,7 +97,7 @@ sealed abstract class TreeList[+A] {
    * if you need to iterate the entire list, it is better to
    * to use toListReverse which is O(N)
    *
-   * This is only a constant more efficent that iterating via random
+   * This is only a constant more efficient that iterating via random
    * access using get
    */
   def toReverseIterator: Iterator[A]
