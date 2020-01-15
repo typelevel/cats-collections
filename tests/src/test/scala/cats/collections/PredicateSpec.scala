@@ -7,7 +7,9 @@ import cats.tests.CatsSuite
 
 class PredicateSpec extends CatsSuite {
 
+  checkAll("Monoid[Predicate[Int]]", SerializableTests.serializable(Monoid[Predicate[Int]]))
   checkAll("MonoidK[Predicate]", SerializableTests.serializable(MonoidK[Predicate]))
+  checkAll("Serializable[ContravariantMonoidal[Predicate]]", SerializableTests.serializable(ContravariantMonoidal[Predicate]))
 
   test("intersection works")(
     forAll { (as: List[Int], bs: List[Int]) =>
