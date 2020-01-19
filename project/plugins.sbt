@@ -1,4 +1,4 @@
-addSbtPlugin("com.47deg"          % "sbt-microsites"         % "1.0.2")
+addSbtPlugin("com.47deg"          % "sbt-microsites"         % "1.1.0")
 addSbtPlugin("org.tpolecat"       % "tut-plugin"             % "0.6.13")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"             % "0.4.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"          % "0.9.0")
