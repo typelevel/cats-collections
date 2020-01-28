@@ -415,6 +415,7 @@ object BitSet {
    * This method assumes that `n` is outside of the range of `b`. It
    * will return the smallest branch that contains both `b` and `n`.
    */
+  @tailrec
   private def adoptedPlus(b: BitSet, n: Int): Branch = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 11))
@@ -440,6 +441,7 @@ object BitSet {
    * the range of `b`. It will return the smallest branch that
    * contains both `b` and `rhs`.
    */
+  @tailrec
   private def adoptedUnion(b: BitSet, rhs: BitSet): BitSet = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 11))
