@@ -12,13 +12,15 @@ class PredicateSpec extends CatsSuite {
   checkAll("MonoidK[Predicate]", SerializableTests.serializable(MonoidK[Predicate]))
   checkAll("Serializable[ContravariantMonoidal[Predicate]]", SerializableTests.serializable(ContravariantMonoidal[Predicate]))
 
-  implicit val eqForPredicateInt: Eq[Predicate[Int]] = new Eq[Predicate[Int]] {
-    override def eqv(x: Predicate[Int], y: Predicate[Int]): Boolean = x(0) === y(0)
+  {
+    implicit val eqForPredicateInt: Eq[Predicate[Int]] = new Eq[Predicate[Int]] {
+      override def eqv(x: Predicate[Int], y: Predicate[Int]): Boolean = x(0) === y(0)
+    }
+    implicit val eqForPredicateTripleInt: Eq[Predicate[(Int, Int, Int)]] = new Eq[Predicate[(Int, Int, Int)]] {
+      override def eqv(x: Predicate[(Int, Int, Int)], y: Predicate[(Int, Int, Int)]): Boolean = x((0, 0, 0)) === y((0, 0, 0))
+    }
+    checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
   }
-  implicit val eqForPredicateTripleInt: Eq[Predicate[(Int, Int, Int)]] = new Eq[Predicate[(Int, Int, Int)]] {
-    override def eqv(x: Predicate[(Int, Int, Int)], y: Predicate[(Int, Int, Int)]): Boolean = x((0, 0, 0)) === y((0, 0, 0))
-  }
-  checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
 
   test("intersection works")(
     forAll { (as: List[Int], bs: List[Int]) =>
