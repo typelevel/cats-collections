@@ -10,4 +10,4 @@ addSbtPlugin("org.scoverage"      % "sbt-scoverage"          % "1.6.1")
 addSbtPlugin("org.xerial.sbt"     % "sbt-sonatype"           % "3.8.1")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject"      % "0.6.1")
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"                   % "0.6.32")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"                   % "1.0.0")
