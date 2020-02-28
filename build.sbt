@@ -1,15 +1,15 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
-val catsVersion = "2.0.0"
-val catsTestkitScalatestVersion = "1.0.0-RC1"
+val catsVersion = "2.1.1"
+val catsTestkitScalatestVersion = "1.0.1"
 val scalacheckVersion = "1.14.3"
-val algebraVersion = "2.0.0"
+val algebraVersion = "2.0.1"
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0")
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -51,6 +51,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       }
     }
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -64,6 +65,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
@@ -77,6 +79,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val lawsJVM = laws.jvm
 lazy val lawsJS = laws.js
