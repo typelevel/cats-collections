@@ -72,4 +72,31 @@ class PredicateSpec extends CatsSuite {
       bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))) should be(true)
 
     })
+
+  {
+    def testStackSafety(name: String, deepSet: => Predicate[Any]) =
+      test(name) {
+        noException should be thrownBy {
+          deepSet.contains(0)
+        }
+      }
+    val Depth = 200000
+    testStackSafety("union is stack safe on the left hand side",
+      Iterator.fill(Depth)(Predicate.empty).reduceLeft(_ union _))
+    testStackSafety("union is stack safe on the right hand side",
+      Iterator.fill(Depth)(Predicate.empty).reduceRight(_ union _))
+    testStackSafety("intersection is stack safe on the left hand side",
+      Iterator.fill(Depth)(!Predicate.empty).reduceLeft(_ intersection _))
+    testStackSafety("intersection is stack safe on the right hand side",
+      Iterator.fill(Depth)(!Predicate.empty).reduceRight(_ intersection _))
+    testStackSafety("negation is stack safe",
+      Iterator.iterate(Predicate.empty)(_.negate).drop(Depth).next())
+    testStackSafety("contramap() is stack safe",
+      Iterator.iterate(Predicate.empty)(_.contramap(identity _)).drop(Depth).next())
+    val everything = Predicate.empty.negate
+    testStackSafety("diff is stack safe on the left hand side",
+      Iterator.fill(Depth)(everything).reduceLeft(_ diff _))
+    testStackSafety("diff is stack safe on the right hand side",
+      Iterator.fill(Depth)(everything).reduceRight(_ diff _))
+  }
 }
