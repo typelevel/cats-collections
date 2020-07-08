@@ -197,14 +197,30 @@ class HashMap[K, V](val buckets: Vector[List[(K, V)]]) {
     }
   } else None
 
+  def entryHashSet(implicit K: Eq[K], V: Eq[V]): HashSet[(K, V)] = buckets.foldLeft(HashSet.empty[(K, V)]) {
+    case (oset, bucket) => bucket.foldLeft(oset)(_ + _)
+  }
+
 }
 
-object HashMap {
+object HashMap extends HashMapInstances {
 
   val defaultCapacity = 16
 
-  def apply[K, V](entries: (K, V)*)(implicit K: Eq[K]): HashMap[K, V] = entries.foldLeft(empty[K, V])(_ + _)
+  def apply[K: Eq, V](entries: (K, V)*): HashMap[K, V] = entries.foldLeft(empty[K, V])(_ + _)
 
   def empty[K, V]: HashMap[K, V] = new HashMap[K, V](Vector.fill(defaultCapacity)(List.empty))
+
+}
+
+trait HashMapInstances {
+
+  implicit def eqMap[K, V](implicit K: Eq[K], V: Eq[V]): Eq[HashMap[K, V]] = new Eq[HashMap[K, V]] {
+
+    override def eqv(x: HashMap[K,V], y: HashMap[K,V]): Boolean = {
+      x.entryHashSet === y.entryHashSet
+    }
+
+  }
 
 }

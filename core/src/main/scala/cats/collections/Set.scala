@@ -430,3 +430,47 @@ trait AvlSetInstances {
       t.toIterator.map(_.show).mkString("AvlSet(", ", ", ")")
   }
 }
+
+class HashSet[A](val buckets: Vector[List[A]]) {
+
+  def +(a: A)(implicit eq: Eq[A]): HashSet[A] = {
+    def updateBucket(bucket: List[A], value: A): List[A] =
+      bucket match {
+        case Nil => a :: Nil
+        case h :: tail =>
+          if(h === value) h :: tail
+          else h :: updateBucket(tail, value)
+      }
+    
+    val bucketIndex = a.hashCode() % buckets.size
+    val bucket = buckets(bucketIndex)
+    val updatedBucket = updateBucket(bucket, a)
+    new HashSet(buckets.updated(bucketIndex, updatedBucket))
+  }
+
+  def toIterator: Iterator[A] =
+    buckets.flatten.toIterator
+
+}
+
+object HashSet extends HashSetInstances {
+
+  val defaultCapacity = 16
+
+  def apply[A: Eq](as: A*): HashSet[A] =
+    as.foldLeft(empty[A])(_ + _)
+
+  def empty[A]: HashSet[A] = new HashSet(Vector.fill(defaultCapacity)(List.empty))
+
+}
+
+trait HashSetInstances {
+
+  implicit def eqSet[A](implicit A: Eq[A]): Eq[HashSet[A]] = new Eq[HashSet[A]] {
+
+    override def eqv(x: HashSet[A], y: HashSet[A]): Boolean =
+      iteratorEq(x.toIterator, y.toIterator)
+
+  }
+
+}
