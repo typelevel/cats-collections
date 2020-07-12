@@ -119,7 +119,7 @@ lazy val bench = project
     buildSettings,
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.30"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.3.2"
   )
   .enablePlugins(JmhPlugin)
 
