@@ -15,6 +15,6 @@ trait BigNumberLists {
   @Setup
   def setup: Unit = {
     scala = (1 to n).toList
-    scalazlst = IList((1 to n):_*)
+    scalazlst = IList.fromSeq(1 to n)
   }
 }
