@@ -1,6 +1,8 @@
 package cats.collections
+
 package tests
 
+import algebra.laws.LogicLaws
 import cats.collections.arbitrary.predicate._
 import cats.laws.discipline.{ContravariantMonoidalTests, SerializableTests}
 import cats._
@@ -20,6 +22,16 @@ class PredicateSpec extends CatsSuite {
       override def eqv(x: Predicate[(Int, Int, Int)], y: Predicate[(Int, Int, Int)]): Boolean = x((0, 0, 0)) === y((0, 0, 0))
     }
     checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
+  }
+
+  {
+    implicit val eqForPredicateInt: Eq[Predicate[Int]] = new Eq[Predicate[Int]] {
+      val sample = -1 to 1 // need at least 2 elements to distinguish in-between values
+      override def eqv(x: Predicate[Int], y: Predicate[Int]): Boolean =
+        sample.forall(a => x(a) == y(a))
+    }
+
+    checkAll("Bool[Predicate[Int]]", LogicLaws[Predicate[Int]].bool)
   }
 
   test("intersection works")(

@@ -1,5 +1,6 @@
 package cats.collections
 
+import algebra.lattice.Bool
 import cats._
 import cats.data.Kleisli
 
@@ -157,6 +158,15 @@ trait PredicateInstances {
   implicit def predicateMonoid[A]: Monoid[Predicate[A]] = new Monoid[Predicate[A]] {
     override def empty: Predicate[A] = Predicate.empty
     override def combine(l: Predicate[A], r: Predicate[A]): Predicate[A] = l union r
+  }
+
+  implicit def predicateBool[A]: Bool[Predicate[A]] = new Bool[Predicate[A]] {
+    override def one: Predicate[A] = Predicate.everything
+    override def zero: Predicate[A] = Predicate.empty
+    override def complement(x: Predicate[A]): Predicate[A] = x.negate
+    override def and(l: Predicate[A], r: Predicate[A]): Predicate[A] = l intersection r
+    override def or(l: Predicate[A], r: Predicate[A]): Predicate[A] = l union r
+
   }
 
   implicit val predicateMonoidK: MonoidK[Predicate] = new MonoidK[Predicate] {
