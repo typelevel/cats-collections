@@ -14,7 +14,8 @@ class ChainedPredicateBench {
 
   @Setup
   def setup: Unit = {
-    pred = Iterator.iterate(Predicate.empty.negate)(_ - Predicate.empty).drop(n).next()
+    pred = Predicate(_ == 0)
+    pred = Iterator.iterate(pred.negate)(_ - pred).drop(n).next()
   }
 
   @Benchmark

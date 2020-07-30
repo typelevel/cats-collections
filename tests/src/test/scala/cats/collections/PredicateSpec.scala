@@ -74,29 +74,29 @@ class PredicateSpec extends CatsSuite {
     })
 
   {
-    def testStackSafety(name: String, deepSet: => Predicate[Any]) =
+    def testStackSafety(name: String, deepSet: => Predicate[Int]) =
       test(name) {
         noException should be thrownBy {
           deepSet.contains(0)
         }
       }
     val Depth = 200000
+    val NonZero = Predicate[Int](_ != 0)
     testStackSafety("union is stack safe on the left hand side",
-      Iterator.fill(Depth)(Predicate.empty).reduceLeft(_ union _))
+      Iterator.fill(Depth)(NonZero).reduceLeft(_ union _))
     testStackSafety("union is stack safe on the right hand side",
-      Iterator.fill(Depth)(Predicate.empty).reduceRight(_ union _))
+      Iterator.fill(Depth)(NonZero).reduceRight(_ union _))
     testStackSafety("intersection is stack safe on the left hand side",
-      Iterator.fill(Depth)(!Predicate.empty).reduceLeft(_ intersection _))
+      Iterator.fill(Depth)(!NonZero).reduceLeft(_ intersection _))
     testStackSafety("intersection is stack safe on the right hand side",
-      Iterator.fill(Depth)(!Predicate.empty).reduceRight(_ intersection _))
+      Iterator.fill(Depth)(!NonZero).reduceRight(_ intersection _))
     testStackSafety("negation is stack safe",
-      Iterator.iterate(Predicate.empty)(_.negate).drop(Depth).next())
+      Iterator.iterate(NonZero)(_.negate).drop(Depth).next())
     testStackSafety("contramap() is stack safe",
-      Iterator.iterate(Predicate.empty)(_.contramap(identity _)).drop(Depth).next())
-    val everything = Predicate.empty.negate
+      Iterator.iterate(NonZero)(_.contramap(identity _)).drop(Depth).next())
     testStackSafety("diff is stack safe on the left hand side",
-      Iterator.fill(Depth)(everything).reduceLeft(_ diff _))
+      Iterator.fill(Depth)(!NonZero).reduceLeft(_ diff _))
     testStackSafety("diff is stack safe on the right hand side",
-      Iterator.fill(Depth)(everything).reduceRight(_ diff _))
+      Iterator.fill(Depth)(!NonZero).reduceRight(_ diff _))
   }
 }
