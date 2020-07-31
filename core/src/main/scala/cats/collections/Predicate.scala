@@ -132,7 +132,7 @@ object Predicate extends PredicateInstances {
    * build a set from a membership function.
   */
   def apply[A](p: A => Boolean): Predicate[A] = Lift {
-    Kleisli(a => Eval.now(p(a)))
+    Kleisli(a => if (p(a)) Eval.True else Eval.False)
   }
 
   /**
