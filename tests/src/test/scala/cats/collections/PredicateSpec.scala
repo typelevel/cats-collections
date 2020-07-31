@@ -26,7 +26,7 @@ class PredicateSpec extends CatsSuite {
 
   {
     implicit val eqForPredicateInt: Eq[Predicate[Int]] = new Eq[Predicate[Int]] {
-      val sample = -1 to 1 // need at least 2 elements to distinguish in-between values
+      val sample = Byte.MinValue to Byte.MaxValue
       override def eqv(x: Predicate[Int], y: Predicate[Int]): Boolean =
         sample.forall(a => x(a) == y(a))
     }
