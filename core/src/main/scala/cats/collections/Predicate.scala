@@ -147,7 +147,7 @@ object Predicate extends PredicateInstances {
 }
 
 trait PredicateInstances {
-  implicit def predicateContravariantMonoidal: ContravariantMonoidal[Predicate] = new ContravariantMonoidal[Predicate] {
+  implicit def catsCollectionsPredicateContravariantMonoidal: ContravariantMonoidal[Predicate] = new ContravariantMonoidal[Predicate] {
     override def contramap[A, B](fb: Predicate[A])(f: B => A): Predicate[B] =
       fb.contramap(f)
     override def product[A, B](fa: Predicate[A], fb: Predicate[B]): Predicate[(A, B)] =
@@ -155,12 +155,12 @@ trait PredicateInstances {
     override def unit: Predicate[Unit] = Predicate.empty
   }
 
-  implicit def predicateMonoid[A]: Monoid[Predicate[A]] = new Monoid[Predicate[A]] {
+  implicit def catsCollectionsPredicateMonoid[A]: Monoid[Predicate[A]] = new Monoid[Predicate[A]] {
     override def empty: Predicate[A] = Predicate.empty
     override def combine(l: Predicate[A], r: Predicate[A]): Predicate[A] = l union r
   }
 
-  implicit def predicateBool[A]: Bool[Predicate[A]] = new Bool[Predicate[A]] {
+  implicit def catsCollectionsPredicateBool[A]: Bool[Predicate[A]] = new Bool[Predicate[A]] {
     override def one: Predicate[A] = Predicate.everything
     override def zero: Predicate[A] = Predicate.empty
     override def complement(x: Predicate[A]): Predicate[A] = x.negate
@@ -169,7 +169,7 @@ trait PredicateInstances {
 
   }
 
-  implicit val predicateMonoidK: MonoidK[Predicate] = new MonoidK[Predicate] {
+  implicit val catsCollectionsPredicateMonoidK: MonoidK[Predicate] = new MonoidK[Predicate] {
     override def empty[A]: Predicate[A] = Predicate.empty
     override def combineK[A](l: Predicate[A], r: Predicate[A]): Predicate[A] = l union r
   }
