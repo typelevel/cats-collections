@@ -9,7 +9,7 @@ val algebraVersion = "2.1.0"
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.8",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.3")
 )
 
 lazy val `cats-collections` = project.in(file("."))
