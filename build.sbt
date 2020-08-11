@@ -100,7 +100,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
       "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test"
     ),
     buildInfoPackage := "cats.collections",
-    buildInfoKeys := Seq(BuildInfoKey.constant(("isJvm", crossProjectPlatform.value == JVMPlatform)))
+    buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
   )
 
 lazy val testsJVM = tests.jvm
