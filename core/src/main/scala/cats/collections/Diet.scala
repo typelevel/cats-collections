@@ -274,7 +274,7 @@ sealed abstract class Diet[A] {
     }
 
   def toIterator: Iterator[Range[A]] = this match {
-    case EmptyDiet() => Iterator.empty[Range[A]]
+    case EmptyDiet() => Iterator.empty
     case DietNode(focus, left, right) =>
       left
         .toIterator
