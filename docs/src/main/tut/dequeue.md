@@ -26,7 +26,7 @@ might be stored like this:
           3                               6
           4                               5
 		  
-In this configuration, we can pop off three items from the right side
+In this configuration, we can pop off three items from the left side
 in constant time (O(1)). However, we will have to do more computation
 when we pop off the 4th. Since we don't want to leave either stack
 completely empty, when we pop the 4th item off the left, we will grab
@@ -48,5 +48,5 @@ And after, we have:
 This process of reshuffling the stacks to make sure we have items
 available on both sides is actually a linear (O(n))
 operation. However, since we only have to perform this operation after
-every n pop operations, we can say that this is constant time when
+every n/2 pop operations, we can say that this is constant time when
 amortized over enough operations.
