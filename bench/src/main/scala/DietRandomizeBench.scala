@@ -9,7 +9,6 @@ import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
 import scala.util.Random
 import scalaz.Diev
 import cats._
-import cats.implicits._
 
 
 

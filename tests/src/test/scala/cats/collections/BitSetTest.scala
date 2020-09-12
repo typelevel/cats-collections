@@ -1,6 +1,6 @@
 package cats.collections
 
-import cats.implicits._
+import cats.syntax.all._
 import org.scalacheck.Prop.{forAll, propBoolean}
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import Arbitrary.{arbitrary => arb}

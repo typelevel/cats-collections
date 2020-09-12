@@ -5,7 +5,7 @@ import java.util.NoSuchElementException
 import scala.annotation.tailrec
 import scala.collection.immutable.List
 import cats._
-import cats.implicits._
+import cats.syntax.all._
 import cats.collections.compat.Factory
 
 /**

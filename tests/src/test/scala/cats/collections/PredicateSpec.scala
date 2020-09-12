@@ -4,7 +4,6 @@ package tests
 import cats.collections.arbitrary.predicate._
 import cats.laws.discipline.{ContravariantMonoidalTests, SerializableTests}
 import cats._
-import cats.instances.int._
 import cats.tests.CatsSuite
 
 class PredicateSpec extends CatsSuite {

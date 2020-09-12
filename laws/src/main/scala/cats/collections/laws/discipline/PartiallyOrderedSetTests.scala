@@ -8,8 +8,6 @@ import cats.laws.discipline.{catsLawsIsEqToProp, UnorderedFoldableTests}
 import org.scalacheck.{Arbitrary, Cogen, Prop}
 import org.scalacheck.Prop.forAll
 
-import cats.implicits._
-
 trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
   override def laws: PartiallyOrderedSetLaws[F]
 

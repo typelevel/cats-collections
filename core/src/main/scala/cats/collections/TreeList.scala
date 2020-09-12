@@ -184,7 +184,8 @@ sealed abstract class TreeList[+A] {
         case Nil => that
         case h :: tail => loop(tail, h :: that)
       }
-    loop(toListReverse, that)
+    if (that.nonEmpty) loop(toListReverse, that)
+    else this
   }
 
   /**
@@ -771,9 +772,9 @@ object TreeList extends TreeListInstances0 {
         @tailrec
         def loop(fa: TreeList[A], revList: List[B]): TreeList[B] =
           fa match {
-            case Empty => fromListReverse(revList)
             case NonEmpty(_, tail) =>
               loop(tail, fn(fa) :: revList)
+            case Empty => fromListReverse(revList)
           }
         loop(fa, Nil)
       }
@@ -876,19 +877,25 @@ object TreeList extends TreeListInstances0 {
       }
 
       def tailRecM[A, B](a: A)(fn: A => TreeList[Either[A, B]]): TreeList[B] = {
-        var res = List.empty[B]
         @tailrec
-        def loop(stack: List[TreeList[Either[A, B]]]): Unit =
+        def loop(stack: List[TreeList[Either[A, B]]], acc: List[B]): List[B] =
           stack match {
-            case Nil => ()
-            case Empty :: tail => loop(tail)
-            case NonEmpty(Right(b), rest) :: tail =>
-              res = b :: res
-              loop(rest :: tail)
-            case NonEmpty(Left(a), rest) :: tail =>
-              loop(fn(a) :: rest :: tail)
+            case head :: tail =>
+              head match {
+                case NonEmpty(either, rest) =>
+                  either match {
+                    case Right(b) =>
+                      loop(rest :: tail, b :: acc)
+                    case Left(a) =>
+                      loop(fn(a) :: rest :: tail, acc)
+                  }
+                case Empty =>
+                  loop(tail, acc)
+              }
+            case Nil => acc
           }
-        loop(fn(a) :: Nil)
+
+        val res = loop(fn(a) :: Nil, Nil)
         fromListReverse(res)
       }
 
