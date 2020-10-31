@@ -3,7 +3,7 @@ import ReleaseTransformations._
 
 val catsVersion = "2.2.0"
 val catsTestkitScalatestVersion = "2.0.0"
-val scalacheckVersion = "1.14.3"
+val scalacheckVersion = "1.15.0"
 val algebraVersion = "2.0.1"
 
 lazy val buildSettings = Seq(
