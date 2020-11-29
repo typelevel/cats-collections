@@ -13,7 +13,7 @@ class HashSet[A](val buckets: Vector[List[A]]) {
           if(h === value) h :: tail
           else h :: updateBucket(tail, value)
       }
-    
+
     val bucketIndex = a.hash % buckets.size
     val bucket = buckets(bucketIndex)
     val updatedBucket = updateBucket(bucket, a)
