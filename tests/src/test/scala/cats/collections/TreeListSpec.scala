@@ -266,12 +266,6 @@ class TreeListSpec extends CatsSuite {
     val size = 100000
     def buildFn(i: Int): Int => Int = { j: Int => i + j }
     val bigList = (0 until size).iterator.map(buildFn).toList
-    // This does not work because the stack is as deep as the size of the list
-    assertThrows[Throwable] {
-      // we would like to check that StackOverflowError is thrown, which it is
-      // on JVM, but on scala.js it is a wrapped exception.
-      assert(bigList.sequence.apply(0) == (0 until size).toList)
-    }
     // Now this should not throw
     val bigTreeList = TreeList.fromList(bigList)
     assert(bigTreeList.sequence.apply(0) == TreeList.fromList((0 until size).toList))

@@ -1,15 +1,15 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
-val catsVersion = "2.0.0"
-val catsTestkitScalatestVersion = "1.0.0-RC1"
-val scalacheckVersion = "1.14.3"
-val algebraVersion = "2.0.0"
+val catsVersion = "2.3.0"
+val catsTestkitScalatestVersion = "2.0.0"
+val scalacheckVersion = "1.15.1"
+val algebraVersion = "2.0.1"
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
   scalaVersion in Global := "2.12.8",
-  crossScalaVersions := Seq("2.11.12", scalaVersion.value, "2.13.0")
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -51,6 +51,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       }
     }
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -64,6 +65,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
@@ -77,6 +79,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val lawsJVM = laws.jvm
 lazy val lawsJS = laws.js
@@ -97,7 +100,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
       "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test"
     ),
     buildInfoPackage := "cats.collections",
-    buildInfoKeys := Seq(BuildInfoKey.constant(("isJvm", crossProjectPlatform.value == JVMPlatform)))
+    buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
   )
 
 lazy val testsJVM = tests.jvm
@@ -116,7 +119,7 @@ lazy val bench = project
     buildSettings,
     coverageEnabled := false,
     fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.2.30"
+    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.3.2"
   )
   .enablePlugins(JmhPlugin)
 
@@ -127,7 +130,7 @@ lazy val commonSettings =
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "algebra"   % algebraVersion,
-      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.0" cross CrossVersion.full)
+      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.1" cross CrossVersion.full)
     ),
     fork in test := true
   )

@@ -5,7 +5,6 @@ import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import org.openjdk.jmh.infra.Blackhole
 import scala.util.Random
 import cats._
-import cats.implicits._
 
 import scala.annotation.tailrec
 
