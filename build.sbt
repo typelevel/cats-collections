@@ -8,7 +8,7 @@ val algebraVersion = "2.1.1"
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.8",
+  scalaVersion in Global := "2.12.13",
   crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
 )
 
