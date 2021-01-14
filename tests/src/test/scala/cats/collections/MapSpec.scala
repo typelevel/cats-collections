@@ -88,6 +88,6 @@ class MapShow extends CatsSuite {
 }
 
 class MapLaws extends CatsSuite with ArbitrarySet with ArbitraryMap  {
-  implicit val iso = SemigroupalTests.Isomorphisms.invariant[Map[String, ?]]
-  checkAll("Map[String,A]", FlatMapTests[Map[String,?]].flatMap[(String,Int),(String,Int),(String,Int)])
+  implicit val iso = SemigroupalTests.Isomorphisms.invariant[Map[String, *]]
+  checkAll("Map[String,A]", FlatMapTests[Map[String,*]].flatMap[(String,Int),(String,Int),(String,Int)])
 }

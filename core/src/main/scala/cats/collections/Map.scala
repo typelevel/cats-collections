@@ -151,7 +151,7 @@ trait AvlMapInstances {
   }
 
 
-  implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[AvlMap[K,?]] = new FlatMap[AvlMap[K,?]] {
+  implicit def flatMapMap[K](implicit K: Order[K]): FlatMap[AvlMap[K,*]] = new FlatMap[AvlMap[K,*]] {
     private implicit def order[X](implicit K: Order[K]): Order[(K,X)] = K.contramap[(K,X)](_._1)
 
     override def flatMap[A,B](fa: AvlMap[K,A])(f: A => AvlMap[K,B]): AvlMap[K,B] = fa flatMap f
