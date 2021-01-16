@@ -8,7 +8,7 @@ if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]] && grep -
 fi
 
 coverage=""
-if [[ $TRAVIS_SCALA_VERSION == *"2.12"* ]]; then
+if [[ $TRAVIS_SCALA_VERSION == *"2.13"* ]]; then
   coverage="(export SCOVERAGEON=true; $sbt_cmd coverage testsJVM/test coverageReport && bash <(curl -s https://codecov.io/bash) )"
 else
   coverage="true"
