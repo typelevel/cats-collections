@@ -130,7 +130,7 @@ lazy val commonSettings =
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "algebra"   % algebraVersion,
-      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.2" cross CrossVersion.full)
+      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.3" cross CrossVersion.full)
     ),
     fork in test := true
   )
