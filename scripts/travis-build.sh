@@ -7,13 +7,5 @@ if [[ $TRAVIS_PULL_REQUEST == "false" && $TRAVIS_BRANCH == "master" ]] && grep -
   export publish_cmd="publish gitSnapshots"
 fi
 
-coverage=""
-if [[ $TRAVIS_SCALA_VERSION == *"2.12"* ]]; then
-  coverage="(export SCOVERAGEON=true; $sbt_cmd coverage testsJVM/test coverageReport && bash <(curl -s https://codecov.io/bash) )"
-else
-  coverage="true"
-fi
-scala_jvm="$sbt_cmd validate"
-
-run_cmd="$coverage && $scala_jvm $publish_cmd"
+run_cmd="$sbt_cmd validate $publish_cmd"
 eval $run_cmd
