@@ -51,6 +51,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       }
     }
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -64,6 +65,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
@@ -77,6 +79,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
+  .jsSettings(coverageEnabled := false)
 
 lazy val lawsJVM = laws.jvm
 lazy val lawsJS = laws.js
@@ -88,7 +91,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
-  .settings(
+  .settings(coverageEnabled := false,
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
@@ -114,12 +117,13 @@ lazy val bench = project
   .settings(noPublishSettings)
   .settings(
     buildSettings,
+    coverageEnabled := false,
     fork in run := true,
     libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.3.3"
   )
   .enablePlugins(JmhPlugin)
 
-lazy val dogsSettings = buildSettings ++ commonSettings
+lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
 lazy val commonSettings =
   compilerFlags ++ Seq(
@@ -133,6 +137,12 @@ lazy val commonSettings =
 
 addCommandAlias("build", ";compile;test")
 addCommandAlias("validate", ";scalastyle;build;docs/tut")
+
+lazy val scoverageSettings = Seq(
+  coverageMinimum := 60,
+  coverageFailOnMinimum := false,
+  coverageHighlighting := scalaBinaryVersion.value != "2.11"
+)
 
 lazy val noPublishSettings = Seq(
   publish := {},
