@@ -15,7 +15,7 @@ These operations are presented by the following functions.
 
 An example of the discrete operation on integer values could be: 
 
-```tut
+```scala mdoc
 import cats._, cats.collections._
 
 implicit val intDiscrete: Discrete[Int] = new Discrete[Int] {
