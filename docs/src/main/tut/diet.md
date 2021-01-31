@@ -52,7 +52,7 @@ circumstances, operations in the tree required O(n).
 
 Start by creating an empty Diet:
 
-```tut
+```scala mdoc
 import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
 
 val d: Diet[Int] = Diet.empty
@@ -63,7 +63,7 @@ d.show
 
 And we can add an item:
 
-```tut
+```scala mdoc
 val d2 = d.add(12)
 d2.isEmpty
 
@@ -72,21 +72,21 @@ d2.show
 
 And now we can check that it thinks 12 is in the set, but not other numbers
 
-```tut
+```scala mdoc
 d2.contains(1)
 d2.contains(12)
 ```
 
 If we remove our only element, we get back to the empty Diet:
 
-```tut
+```scala mdoc
 val d3 = d2.remove(12)
 d3.isEmpty
 ```
 
 Asking to remove an element not in the set is a noop:
 
-```tut
+```scala mdoc
 val s = Diet.empty[Int].remove(10)
 
 s.show
@@ -94,7 +94,7 @@ s.show
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
 
-```tut
+```scala mdoc
 val d = Diet.empty[Int].addRange(1 toIncl 20)
 d.contains(21)
 d.contains(20)
@@ -111,7 +111,7 @@ d2.containsRange(11 toIncl 15) // fails since not the entire range is contained
 
 Given two Diets, we can find the union or the intersection:
 
-```tut
+```scala mdoc
 val d1 = Diet.empty[Int] + (5 toIncl 10)
 val d2 = Diet.empty[Int] + (7 toIncl 12)
 (d1 & d2).show
@@ -119,7 +119,7 @@ val d2 = Diet.empty[Int] + (7 toIncl 12)
 ```
 Asking to remove non existing range yields the same diet
 
-```tut
+```scala mdoc
 val d = Diet.empty[Int].addRange((5 toIncl 20))
 
 val d1 = d.removeRange((1 toIncl 4))
@@ -128,7 +128,7 @@ d1.show
 
 Asking to remove a range yields a new Diet without the range
 
-```tut
+```scala mdoc
 val d = Diet.empty[Int].addRange((5 toIncl 20)).addRange(22 toIncl 30)
 val d2 = d.removeRange((5 toIncl 20))
 
@@ -137,7 +137,7 @@ d2.show
 
 Asking to remove a sub-range splits the Diet
 
-```tut
+```scala mdoc
 val d = Diet.empty[Int].addRange((5 toIncl 20))
 val d3 = d.removeRange((10 toIncl 15)) 
 
@@ -148,7 +148,7 @@ val d3 = d.removeRange((10 toIncl 15))
 
 Adding a inverted range
 
-```tut
+```scala mdoc
 val d = Diet.empty[Int] + Range(20, 10)
 
 d.show
