@@ -30,7 +30,7 @@ We can get the values from a range using **generate** or **toList** functions.
 We can also get the string representing the range in math notation. `Range(x, y)` is represented by **[x, y]** and `Range.empty` is represented by **[]** by using
 `cats.Show`
 
-```tut
+```scala mdoc
 import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._, cats.collections.Range._
                                                                                                                                   
 val range = Range(1, 10)
@@ -41,32 +41,32 @@ range.toList
 
 We can get the inverted range using the **reverse** functions
 
-```tut
+```scala mdoc
 range.reverse.show
 ```
 
 Asking for **start** and **end** on a Range
 
-```tut
+```scala mdoc
 range.start
 range.end
 ```
 
 Asking for a value within Range
 
-```tut
+```scala mdoc
 range.contains(5)
 ```
 
 Asking for a value that is not within Range
 
-```tut
+```scala mdoc
 range.contains(20)
 ```
 
 Asking for the difference between two Ranges returns 0, 1, or 2 result ranges
 
-```tut
+```scala mdoc
 Range(10, 20).show
 (range - Range(5, 9)).show
 (range - Range(30, 40)).show
@@ -76,7 +76,7 @@ Range(10, 20).show
 
 Creating an **inverted** range
 
-```tut
+```scala mdoc
 val range = Range(50, 20)
 
 range.toList
@@ -84,7 +84,7 @@ range.toList
 
 The reverse of a range should be its inverted range
 
-```tut
+```scala mdoc
 val range = Range(20, 30)
 range.show
 

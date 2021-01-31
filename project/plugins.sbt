@@ -1,5 +1,5 @@
-addSbtPlugin("com.47deg"          % "sbt-microsites"         % "1.3.1")
-addSbtPlugin("org.tpolecat"       % "tut-plugin"             % "0.6.13")
+addSbtPlugin("com.47deg"          % "sbt-microsites"         % "1.2.1")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.16" )
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"             % "0.4.3")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"          % "0.10.0")
 addSbtPlugin("com.github.gseitz"  % "sbt-release"            % "1.0.13")
