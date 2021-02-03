@@ -94,7 +94,7 @@ s.show
 
 Diet excels at storing ranges, so there are also operations that work on ranges of values:
 
-```scala mdoc
+```scala mdoc:nest
 val d = Diet.empty[Int].addRange(1 toIncl 20)
 d.contains(21)
 d.contains(20)
@@ -111,7 +111,7 @@ d2.containsRange(11 toIncl 15) // fails since not the entire range is contained
 
 Given two Diets, we can find the union or the intersection:
 
-```scala mdoc
+```scala mdoc:nest
 val d1 = Diet.empty[Int] + (5 toIncl 10)
 val d2 = Diet.empty[Int] + (7 toIncl 12)
 (d1 & d2).show
@@ -119,7 +119,7 @@ val d2 = Diet.empty[Int] + (7 toIncl 12)
 ```
 Asking to remove non existing range yields the same diet
 
-```scala mdoc
+```scala mdoc:nest
 val d = Diet.empty[Int].addRange((5 toIncl 20))
 
 val d1 = d.removeRange((1 toIncl 4))
@@ -128,7 +128,7 @@ d1.show
 
 Asking to remove a range yields a new Diet without the range
 
-```scala mdoc
+```scala mdoc:nest
 val d = Diet.empty[Int].addRange((5 toIncl 20)).addRange(22 toIncl 30)
 val d2 = d.removeRange((5 toIncl 20))
 
@@ -137,7 +137,7 @@ d2.show
 
 Asking to remove a sub-range splits the Diet
 
-```scala mdoc
+```scala mdoc:nest
 val d = Diet.empty[Int].addRange((5 toIncl 20))
 val d3 = d.removeRange((10 toIncl 15)) 
 
@@ -148,7 +148,7 @@ val d3 = d.removeRange((10 toIncl 15))
 
 Adding a inverted range
 
-```scala mdoc
+```scala mdoc:nest
 val d = Diet.empty[Int] + Range(20, 10)
 
 d.show
