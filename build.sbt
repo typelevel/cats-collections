@@ -8,8 +8,8 @@ val algebraVersion = "2.1.1"
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.13",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.0")
+  scalaVersion in Global := "2.12.12",
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.4")
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -108,6 +108,7 @@ lazy val testsJS = tests.js
 
 lazy val docs = project
   .enablePlugins(MdocPlugin)
+  .enablePlugins(MicrositesPlugin)
   .dependsOn(coreJVM)
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
@@ -137,7 +138,7 @@ lazy val commonSettings =
   )
 
 addCommandAlias("build", ";compile;test")
-addCommandAlias("validate", ";scalastyle;build;docs/tut")
+addCommandAlias("validate", ";scalastyle;build;docs/clean;docs/makeMicrosite")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
@@ -222,7 +223,6 @@ lazy val compilerFlags = Seq(
           "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
           "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
           "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-          "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
           "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
           "-Xlint:option-implicit",            // Option.apply used implicit view.
           "-Xlint:package-object-classes",     // Class or object defined in package object.
@@ -244,7 +244,7 @@ lazy val compilerFlags = Seq(
         )
     }
   ),
-  scalacOptions in (Test, compile)    -= "-deprecation", // 2.13.0 collections
+  scalacOptions in (Test, compile)    -= "-deprecation", // 2.13.4 collections
   scalacOptions in (Compile, console) -= "-Ywarn-unused:imports",
   scalacOptions in (Compile, doc)     -= "-Ywarn-unused:imports"
 )
