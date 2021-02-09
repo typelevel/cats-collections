@@ -5,11 +5,52 @@ val catsVersion = "2.3.1"
 val catsTestkitScalatestVersion = "2.1.1"
 val scalacheckVersion = "1.15.2"
 val algebraVersion = "2.1.1"
+val Scala212 = "2.12.12"
+val Scala213 = "2.13.4"
+val CrossVersions = Seq(Scala212, Scala213)
 
 lazy val buildSettings = Seq(
   organization in Global := "org.typelevel",
-  scalaVersion in Global := "2.12.12",
-  crossScalaVersions := Seq(scalaVersion.value, "2.13.4")
+  scalaVersion in Global := Scala212,
+  crossScalaVersions := CrossVersions
+)
+
+ThisBuild / crossScalaVersions := Seq(Scala212, Scala213)
+ThisBuild / scalaVersion := Scala212
+ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8", "adopt@1.11", "adopt@1.15")
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowBuildMatrixAdditions +=
+  "ci" -> List("validateJS", "validateJVM")
+ThisBuild / githubWorkflowBuild := Seq(WorkflowStep.Sbt(List("${{ matrix.ci }}"), name = Some("Validation")))
+ThisBuild / githubWorkflowAddedJobs ++= Seq(
+  WorkflowJob(
+    "coverage",
+    "Coverage",
+    githubWorkflowJobSetup.value.toList ::: List(
+      WorkflowStep.Use(UseRef.Public("actions", "setup-python", "v2"), name = Some("Setup Python")),
+      WorkflowStep.Run(List("pip install codecov"), name = Some("Install Codecov")),
+      WorkflowStep
+        .Sbt(List("coverage", "testsJVM/test", "testsJVM/coverageReport"), name = Some("Calculate test coverage")),
+      WorkflowStep.Run(List("codecov"), name = Some("Upload coverage results"))
+    ),
+    scalas = List(Scala213)
+  ),
+  WorkflowJob(
+    "microsite",
+    "Microsite",
+    githubWorkflowJobSetup.value.toList ::: List(
+      WorkflowStep.Use(
+        UseRef.Public("ruby", "setup-ruby", "v1"),
+        name = Some("Setup Ruby"),
+        params = Map("ruby-version" -> "2.6", "bundler-cache" -> "true")
+      ),
+      WorkflowStep.Run(List("gem install jekyll -v 2.5"), name = Some("Install Jekyll")),
+      WorkflowStep.Sbt(List("docs/clean"), name = Some("Clean microsite")),
+      WorkflowStep.Sbt(List("docs/makeMicrosite"), name = Some("Build microsite"))
+    ),
+    scalas = List(Scala213)
+  )
 )
 
 lazy val `cats-collections` = project.in(file("."))
@@ -137,8 +178,8 @@ lazy val commonSettings =
     fork in test := true
   )
 
-addCommandAlias("build", ";compile;test")
-addCommandAlias("validate", ";scalastyle;build;docs/clean;docs/makeMicrosite")
+addCommandAlias("validateJVM", ";testsJVM/scalastyle;testsJVM/compile;testsJVM/test")
+addCommandAlias("validateJS", ";testsJS/compile;testsJS/test")
 
 lazy val scoverageSettings = Seq(
   coverageMinimum := 60,
