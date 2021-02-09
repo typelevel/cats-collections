@@ -3,10 +3,14 @@ language: scala
 sudo: false
 
 scala:
-  - 2.12.8
-  - 2.13.0
+  - 2.12.12
+  - 2.13.4
 
 jdk: openjdk10
+
+install:
+- rvm use 2.6.5 --install --fuzzy
+- gem install jekyll -v 4
 
 env:
   global:

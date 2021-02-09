@@ -4,10 +4,6 @@ name := "cats-collections-docs"
 
 lazy val docsMappingsAPIDir = settingKey[String]("Name of subdirectory in site target directory for api docs")
 
-enablePlugins(MicrositesPlugin)
-
-mdocAutoDependency := false
-
 ghpagesNoJekyll := false
 micrositeName := "cats-collections"
 micrositeDescription := "pure functional data structures for Scala"
@@ -35,7 +31,9 @@ micrositePalette := Map(
 
 includeFilter in Jekyll := (includeFilter in makeSite).value
 
-fork in tut := true
+fork in mdoc := true
+
+mdocIn := baseDirectory.in(LocalRootProject).value / "docs" / "src" / "main" / "mdoc"
 
 git.remoteRepo := "git@github.com:typelevel/cats-collections.git"
 
