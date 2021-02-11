@@ -34,7 +34,7 @@ ThisBuild / githubWorkflowAddedJobs ++= Seq(
         .Sbt(List("coverage", "testsJVM/test", "testsJVM/coverageReport"), name = Some("Calculate test coverage")),
       WorkflowStep.Run(List("codecov"), name = Some("Upload coverage results"))
     ),
-    scalas = List(Scala213)
+    scalas = List(Scala212)
   ),
   WorkflowJob(
     "microsite",
