@@ -45,7 +45,7 @@ class AvlMap[K,V](val set: AvlSet[(K,V)]) {
    * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
    */
   def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): AvlMap[K, V] =
-    f(get(k)) map { v => this + (k -> v) } getOrElse this
+    f(get(k)) map { v => this + (k -> v) } getOrElse remove(k)
 
   /**
    * Check if we have the given key in the map.
