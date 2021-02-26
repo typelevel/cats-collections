@@ -43,6 +43,12 @@ class MapSpec extends CatsSuite {
     } should be (true)
   })
 
+  test("we can remove things from a Map with alter")(forAll { (xs: Set[(String, Int)]) =>
+    val m = fromSet(xs)
+
+    xs.foldLeft(m) { case (r, (k, _)) => r.alter(k)(_ => None) }.set.isEmpty should be (true)
+  })
+
   test("we can combine maps")(forAll {(xs: Set[(String,Int)],xs2: Set[(String,Int)]) =>
     val m = fromSet(xs)
     val m2 = fromSet(xs2)
