@@ -5,7 +5,7 @@ val catsVersion = "2.4.2"
 val catsTestkitScalatestVersion = "2.1.2"
 val scalacheckVersion = "1.15.3"
 val algebraVersion = "2.2.1"
-val Scala212 = "2.12.12"
+val Scala212 = "2.12.13"
 val Scala213 = "2.13.4"
 val CrossVersions = Seq(Scala212, Scala213)
 
