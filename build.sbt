@@ -1,7 +1,7 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
-val catsVersion = "2.4.2"
+val catsVersion = "2.5.0"
 val catsTestkitScalatestVersion = "2.1.2"
 val scalacheckVersion = "1.15.3"
 val algebraVersion = "2.2.1"
