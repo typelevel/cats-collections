@@ -409,6 +409,8 @@ object AvlSet extends AvlSetInstances {
   private[collections] case object BTNil extends AvlSet[Nothing] {
     override def isEmpty: Boolean = true
 
+    override def predicate(implicit order: cats.Order[Nothing]): Predicate[Nothing] = Predicate.empty
+
     def apply[A](): AvlSet[A] = this.asInstanceOf[AvlSet[A]]
 
     def unapply[A](a: AvlSet[A]): Boolean = a.isEmpty

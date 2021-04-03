@@ -1,6 +1,8 @@
 package cats.collections
+
 package tests
 
+import algebra.laws.LogicLaws
 import cats.collections.arbitrary.predicate._
 import cats.laws.discipline.{ContravariantMonoidalTests, SerializableTests}
 import cats._
@@ -19,6 +21,16 @@ class PredicateSpec extends CatsSuite {
       override def eqv(x: Predicate[(Int, Int, Int)], y: Predicate[(Int, Int, Int)]): Boolean = x((0, 0, 0)) === y((0, 0, 0))
     }
     checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
+  }
+
+  {
+    implicit val eqForPredicateInt: Eq[Predicate[Int]] = new Eq[Predicate[Int]] {
+      val sample = Byte.MinValue to Byte.MaxValue
+      override def eqv(x: Predicate[Int], y: Predicate[Int]): Boolean =
+        sample.forall(a => x(a) == y(a))
+    }
+
+    checkAll("Bool[Predicate[Int]]", LogicLaws[Predicate[Int]].bool)
   }
 
   test("intersection works")(
@@ -71,4 +83,31 @@ class PredicateSpec extends CatsSuite {
       bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))) should be(true)
 
     })
+
+  {
+    def testStackSafety(name: String, deepSet: => Predicate[Int]) =
+      test(name) {
+        noException should be thrownBy {
+          deepSet.contains(0)
+        }
+      }
+    val Depth = 200000
+    val NonZero = Predicate[Int](_ != 0)
+    testStackSafety("union is stack safe on the left hand side",
+      Iterator.fill(Depth)(NonZero).reduceLeft(_ union _))
+    testStackSafety("union is stack safe on the right hand side",
+      Iterator.fill(Depth)(NonZero).reduceRight(_ union _))
+    testStackSafety("intersection is stack safe on the left hand side",
+      Iterator.fill(Depth)(!NonZero).reduceLeft(_ intersection _))
+    testStackSafety("intersection is stack safe on the right hand side",
+      Iterator.fill(Depth)(!NonZero).reduceRight(_ intersection _))
+    testStackSafety("negation is stack safe",
+      Iterator.iterate(NonZero)(_.negate).drop(Depth).next())
+    testStackSafety("contramap() is stack safe",
+      Iterator.iterate(NonZero)(_.contramap(identity _)).drop(Depth).next())
+    testStackSafety("diff is stack safe on the left hand side",
+      Iterator.fill(Depth)(!NonZero).reduceLeft(_ diff _))
+    testStackSafety("diff is stack safe on the right hand side",
+      Iterator.fill(Depth)(!NonZero).reduceRight(_ diff _))
+  }
 }
