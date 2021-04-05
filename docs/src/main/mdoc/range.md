@@ -2,6 +2,7 @@
 layout: docs
 title:  "Range"
 source: "core/src/main/scala/Range.scala"
+position: 9
 ---
 ## Range
 
@@ -18,21 +19,21 @@ source: "core/src/main/scala/Range.scala"
 - `-(other)`: Calculate the difference with `Range`.
 	- It returns a tuple with the difference to the right and to the left of `Range`.
 	- It basically calculates what is to the *left* of `other` that is in `Range` and what is to the *right* of `other` that is in `Range` (in both cases it does not include elements in `other`)
-- toString: returns 
-	
+- toString: returns
+
 ## Inverted Range
 
 Note that if x > y and we create the range [x, y] it will be treated as the **inverted** range [y, x].
-	
+
 ## Using Range
 
-We can get the values from a range using **generate** or **toList** functions. 
+We can get the values from a range using **generate** or **toList** functions.
 We can also get the string representing the range in math notation. `Range(x, y)` is represented by **[x, y]** and `Range.empty` is represented by **[]** by using
 `cats.Show`
 
 ```scala mdoc
 import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._, cats.collections.Range._
-                                                                                                                                  
+
 val range = Range(1, 10)
 range.show
 

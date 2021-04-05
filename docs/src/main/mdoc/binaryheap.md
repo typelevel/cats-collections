@@ -1,6 +1,7 @@
 ---
-layout: "docs"
+layout: docs
 title:  "Binary Heap"
+position: 2
 ---
 # Binary Heap
 
@@ -65,5 +66,5 @@ r.show
 
 ## Heap sub projects
 
- More complex implementation of Heap will be added as sub projects where each implementation can be used for specific 
+ More complex implementation of Heap will be added as sub projects where each implementation can be used for specific
  requirements
