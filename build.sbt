@@ -5,17 +5,18 @@ val catsVersion = "2.5.0"
 val catsTestkitScalatestVersion = "2.1.3"
 val scalacheckVersion = "1.15.3"
 val algebraVersion = "2.2.2"
-val Scala212 = "2.12.12"
+val Scala212 = "2.12.13"
 val Scala213 = "2.13.5"
-val CrossVersions = Seq(Scala212, Scala213)
+val Scala3 = "3.0.0-RC2"
+val CrossVersions = Seq(Scala212, Scala213, Scala3)
 
 lazy val buildSettings = Seq(
-  organization in Global := "org.typelevel",
-  scalaVersion in Global := Scala212,
+  Global / organization := "org.typelevel",
+  Global / scalaVersion := Scala212,
   crossScalaVersions := CrossVersions
 )
 
-ThisBuild / crossScalaVersions := Seq(Scala212, Scala213)
+ThisBuild / crossScalaVersions := Seq(Scala212, Scala213, Scala3)
 ThisBuild / scalaVersion := Scala212
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
 ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8", "adopt@1.11", "adopt@1.15")
@@ -88,6 +89,8 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
           extraDirs("-2.12-")
         case Some((2, y)) if y >= 13 =>
           extraDirs("-2.13+")
+        case Some((3, _)) =>
+          extraDirs("-2.13+")
         case _ => Nil
       }
     }
@@ -133,8 +136,8 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
   .settings(coverageEnabled := false,
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
+    Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+    Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws"              % catsVersion                 % "test",
       "org.typelevel" %%% "algebra-laws"           % algebraVersion              % "test",
@@ -161,8 +164,13 @@ lazy val bench = project
   .settings(
     buildSettings,
     coverageEnabled := false,
-    fork in run := true,
-    libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.3.3"
+    run / fork := true,
+    libraryDependencies += {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) => "org.scalaz" %% "scalaz-core" % "7.4.0-M7"
+        case _            => "org.scalaz" %% "scalaz-core" % "7.3.3"
+      }
+    }
   )
   .enablePlugins(JmhPlugin)
 
@@ -170,12 +178,19 @@ lazy val dogsSettings = buildSettings ++ commonSettings ++ scoverageSettings
 
 lazy val commonSettings =
   compilerFlags ++ Seq(
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % catsVersion,
-      "org.typelevel" %%% "algebra"   % algebraVersion,
-      compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.3" cross CrossVersion.full)
-    ),
-    fork in test := true
+    libraryDependencies ++= {
+      val deps = Seq(
+        "org.typelevel" %%% "cats-core" % catsVersion,
+        "org.typelevel" %%% "algebra"   % algebraVersion,
+      )
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) =>
+          deps
+        case _ =>
+          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.11.3" cross CrossVersion.full)
+      }
+    },
+    test / fork := true
   )
 
 addCommandAlias("validateJVM", ";testsJVM/scalastyle;testsJVM/compile;testsJVM/test")
@@ -194,7 +209,7 @@ lazy val noPublishSettings = Seq(
 )
 
 lazy val publishSettings = Seq(
-  publishTo in ThisBuild := {
+  ThisBuild / publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
       Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -202,7 +217,7 @@ lazy val publishSettings = Seq(
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   homepage := Some(url("https://github.com/typelevel/cats-collections")),
   pomIncludeRepository := Function.const(false),
   licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT-"),
@@ -240,6 +255,18 @@ lazy val compilerFlags = Seq(
   ),
   scalacOptions ++= (
     CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((3, _)) =>
+        Seq(
+          "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
+          "-encoding", "utf-8",                // Specify character encoding used by source files.
+          "-explain-types",                    // Explain type errors in more detail.
+          "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
+          "-language:existentials",            // Existential types (besides wildcard types) can be written and inferred
+          "-language:higherKinds",             // Allow higher-kinded types
+          "-language:implicitConversions",     // Allow definition of implicit functions called views
+          "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
+          "-Ykind-projector",
+      )
       case Some((2, n)) if n <= 11 => // for 2.11 all we care about is capabilities, not warnings
         Seq(
           "-language:existentials",            // Existential types (besides wildcard types) can be written and inferred
@@ -285,7 +312,7 @@ lazy val compilerFlags = Seq(
         )
     }
   ),
-  scalacOptions in (Test, compile)    -= "-deprecation", // 2.13.4 collections
-  scalacOptions in (Compile, console) -= "-Ywarn-unused:imports",
-  scalacOptions in (Compile, doc)     -= "-Ywarn-unused:imports"
+  Test / compile / scalacOptions    -= "-deprecation", // 2.13.4 collections
+  Compile / console / scalacOptions -= "-Ywarn-unused:imports",
+  Compile / doc / scalacOptions     -= "-Ywarn-unused:imports"
 )

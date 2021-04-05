@@ -56,7 +56,7 @@ class PairingHeapSpec extends CatsSuite {
     }
 
   implicit def cogenPairingHeap[A: Cogen: Order]: Cogen[PairingHeap[A]] =
-    Cogen[List[A]].contramap { h: PairingHeap[A] => h.toList }
+    Cogen[List[A]].contramap { (h: PairingHeap[A]) => h.toList }
 
   checkAll("PartiallyOrderedSet[PairingHeap]",
     PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])

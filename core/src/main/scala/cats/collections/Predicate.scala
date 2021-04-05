@@ -51,7 +51,7 @@ abstract class Predicate[-A] extends scala.Function1[A, Boolean] { self =>
   /**
    * Return the opposite predicate
    */
-  def unary_!(): Predicate[A] = negate
+  def unary_! : Predicate[A] = negate
 }
 
 object Predicate extends PredicateInstances {

@@ -52,10 +52,10 @@ sealed abstract class Diet[A] {
     }
   }
 
-  private def noMoreThan(a: A)(implicit order: Order[A], enum: Discrete[A]): (Diet[A], A) =
+  private def noMoreThan(a: A)(implicit order: Order[A], discrete: Discrete[A]): (Diet[A], A) =
     this match {
       case DietNode(rng, l, r) =>
-        if (order.gt(a, enum.succ(rng.end))) {
+        if (order.gt(a, discrete.succ(rng.end))) {
           val (r2, a2) = r.noMoreThan(a)
           (DietNode(rng, l, r2), order.min(a, a2))
         }
@@ -64,10 +64,10 @@ sealed abstract class Diet[A] {
       case x => (x, a)
     }
 
-  private def noLessThan(a: A)(implicit order: Order[A], enum: Discrete[A]): (Diet[A], A) =
+  private def noLessThan(a: A)(implicit order: Order[A], discrete: Discrete[A]): (Diet[A], A) =
     this match {
       case DietNode(rng, l, r) =>
-        if (order.lt(a, enum.pred(rng.start))) {
+        if (order.lt(a, discrete.pred(rng.start))) {
           val (l2, a2) = l.noLessThan(a)
           (DietNode(rng, l2, r), order.max(a, a2))
         }
@@ -76,7 +76,7 @@ sealed abstract class Diet[A] {
       case x => (x, a)
     }
 
-  private def addRangeIncreasing(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Diet[A] =
+  private def addRangeIncreasing(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] =
     this match {
       case EmptyDiet() => DietNode(range, EmptyDiet(), EmptyDiet())
 
@@ -99,7 +99,7 @@ sealed abstract class Diet[A] {
   /**
    * Add new value range [x, y] to the Diet.
    */
-  def addRange(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Diet[A] =
+  def addRange(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] =
     if (order.lteqv(range.start, range.end))
       addRangeIncreasing(range)
     else
@@ -108,12 +108,12 @@ sealed abstract class Diet[A] {
   /**
    * Adds new value to the tree.
    */
-  def add(value: A)(implicit enum: Discrete[A], order: Order[A]): Diet[A] = addRange(Range(value, value))
+  def add(value: A)(implicit discrete: Discrete[A], order: Order[A]): Diet[A] = addRange(Range(value, value))
 
   /**
    * remove x from the tree
    */
-  def remove(x: A)(implicit enum: Discrete[A], order: Order[A]): Diet[A] = this match {
+  def remove(x: A)(implicit discrete: Discrete[A], order: Order[A]): Diet[A] = this match {
     case EmptyDiet() => this
     case DietNode(rng, l, r) => {
       if (order.compare(x, rng.start) < 0) {
@@ -126,18 +126,18 @@ sealed abstract class Diet[A] {
         if (order.compare(rng.start, rng.end) == 0)
           merge(l, r)
         else
-          DietNode(Range(enum.succ(rng.start), rng.end), l, r)
+          DietNode(Range(discrete.succ(rng.start), rng.end), l, r)
       }
       else if (order.compare(x, rng.end) == 0) {
-        DietNode(Range(rng.start, enum.pred(rng.end)), l, r)
+        DietNode(Range(rng.start, discrete.pred(rng.end)), l, r)
       }
       else {
-        DietNode(Range(rng.start, enum.pred(x)), l, DietNode(Range(enum.succ(x), rng.end), EmptyDiet(), r))
+        DietNode(Range(rng.start, discrete.pred(x)), l, DietNode(Range(discrete.succ(x), rng.end), EmptyDiet(), r))
       }
     }
   }
 
-  private def removeRangeIncreasing(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Diet[A] = this match {
+  private def removeRangeIncreasing(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] = this match {
     case EmptyDiet() => this
     case DietNode(rng, l, r) =>
       val left = if (order.lt(range.start, rng.start)) l.removeRangeIncreasing(range) else l
@@ -152,7 +152,7 @@ sealed abstract class Diet[A] {
   /**
    * remove a range from Diet
    */
-  def removeRange(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Diet[A] =
+  def removeRange(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Diet[A] =
     if (order.lteqv(range.start, range.end))
       removeRangeIncreasing(range)
     else
@@ -266,7 +266,7 @@ sealed abstract class Diet[A] {
     case DietNode(rng, l, r) => l.foldRightRange(f(rng, r.foldRightRange(z)(f)))(f)
   }
 
-  def toList(implicit enum: Discrete[A], order: Order[A]): List[A] =
+  def toList(implicit discrete: Discrete[A], order: Order[A]): List[A] =
     this match {
       case EmptyDiet() => Nil
       case DietNode(rng, l, r) =>
@@ -337,13 +337,13 @@ object Diet {
     override def show(f: Diet[A]): String = f.foldLeftRange("Diet(")((str, rng) => str + " " + s.show(rng)) + " )"
   }
 
-  implicit def dietCommutativeMonoid[A](implicit enum: Discrete[A], order: Order[A]): CommutativeMonoid[Diet[A]] = new CommutativeMonoid[Diet[A]] {
+  implicit def dietCommutativeMonoid[A](implicit discrete: Discrete[A], order: Order[A]): CommutativeMonoid[Diet[A]] = new CommutativeMonoid[Diet[A]] {
     def empty = Diet.empty
 
     def combine(x: Diet[A], y: Diet[A]) = x ++ y
   }
 
-  implicit def dietSemiring[A](implicit enum: Discrete[A], order: Order[A]): Semiring[Diet[A]] = new Semiring[Diet[A]] {
+  implicit def dietSemiring[A](implicit discrete: Discrete[A], order: Order[A]): Semiring[Diet[A]] = new Semiring[Diet[A]] {
     def zero = Diet.empty
 
     def plus(x: Diet[A], y: Diet[A]) = x ++ y
@@ -351,7 +351,7 @@ object Diet {
     def times(x: Diet[A], y: Diet[A]) = x & y
   }
 
-  implicit def dietLattice[A](implicit enum: Discrete[A], order: Order[A]): GenBool[Diet[A]] = new GenBool[Diet[A]] {
+  implicit def dietLattice[A](implicit discrete: Discrete[A], order: Order[A]): GenBool[Diet[A]] = new GenBool[Diet[A]] {
     def zero = Diet.empty
 
     def or(x: Diet[A], y: Diet[A]) = x ++ y

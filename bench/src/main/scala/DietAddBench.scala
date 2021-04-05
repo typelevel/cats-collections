@@ -7,7 +7,7 @@ package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.util.Random
-import scalaz.{IList, Diev}
+import scalaz.{IList, Diev, Enum, Monoid, Show}
 import cats._
 
 @State(Scope.Thread)
@@ -46,7 +46,7 @@ class BestCaseRangesList {
 @State(Scope.Thread)
 class DietAddBench extends BestCaseRangesList {
 
-  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
+  implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   @Benchmark
   def dogsDietAdd: Unit = {

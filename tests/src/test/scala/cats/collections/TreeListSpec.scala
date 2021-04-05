@@ -38,7 +38,7 @@ class TreeListSpec extends CatsSuite {
 
   checkAll("Traverse[TreeList]", SerializableTests.serializable(Traverse[TreeList]))
 
-  test("iterator works")(forAll { xs: TreeList[Int] =>
+  test("iterator works")(forAll { (xs: TreeList[Int]) =>
     assert(TreeList.fromList(xs.toIterator.toList) == xs)
   })
 
@@ -77,12 +77,12 @@ class TreeListSpec extends CatsSuite {
     testHomomorphism(xs)({ _.strictFoldRight(init)(fn) }, { _.foldRight(init)(fn) })
   })
 
-  test("fromList/toList works")(forAll { xs: List[Int] =>
+  test("fromList/toList works")(forAll { (xs: List[Int]) =>
     assert(TreeList.fromList(xs).toIterator.toList == xs)
     assert(TreeList.fromList(xs).toList == xs)
   })
 
-  test("size works")(forAll { xs: TreeList[Int] =>
+  test("size works")(forAll { (xs: TreeList[Int]) =>
     testHomomorphism(xs)({ _.size }, { _.size.toLong })
   })
 
@@ -264,7 +264,7 @@ class TreeListSpec extends CatsSuite {
 
   test("we don't stack overflow on large sequences") {
     val size = 100000
-    def buildFn(i: Int): Int => Int = { j: Int => i + j }
+    def buildFn(i: Int): Int => Int = { (j: Int) => i + j }
     val bigList = (0 until size).iterator.map(buildFn).toList
     // Now this should not throw
     val bigTreeList = TreeList.fromList(bigList)

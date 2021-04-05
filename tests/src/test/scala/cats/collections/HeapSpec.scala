@@ -53,7 +53,7 @@ class HeapSpec extends CatsSuite {
     }
 
   implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
-    Cogen[List[A]].contramap { h: Heap[A] => h.toList }
+    Cogen[List[A]].contramap { (h: Heap[A]) => h.toList }
 
   checkAll("PartiallyOrderedSet[Heap]",
     PartiallyOrderedSetTests[Heap].partiallyOrderedSet[Long, Int])
