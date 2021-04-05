@@ -2,6 +2,7 @@
 layout: docs
 title:  "AvlSet"
 source: "core/src/main/scala/Set.scala"
+position: 10
 ---
 # AvlSet
 

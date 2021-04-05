@@ -2,14 +2,15 @@
 layout: page
 title:  "List"
 source: "core/src/main/scala/Option.scala"
+position: 7
 ------------------------------------------
 
 # ListMatcher
 
 `ListMatcher` is a `ScalaTest Matcher` to be *mix* within our test classes
-  
+
 ## Supported Operations
- 
+
 - matchTo:  Match the `cats.collections.List[A]` to another `cats.collections.List[A]`. Note
 that we need to know how to compare elements of type `A`. This is
 described by `Order[A]`.
@@ -24,12 +25,10 @@ classes. An example would be the `DietTest` class.
 class DietTest extends FlatSpec with Matchers with ListMatcher {
     it should "be always sorted" in {
         val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
-    
+
         val sorted = diet.toList()
-    
+
         sorted should matchTo(List(1, 2, 3, 5, 6, 8))
       }
 }
 ```
-
-

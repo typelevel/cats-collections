@@ -2,6 +2,7 @@
 layout: docs
 title:  "Diet"
 source: "core/src/main/scala/Diet.scala"
+position: 4
 ---
 # Diet
 
@@ -139,7 +140,7 @@ Asking to remove a sub-range splits the Diet
 
 ```scala mdoc:nest
 val d = Diet.empty[Int].addRange((5 toIncl 20))
-val d3 = d.removeRange((10 toIncl 15)) 
+val d3 = d.removeRange((10 toIncl 15))
 
 (10 toIncl 15).toList.forall { i => d3.contains(i) }
 (5 toIncl 9).toList.forall {i => d3.contains(i) }
