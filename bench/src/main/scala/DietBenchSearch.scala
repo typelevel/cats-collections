@@ -8,13 +8,13 @@ package bench
 import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
 
 import scala.util.Random
-import scalaz.Diev
+import scalaz.{Diev, Enum, Monoid, Show}
 import cats._
 
 @State(Scope.Benchmark)
 class DietBenchSearch {
 
-  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
+  implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   var diet = Diet.empty[Int]
   var diev = Diev.empty[Int]

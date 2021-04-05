@@ -103,11 +103,11 @@ class DequeueSpec extends CatsSuite {
     (q1 ++ q2).toList should be (q1.toList ::: q2.toList)
   })
 
-  test("toList/Foldable consistency")(forAll { q: Dequeue[Int] =>
+  test("toList/Foldable consistency")(forAll { (q: Dequeue[Int]) =>
     q.toList should be (Foldable[Dequeue].toList(q))
   })
 
-  test("toList/toStream consistency")(forAll { q: Dequeue[Int] =>
+  test("toList/toStream consistency")(forAll { (q: Dequeue[Int]) =>
     q.toList should be (q.to[Stream, Int].toList)
   })
 

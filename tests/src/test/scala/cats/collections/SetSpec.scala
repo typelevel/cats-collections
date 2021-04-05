@@ -16,11 +16,11 @@ class SetSpec extends CatsSuite {
     ours should be (theirs)
   })
 
-  test("iterator works")(forAll { xs: AvlSet[Int] =>
+  test("iterator works")(forAll { (xs: AvlSet[Int]) =>
     xs.toIterator.toList should be (xs.toList)
   })
 
-  test("equality")(forAll { xs: List[Int] =>
+  test("equality")(forAll { (xs: List[Int]) =>
     val t1 = AvlSet.fromList(xs)
     val t2 = AvlSet.fromList(xs.reverse)
     whenever(t1 != t2) {

@@ -29,11 +29,11 @@ micrositePalette := Map(
   "gray-lighter" -> "#F4F3F4",
   "white-color" -> "#FFFFFF")
 
-includeFilter in Jekyll := (includeFilter in makeSite).value
+Jekyll / includeFilter := (makeSite / includeFilter).value
 
-fork in mdoc := true
+mdoc / fork := true
 
-mdocIn := baseDirectory.in(LocalRootProject).value / "docs" / "src" / "main" / "mdoc"
+mdocIn := (LocalRootProject / baseDirectory).value / "docs" / "src" / "main" / "mdoc"
 
 git.remoteRepo := "git@github.com:typelevel/cats-collections.git"
 

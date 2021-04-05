@@ -51,7 +51,7 @@ class DietSpec extends CatsSuite {
   implicit val arbItem: Arbitrary[Item] =
     Arbitrary(
       Gen.oneOf(
-        Gen.choose(0, 999).map(Item.Single),
+        Gen.choose(0, 999).map(Item.Single.apply),
         for (min <- Gen.choose(0, 999); max <- Gen.choose(0, 999)) yield Item.Multiple(min, max)
       )
     )
@@ -78,7 +78,7 @@ class DietSpec extends CatsSuite {
           inout <- Gen.oneOf(true, false)
           item <- Arbitrary.arbitrary[Item]
         } yield (inout, item)
-      }.map(Ranges)
+      }.map(Ranges.apply)
     )
 
   implicit val arbDiet: Arbitrary[Diet[Int]] = Arbitrary(arbRanges.arbitrary.map(_.toDiet))
@@ -122,7 +122,7 @@ class DietSpec extends CatsSuite {
     dietEq.eqv(diet, inverted) should be(true)
   }
 
-  test("same ranges define the same diet")(forAll { rs: Ranges =>
+  test("same ranges define the same diet")(forAll { (rs: Ranges) =>
     val ranges = rs.rs.map(_._2)
     val reversed = rs.rs.reverse.map(_._2)
 
@@ -132,7 +132,7 @@ class DietSpec extends CatsSuite {
     dietEq.eqv(d1, d2) should be(true)
   })
 
-  test("reshaping results on the same diet")(forAll { rs: Ranges =>
+  test("reshaping results on the same diet")(forAll { (rs: Ranges) =>
 
     val d1 = rs.rs.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
 
@@ -263,11 +263,11 @@ class DietSpec extends CatsSuite {
     })
   }
 
-  def invariant[A](d: Diet[A])(implicit order: Order[A], enum: Discrete[A]): Boolean = d match {
+  def invariant[A](d: Diet[A])(implicit order: Order[A], discrete: Discrete[A]): Boolean = d match {
     case Diet.DietNode(rng, left, right) =>
       order.lteqv(rng.start, rng.end) &&
-        left.toList.forall(order.lt(_, enum.pred(rng.start))) &&
-        right.toList.forall(order.gt(_, enum.succ(rng.end))) &&
+        left.toList.forall(order.lt(_, discrete.pred(rng.start))) &&
+        right.toList.forall(order.gt(_, discrete.succ(rng.end))) &&
         invariant(left) &&
         invariant(right)
     case _ =>

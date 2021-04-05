@@ -11,28 +11,28 @@ final case class Range[A](val start: A, val end: A) {
    * Subtract a Range from this range.
    * The result will be 0, 1 or 2 ranges
    */
-  def -(range: Range[A])(implicit enum: Discrete[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
+  def -(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
     if (order.lteqv(range.start, start)) {
       if (order.lt(range.end, start))
         Some((this, None)) // they are completely to the left of us
       else if (order.gteqv(range.end, end))
       // we are completely removed
         None
-      else Some((Range(enum.succ(range.end), end), None))
+      else Some((Range(discrete.succ(range.end), end), None))
     } else {
       if (order.gt(range.start, end))
         Some((this, None)) // they are completely to the right of us
       else {
-        val r1 = Range(start, enum.pred(range.start))
-        val r2: Option[Range[A]] = if (order.lt(range.end, end)) Some(Range(enum.succ(range.end), end)) else None
+        val r1 = Range(start, discrete.pred(range.start))
+        val r2: Option[Range[A]] = if (order.lt(range.end, end)) Some(Range(discrete.succ(range.end), end)) else None
         Some((r1, r2))
       }
     }
 
-  def +(other: Range[A])(implicit order: Order[A], enum: Discrete[A]): (Range[A], Option[Range[A]]) = {
+  def +(other: Range[A])(implicit order: Order[A], discrete: Discrete[A]): (Range[A], Option[Range[A]]) = {
     val (l, r) = if (order.lt(this.start, other.start)) (this, other) else (other, this)
 
-    if (order.gteqv(l.end, r.start) || enum.adj(l.end, r.start))
+    if (order.gteqv(l.end, r.start) || discrete.adj(l.end, r.start))
       (Range(l.start, order.max(l.end, r.end)), None)
     else
       (Range(l.start, l.end), Some(Range(r.start, r.end)))
@@ -70,7 +70,7 @@ final case class Range[A](val start: A, val end: A) {
   /**
    * Return all the values in the Range as a List.
    */
-  def toList(implicit enum: Discrete[A], order: Order[A]): List[A] =
+  def toList(implicit discrete: Discrete[A], order: Order[A]): List[A] =
     toIterator.toList
 
   /**
@@ -86,11 +86,11 @@ final case class Range[A](val start: A, val end: A) {
   /**
    * Apply function f to each element in range [star, end]
    */
-  def foreach(f: A => Unit)(implicit enum: Discrete[A], order: Order[A]): Unit = {
+  def foreach(f: A => Unit)(implicit discrete: Discrete[A], order: Order[A]): Unit = {
     var i = start
     while (order.lteqv(i, end)) {
       f(i)
-      i = enum.succ(i)
+      i = discrete.succ(i)
     }
   }
 

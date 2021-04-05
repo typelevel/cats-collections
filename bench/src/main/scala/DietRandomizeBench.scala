@@ -7,7 +7,7 @@ package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
 import scala.util.Random
-import scalaz.Diev
+import scalaz.{Diev, Enum, Monoid, Show}
 import cats._
 
 
@@ -20,7 +20,7 @@ class DietRandomizeBench extends BigNumberLists{
 
 //  import dogs.Predef._
 
-  implicit val scalazEnumInt = scalaz.std.anyVal.intInstance
+  implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   @Benchmark
   def dogsDietAddRandom: Unit = {
