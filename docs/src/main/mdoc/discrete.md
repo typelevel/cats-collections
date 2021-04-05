@@ -2,6 +2,7 @@
 layout: docs
 title:  "Discrete"
 source: "core/src/main/scala/Discrete.scala"
+position: 5
 ---
 # Discrete
 
@@ -13,7 +14,7 @@ These operations are presented by the following functions.
 - `def pred(x)`: 	Returns the predecessor value of `x`
 - `def adj(i, j)`:	Returns if `i` and `j` are consecutive ( `succ(i) is j`)
 
-An example of the discrete operation on integer values could be: 
+An example of the discrete operation on integer values could be:
 
 ```scala mdoc
 import cats._, cats.collections._

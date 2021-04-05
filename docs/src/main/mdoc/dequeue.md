@@ -1,7 +1,8 @@
 ---
-layout: "docs"
+layout: docs
 title:  "Dequeue"
 source: "core/src/main/scala/Dequeue.scala"
+position: 3
 ---
 # Dequeue
 
@@ -25,7 +26,7 @@ might be stored like this:
           2                               7
           3                               6
           4                               5
-		  
+
 In this configuration, we can pop off three items from the left side
 in constant time (O(1)). However, we will have to do more computation
 when we pop off the 4th. Since we don't want to leave either stack
