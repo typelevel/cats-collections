@@ -2,6 +2,7 @@
 <p>layout: page
 title:  “List”
 source: “core/src/main/scala/Option.scala”
+position: 7
 ——————————————</p>
 
 <h1 id="listmatcher">ListMatcher</h1>
@@ -24,11 +25,10 @@ classes. An example would be the <code class="language-plaintext highlighter-rou
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class DietTest extends FlatSpec with Matchers with ListMatcher {
     it should "be always sorted" in {
         val diet = Diet.empty[Int].add(5).add(6).add(1).add(3).add(2).add(8)
-    
+
         val sorted = diet.toList()
-    
+
         sorted should matchTo(List(1, 2, 3, 5, 6, 8))
       }
 }
 </code></pre></div></div>
-
