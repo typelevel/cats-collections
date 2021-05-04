@@ -3,7 +3,7 @@ import ReleaseTransformations._
 
 val catsVersion = "2.6.0"
 val catsTestkitScalatestVersion = "2.1.3"
-val scalacheckVersion = "1.15.3"
+val scalacheckVersion = "1.15.4"
 val algebraVersion = "2.2.2"
 val Scala212 = "2.12.12"
 val Scala213 = "2.13.5"
