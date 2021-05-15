@@ -187,7 +187,7 @@ lazy val commonSettings =
         case Some((3, _)) =>
           deps
         case _ =>
-          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.12.0" cross CrossVersion.full)
+          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.13.0" cross CrossVersion.full)
       }
     },
     test / fork := true
