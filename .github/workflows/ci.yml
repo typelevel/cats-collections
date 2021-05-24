@@ -9,9 +9,9 @@ name: Continuous Integration
 
 on:
   pull_request:
-    branches: ['*']
+    branches: ['**']
   push:
-    branches: ['*']
+    branches: ['**']
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,10 +50,10 @@ jobs:
           key: ${{ runner.os }}-sbt-cache-v2-${{ hashFiles('**/*.sbt') }}-${{ hashFiles('project/build.properties') }}
 
       - name: Check that workflows are up to date
-        run: sbt ++${{ matrix.scala }} githubWorkflowCheck
+        run: sbt --client '++${{ matrix.scala }}; githubWorkflowCheck'
 
       - name: Validation
-        run: sbt ++${{ matrix.scala }} '${{ matrix.ci }}'
+        run: sbt --client '++${{ matrix.scala }}; ${{ matrix.ci }}'
 
   coverage:
     name: Coverage
@@ -93,7 +93,7 @@ jobs:
         run: pip install codecov
 
       - name: Calculate test coverage
-        run: sbt ++${{ matrix.scala }} coverage testsJVM/test testsJVM/coverageReport
+        run: sbt --client '++${{ matrix.scala }}; coverage; testsJVM/test; testsJVM/coverageReport'
 
       - name: Upload coverage results
         run: codecov
@@ -139,7 +139,7 @@ jobs:
         run: gem install jekyll -v 2.5
 
       - name: Clean microsite
-        run: sbt ++${{ matrix.scala }} docs/clean
+        run: sbt --client '++${{ matrix.scala }}; docs/clean'
 
       - name: Build microsite
-        run: sbt ++${{ matrix.scala }} docs/makeMicrosite
+        run: sbt --client '++${{ matrix.scala }}; docs/makeMicrosite'
