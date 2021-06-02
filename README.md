@@ -9,7 +9,7 @@ It intends to be a library containing data structures which facilitate pure func
 
 ### Getting Started
 
-Cats Collections is currently available for Scala 2.11, 2.12 and 2.13.
+Cats Collections is currently available for Scala 2.12, 2.13, and 3.0.0.
 
 To get started with sbt, simply add the following to your `build.sbt` file:
 
