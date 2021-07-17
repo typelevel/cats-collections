@@ -52,28 +52,28 @@ class DequeueSuite extends DisciplineSuite {
     assertEquals(q.unsnoc, Some((x,EmptyDequeue())))
   }
 
-  test("cons and then uncons")(forAll { xs: List[Int] =>
+  property("cons and then uncons")(forAll { xs: List[Int] =>
     val q = consL(xs, Dequeue.empty)
     val l = unconsL(q, List.empty)
 
     assertEquals(xs, l)
   })
 
-  test("snoc and then unsnoc")(forAll { xs: List[Int] =>
+  property("snoc and then unsnoc")(forAll { xs: List[Int] =>
     val q = snocL(xs, Dequeue.empty)
     val l = unsnocL(q, List.empty)
 
     assertEquals(xs, l)
   })
 
-  test("cons and then unsnoc")(forAll { xs: List[Int] =>
+  property("cons and then unsnoc")(forAll { xs: List[Int] =>
     val q = consL(xs, Dequeue.empty)
     val l = unsnocL(q, List.empty)
 
     assertEquals(xs, l.reverse)
   })
 
-  test("snoc and then uncons")(forAll { xs: List[Int] =>
+  property("snoc and then uncons")(forAll { xs: List[Int] =>
     val q = snocL(xs, Dequeue.empty)
     val l = unconsL(q, List.empty)
 
@@ -86,41 +86,41 @@ class DequeueSuite extends DisciplineSuite {
       r <- getArbitrary[List[A]]
     } yield consL(l, snocL(r, Dequeue.empty)))
 
-  test("foldLeft")(forAll{ q: Dequeue[Int] =>
+  property("foldLeft")(forAll{ q: Dequeue[Int] =>
     assertEquals(q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs), q.reverse.toList)
   })
 
-  test("foldRight")(forAll { q: Dequeue[Int] =>
+  property("foldRight")(forAll { q: Dequeue[Int] =>
     assertEquals(q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value, q.toList)
   })
 
-  test("toList")(forAll { q: Dequeue[Int] =>
+  property("toList")(forAll { q: Dequeue[Int] =>
     assertEquals(q.toList, q.toIterator.toList)
   })
 
-  test("toList/reverse")(forAll { q: Dequeue[Int] =>
+  property("toList/reverse")(forAll { q: Dequeue[Int] =>
     assertEquals(q.reverse.toList, q.toIterator.toList.reverse)
   })
 
-  test("toList/append")(forAll { (q1: Dequeue[Int], q2: Dequeue[Int]) =>
+  property("toList/append")(forAll { (q1: Dequeue[Int], q2: Dequeue[Int]) =>
     assertEquals((q1 ++ q2).toList, q1.toList ::: q2.toList)
   })
 
-  test("toList/Foldable consistency")(forAll { q: Dequeue[Int] =>
+  property("toList/Foldable consistency")(forAll { q: Dequeue[Int] =>
     assertEquals(q.toList, Foldable[Dequeue].toList(q))
   })
 
-  test("toList/toStream consistency")(forAll { q: Dequeue[Int] =>
+  property("toList/toStream consistency")(forAll { q: Dequeue[Int] =>
     assertEquals(q.toList, q.to[Stream, Int].toList)
   })
 
-  test("equality")(forAll { xs: List[Int] =>
+  property("equality")(forAll { xs: List[Int] =>
     val q1 = consL(xs, Dequeue.empty)
     val q2 = snocL(xs.reverse, Dequeue.empty)
     assert(Eq[Dequeue[Int]].eqv(q1, q2), true)
   })
 
-  test("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
+  property("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
     val q1 = consL(xs, Dequeue.empty)
     val q2 = consL(ys, Dequeue.empty)
     if (xs != ys) {

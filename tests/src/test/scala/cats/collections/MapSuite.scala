@@ -24,7 +24,7 @@ class MapSuite extends DisciplineSuite {
   def toSet[K: Order: Ordering, V: Ordering](m: AvlMap[K,V]): Set[(K,V)] =
     m.foldLeft[Set[(K,V)]](SortedSet.empty[(K, V)])(_ + _)
 
-  test("we can add things to a Map, then find them")(forAll {(xs: Set[(String,Int)]) =>
+  property("we can add things to a Map, then find them")(forAll {(xs: Set[(String,Int)]) =>
     val m = fromSet(xs)
     val m2 = fromSetS(xs)
 
@@ -57,7 +57,7 @@ class MapSuite extends DisciplineSuite {
     assert(xs.foldLeft(m) { case (r, (k, _)) => r.alter(k)(_ => None) }.set.isEmpty)
   })
 
-  test("we can combine maps")(forAll {(xs: Set[(String,Int)],xs2: Set[(String,Int)]) =>
+  property("we can combine maps")(forAll {(xs: Set[(String,Int)],xs2: Set[(String,Int)]) =>
     val m = fromSet(xs)
     val m2 = fromSet(xs2)
 
@@ -67,7 +67,7 @@ class MapSuite extends DisciplineSuite {
     assertEquals(toSet(m ++ m2), SortedSet((sm ++ sm2).toSeq: _*))
   })
 
-  test("map works")(forAll {(xs: Set[(String,Int)]) =>
+  property("map works")(forAll {(xs: Set[(String,Int)]) =>
     val f: Int => Int = _ + 1
     val f2: ((String,Int)) => (String,Int) = kv => kv._1 -> (kv._2 + 1)
     val m = fromSet(xs)
@@ -76,7 +76,7 @@ class MapSuite extends DisciplineSuite {
     assertEquals(toSet(m map f), SortedSet((sm map f2).toSeq: _*))
   })
 
-  test("flatMap works")(forAll {(xs : Set[(String,Int)]) =>
+  property("flatMap works")(forAll {(xs : Set[(String,Int)]) =>
     val f: Int => AvlMap[String,Int] = _ => fromSet(xs) map (_ + 1)
     val f2: ((String,Int)) => Set[(String,Int)] = kv => Set(kv._1 -> (kv._2 + 1))
     val m = fromSet(xs)

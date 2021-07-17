@@ -20,11 +20,11 @@ class SetSuite extends DisciplineSuite {
     assertEquals(ours, theirs)
   })
 
-  test("iterator works")(forAll { (xs: AvlSet[Int]) =>
+  property("iterator works")(forAll { (xs: AvlSet[Int]) =>
     assertEquals(xs.toIterator.toList, xs.toList)
   })
 
-  test("equality")(forAll { (xs: List[Int]) =>
+  property("equality")(forAll { (xs: List[Int]) =>
     val t1 = AvlSet.fromList(xs)
     val t2 = AvlSet.fromList(xs.reverse)
     if (t1 != t2) {
@@ -32,7 +32,7 @@ class SetSuite extends DisciplineSuite {
     }
   })
 
-  test("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
+  property("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
     val t1 = AvlSet.fromList(xs)
     val t2 = AvlSet.fromList(ys)
     if (Set(xs: _*) != Set(ys: _*)) {
@@ -47,12 +47,12 @@ class SetSuite extends DisciplineSuite {
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
   }
 
-  test("set is always balanced")(forAll { (xs: List[Int]) =>
+  property("set is always balanced")(forAll { (xs: List[Int]) =>
     val tree = AvlSet(xs: _*)
     assert(balanced(tree))
   })
 
-  test("set can delete")(forAll{ (xs: Map[Int,Boolean]) =>
+  property("set can delete")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = AvlSet(xs.keySet.toSeq: _*)
     val filtered = xs.foldLeft(tree)((t,i) => if(i._2) t else t.remove(i._1))
 
@@ -63,7 +63,7 @@ class SetSuite extends DisciplineSuite {
     assert(balanced(filtered))
   })
 
-  test("contains works")(forAll{ (xs: Map[Int,Boolean]) =>
+  property("contains works")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
@@ -75,7 +75,7 @@ class SetSuite extends DisciplineSuite {
     )
   })
 
-  test("find works")(forAll{ (xs: Map[Int,Boolean]) =>
+  property("find works")(forAll{ (xs: Map[Int,Boolean]) =>
     val tree = xs.foldLeft[AvlSet[Int]](AvlSet.empty)((t,i) =>
       if(i._2) t + i._1 else t
     )
@@ -87,7 +87,7 @@ class SetSuite extends DisciplineSuite {
     )
   })
 
-  test("intersect is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
+  property("intersect is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -95,7 +95,7 @@ class SetSuite extends DisciplineSuite {
     assertEquals((xt & yt).toScalaSet, (xs intersect ys))
   })
 
-  test("union is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
+  property("union is correct")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -103,7 +103,7 @@ class SetSuite extends DisciplineSuite {
     assertEquals((xt | yt).toScalaSet, (xs union ys))
   })
 
-  test("we can take the difference of sets")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
+  property("we can take the difference of sets")(forAll{ (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
@@ -111,7 +111,7 @@ class SetSuite extends DisciplineSuite {
     assertEquals((xt - yt).toScalaSet, (xs diff ys))
   })
 
-  test("map works") (forAll{ (xs: Set[Int]) =>
+  property("map works") (forAll{ (xs: Set[Int]) =>
     val f: Int => Int = _ + 1
 
     val xt = AvlSet(xs.toSeq: _*)
@@ -119,13 +119,13 @@ class SetSuite extends DisciplineSuite {
     assertEquals((xt map f).toScalaSet, (xs map f))
   })
 
-  test("fromFoldable works") (forAll{ (xs: List[Int]) =>
+  property("fromFoldable works") (forAll{ (xs: List[Int]) =>
     val xt = AvlSet.fromFoldable(xs)
 
     assertEquals(xt.toScalaSet, (xs.toSet))
   })
 
-  test("Show instance is consistent with toString") (forAll{ (as: AvlSet[Int]) =>
+  property("Show instance is consistent with toString") (forAll{ (as: AvlSet[Int]) =>
     assertEquals(as.toString, Show[AvlSet[Int]].show(as))
   })
 }

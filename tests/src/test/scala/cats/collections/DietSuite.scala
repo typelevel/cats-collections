@@ -123,7 +123,7 @@ class DietSuite extends DisciplineSuite {
     assert(dietEq.eqv(diet, inverted))
   }
 
-  test("same ranges define the same diet")(forAll { rs: Ranges =>
+  property("same ranges define the same diet")(forAll { rs: Ranges =>
     val ranges = rs.rs.map(_._2)
     val reversed = rs.rs.reverse.map(_._2)
 
@@ -133,7 +133,7 @@ class DietSuite extends DisciplineSuite {
     assert(dietEq.eqv(d1, d2))
   })
 
-  test("reshaping results on the same diet")(forAll { rs: Ranges =>
+  property("reshaping results on the same diet")(forAll { rs: Ranges =>
 
     val d1 = rs.rs.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
 
@@ -144,7 +144,7 @@ class DietSuite extends DisciplineSuite {
     assert(dietEq.eqv(d1, d2))
   })
 
-  test("different set of ranges ==> different diets")(forAll { (a: Ranges, b: Ranges) =>
+  property("different set of ranges ==> different diets")(forAll { (a: Ranges, b: Ranges) =>
     if (a.toSet.size != b.toSet.size) {
       assertEquals(dietEq.eqv(a.toDiet, b.toDiet), false)
     }
@@ -156,22 +156,22 @@ class DietSuite extends DisciplineSuite {
     assertEquals(diet.toList, List(20, 21, 28, 29, 30))
   }
 
-  test("insert/remove")(forAll { rs: Ranges =>
+  property("insert/remove")(forAll { rs: Ranges =>
     assertEquals(rs.toDiet.toList, rs.toSet.toList.sorted)
   })
 
-  test("distinct")(forAll { rs: Ranges =>
+  property("distinct")(forAll { rs: Ranges =>
     val list = rs.toDiet.toList
     assertEquals(list.distinct, list)
   })
 
-  test("min")(forAll { rs: Ranges =>
+  property("min")(forAll { rs: Ranges =>
     if (!rs.isEmpty) {
       assertEquals(rs.toDiet.min, Some(rs.toSet.min))
     }
   })
 
-  test("max")(forAll { rs: Ranges =>
+  property("max")(forAll { rs: Ranges =>
     if (!rs.isEmpty) {
       assertEquals(rs.toDiet.max, Some(rs.toSet.max))
     }
@@ -182,14 +182,14 @@ class DietSuite extends DisciplineSuite {
     assertEquals(Diet.empty[Int].max, None)
   }
 
-  test("merge")(forAll { (rs1: Ranges, rs2: Ranges) =>
+  property("merge")(forAll { (rs1: Ranges, rs2: Ranges) =>
     val diet1 = rs1.toDiet
     val diet2 = rs2.toDiet
 
     assertEquals((diet1 ++ diet2).toList, (rs1.toSet ++ rs2.toSet).toList.sorted)
   })
 
-  test("intersection range")(forAll { (rs: Ranges, m: Int, n: Int) =>
+  property("intersection range")(forAll { (rs: Ranges, m: Int, n: Int) =>
     if (m >= n) {
       val diet = rs.toDiet
       val r = Range(n, m)
@@ -198,7 +198,7 @@ class DietSuite extends DisciplineSuite {
     }
   })
 
-  test("intersection diet")(forAll { (rs1: Ranges, rs2: Ranges) =>
+  property("intersection diet")(forAll { (rs1: Ranges, rs2: Ranges) =>
     assertEquals((rs1.toDiet & rs2.toDiet).toList, (rs1.toSet intersect rs2.toSet).toList.sorted)
   })
 
@@ -210,7 +210,7 @@ class DietSuite extends DisciplineSuite {
     assertEquals(other.toList, List(1, 2, 3, 4, 5, 6, 7))
   }
 
-  test("contains")(forAll { rs: Ranges =>
+  property("contains")(forAll { rs: Ranges =>
     val diet = rs.toDiet
     val set = rs.toSet
 
@@ -219,7 +219,7 @@ class DietSuite extends DisciplineSuite {
     )
   })
 
-  test("not contains")(forAll { (rs: Ranges, elem: Int) =>
+  property("not contains")(forAll { (rs: Ranges, elem: Int) =>
     val diet = rs.toDiet
     val set = rs.toSet
 
@@ -228,7 +228,7 @@ class DietSuite extends DisciplineSuite {
     }
   })
 
-  test("not be modified when removing non-existent item")(forAll { (d: Diet[Int], elem: Int) =>
+  property("not be modified when removing non-existent item")(forAll { (d: Diet[Int], elem: Int) =>
     if(!d.contains(elem)) {
       assert(d.remove(elem) == d)
     }
@@ -250,28 +250,28 @@ class DietSuite extends DisciplineSuite {
     assert(invariant(diet))
   }
 
-  test("invariant")(forAll { rs: Ranges =>
+  property("invariant")(forAll { rs: Ranges =>
     assert(invariant(rs.toDiet))
   })
 
-  test("one and fromRange are consistent")(forAll { x: Int =>
+  property("one and fromRange are consistent")(forAll { x: Int =>
     assertEquals(Diet.fromRange(Range(x, x)), Diet.one(x))
   })
 
-  test("fromRange contains consistent with Range contains")(forAll { (x: Byte, y: Byte, z: Byte) =>
+  property("fromRange contains consistent with Range contains")(forAll { (x: Byte, y: Byte, z: Byte) =>
     val range = if (x < y) Range(x, y) else Range(y, x)
     assertEquals(Diet.fromRange(range).contains(z), range.contains(z))
   })
 
-  test("one and contains are consistent")(forAll { (x: Int, y: Int) =>
+  property("one and contains are consistent")(forAll { (x: Int, y: Int) =>
     assertEquals(Diet.one(x).contains(y), x == y)
   })
 
-  test("one toList")(forAll { x: Int =>
+  property("one toList")(forAll { x: Int =>
     assertEquals(Diet.one(x).toList, x :: Nil)
   })
 
-  test("range toList")(forAll { (x: Byte, y: Byte) =>
+  property("range toList")(forAll { (x: Byte, y: Byte) =>
     val range = if (x < y) Range(x, y) else Range(y, x)
     assertEquals(Diet.fromRange(range).toList, range.toList)
   })

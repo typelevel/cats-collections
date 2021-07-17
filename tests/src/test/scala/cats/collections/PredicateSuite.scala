@@ -26,7 +26,7 @@ class PredicateSuite extends DisciplineSuite {
     checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
   }
 
-  test("intersection works")(
+  property("intersection works")(
     forAll { (as: List[Int], bs: List[Int]) =>
 
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
@@ -39,7 +39,7 @@ class PredicateSuite extends DisciplineSuite {
                   (s2(b) == (as.contains(b) && (b % 2 == 0)))))
     })
 
-  test("union works")(
+  property("union works")(
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
@@ -51,7 +51,7 @@ class PredicateSuite extends DisciplineSuite {
                   (s2(b) == (as.contains(b) || (b % 2 == 0)))))
     })
 
-  test("difference works") (
+  property("difference works") (
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
@@ -63,7 +63,7 @@ class PredicateSuite extends DisciplineSuite {
                   (s2(b) == (as.contains(b) && (b % 2 != 0)))))
     })
 
-  test("negation works")(
+  property("negation works")(
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)

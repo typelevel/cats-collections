@@ -41,7 +41,7 @@ class TreeListSuite extends DisciplineSuite {
 
   checkAll("Traverse[TreeList]", SerializableTests.serializable(Traverse[TreeList]))
 
-  test("iterator works")(forAll { (xs: TreeList[Int]) =>
+  property("iterator works")(forAll { (xs: TreeList[Int]) =>
     assertEquals(TreeList.fromList(xs.toIterator.toList), xs)
   })
 
@@ -50,11 +50,11 @@ class TreeListSuite extends DisciplineSuite {
     assert(Eq[B].eqv(fn(as), gn(la)))
   }
 
-  test("++ works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
+  property("++ works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
     testHomomorphism(xs)({ l => (l ++ ys).toList }, { _ ++ (ys.toList) })
   })
 
-  test("drop/take work")(forAll { (xs: TreeList[Int], n: Int) =>
+  property("drop/take work")(forAll { (xs: TreeList[Int], n: Int) =>
     testHomomorphism(xs)({ _.drop(n.toLong).toList }, { _.drop(n) })
     testHomomorphism(xs)({ _.take(n.toLong).toList }, { _.take(n) })
     // we should be able to drop for all sizes:
@@ -64,11 +64,11 @@ class TreeListSuite extends DisciplineSuite {
     }
   })
 
-  test("lastOption works")(forAll { (xs: TreeList[Int]) =>
+  property("lastOption works")(forAll { (xs: TreeList[Int]) =>
     testHomomorphism(xs)({ _.lastOption }, { _.lastOption })
   })
 
-  test("toReverseIterator works")(forAll { (xs: TreeList[Int]) =>
+  property("toReverseIterator works")(forAll { (xs: TreeList[Int]) =>
     testHomomorphism(xs)({ _.toReverseIterator.toList }, { _.reverse })
   })
 
@@ -76,25 +76,25 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(xs.reverse.toList, xs.toReverseIterator.toList)
   })
 
-  test("strictFoldRight works")(forAll { (xs: TreeList[Int], init: String, fn: (Int, String) => String) =>
+  property("strictFoldRight works")(forAll { (xs: TreeList[Int], init: String, fn: (Int, String) => String) =>
     testHomomorphism(xs)({ _.strictFoldRight(init)(fn) }, { _.foldRight(init)(fn) })
   })
 
-  test("fromList/toList works")(forAll { (xs: List[Int]) =>
+  property("fromList/toList works")(forAll { (xs: List[Int]) =>
     assertEquals(TreeList.fromList(xs).toIterator.toList, xs)
     assertEquals(TreeList.fromList(xs).toList, xs)
   })
 
-  test("size works")(forAll { (xs: TreeList[Int]) =>
+  property("size works")(forAll { (xs: TreeList[Int]) =>
     testHomomorphism(xs)({ _.size }, { _.size.toLong })
   })
 
-  test("split combined is identity")(forAll { (xs: TreeList[Int]) =>
+  property("split combined is identity")(forAll { (xs: TreeList[Int]) =>
     val (left, right) = xs.split
     assertEquals((left.toList ::: right.toList), xs.toList)
   })
 
-  test("split produces a full left tree")(forAll { (xs: TreeList[Int]) =>
+  property("split produces a full left tree")(forAll { (xs: TreeList[Int]) =>
     val (_, right) = xs.split
     val rightSize = right.size
     // right size is 2^n - 1
@@ -103,7 +103,7 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(rightSize >> shifts, 0L)
   })
 
-  test("pattern matching works")(forAll { (xs: TreeList[Int]) =>
+  property("pattern matching works")(forAll { (xs: TreeList[Int]) =>
     xs match {
       case TreeList.Empty =>
         assertEquals(xs.uncons, None)
@@ -118,7 +118,7 @@ class TreeListSuite extends DisciplineSuite {
     }
   })
 
-  test("maxDepth <= 2 log_2 N + 1")(forAll { (xs: TreeList[Int]) =>
+  property("maxDepth <= 2 log_2 N + 1")(forAll { (xs: TreeList[Int]) =>
     val maxD = xs.maxDepth
     if (xs.isEmpty) assertEquals(maxD, 0)
     else {
@@ -137,12 +137,12 @@ class TreeListSuite extends DisciplineSuite {
       Arbitrary(Arbitrary.arbitrary[Int].map(OI(_)))
   }
 
-  test("Eq[TreeList[A]] works")(forAll { (xs: TreeList[Opaque1], ys: TreeList[Opaque1]) =>
+  property("Eq[TreeList[A]] works")(forAll { (xs: TreeList[Opaque1], ys: TreeList[Opaque1]) =>
     assertEquals(Eq[TreeList[Opaque1]].eqv(xs, ys), Eq[List[Opaque1]].eqv(xs.toList, ys.toList))
     assert(Eq[TreeList[Opaque1]].eqv(xs, xs))
   })
 
-  test("Order[TreeList[A]] works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
+  property("Order[TreeList[A]] works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
     assertEquals(Order[TreeList[Int]].compare(xs, ys), Order[List[Int]].compare(xs.toList, ys.toList))
     assertEquals(Order[TreeList[Int]].compare(xs, xs), 0)
   })
@@ -157,7 +157,7 @@ class TreeListSuite extends DisciplineSuite {
       Arbitrary(Arbitrary.arbitrary[Int].map(OI(_)))
   }
 
-  test("PartialOrder[TreeList[A]] works")(forAll { (xs: TreeList[Opaque2], ys: TreeList[Opaque2]) =>
+  property("PartialOrder[TreeList[A]] works")(forAll { (xs: TreeList[Opaque2], ys: TreeList[Opaque2]) =>
     assertEquals(
       PartialOrder[TreeList[Opaque2]].partialCompare(xs, ys),
       PartialOrder[List[Opaque2]].partialCompare(xs.toList, ys.toList)
@@ -165,7 +165,7 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(PartialOrder[TreeList[Opaque2]].partialCompare(xs, xs), 0.0)
   })
 
-  test("Monoid[TreeList[A]].combine works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
+  property("Monoid[TreeList[A]].combine works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
     assertEquals(Monoid[TreeList[Int]].combine(xs, ys), xs ++ ys)
   })
 
@@ -173,11 +173,11 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(Monoid[TreeList[Int]].empty, TreeList.empty)
   }
 
-  test("toString is as expected")(forAll { (xs: TreeList[Int]) =>
+  property("toString is as expected")(forAll { (xs: TreeList[Int]) =>
     assertEquals(xs.toString, xs.toIterator.mkString("TreeList(", ", ", ")"))
   })
 
-  test("TreeList.get works")(forAll { (xs: TreeList[Int]) =>
+  property("TreeList.get works")(forAll { (xs: TreeList[Int]) =>
     assertEquals(xs.get(-1L), None)
     assertEquals(xs.get(xs.size), None)
     intercept[NoSuchElementException](xs.getUnsafe(-1L))
@@ -190,7 +190,7 @@ class TreeListSuite extends DisciplineSuite {
     }
   })
 
-  test("toIterator throws the same type of exception as List on empty")(forAll { (xs: TreeList[Int]) =>
+  property("toIterator throws the same type of exception as List on empty")(forAll { (xs: TreeList[Int]) =>
     val it = xs.toIterator
     // exhaust the iterator
     it.size
@@ -199,7 +199,7 @@ class TreeListSuite extends DisciplineSuite {
     ()
   })
 
-  test("toReverseIterator throws the same type of exception as List on empty")(forAll { (xs: TreeList[Int]) =>
+  property("toReverseIterator throws the same type of exception as List on empty")(forAll { (xs: TreeList[Int]) =>
     val it = xs.toReverseIterator
     // exhaust the iterator
     it.size
@@ -208,7 +208,7 @@ class TreeListSuite extends DisciplineSuite {
     ()
   })
 
-  test("TreeList.NonEmpty.apply/unapply are inverses")(forAll { (head: Int, tail: TreeList[Int]) =>
+  property("TreeList.NonEmpty.apply/unapply are inverses")(forAll { (head: Int, tail: TreeList[Int]) =>
     TreeList.NonEmpty(head, tail) match {
       case TreeList.Empty => fail("should not be empty")
       case TreeList.NonEmpty(h, t) =>
@@ -220,12 +220,12 @@ class TreeListSuite extends DisciplineSuite {
   })
 
   // looks like cats is not testing this
-  test("TreeList.traverse_/traverse consistency")(forAll { (xs: TreeList[Int], fn: Int => Option[String]) =>
+  property("TreeList.traverse_/traverse consistency")(forAll { (xs: TreeList[Int], fn: Int => Option[String]) =>
     assertEquals(xs.traverse(fn).void, xs.traverse_(fn))
   })
 
   // looks like cats is not testing this
-  test("TreeList.sequence_/sequence consistency")(forAll { (xs: TreeList[Option[Int]]) =>
+  property("TreeList.sequence_/sequence consistency")(forAll { (xs: TreeList[Option[Int]]) =>
     assertEquals(xs.sequence.void, xs.sequence_)
   })
 
@@ -233,15 +233,15 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(xs.show, xs.toString)
   })
 
-  test("lastOption matches get(size - 1L)")(forAll { (xs: TreeList[Int]) =>
+  property("lastOption matches get(size - 1L)")(forAll { (xs: TreeList[Int]) =>
     assertEquals(xs.get(xs.size - 1L), xs.lastOption)
   })
 
-  test("toListReverse == toList.reverse")(forAll { (xs: TreeList[Int]) =>
+  property("toListReverse == toList.reverse")(forAll { (xs: TreeList[Int]) =>
     assertEquals(xs.toListReverse, xs.toList.reverse)
   })
 
-  test("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
+  property("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
     def test(idx: Long): Unit = {
       val xs1 = xs.updatedOrThis(idx, v)
       if (0 <= idx && idx < xs.size) {
@@ -272,7 +272,7 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(bigTreeList.sequence.apply(0), TreeList.fromList((0 until size).toList))
   }
 
-  test("filter/filterNot consistency")(forAll { (xs: TreeList[Int], fn: Int => Boolean) =>
+  property("filter/filterNot consistency")(forAll { (xs: TreeList[Int], fn: Int => Boolean) =>
     testHomomorphism(xs)({ l => l.filter(fn).toList }, { _.toList.filter(fn) })
     assertEquals(xs.filterNot(fn), xs.filter { a => !fn(a) })
   })
