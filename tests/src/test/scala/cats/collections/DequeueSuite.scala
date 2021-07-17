@@ -1,14 +1,14 @@
 package cats.collections
-package tests
 
-import cats.collections.arbitrary.cogen._
-import org.scalacheck._
-import org.scalacheck.Arbitrary.{arbitrary=>getArbitrary,_}
 import cats._
+import cats.collections.arbitrary.cogen._
 import cats.laws.discipline._
-import cats.tests.CatsSuite
+import munit.DisciplineSuite
+import org.scalacheck._
+import org.scalacheck.Arbitrary.{arbitrary => getArbitrary, _}
+import org.scalacheck.Prop._
 
-class DequeueSpec extends CatsSuite {
+class DequeueSuite extends DisciplineSuite {
   import Dequeue._
 
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
@@ -45,36 +45,36 @@ class DequeueSpec extends CatsSuite {
     val x = "xyzzy"
     val q = Dequeue.empty cons x
 
-    q.uncons should be(Some((x,EmptyDequeue())))
-    q.unsnoc should be(Some((x,EmptyDequeue())))
+    assertEquals(q.uncons, Some((x,EmptyDequeue())))
+    assertEquals(q.unsnoc, Some((x,EmptyDequeue())))
   }
 
-  test("cons and then uncons")(forAll { (xs: List[Int]) =>
+  test("cons and then uncons")(forAll { xs: List[Int] =>
     val q = consL(xs, Dequeue.empty)
     val l = unconsL(q, List.empty)
 
-    xs should be (l)
+    assertEquals(xs, l)
   })
 
-  test("snoc and then unsnoc")(forAll { (xs: List[Int]) =>
+  test("snoc and then unsnoc")(forAll { xs: List[Int] =>
     val q = snocL(xs, Dequeue.empty)
     val l = unsnocL(q, List.empty)
 
-    xs should be(l)
+    assertEquals(xs, l)
   })
 
-  test("cons and then unsnoc")(forAll { (xs: List[Int]) =>
+  test("cons and then unsnoc")(forAll { xs: List[Int] =>
     val q = consL(xs, Dequeue.empty)
     val l = unsnocL(q, List.empty)
 
-    xs should be(l.reverse)
+    assertEquals(xs, l.reverse)
   })
 
-  test("snoc and then uncons")(forAll { (xs: List[Int]) =>
+  test("snoc and then uncons")(forAll { xs: List[Int] =>
     val q = snocL(xs, Dequeue.empty)
     val l = unconsL(q, List.empty)
 
-    xs should be(l.reverse)
+    assertEquals(xs, l.reverse)
   })
 
   implicit def genQ[A: Arbitrary]: Arbitrary[Dequeue[A]] = Arbitrary(
@@ -83,45 +83,45 @@ class DequeueSpec extends CatsSuite {
       r <- getArbitrary[List[A]]
     } yield consL(l, snocL(r, Dequeue.empty)))
 
-  test("foldLeft")(forAll{ (q: Dequeue[Int]) =>
-    q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs) should be (q.reverse.toList)
+  test("foldLeft")(forAll{ q: Dequeue[Int] =>
+    assertEquals(q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs), q.reverse.toList)
   })
 
-  test("foldRight")(forAll { (q: Dequeue[Int]) =>
-    q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value should be (q.toList)
+  test("foldRight")(forAll { q: Dequeue[Int] =>
+    assertEquals(q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value, q.toList)
   })
 
-  test("toList")(forAll { (q: Dequeue[Int]) =>
-    q.toList should be (q.toIterator.toList)
+  test("toList")(forAll { q: Dequeue[Int] =>
+    assertEquals(q.toList, q.toIterator.toList)
   })
 
-  test("toList/reverse")(forAll { (q: Dequeue[Int]) =>
-    q.reverse.toList should be (q.toIterator.toList.reverse)
+  test("toList/reverse")(forAll { q: Dequeue[Int] =>
+    assertEquals(q.reverse.toList, q.toIterator.toList.reverse)
   })
 
   test("toList/append")(forAll { (q1: Dequeue[Int], q2: Dequeue[Int]) =>
-    (q1 ++ q2).toList should be (q1.toList ::: q2.toList)
+    assertEquals((q1 ++ q2).toList, q1.toList ::: q2.toList)
   })
 
-  test("toList/Foldable consistency")(forAll { (q: Dequeue[Int]) =>
-    q.toList should be (Foldable[Dequeue].toList(q))
+  test("toList/Foldable consistency")(forAll { q: Dequeue[Int] =>
+    assertEquals(q.toList, Foldable[Dequeue].toList(q))
   })
 
-  test("toList/toStream consistency")(forAll { (q: Dequeue[Int]) =>
-    q.toList should be (q.to[Stream, Int].toList)
+  test("toList/toStream consistency")(forAll { q: Dequeue[Int] =>
+    assertEquals(q.toList, q.to[Stream, Int].toList)
   })
 
-  test("equality")(forAll { (xs: List[Int]) =>
+  test("equality")(forAll { xs: List[Int] =>
     val q1 = consL(xs, Dequeue.empty)
     val q2 = snocL(xs.reverse, Dequeue.empty)
-    Eq[Dequeue[Int]].eqv(q1, q2) should be (true)
+    assert(Eq[Dequeue[Int]].eqv(q1, q2), true)
   })
 
   test("inequality")(forAll { (xs: List[Int], ys: List[Int]) =>
     val q1 = consL(xs, Dequeue.empty)
     val q2 = consL(ys, Dequeue.empty)
-    whenever(xs != ys) {
-      Eq[Dequeue[Int]].eqv(q1, q2) should be (false)
+    if (xs != ys) {
+      assertEquals(Eq[Dequeue[Int]].eqv(q1, q2), false)
     }
   })
 

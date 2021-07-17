@@ -3,6 +3,7 @@ import ReleaseTransformations._
 
 val catsVersion = "2.6.1"
 val catsTestkitScalatestVersion = "2.1.5"
+val munitDisciplineVersion = "1.0.9"
 val scalacheckVersion = "1.15.4"
 val algebraVersion = "2.2.3"
 val Scala212 = "2.12.14"
@@ -137,11 +138,13 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(noPublishSettings)
   .settings(coverageEnabled := false,
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+    Test / testOptions += Tests.Argument(TestFrameworks.MUnit),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-laws"              % catsVersion                 % "test",
       "org.typelevel" %%% "algebra-laws"           % algebraVersion              % "test",
-      "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test"
+      "org.typelevel" %%% "cats-testkit-scalatest" % catsTestkitScalatestVersion % "test",
+      "org.typelevel" %%% "discipline-munit"       % munitDisciplineVersion      % "test"
     ),
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
