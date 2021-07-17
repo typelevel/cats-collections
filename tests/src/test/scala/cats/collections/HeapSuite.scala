@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
 
 class HeapSuite extends DisciplineSuite {
   override def scalaCheckTestParameters: Test.Parameters =
-    super.scalaCheckTestParameters
+    DefaultScalaCheckPropertyCheckConfig.default
       .withMinSuccessfulTests(1000)
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {

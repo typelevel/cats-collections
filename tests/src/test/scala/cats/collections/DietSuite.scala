@@ -83,7 +83,7 @@ class DietSuite extends DisciplineSuite {
   import DietSuite._
 
   override def scalaCheckTestParameters: Test.Parameters =
-    super.scalaCheckTestParameters
+    DefaultScalaCheckPropertyCheckConfig.default
       .withMinSuccessfulTests(if (BuildInfo.isJvm) 10000 else 500)
 
   test("shown empty") {

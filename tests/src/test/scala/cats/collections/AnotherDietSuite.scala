@@ -9,7 +9,7 @@ class AnotherDietSuite extends DisciplineSuite {
   import DietSuite._
 
   override def scalaCheckTestParameters: Test.Parameters =
-    super.scalaCheckTestParameters
+    DefaultScalaCheckPropertyCheckConfig.default
       .withMinSuccessfulTests(300)
 
   test("foldLeft")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
@@ -27,7 +27,10 @@ class AnotherDietSuite extends DisciplineSuite {
   })
 
   test("foldRight/toList")(forAll { rs: Ranges =>
-    assertEquals(rs.toDiet.foldRight(Eval.now(List.empty[Int]))((v, acc) => acc.map(v :: _)).value, rs.toDiet.toList)
+    assertEquals(
+      rs.toDiet.foldRight(Eval.now(List.empty[Int]))((v, acc) => acc.map(v :: _)).value,
+      rs.toDiet.toList
+    )
   })
 
   test("not be modified when inserting existing item")(forAll { d: Diet[Int] =>
