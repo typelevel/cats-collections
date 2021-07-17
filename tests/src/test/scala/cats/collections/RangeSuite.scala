@@ -1,30 +1,29 @@
 package cats.collections
-package tests
 
-import cats.tests.CatsSuite
+import cats.syntax.show._
+import munit.FunSuite
 
-class RangeTest extends CatsSuite {
-
+class RangeSuite extends FunSuite {
   import Range._
 
   test("contain items within [start, end]"){
     val range = Range(1, 100)
 
-    scala.Range(1,100).foreach(i => range.contains(i) should be (true))
+    assert(scala.Range(1,100).forall(i => range.contains(i)))
   }
 
   test("not contain items outside [start, end]"){
     val range = Range(1, 100)
 
-    range.contains(0) should be (false)
+    assertEquals(range.contains(0), false)
 
-    range.contains(101) should be (false)
+    assertEquals(range.contains(101), false)
   }
 
   test("contain sub range"){
     val range = Range(1, 10)
 
-    range.contains(Range(2,9)) should be (true)
+    assert(range.contains(Range(2,9)))
   }
 
   test("apply function to each element"){
@@ -34,7 +33,7 @@ class RangeTest extends CatsSuite {
 
     range.foreach(i => s += i)
 
-    scala.Range(1,101).sum should be (s)
+    assertEquals(scala.Range(1,101).sum, s)
   }
 
   test("map"){
@@ -42,32 +41,32 @@ class RangeTest extends CatsSuite {
 
     val result = range.map(_ * 2).toList.sorted
 
-    scala.Range(2, 21).toList.sorted should be (result)
+    assertEquals(scala.Range(2, 21).toList.sorted, result)
   }
 
   test("foldLeft"){
     val range = Range(1, 100)
 
-    range.foldLeft[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
-    range.foldLeft[Int](0, (_,b) => b) should be (100)
+    assertEquals(range.foldLeft[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
+    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
   }
 
   test("foldLeft in the right order"){
     val range = Range(1, 100)
 
-    range.foldLeft[Int](0, (_,b) => b) should be (100)
+    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
   }
 
   test("foldRight"){
     val range = Range(1, 100)
 
-    range.foldRight[Int](0, (a,b) => a + b) should be (scala.Range(1,101).sum)
+    assertEquals(range.foldRight[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
   }
 
   test("foldRight in the right order"){
     val range = Range(1, 100)
 
-    range.foldRight[Int](0, (a,_) => a) should be (1)
+    assertEquals(range.foldRight[Int](0, (a,_) => a), 1)
   }
 
   test("be able to diff (-)"){
@@ -75,38 +74,38 @@ class RangeTest extends CatsSuite {
 
     val Some((l, Some(r))) = range - Range(2,9)
 
-    l.toList should be(List(1))
-    r.toList should be(List(10))
+    assertEquals(l.toList, List(1))
+    assertEquals(r.toList, List(10))
 
     val x1 = range - range
 
-    x1.isDefined should be (false)
+    assertEquals(x1.isDefined, false)
 
     val Some((x2, None)) = range - Range(-1, 5)
 
-    x2.toList should contain inOrderOnly (6, 7, 8, 9, 10)
+    assertEquals(x2.toList, List(6, 7, 8, 9, 10))
 
     val Some((x3, None)) = range - Range(3, 12)
 
-    x3.toList should contain inOrderOnly(1, 2)
+    assertEquals(x3.toList, List(1, 2))
   }
 
   test("return an iterator for the range") {
-    Range(0, 10).toIterator.toList shouldEqual List.range(0, 11) // [0, 10]
+    assertEquals(Range(0, 10).toIterator.toList, List.range(0, 11)) // [0, 10]
   }
 
   test("return an iterator for a reversed range") {
-    Range(10, 0).toIterator.toList shouldEqual List.range(10, -1, -1) // [10, 0]
+    assertEquals(Range(10, 0).toIterator.toList, List.range(10, -1, -1)) // [10, 0]
   }
 
   test("return an iterator when the range contains a single value") {
-    Range(3, 3).toIterator.toList shouldEqual List(3)
+    assertEquals(Range(3, 3).toIterator.toList, List(3))
   }
 
   test("generate inverted range"){
     val range = Range(5, 1)
 
-    range.toList should contain inOrderOnly(5, 4, 3, 2, 1)
+    assertEquals(range.toList, List(5, 4, 3, 2, 1))
   }
 
   test("map inverted range"){
@@ -114,19 +113,19 @@ class RangeTest extends CatsSuite {
 
     val result = range.map(_ * 2).toList
 
-    result should contain inOrderOnly (10, 9, 8, 7, 6, 5, 4, 3, 2)
+    assertEquals(result, List(10, 9, 8, 7, 6, 5, 4, 3, 2))
   }
 
   test("the reverse be equals to the reverted range"){
     val range = Range (20, 50)
     val other = Range (50, 20)
 
-    range.reverse.toList should be (other.toList)
+    assertEquals(range.reverse.toList, other.toList)
   }
 
   test("be convertible to string in math form"){
     val range = Range(10, 20)
 
-    range.show should be ("[10, 20]")
+    assertEquals(range.show, "[10, 20]")
   }
 }
