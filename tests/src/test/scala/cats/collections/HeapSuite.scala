@@ -1,18 +1,16 @@
 package cats.collections
-package tests
 
-import cats.{Order, Show}
 import cats.collections.laws.discipline.PartiallyOrderedSetTests
 import cats.kernel.laws.discipline.OrderTests
-import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Cogen, Gen}
+import cats.{Order, Show}
+import munit.DisciplineSuite
+import org.scalacheck.Prop._
+import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
 
-class HeapSpec extends CatsSuite {
-
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    checkConfiguration.copy(
-      minSuccessful = 1000
-    )
+class HeapSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(1000)
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {
     val listA = Gen.listOfN(size, agen)
@@ -65,8 +63,7 @@ class HeapSpec extends CatsSuite {
 
       val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-      heap.toList should be(list.sorted)
-
+      assertEquals(heap.toList, list.sorted)
     })
 
   test("heapify is sorted") {
@@ -176,7 +173,7 @@ class HeapSpec extends CatsSuite {
   }
 
   test("Heap.minimumOption is the real minimum") {
-    def heapLaw(heap: Heap[Int]) =
+    def heapLaw(heap: Heap[Int]): Unit =
       heap.minimumOption match {
         case None => assert(heap.isEmpty)
         case Some(min) =>
