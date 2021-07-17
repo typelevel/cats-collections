@@ -6,10 +6,15 @@ import cats.laws.discipline._
 import cats.syntax.show._
 import munit.{DisciplineSuite, FunSuite}
 import org.scalacheck.Prop._
+import org.scalacheck.Test
 
 import scala.collection.immutable.SortedSet
 
 class MapSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+      .withMinSuccessfulTests(300)
+
   def fromSet[K: Order,V](s: Set[(K,V)]): AvlMap[K,V] =
     s.foldLeft[AvlMap[K,V]](AvlMap.empty)(_ + _)
 

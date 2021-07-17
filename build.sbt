@@ -72,7 +72,19 @@ lazy val `cats-collections` = project.in(file("."))
       releaseStepCommand("sonatypeReleaseAll"),
       setNextVersion,
       commitNextVersion,
-      pushChanges))
+      pushChanges)
+  )
+
+lazy val commonJsSettings = Seq(
+  Global / scalaJSStage := FullOptStage,
+  Test / scalaJSStage := FastOptStage,
+  parallelExecution := false,
+  jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
+  // batch mode decreases the amount of memory needed to compile Scala.js code
+  scalaJSLinkerConfig := scalaJSLinkerConfig.value.withBatchMode(githubIsWorkflowBuild.value),
+  scalaJSLinkerConfig ~= (_.withModuleKind(ModuleKind.CommonJSModule)),
+  coverageEnabled := false
+)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -95,7 +107,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       }
     }
   )
-  .jsSettings(coverageEnabled := false)
+  .jsSettings(commonJsSettings)
 
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
@@ -109,7 +121,7 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
-  .jsSettings(coverageEnabled := false)
+  .jsSettings(commonJsSettings)
 
 lazy val scalacheckJVM = scalacheck.jvm
 lazy val scalacheckJS = scalacheck.js
@@ -123,7 +135,7 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
-  .jsSettings(coverageEnabled := false)
+  .jsSettings(commonJsSettings)
 
 lazy val lawsJVM = laws.jvm
 lazy val lawsJS = laws.js
@@ -135,7 +147,8 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(moduleName := "cats-collections-tests")
   .settings(dogsSettings:_*)
   .settings(noPublishSettings)
-  .settings(coverageEnabled := false,
+  .settings(
+    coverageEnabled := false,
     Test / testOptions += Tests.Argument(TestFrameworks.MUnit),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
@@ -146,6 +159,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
   )
+  .jsSettings(commonJsSettings)
 
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
