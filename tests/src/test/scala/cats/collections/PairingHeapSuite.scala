@@ -166,8 +166,11 @@ class PairingHeapSuite extends Properties("PairingHeap") {
       a && b && c && d
     }
 
+  def genPairingHeapLimitedSize(limit: Int): Gen[PairingHeap[Int]] =
+    Gen.choose(0, limit).flatMap(heapGen[Int](_, Arbitrary.arbitrary[Int]))
+
   property("PairingHeap.combineAll (remove) does < log_2 N + 8 work") =
-    forAll { (heap: PairingHeap[Int]) =>
+    forAll(genPairingHeapLimitedSize(10)) { heap: PairingHeap[Int] =>
       def isGood(heap: PairingHeap[Int]): Boolean = {
         if (heap.size > heap.subtrees.size) {
 
