@@ -102,6 +102,9 @@ class MapShowSuite extends FunSuite {
 }
 
 class MapLawsSuite extends DisciplineSuite with ArbitrarySet with ArbitraryMap  {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+
   implicit val iso: SemigroupalTests.Isomorphisms[Map[String, *]] =
     SemigroupalTests.Isomorphisms.invariant[Map[String, *]]
 

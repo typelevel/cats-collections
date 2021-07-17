@@ -11,6 +11,9 @@ import org.scalacheck.Prop._
 class DequeueSuite extends DisciplineSuite {
   import Dequeue._
 
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+
   checkAll("Dequeue[Int]", CoflatMapTests[Dequeue].coflatMap[Int, Int, Int])
   checkAll("CoflatMap[Dequeue]", SerializableTests.serializable(CoflatMap[Dequeue]))
 

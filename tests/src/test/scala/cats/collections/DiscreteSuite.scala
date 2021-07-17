@@ -2,8 +2,12 @@ package cats.collections
 
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
+import org.scalacheck.Test
 
 class DiscreteSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+
   test("succ")(forAll { x: Int =>
     assertEquals(Discrete[Int].succ(x), (x + 1))
   })
