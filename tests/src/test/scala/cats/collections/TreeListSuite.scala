@@ -1,14 +1,16 @@
 package cats.collections
-package tests
 
-import cats.{Eq, Order, PartialOrder, Monoid, Traverse}
-import cats.laws.discipline._
-import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Cogen, Gen}
-
+import cats.syntax.all._
 import cats.collections.arbitrary.ArbitraryTreeList._
+import cats.laws.discipline._
+import cats.{Eq, Monoid, Order, PartialOrder, Traverse}
+import munit.DisciplineSuite
+import org.scalacheck.Prop._
+import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
 
-class TreeListSpec extends CatsSuite {
+class TreeListSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
 
   implicit def arbPartialFn[A: Cogen, B: Arbitrary]: Arbitrary[PartialFunction[A, B]] =
     Arbitrary(
@@ -22,24 +24,25 @@ class TreeListSpec extends CatsSuite {
     })
 
   checkAll("Traverse[TreeList]",
-    TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option])
+    TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option]
+  )
 
   checkAll("Alternative[TreeList]",
-    AlternativeTests[TreeList].alternative[Long, Int, String])
+    AlternativeTests[TreeList].alternative[Long, Int, String]
+  )
 
   checkAll("FunctorFilter[TreeList]",
-    FunctorFilterTests[TreeList].functorFilter[Long, Int, String])
+    FunctorFilterTests[TreeList].functorFilter[Long, Int, String]
+  )
 
-  checkAll("Monad[TreeList]",
-    MonadTests[TreeList].monad[Long, Int, String])
+  checkAll("Monad[TreeList]", MonadTests[TreeList].monad[Long, Int, String])
 
-  checkAll("CoflatMap[TreeList]",
-    CoflatMapTests[TreeList].coflatMap[Long, Int, String])
+  checkAll("CoflatMap[TreeList]", CoflatMapTests[TreeList].coflatMap[Long, Int, String])
 
   checkAll("Traverse[TreeList]", SerializableTests.serializable(Traverse[TreeList]))
 
   test("iterator works")(forAll { (xs: TreeList[Int]) =>
-    assert(TreeList.fromList(xs.toIterator.toList) == xs)
+    assertEquals(TreeList.fromList(xs.toIterator.toList), xs)
   })
 
   private def testHomomorphism[A, B: Eq](as: TreeList[A])(fn: TreeList[A] => B, gn: List[A] => B) = {
@@ -56,8 +59,8 @@ class TreeListSpec extends CatsSuite {
     testHomomorphism(xs)({ _.take(n.toLong).toList }, { _.take(n) })
     // we should be able to drop for all sizes:
     (-1L to xs.size).foreach { cnt =>
-      assert(xs.drop(cnt).toList == xs.toList.drop(cnt.toInt))
-      assert((xs.take(cnt) ++ xs.drop(cnt)) == xs)
+      assertEquals(xs.drop(cnt).toList, xs.toList.drop(cnt.toInt))
+      assertEquals((xs.take(cnt) ++ xs.drop(cnt)), xs)
     }
   })
 
@@ -70,7 +73,7 @@ class TreeListSpec extends CatsSuite {
   })
 
   test("reverse works")(forAll { (xs: TreeList[Int]) =>
-    assert(xs.reverse.toList == xs.toReverseIterator.toList)
+    assertEquals(xs.reverse.toList, xs.toReverseIterator.toList)
   })
 
   test("strictFoldRight works")(forAll { (xs: TreeList[Int], init: String, fn: (Int, String) => String) =>
@@ -78,8 +81,8 @@ class TreeListSpec extends CatsSuite {
   })
 
   test("fromList/toList works")(forAll { (xs: List[Int]) =>
-    assert(TreeList.fromList(xs).toIterator.toList == xs)
-    assert(TreeList.fromList(xs).toList == xs)
+    assertEquals(TreeList.fromList(xs).toIterator.toList, xs)
+    assertEquals(TreeList.fromList(xs).toList, xs)
   })
 
   test("size works")(forAll { (xs: TreeList[Int]) =>
@@ -88,7 +91,7 @@ class TreeListSpec extends CatsSuite {
 
   test("split combined is identity")(forAll { (xs: TreeList[Int]) =>
     val (left, right) = xs.split
-    assert((left.toList ::: right.toList) == xs.toList)
+    assertEquals((left.toList ::: right.toList), xs.toList)
   })
 
   test("split produces a full left tree")(forAll { (xs: TreeList[Int]) =>
@@ -97,27 +100,27 @@ class TreeListSpec extends CatsSuite {
     // right size is 2^n - 1
     val shifts = java.lang.Long.bitCount(rightSize)
     // since we have shifted all the bits, all of them must have been in the right most
-    assert(rightSize >> shifts == 0L)
+    assertEquals(rightSize >> shifts, 0L)
   })
 
   test("pattern matching works")(forAll { (xs: TreeList[Int]) =>
     xs match {
       case TreeList.Empty =>
-        assert(xs.uncons == None)
+        assertEquals(xs.uncons, None)
         assert(xs.isEmpty)
-        assert(xs.headOption == None)
-        assert(xs.tailOption == None)
+        assertEquals(xs.headOption, None)
+        assertEquals(xs.tailOption, None)
       case TreeList.NonEmpty(head, tail) =>
         assert(xs.nonEmpty)
-        assert(Some((head, tail)) == xs.uncons)
-        assert(Some(head) == xs.headOption)
-        assert(Some(tail) == xs.tailOption)
+        assertEquals(Option((head, tail)), xs.uncons)
+        assertEquals(Option(head), xs.headOption)
+        assertEquals(Option(tail), xs.tailOption)
     }
   })
 
   test("maxDepth <= 2 log_2 N + 1")(forAll { (xs: TreeList[Int]) =>
     val maxD = xs.maxDepth
-    if (xs.isEmpty) assert(maxD == 0)
+    if (xs.isEmpty) assertEquals(maxD, 0)
     else {
       val upper = 2.0 * math.log(xs.size.toDouble)/math.log(2.0) + 1.0
       assert(maxD.toDouble <= upper)
@@ -135,13 +138,13 @@ class TreeListSpec extends CatsSuite {
   }
 
   test("Eq[TreeList[A]] works")(forAll { (xs: TreeList[Opaque1], ys: TreeList[Opaque1]) =>
-    assert(Eq[TreeList[Opaque1]].eqv(xs, ys) == Eq[List[Opaque1]].eqv(xs.toList, ys.toList))
-    assert(Eq[TreeList[Opaque1]].eqv(xs, xs) == true)
+    assertEquals(Eq[TreeList[Opaque1]].eqv(xs, ys), Eq[List[Opaque1]].eqv(xs.toList, ys.toList))
+    assert(Eq[TreeList[Opaque1]].eqv(xs, xs))
   })
 
   test("Order[TreeList[A]] works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
-    assert(Order[TreeList[Int]].compare(xs, ys) == Order[List[Int]].compare(xs.toList, ys.toList))
-    assert(Order[TreeList[Int]].compare(xs, xs) == 0)
+    assertEquals(Order[TreeList[Int]].compare(xs, ys), Order[List[Int]].compare(xs.toList, ys.toList))
+    assertEquals(Order[TreeList[Int]].compare(xs, xs), 0)
   })
 
   trait Opaque2
@@ -155,36 +158,35 @@ class TreeListSpec extends CatsSuite {
   }
 
   test("PartialOrder[TreeList[A]] works")(forAll { (xs: TreeList[Opaque2], ys: TreeList[Opaque2]) =>
-    assert(PartialOrder[TreeList[Opaque2]].partialCompare(xs, ys) == PartialOrder[List[Opaque2]].partialCompare(xs.toList, ys.toList))
-    assert(PartialOrder[TreeList[Opaque2]].partialCompare(xs, xs) == 0.0)
+    assertEquals(
+      PartialOrder[TreeList[Opaque2]].partialCompare(xs, ys),
+      PartialOrder[List[Opaque2]].partialCompare(xs.toList, ys.toList)
+    )
+    assertEquals(PartialOrder[TreeList[Opaque2]].partialCompare(xs, xs), 0.0)
   })
 
   test("Monoid[TreeList[A]].combine works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
-    assert(Monoid[TreeList[Int]].combine(xs, ys) == xs ++ ys)
+    assertEquals(Monoid[TreeList[Int]].combine(xs, ys), xs ++ ys)
   })
 
   test("Monoid[TreeList[A]].empty works") {
-    assert(Monoid[TreeList[Int]].empty eq TreeList.empty)
+    assertEquals(Monoid[TreeList[Int]].empty, TreeList.empty)
   }
 
   test("toString is as expected")(forAll { (xs: TreeList[Int]) =>
-    assert(xs.toString == xs.toIterator.mkString("TreeList(", ", ", ")"))
+    assertEquals(xs.toString, xs.toIterator.mkString("TreeList(", ", ", ")"))
   })
 
   test("TreeList.get works")(forAll { (xs: TreeList[Int]) =>
-    assert(xs.get(-1L) == None)
-    assert(xs.get(xs.size) == None)
-    assertThrows[NoSuchElementException] {
-      xs.getUnsafe(-1L)
-    }
-    assertThrows[NoSuchElementException] {
-      xs.getUnsafe(xs.size)
-    }
+    assertEquals(xs.get(-1L), None)
+    assertEquals(xs.get(xs.size), None)
+    intercept[NoSuchElementException](xs.getUnsafe(-1L))
+    intercept[NoSuchElementException](xs.getUnsafe(xs.size))
 
     val list = xs.toList
     (0L until xs.size).foreach { idx =>
-      assert(xs.get(idx) == Some(list(idx.toInt)))
-      assert(xs.getUnsafe(idx) == list(idx.toInt))
+      assertEquals(xs.get(idx), Some(list(idx.toInt)))
+      assertEquals(xs.getUnsafe(idx), list(idx.toInt))
     }
   })
 
@@ -192,28 +194,26 @@ class TreeListSpec extends CatsSuite {
     val it = xs.toIterator
     // exhaust the iterator
     it.size
-    assertThrows[NoSuchElementException] { Nil.iterator.next }
-    assertThrows[NoSuchElementException] {
-      it.next
-    }
+    intercept[NoSuchElementException](Nil.iterator.next)
+    intercept[NoSuchElementException](it.next)
+    ()
   })
 
   test("toReverseIterator throws the same type of exception as List on empty")(forAll { (xs: TreeList[Int]) =>
     val it = xs.toReverseIterator
     // exhaust the iterator
     it.size
-    assertThrows[NoSuchElementException] { Nil.iterator.next }
-    assertThrows[NoSuchElementException] {
-      it.next
-    }
+    intercept[NoSuchElementException](Nil.iterator.next)
+    intercept[NoSuchElementException](it.next)
+    ()
   })
 
   test("TreeList.NonEmpty.apply/unapply are inverses")(forAll { (head: Int, tail: TreeList[Int]) =>
     TreeList.NonEmpty(head, tail) match {
       case TreeList.Empty => fail("should not be empty")
       case TreeList.NonEmpty(h, t) =>
-        assert(h == head)
-        assert(t == tail)
+        assertEquals(h, head)
+        assertEquals(t, tail)
       case other =>
         fail(s"unreachable: $other")
     }
@@ -221,38 +221,39 @@ class TreeListSpec extends CatsSuite {
 
   // looks like cats is not testing this
   test("TreeList.traverse_/traverse consistency")(forAll { (xs: TreeList[Int], fn: Int => Option[String]) =>
-    assert(xs.traverse(fn).void == xs.traverse_(fn))
+    assertEquals(xs.traverse(fn).void, xs.traverse_(fn))
   })
 
   // looks like cats is not testing this
   test("TreeList.sequence_/sequence consistency")(forAll { (xs: TreeList[Option[Int]]) =>
-    assert(xs.sequence.void == xs.sequence_)
+    assertEquals(xs.sequence.void, xs.sequence_)
   })
 
   test("Show matches toString")(forAll{ (xs: TreeList[Int]) =>
-    assert(xs.show == xs.toString)
+    assertEquals(xs.show, xs.toString)
   })
 
   test("lastOption matches get(size - 1L)")(forAll { (xs: TreeList[Int]) =>
-    assert(xs.get(xs.size - 1L) == xs.lastOption)
+    assertEquals(xs.get(xs.size - 1L), xs.lastOption)
   })
 
   test("toListReverse == toList.reverse")(forAll { (xs: TreeList[Int]) =>
-    assert(xs.toListReverse == xs.toList.reverse)
+    assertEquals(xs.toListReverse, xs.toList.reverse)
   })
 
   test("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
-    def test(idx: Long) = {
+    def test(idx: Long): Unit = {
       val xs1 = xs.updatedOrThis(idx, v)
       if (0 <= idx && idx < xs.size) {
         val ls = xs.toIterator.toVector
         val ls1 = ls.updated(idx.toInt, v)
-        assert(xs1.toIterator.toVector == ls1)
-        assert(xs.updated(idx, v) == Some(xs1))
+
+        assertEquals(xs1.toIterator.toVector, ls1)
+        assertEquals(xs.updated(idx, v), Some(xs1))
       }
       else {
-        assert(xs eq xs1)
-        assert(xs.updated(idx, v) == None)
+        assertEquals(xs, xs1)
+        assertEquals(xs.updated(idx, v), None)
       }
     }
 
@@ -268,11 +269,11 @@ class TreeListSpec extends CatsSuite {
     val bigList = (0 until size).iterator.map(buildFn).toList
     // Now this should not throw
     val bigTreeList = TreeList.fromList(bigList)
-    assert(bigTreeList.sequence.apply(0) == TreeList.fromList((0 until size).toList))
+    assertEquals(bigTreeList.sequence.apply(0), TreeList.fromList((0 until size).toList))
   }
 
   test("filter/filterNot consistency")(forAll { (xs: TreeList[Int], fn: Int => Boolean) =>
     testHomomorphism(xs)({ l => l.filter(fn).toList }, { _.toList.filter(fn) })
-    assert(xs.filterNot(fn) == xs.filter { a => !fn(a) })
+    assertEquals(xs.filterNot(fn), xs.filter { a => !fn(a) })
   })
 }
