@@ -10,7 +10,7 @@ class AnotherDietSuite extends DisciplineSuite {
 
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
-      .withMinSuccessfulTests(300)
+      .withMinSuccessfulTests(if (BuildInfo.isJvm) 300 else 30)
 
   property("foldLeft")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
     assertEquals(rs.toDiet.foldLeft(start)(f), rs.toSet.toList.sorted.foldLeft(start)(f))
@@ -34,9 +34,9 @@ class AnotherDietSuite extends DisciplineSuite {
   })
 
   property("not be modified when inserting existing item")(forAll { d: Diet[Int] =>
-    d.toList.foreach(elem =>
+    d.toList.forall(elem =>
       // there may be structural changes, so fall back to list comparison
-      assertEquals(d.add(elem).toList, d.toList)
+      d.add(elem).toList == d.toList
     )
   })
 

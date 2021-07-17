@@ -84,7 +84,7 @@ class DietSuite extends DisciplineSuite {
 
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
-      .withMinSuccessfulTests(if (BuildInfo.isJvm) 10000 else 500)
+      .withMinSuccessfulTests(if (BuildInfo.isJvm) 5000 else 500)
 
   test("shown empty") {
     val diet = Diet.empty[Int]
