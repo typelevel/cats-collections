@@ -36,7 +36,7 @@ sealed abstract class PairingHeap[A] {
   def addAll(as: Iterable[A])(implicit order: Order[A]): PairingHeap[A] = {
     val ait = as.iterator
     var heap = this
-    while(ait.hasNext) {
+    while (ait.hasNext) {
       heap = heap + ait.next()
     }
     heap
@@ -56,7 +56,7 @@ sealed abstract class PairingHeap[A] {
         @tailrec
         def loop(ts: List[PairingHeap[A]]): Boolean =
           ts match {
-            case Nil => false
+            case Nil       => false
             case h :: tail => h.contains(a) || loop(tail)
           }
 
@@ -98,7 +98,7 @@ sealed abstract class PairingHeap[A] {
     def loop(h: PairingHeap[A], acc: List[A]): List[A] =
       h match {
         case Tree(m, _) => loop(h.remove, m :: acc)
-        case Leaf()          => acc.reverse
+        case Leaf()     => acc.reverse
       }
 
     loop(this, Nil)
@@ -154,7 +154,7 @@ sealed abstract class PairingHeap[A] {
     def loop(h: PairingHeap[A], acc: B): B =
       h match {
         case Tree(m, _) => loop(h.remove, fn(acc, m))
-        case Leaf()          => acc
+        case Leaf()     => acc
       }
 
     loop(this, init)
@@ -202,8 +202,8 @@ object PairingHeap {
 
   @tailrec
   private def combineLoop[A: Order](ts: List[PairingHeap[A]], acc: PairingHeap[A]): PairingHeap[A] =
-    ts match{
-      case Nil => acc
+    ts match {
+      case Nil       => acc
       case h :: tail => combineLoop(tail, h.combine(acc))
     }
 
@@ -211,8 +211,7 @@ object PairingHeap {
   private def combineAllIter[A: Order](iter: Iterator[PairingHeap[A]], pairs: List[PairingHeap[A]]): PairingHeap[A] =
     if (iter.isEmpty) {
       combineLoop(pairs, empty[A])
-    }
-    else {
+    } else {
       val p0 = iter.next()
       if (iter.isEmpty) combineLoop(pairs, p0)
       else {
@@ -228,7 +227,7 @@ object PairingHeap {
   def fromIterable[A](as: Iterable[A])(implicit order: Order[A]): PairingHeap[A] = {
     val iter = as.iterator
     var heap = empty[A]
-    while(iter.hasNext) {
+    while (iter.hasNext) {
       heap = heap + iter.next()
     }
     heap
@@ -255,12 +254,12 @@ object PairingHeap {
       heap
     }
 
-  private[collections] final case class Tree[A](min: A, subtrees: List[PairingHeap[A]]) extends PairingHeap[A] {
+  final private[collections] case class Tree[A](min: A, subtrees: List[PairingHeap[A]]) extends PairingHeap[A] {
     override val size = {
       @tailrec
       def loop(ts: List[PairingHeap[A]], acc: Long): Long =
         ts match {
-          case Nil => acc
+          case Nil       => acc
           case h :: tail => loop(tail, acc + h.size)
         }
       loop(subtrees, 1L)
@@ -276,7 +275,7 @@ object PairingHeap {
         def loop(hs: List[PairingHeap[A]]): Boolean =
           hs match {
             case h :: tail => h.exists(fn) || loop(tail)
-            case Nil => false
+            case Nil       => false
           }
         loop(subtrees)
       }
@@ -287,7 +286,7 @@ object PairingHeap {
         def loop(hs: List[PairingHeap[A]]): Boolean =
           hs match {
             case h :: tail => h.forall(fn) && loop(tail)
-            case Nil => true
+            case Nil       => true
           }
         loop(subtrees)
       }
@@ -301,7 +300,7 @@ object PairingHeap {
       }
   }
 
-  private final case object Leaf extends PairingHeap[Nothing] {
+  final private case object Leaf extends PairingHeap[Nothing] {
     def apply[A](): PairingHeap[A] = this.asInstanceOf[PairingHeap[A]]
 
     def unapply[A](heap: PairingHeap[A]): Boolean = heap.isEmpty
@@ -375,8 +374,7 @@ object PairingHeap {
       if (left.isEmpty) {
         if (right.isEmpty) 0
         else -1
-      }
-      else if (right.isEmpty) 1
+      } else if (right.isEmpty) 1
       else {
         val lt = left.asInstanceOf[Tree[A]]
         val rt = right.asInstanceOf[Tree[A]]
@@ -385,12 +383,12 @@ object PairingHeap {
         else compare(left.remove, right.remove)
       }
   }
+
   /**
    * This is the same order as you would get by doing `.toList` and ordering by that
    */
   implicit def catsCollectionPairingHeapOrder[A: Order]: Order[PairingHeap[A]] =
     new PairingHeapOrder[A]
-
 
   implicit def catsCollectionPairingHeapCommutativeMonoid[A: Order]: CommutativeMonoid[PairingHeap[A]] =
     new CommutativeMonoid[PairingHeap[A]] {

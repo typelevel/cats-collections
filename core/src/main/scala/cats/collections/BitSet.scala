@@ -293,19 +293,20 @@ sealed abstract class BitSet { lhs =>
     // $COVERAGE-OFF$
     this match {
       case Branch(o, h, cs) =>
-        val s = cs.iterator
-          .zipWithIndex
+        val s = cs.iterator.zipWithIndex
           .filter { case (c, _) => c != null }
           .map { case (c, i) => s"$i -> ${c.structure}" }
           .mkString("Array(", ", ", ")")
         s"Branch($o, $h, $s)"
       case Leaf(o, vs) =>
-        val s = vs.zipWithIndex.collect {
-          case (n, i) if n != 0 => s"$i -> $n"
-        }.mkString("{", ", ", "}")
+        val s = vs.zipWithIndex
+          .collect {
+            case (n, i) if n != 0 => s"$i -> $n"
+          }
+          .mkString("{", ", ", "}")
         s"Leaf($o, $s)"
     }
-    // $COVERAGE-ON$
+  // $COVERAGE-ON$
 
   /**
    * Universal equality.
@@ -379,7 +380,7 @@ object BitSet {
     else {
       var bs = newEmpty(0)
       val iter = xs.iterator
-      while(iter.hasNext) {
+      while (iter.hasNext) {
         bs = bs.mutableAdd(iter.next())
       }
       bs
@@ -481,7 +482,7 @@ object BitSet {
 
     def isEmpty: Boolean = {
       var idx = 0
-      while(idx < children.length) {
+      while (idx < children.length) {
         val c = children(idx)
         val empty = (c == null) || c.isEmpty
         if (!empty) return false
@@ -502,11 +503,13 @@ object BitSet {
         BitSet.adoptedPlus(this, n)
       } else {
         val c0 = children(i)
-        val c1 = if (c0 != null) c0 + n else {
-          val cc = newChild(i)
-          cc += n
-          cc
-        }
+        val c1 =
+          if (c0 != null) c0 + n
+          else {
+            val cc = newChild(i)
+            cc += n
+            cc
+          }
         // we already had this item
         if (c0 eq c1) this
         else replace(i, c1)
@@ -623,11 +626,11 @@ object BitSet {
           // this branch contains rhs, so find its index
           val i = index(rhs.offset)
           val c0 = children(i)
-          if (c0 != null) c0 intersects rhs else false
+          if (c0 != null) c0.intersects(rhs) else false
         }
       } else if (height < rhs.height) {
         // use commuativity to handle this in previous case
-        rhs intersects this
+        rhs.intersects(this)
       } else if (offset != rhs.offset) {
         // same height, but non-overlapping
         false
@@ -638,7 +641,7 @@ object BitSet {
         while (i < 32) {
           val x = children(i)
           val y = rcs(i)
-          if (x != null && y != null && (x intersects y)) return true
+          if (x != null && y != null && (x.intersects(y))) return true
           i += 1
         }
         false
@@ -810,13 +813,13 @@ object BitSet {
     def iterator: Iterator[Int] =
       children.iterator.flatMap {
         case null => Iterator.empty
-        case c => c.iterator
+        case c    => c.iterator
       }
 
     def reverseIterator: Iterator[Int] =
       children.reverseIterator.flatMap {
         case null => Iterator.empty
-        case c => c.reverseIterator
+        case c    => c.reverseIterator
       }
 
     def size: Long = {
@@ -872,7 +875,7 @@ object BitSet {
       if (i < 0 || 32 <= i) {
         this
       } else {
-        val mask = (1L << bit(n))
+        val mask = 1L << bit(n)
         val vsi = values(i)
         if ((vsi & mask) == 0L) this
         else {
@@ -886,7 +889,7 @@ object BitSet {
     def isEmpty: Boolean = {
       var idx = 0
       while (idx < values.length) {
-        val empty = (values(idx) == 0L)
+        val empty = values(idx) == 0L
         if (!empty) return false
         idx += 1
       }
@@ -957,7 +960,7 @@ object BitSet {
             false
           }
         case Branch(_, _, _) =>
-          rhs intersects this
+          rhs.intersects(this)
       }
 
     def ^(rhs: BitSet): BitSet =

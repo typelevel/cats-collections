@@ -1,6 +1,6 @@
 /**
-  * Created by anicolaspp on 2/18/16.
-  */
+ * Created by anicolaspp on 2/18/16.
+ */
 
 package cats.collections
 package bench
@@ -10,13 +10,11 @@ import scala.util.Random
 import scalaz.{Diev, Enum, Monoid, Show}
 import cats._
 
-
-
 /**
-  * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
-  */
+ * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
+ */
 @State(Scope.Benchmark)
-class DietRandomizeBench extends BigNumberLists{
+class DietRandomizeBench extends BigNumberLists {
 
 //  import dogs.Predef._
 

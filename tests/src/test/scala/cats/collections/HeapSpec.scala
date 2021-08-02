@@ -18,7 +18,7 @@ class HeapSpec extends CatsSuite {
     val listA = Gen.listOfN(size, agen)
     val startWith1 =
       listA.map {
-        case Nil => Heap.empty[A]
+        case Nil       => Heap.empty[A]
         case h :: tail => tail.foldLeft(Heap(h))(_.add(_))
       }
     val addOnly = listA.map(_.foldLeft(Heap.empty[A])(_.add(_)))
@@ -36,15 +36,9 @@ class HeapSpec extends CatsSuite {
           a <- agen
           heap <- heapGen(size - 1, agen)
         } yield heap + a
-      }
-      else Gen.const(Heap.empty[A])
+      } else Gen.const(Heap.empty[A])
 
-    Gen.frequency(
-      (2, addOnly),
-      (3, startWith1),
-      (5, heapify),
-      (1, addMoreAndRemove),
-      (1, smallerAdd))
+    Gen.frequency((2, addOnly), (3, startWith1), (5, heapify), (1, addMoreAndRemove), (1, smallerAdd))
   }
 
   implicit def arbHeap[A: Arbitrary: Order]: Arbitrary[Heap[A]] =
@@ -55,19 +49,17 @@ class HeapSpec extends CatsSuite {
   implicit def cogenHeap[A: Cogen: Order]: Cogen[Heap[A]] =
     Cogen[List[A]].contramap { (h: Heap[A]) => h.toList }
 
-  checkAll("PartiallyOrderedSet[Heap]",
-    PartiallyOrderedSetTests[Heap].partiallyOrderedSet[Long, Int])
+  checkAll("PartiallyOrderedSet[Heap]", PartiallyOrderedSetTests[Heap].partiallyOrderedSet[Long, Int])
 
   checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
 
-  test("sorted")(
-    forAll { (list: List[Int]) =>
+  test("sorted")(forAll { (list: List[Int]) =>
 
-      val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
+    val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-      heap.toList should be(list.sorted)
+    heap.toList should be(list.sorted)
 
-    })
+  })
 
   test("heapify is sorted") {
     forAll { (list: List[Int]) =>
@@ -125,7 +117,7 @@ class HeapSpec extends CatsSuite {
       val heap1 = heap.remove
       heap.pop.map(_._2) match {
         case Some(heap2) => assert(Order[Heap[Int]].eqv(heap1, heap2))
-        case None => assert(heap1.isEmpty)
+        case None        => assert(heap1.isEmpty)
       }
     }
   }
@@ -168,7 +160,7 @@ class HeapSpec extends CatsSuite {
 
       (min0, min1) match {
         case (None, next) => assert(next.isEmpty)
-        case (_, None) => assert(heap.size == 1)
+        case (_, None)    => assert(heap.size == 1)
         case (Some(m0), Some(m1)) =>
           assert(m0 <= m1)
       }
@@ -258,10 +250,10 @@ class HeapSpec extends CatsSuite {
           left.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on left") }
           right.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on right") }
           // we expect fully balanced heaps, but we put the size on the left first:
-          assert(left.size >= right.size,
-            s"$heapStr has left size = ${left.size} vs right size = ${right.size}")
+          assert(left.size >= right.size, s"$heapStr has left size = ${left.size} vs right size = ${right.size}")
           assert((left.height == right.height) || (left.height == right.height + 1),
-            s"$heapStr has unbalanced height: ${left.height} vs ${right.height}")
+                 s"$heapStr has unbalanced height: ${left.height} vs ${right.height}"
+          )
 
           law(left, outer)
           law(right, outer)

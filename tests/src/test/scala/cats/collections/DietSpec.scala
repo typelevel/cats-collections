@@ -73,12 +73,14 @@ class DietSpec extends CatsSuite {
 
   implicit val arbRanges: Arbitrary[Ranges] =
     Arbitrary(
-      Gen.listOf {
-        for {
-          inout <- Gen.oneOf(true, false)
-          item <- Arbitrary.arbitrary[Item]
-        } yield (inout, item)
-      }.map(Ranges.apply)
+      Gen
+        .listOf {
+          for {
+            inout <- Gen.oneOf(true, false)
+            item <- Arbitrary.arbitrary[Item]
+          } yield (inout, item)
+        }
+        .map(Ranges.apply)
     )
 
   implicit val arbDiet: Arbitrary[Diet[Int]] = Arbitrary(arbRanges.arbitrary.map(_.toDiet))
@@ -150,7 +152,7 @@ class DietSpec extends CatsSuite {
   })
 
   test("remove inner range") {
-    val diet = ((Diet.empty[Int] + Range(20, 30)) - Range(22, 27))
+    val diet = (Diet.empty[Int] + Range(20, 30)) - Range(22, 27)
 
     diet.toList should be(List(20, 21, 28, 29, 30))
   }
@@ -190,7 +192,9 @@ class DietSpec extends CatsSuite {
   })
 
   test("foldRight")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
-    rs.toDiet.foldRight(Eval.now(start))((v, acc) => acc.map(f(v, _))).value should be(rs.toSet.toList.sorted.foldRight(start)(f))
+    rs.toDiet.foldRight(Eval.now(start))((v, acc) => acc.map(f(v, _))).value should be(
+      rs.toSet.toList.sorted.foldRight(start)(f)
+    )
   })
 
   test("foldRight/toList")(forAll { (rs: Ranges) =>
@@ -212,7 +216,7 @@ class DietSpec extends CatsSuite {
   })
 
   test("intersection diet")(forAll { (rs1: Ranges, rs2: Ranges) =>
-    (rs1.toDiet & rs2.toDiet).toList should be((rs1.toSet intersect rs2.toSet).toList.sorted)
+    (rs1.toDiet & rs2.toDiet).toList should be(rs1.toSet.intersect(rs2.toSet).toList.sorted)
   })
 
   test("join disjoint range") {
@@ -226,9 +230,7 @@ class DietSpec extends CatsSuite {
   test("contains")(forAll { (rs: Ranges) =>
     val diet = rs.toDiet
     val set = rs.toSet
-    set.foreach(elem =>
-      assert(diet.contains(elem))
-    )
+    set.foreach(elem => assert(diet.contains(elem)))
   })
 
   test("not contains")(forAll { (rs: Ranges, elem: Int) =>

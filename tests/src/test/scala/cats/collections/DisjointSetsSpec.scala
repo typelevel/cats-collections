@@ -10,11 +10,11 @@ class DisjointSetsSpec extends CatsSuite {
     import DisjointSets._
 
     val operations = for {
-      _ <- union(1,2)
+      _ <- union(1, 2)
       oneAndTwo <- find(2)
-      _ <- union(3,4)
+      _ <- union(3, 4)
       threeAndFour <- find(3)
-      _ <- union(2,3)
+      _ <- union(2, 3)
       allFromOne <- find(1)
       allFromTwo <- find(2)
       allFromThree <- find(3)
@@ -22,7 +22,10 @@ class DisjointSetsSpec extends CatsSuite {
     } yield (
       oneAndTwo,
       threeAndFour,
-      allFromOne, allFromTwo, allFromThree, allFromFour
+      allFromOne,
+      allFromTwo,
+      allFromThree,
+      allFromFour
     )
 
     val (
@@ -32,9 +35,9 @@ class DisjointSetsSpec extends CatsSuite {
       Some(d),
       Some(e),
       Some(f)
-    ) = operations.runA(DisjointSets(1,2,3,4)).value
+    ) = operations.runA(DisjointSets(1, 2, 3, 4)).value
 
-    a should not equal (b)
+    (a should not).equal(b)
     c shouldBe d
     d shouldBe e
     e shouldBe f
@@ -45,16 +48,16 @@ class DisjointSetsSpec extends CatsSuite {
 
     import scala.collection.immutable.Range
 
-    val numbers = Range(0,200)
+    val numbers = Range(0, 200)
 
-    val classifiedNumbers = numbers.foldLeft(DisjointSets(numbers:_*)){ (dsets, v) =>
-      dsets.union(v, v%10)._1
+    val classifiedNumbers = numbers.foldLeft(DisjointSets(numbers: _*)) { (dsets, v) =>
+      dsets.union(v, v % 10)._1
     }
 
     val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet)
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
-    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap should be (groupByClassification.toMap)
+    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap should be(groupByClassification.toMap)
   }
 
 }

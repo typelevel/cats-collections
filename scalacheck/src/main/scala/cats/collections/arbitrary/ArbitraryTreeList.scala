@@ -1,7 +1,7 @@
 package cats.collections
 package arbitrary
 
-import org.scalacheck.{Cogen, Arbitrary}
+import org.scalacheck.{Arbitrary, Cogen}
 
 trait ArbitraryTreeList {
   implicit def arbitraryTreeList[A: Arbitrary]: Arbitrary[TreeList[A]] =

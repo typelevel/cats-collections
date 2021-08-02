@@ -18,7 +18,7 @@ class PairingHeapSpec extends CatsSuite {
     val listA = Gen.listOfN(size, agen)
     val startWith1 =
       listA.map {
-        case Nil => PairingHeap.empty[A]
+        case Nil       => PairingHeap.empty[A]
         case h :: tail => tail.foldLeft(PairingHeap(h))(_.add(_))
       }
     val addOnly = listA.map(_.foldLeft(PairingHeap.empty[A])(_.add(_)))
@@ -36,8 +36,7 @@ class PairingHeapSpec extends CatsSuite {
           a <- agen
           heap <- heapGen(size - 1, agen)
         } yield heap + a
-      }
-      else Gen.const(PairingHeap.empty[A])
+      } else Gen.const(PairingHeap.empty[A])
 
     val merged =
       for {
@@ -58,21 +57,19 @@ class PairingHeapSpec extends CatsSuite {
   implicit def cogenPairingHeap[A: Cogen: Order]: Cogen[PairingHeap[A]] =
     Cogen[List[A]].contramap { (h: PairingHeap[A]) => h.toList }
 
-  checkAll("PartiallyOrderedSet[PairingHeap]",
-    PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])
+  checkAll("PartiallyOrderedSet[PairingHeap]", PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])
 
   checkAll("Order[PairingHeap[Int]]", OrderTests[PairingHeap[Int]].order)
 
   checkAll("PairingHeap[Int]", CommutativeMonoidTests[PairingHeap[Int]].commutativeMonoid)
 
-  test("sorted")(
-    forAll { (list: List[Int]) =>
+  test("sorted")(forAll { (list: List[Int]) =>
 
-      val heap = list.foldLeft(PairingHeap.empty[Int])((h, i) => h.add(i))
+    val heap = list.foldLeft(PairingHeap.empty[Int])((h, i) => h.add(i))
 
-      heap.toList should be(list.sorted)
+    heap.toList should be(list.sorted)
 
-    })
+  })
 
   test("fromIterable is sorted") {
     forAll { (list: List[Int]) =>
@@ -108,7 +105,7 @@ class PairingHeapSpec extends CatsSuite {
 
       (min0, min1) match {
         case (None, next) => assert(next.isEmpty)
-        case (_, None) => assert(heap.size == 1)
+        case (_, None)    => assert(heap.size == 1)
         case (Some(m0), Some(m1)) =>
           assert(m0 <= m1)
       }
@@ -219,7 +216,7 @@ class PairingHeapSpec extends CatsSuite {
       val heap1 = heap.remove
       heap.pop.map(_._2) match {
         case Some(heap2) => assert(Order[PairingHeap[Int]].eqv(heap1, heap2))
-        case None => assert(heap1.isEmpty)
+        case None        => assert(heap1.isEmpty)
       }
     }
   }

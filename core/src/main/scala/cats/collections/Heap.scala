@@ -63,7 +63,7 @@ sealed abstract class Heap[A] {
     else {
       // this is safe since we are non-empty
       val branch = this.asInstanceOf[Branch[A]]
-      import branch.{min, left, right}
+      import branch.{left, min, right}
       if (left.unbalanced)
         bubbleUp(min, left.add(x), right)
       else if (right.unbalanced)
@@ -80,7 +80,7 @@ sealed abstract class Heap[A] {
   def addAll(as: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ait = as.iterator
     var heap = this
-    while(ait.hasNext) {
+    while (ait.hasNext) {
       heap = heap + ait.next()
     }
     heap
@@ -109,7 +109,7 @@ sealed abstract class Heap[A] {
   def exists(fn: A => Boolean): Boolean =
     this match {
       case Branch(a, l, r) => fn(a) || l.exists(fn) || r.exists(fn)
-      case _ => false
+      case _               => false
     }
 
   /**
@@ -118,7 +118,7 @@ sealed abstract class Heap[A] {
   def forall(fn: A => Boolean): Boolean =
     this match {
       case Branch(a, l, r) => fn(a) && l.forall(fn) && r.forall(fn)
-      case _ => true
+      case _               => true
     }
 
   /**
@@ -165,7 +165,7 @@ sealed abstract class Heap[A] {
   final def unorderedFold(implicit m: CommutativeMonoid[A]): A =
     this match {
       case Branch(min, left, right) => m.combine(min, m.combine(left.unorderedFold, right.unorderedFold))
-      case _ => m.empty
+      case _                        => m.empty
     }
 
   /**
@@ -223,7 +223,7 @@ sealed abstract class Heap[A] {
     if (isEmpty) PairingHeap.empty
     else {
       val thisBranch = this.asInstanceOf[Branch[A]]
-      import thisBranch.{min, left, right}
+      import thisBranch.{left, min, right}
       PairingHeap.Tree(min, left.toPairingHeap :: right.toPairingHeap :: Nil)
     }
 }
@@ -279,8 +279,7 @@ object Heap {
         // But since A was already boxed, and needs to be boxed in Heap
         // this shouldn't cause a performance problem
         bubbleDown(ary(i).asInstanceOf[A], loop((i << 1) + 1), loop((i + 1) << 1))
-      }
-      else {
+      } else {
         Leaf()
       }
 
@@ -322,11 +321,12 @@ object Heap {
     case (_, _)                                   => Heap(x, l, r)
   }
 
-  private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, _, _), Branch(z, lt, rt)) if (order.lt(z, y) && order.gt(x, z)) => Heap(z, l, bubbleDown(x, lt, rt))
-    case (Branch(y, lt, rt), _) if order.gt(x, y)                                   => Heap(y, bubbleDown(x, lt, rt), r)
-    case (_, _)                                                                     => Heap(x, l, r)
-  }
+  private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] =
+    (l, r) match {
+      case (Branch(y, _, _), Branch(z, lt, rt)) if order.lt(z, y) && order.gt(x, z) => Heap(z, l, bubbleDown(x, lt, rt))
+      case (Branch(y, lt, rt), _) if order.gt(x, y)                                 => Heap(y, bubbleDown(x, lt, rt), r)
+      case (_, _)                                                                   => Heap(x, l, r)
+    }
 
   private[collections] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
     h match {
@@ -342,23 +342,19 @@ object Heap {
   private[collections] def mergeChildren[A](l: Heap[A], r: Heap[A]): Heap[A] =
     if (l.isEmpty && r.isEmpty) {
       Leaf()
-    }
-    else if (l.unbalanced) {
+    } else if (l.unbalanced) {
       // empty Heaps are never unbalanced, so we can cast l to a branch:
       val bl: Branch[A] = l.asInstanceOf[Branch[A]]
       floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
-    }
-    else if (r.unbalanced) {
+    } else if (r.unbalanced) {
       // empty Heaps are never unbalanced, so we can cast r to a branch:
       val br: Branch[A] = r.asInstanceOf[Branch[A]]
       floatRight(br.min, l, mergeChildren(br.left, br.right))
-    }
-    else if (r.height < l.height) {
+    } else if (r.height < l.height) {
       // l.height >= 1, because r.height >= 0, so, l must be a branch
       val bl: Branch[A] = l.asInstanceOf[Branch[A]]
       floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
-    }
-    else {
+    } else {
       // we know r.height >= l.height,
       // we also know both r and l are not empty.
       // since l and r are not both empty, if r is empty,
@@ -433,8 +429,7 @@ object Heap {
       if (left.isEmpty) {
         if (right.isEmpty) 0
         else -1
-      }
-      else if (right.isEmpty) 1
+      } else if (right.isEmpty) 1
       else {
         // both are not empty
         val lb = left.asInstanceOf[Branch[A]]
@@ -444,6 +439,7 @@ object Heap {
         else compare(left.remove, right.remove)
       }
   }
+
   /**
    * This is the same order as you would get by doing `.toList` and ordering by that
    */

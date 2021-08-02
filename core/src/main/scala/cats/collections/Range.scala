@@ -16,7 +16,7 @@ final case class Range[A](val start: A, val end: A) {
       if (order.lt(range.end, start))
         Some((this, None)) // they are completely to the left of us
       else if (order.gteqv(range.end, end))
-      // we are completely removed
+        // we are completely removed
         None
       else Some((Range(discrete.succ(range.end), end), None))
     } else {
