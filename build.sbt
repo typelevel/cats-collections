@@ -193,7 +193,7 @@ lazy val commonSettings =
     test / fork := true
   )
 
-addCommandAlias("validateJVM", ";testsJVM/scalastyle;testsJVM/compile;testsJVM/test")
+addCommandAlias("validateJVM", ";testsJVM/compile;testsJVM/test")
 addCommandAlias("validateJS", ";testsJS/compile;testsJS/test")
 
 lazy val scoverageSettings = Seq(
