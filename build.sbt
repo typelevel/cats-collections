@@ -168,7 +168,7 @@ lazy val bench = project
     libraryDependencies += {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((3, _)) => "org.scalaz" %% "scalaz-core" % "7.4.0-M8"
-        case _            => "org.scalaz" %% "scalaz-core" % "7.3.4"
+        case _            => "org.scalaz" %% "scalaz-core" % "7.3.5"
       }
     }
   )
@@ -187,7 +187,7 @@ lazy val commonSettings =
         case Some((3, _)) =>
           deps
         case _ =>
-          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.13.0" cross CrossVersion.full)
+          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.13.1" cross CrossVersion.full)
       }
     },
     test / fork := true
