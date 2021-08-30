@@ -29,59 +29,51 @@ class AvlMap[K, V](val set: AvlSet[(K, V)]) {
     )
 
   /**
-   * Fold across all the key/value pairs, associating maximum keys
-   * first.
+   * Fold across all the key/value pairs, associating maximum keys first.
    */
   def foldRight[B](b: Eval[B])(f: ((K, V), Eval[B]) => Eval[B]): Eval[B] =
     set.foldRight(b)(f)
 
   /**
-   * Fold across all the key/value pairs, associating minimum keys
-   * first.
+   * Fold across all the key/value pairs, associating minimum keys first.
    */
   def foldLeft[B](b: B)(f: (B, (K, V)) => B): B =
     set.foldLeft(b)(f)
 
   /**
-   * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist.
-   * O(log n + log n).  Current implementation has constant factors which are unnecessary and may be improved in future.
+   * Convenience function for updating or removing a mapping for a key, where the mapping may or may not preexist. O(log
+   * n + log n). Current implementation has constant factors which are unnecessary and may be improved in future.
    */
   def alter(k: K)(f: Option[V] => Option[V])(implicit K: Order[K]): AvlMap[K, V] =
     f(get(k)).map { v => this + (k -> v) }.getOrElse(remove(k))
 
   /**
-   * Check if we have the given key in the map.
-   * O(log n)
+   * Check if we have the given key in the map. O(log n)
    */
   def containsKey(key: K)(implicit K: Order[K]): Boolean = getkv(key).isDefined
 
   /**
-   * Add a key value pair to the map.
-   * O(log n)
+   * Add a key value pair to the map. O(log n)
    */
   def +(kv: (K, V))(implicit K: Order[K]): AvlMap[K, V] = new AvlMap(set + kv)
 
   /**
-   * Get the value for the given key, if it exists.
-   * O(log n)
+   * Get the value for the given key, if it exists. O(log n)
    */
   def get(key: K)(implicit K: Order[K]): Option[V] = getkv(key).map(_._2)
 
   /**
-   * Return a map which doesn't contain the given key.
-   * O(log n)
+   * Return a map which doesn't contain the given key. O(log n)
    */
   def remove(key: K)(implicit K: Order[K]): AvlMap[K, V] = new AvlMap(set.removef(key, _._1))
 
   /**
-   * Merge this map with another map.
-   * O(n log n)
+   * Merge this map with another map. O(n log n)
    */
   def ++(other: AvlMap[K, V])(implicit K: Order[K]): AvlMap[K, V] = new AvlMap(set ++ other.set)
 
   /**
-   * Return a list of Key,Value pairs
-   * O(N)
+   * Return a list of Key,Value pairs O(N)
    */
   def toList: List[(K, V)] = {
     val lb = new ListBuffer[(K, V)]
@@ -98,10 +90,8 @@ class AvlMap[K, V](val set: AvlSet[(K, V)]) {
     foldLeft(scala.collection.immutable.Map.empty[K, V])((m, kv) => m + kv)
 
   /**
-   * Update this map with the given key,value, if the Key is already
-   * present, the value is combined with the already present value
-   * using the provided Semigroup.
-   * O(log n)
+   * Update this map with the given key,value, if the Key is already present, the value is combined with the already
+   * present value using the provided Semigroup. O(log n)
    */
   def updateAppend(key: K, value: V)(implicit K: Order[K], V: Semigroup[V]): AvlMap[K, V] =
     new AvlMap(set.updateKey(key, value))
@@ -119,8 +109,7 @@ class AvlMap[K, V](val set: AvlSet[(K, V)]) {
 object AvlMap extends AvlMapInstances {
 
   /**
-   * Construct a map containing the given key/value pairs.
-   * O(n log n)
+   * Construct a map containing the given key/value pairs. O(n log n)
    */
   def apply[K, V](kvs: (K, V)*)(implicit K: Order[K]): AvlMap[K, V] =
     kvs.foldLeft[AvlMap[K, V]](empty)(_ + _)

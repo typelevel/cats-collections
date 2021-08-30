@@ -7,15 +7,15 @@ import algebra.ring.Semiring
 import algebra.lattice._
 
 /**
- * Discrete Interval Encoding Tree (Diet).
- * It stores subsets of types having a total order, a predecessor and a successor function described by Discrete[A]
+ * Discrete Interval Encoding Tree (Diet). It stores subsets of types having a total order, a predecessor and a
+ * successor function described by Discrete[A]
  *
- * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of
- * disjoint sets.
+ * Diet is a binary search tree where each node contains a range of values and the set of all nodes is a set of disjoint
+ * sets.
  *
  * In the best case, when there are no "holes" in the stored set, the interval representation consists of just one
- * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there
- * are not two adjacent elements in the set, the representation is equivalent to a binary search tree.
+ * single interval (node) and finding, inserting and deleting operations are O(1). In the worse case, where there are
+ * not two adjacent elements in the set, the representation is equivalent to a binary search tree.
  */
 sealed abstract class Diet[A] {
 

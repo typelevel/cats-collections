@@ -40,8 +40,8 @@ class BestCaseRangesList {
     scalazRanges = getBestCaseDataScalaz
     dogRanges = getBestCaseDataDogs
 
-    scalazValues = (1 to n)
-    dogValues = (1 to n)
+    scalazValues = 1 to n
+    dogValues = 1 to n
   }
 }
 

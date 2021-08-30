@@ -11,11 +11,12 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
   /**
    * Joins two disjoint sets if both are contained by this [[DisjointSets]]
    *
-   * @param a Set `a`
-   * @param b Set `b`
-   * @return (new [[DisjointSets]] with updated state,
-   *   `true` if Both labels are contained and joined
-   * )
+   * @param a
+   *   Set `a`
+   * @param b
+   *   Set `b`
+   * @return
+   *   (new [[DisjointSets]] with updated state, `true` if Both labels are contained and joined )
    */
   def union(a: T, b: T): (DisjointSets[T], Boolean) = {
     import DisjointSets.{find => findSt}
@@ -53,15 +54,19 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
 
   /**
    * Checks whether or not a value is present in the disjoint sets collection
-   * @param v label to be found within the data structure
-   * @return Check result
+   * @param v
+   *   label to be found within the data structure
+   * @return
+   *   Check result
    */
   def contains(v: T): Boolean = entries containsKey v
 
   /**
    * Find the label of the provided value.
-   * @param v Value whose label is to be found
-   * @return (new state, 'None' if the value doesn't exist, Some(label) otherwise)
+   * @param v
+   *   Value whose label is to be found
+   * @return
+   *   (new state, 'None' if the value doesn't exist, Some(label) otherwise)
    */
   def find(v: T): (DisjointSets[T], Option[T]) = {
     val newState = entries.get(v).flatMap { _ =>
@@ -72,8 +77,10 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
 
   /**
    * Add a value to this datastructure
-   * @param v Value to be added
-   * @return New [[DisjointSets]]'s state.
+   * @param v
+   *   Value to be added
+   * @return
+   *   New [[DisjointSets]] 's state.
    */
   def +(v: T): DisjointSets[T] = {
     if (entries containsKey v) this
@@ -81,8 +88,7 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
   }
 
   /**
-   * Generates a map from labels to sets from
-   * the current [[DisjointSets]].
+   * Generates a map from labels to sets from the current [[DisjointSets]].
    */
   def toSets: (DisjointSets[T], AvlMap[T, AvlSet[T]]) =
     entries.foldLeft((this, AvlMap[T, AvlSet[T]]())) { case ((dsets, acc), (k, _)) =>

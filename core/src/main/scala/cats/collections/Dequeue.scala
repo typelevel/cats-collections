@@ -10,25 +10,19 @@ import cats.collections.compat.Factory
 /**
  * Dequeue - A Double Ended Queue
  *
- *          Front         Back
+ * Front Back
  *
- *  <- uncons   ---------   unsnoc ->
- *      cons -> --------- <- snoc
+ * <- uncons --------- unsnoc -> cons -> --------- <- snoc
  *
- * Based on the Bankers Double Ended Queue as described by C. Okasaki
- * in "Purely Functional Data Structures"
+ * Based on the Bankers Double Ended Queue as described by C. Okasaki in "Purely Functional Data Structures"
  *
- * A queue that allows items to be put onto either the front (cons)
- * or the back (snoc) of the queue in constant time, and constant
- * time access to the element at the very front or the very back of
- * the queue.  Dequeuing an element from either end is constant time
- * when amortized over a number of dequeues.
+ * A queue that allows items to be put onto either the front (cons) or the back (snoc) of the queue in constant time,
+ * and constant time access to the element at the very front or the very back of the queue. Dequeuing an element from
+ * either end is constant time when amortized over a number of dequeues.
  *
- * This queue maintains an invariant that whenever there are at least
- * two elements in the queue, neither the front list nor back list
- * are empty.  In order to maintain this invariant, a dequeue from
- * either side which would leave that side empty constructs the
- * resulting queue by taking elements from the opposite side
+ * This queue maintains an invariant that whenever there are at least two elements in the queue, neither the front list
+ * nor back list are empty. In order to maintain this invariant, a dequeue from either side which would leave that side
+ * empty constructs the resulting queue by taking elements from the opposite side
  */
 sealed abstract class Dequeue[+A] {
   def isEmpty: Boolean
@@ -70,7 +64,7 @@ sealed abstract class Dequeue[+A] {
    * enqueue to the front of the queue
    */
   def cons[AA >: A](a: AA): Dequeue[AA] = this match {
-    case SingletonDequeue(single)         => FullDequeue(NonEmptyList(a, List.empty), 1, NonEmptyList(single, List.empty), 1)
+    case SingletonDequeue(single) => FullDequeue(NonEmptyList(a, List.empty), 1, NonEmptyList(single, List.empty), 1)
     case FullDequeue(front, fs, back, bs) => FullDequeue(NonEmptyList(a, front.toList), fs + 1, back, bs)
     case _                                => SingletonDequeue(a)
   }
@@ -79,7 +73,7 @@ sealed abstract class Dequeue[+A] {
    * enqueue on to the back of the queue
    */
   def snoc[AA >: A](a: AA): Dequeue[AA] = this match {
-    case SingletonDequeue(single)         => FullDequeue(NonEmptyList(single, List.empty), 1, NonEmptyList(a, List.empty), 1)
+    case SingletonDequeue(single) => FullDequeue(NonEmptyList(single, List.empty), 1, NonEmptyList(a, List.empty), 1)
     case FullDequeue(front, fs, back, bs) => FullDequeue(front, fs, NonEmptyList(a, back.toList), bs + 1)
     case _                                => SingletonDequeue(a)
   }
@@ -254,8 +248,7 @@ sealed abstract class Dequeue[+A] {
 }
 
 /**
- * special case of the queue when it contains just a single element
- * which can be accessed from either side of the queue
+ * special case of the queue when it contains just a single element which can be accessed from either side of the queue
  */
 final private[collections] case class SingletonDequeue[A](single: A) extends Dequeue[A] {
   override def isEmpty: Boolean = false
@@ -264,8 +257,7 @@ final private[collections] case class SingletonDequeue[A](single: A) extends Deq
 }
 
 /**
- * a queue which has at least two elements, it is guaranteed that the
- * front list and back lists cannot be empty
+ * a queue which has at least two elements, it is guaranteed that the front list and back lists cannot be empty
  */
 final private[collections] case class FullDequeue[A](front: NonEmptyList[A],
                                                      fsize: Int,

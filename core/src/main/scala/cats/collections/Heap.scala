@@ -11,7 +11,8 @@ import scala.annotation.tailrec
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
  * their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based
- * on [[https://arxiv.org/pdf/1312.4666.pdf Vladimir Kostyukov's paper]] and it does support the basic operations on a heap without compromising performance.
+ * on [[https://arxiv.org/pdf/1312.4666.pdf Vladimir Kostyukov's paper]] and it does support the basic operations on a
+ * heap without compromising performance.
  *
  * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the
  * function `heapify`.
@@ -55,8 +56,7 @@ sealed abstract class Heap[A] {
   def nonEmpty: Boolean = !isEmpty
 
   /**
-   * Insert a new element into the heap.
-   * Order O(log n)
+   * Insert a new element into the heap. Order O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Heap[A] =
     if (isEmpty) Heap(x)
@@ -87,8 +87,7 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * This is O(N) in the worst case, but we use the
-   * heap property to be lazy
+   * This is O(N) in the worst case, but we use the heap property to be lazy
    */
   def contains(a: A)(implicit order: Order[A]): Boolean =
     if (isEmpty) false
@@ -122,16 +121,14 @@ sealed abstract class Heap[A] {
     }
 
   /**
-   * Avoid this, it should really have been on the companion because
-   * this totally ignores `this`.
+   * Avoid this, it should really have been on the companion because this totally ignores `this`.
    */
   @deprecated("this method ignores `this` and is very easy to misuse. Use Heap.fromIterable", "0.8.0")
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
     Heap.heapify(a)
 
   /**
-   * Remove the min element from the heap (the root) and return it along with the updated heap.
-   * Order O(log n)
+   * Remove the min element from the heap (the root) and return it along with the updated heap. Order O(log n)
    */
   def pop(implicit order: Order[A]): Option[(A, Heap[A])] = this match {
     case Branch(m, l, r) => Some((m, bubbleRootDown(mergeChildren(l, r))))
@@ -139,8 +136,7 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * Remove the min element from the heap (the root).
-   * Order O(log n)
+   * Remove the min element from the heap (the root). Order O(log n)
    */
   def remove(implicit order: Order[A]): Heap[A] = this match {
     case Branch(_, l, r) => bubbleRootDown(mergeChildren(l, r))
@@ -148,8 +144,7 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * Aggregate with a commutative monoid, since the Heap is not totally
-   * ordered
+   * Aggregate with a commutative monoid, since the Heap is not totally ordered
    */
   final def unorderedFoldMap[B](fn: A => B)(implicit m: CommutativeMonoid[B]): B =
     this match {
@@ -183,11 +178,11 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * do a foldLeft in the same order as toList.
-   * requires an Order[A], which prevents us from making a Foldable[Heap] instance.
+   * do a foldLeft in the same order as toList. requires an Order[A], which prevents us from making a Foldable[Heap]
+   * instance.
    *
-   * prefer unorderedFoldMap if you can express your operation as a commutative monoid
-   * since it is O(N) vs O(N log N) for this method
+   * prefer unorderedFoldMap if you can express your operation as a commutative monoid since it is O(N) vs O(N log N)
+   * for this method
    */
   def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
     @tailrec
@@ -216,8 +211,7 @@ sealed abstract class Heap[A] {
   def --(implicit order: Order[A]): Heap[A] = remove
 
   /**
-   * convert to a PairingHeap which can do fast merges,
-   * this is an O(N) operation
+   * convert to a PairingHeap which can do fast merges, this is an O(N) operation
    */
   def toPairingHeap: PairingHeap[A] =
     if (isEmpty) PairingHeap.empty
@@ -246,9 +240,9 @@ object Heap {
     heapify(as)
 
   /**
-   * this is useful for finding the k maximum values in O(N) times for N items
-   * same as as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N)
-   * for a full sort. When N is very large, this can be a very large savings
+   * this is useful for finding the k maximum values in O(N) times for N items same as
+   * as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N) for a full sort. When N is very large, this
+   * can be a very large savings
    */
   def takeLargest[A](as: Iterable[A], count: Int)(implicit order: Order[A]): Heap[A] =
     if (count <= 0) empty
@@ -267,8 +261,7 @@ object Heap {
     }
 
   /**
-   * Build a heap using an Iterable
-   * Order O(n)
+   * Build a heap using an Iterable Order O(n)
    */
   def heapify[A](a: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ary = (a: Iterable[Any]).toArray

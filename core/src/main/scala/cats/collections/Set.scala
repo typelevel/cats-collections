@@ -11,21 +11,18 @@ import cats.collections.compat.Factory
 /**
  * An immutable, ordered, extensional set
  *
- * This data-structure maintains balance using the
- * [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
+ * This data-structure maintains balance using the [AVL](https://en.wikipedia.org/wiki/AVL_tree) algorithm.
  */
 sealed abstract class AvlSet[A] {
   import AvlSet._
 
   /**
-   * The number of items in the Set.
-   * O(1)
+   * The number of items in the Set. O(1)
    */
   val size: Int
 
   /**
-   * Returns `true` if the Set is the empty Set.
-   * O(1)
+   * Returns `true` if the Set is the empty Set. O(1)
    */
   def isEmpty: Boolean
 
@@ -42,9 +39,7 @@ sealed abstract class AvlSet[A] {
     foldLeft[AvlSet[B]](empty)((s, a) => s ++ f(a))
 
   /**
-   * Returns None if the set is empty, otherwise returns the minimum
-   * element.
-   * O(log n)
+   * Returns None if the set is empty, otherwise returns the minimum element. O(log n)
    */
   def min: Option[A] = {
     @tailrec def loop(sub: AvlSet[A], x: A): A = sub match {
@@ -59,9 +54,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Returns `None` if the set is empty, otherwise returns the maximum
-   * element.
-   * O(log n)
+   * Returns `None` if the set is empty, otherwise returns the maximum element. O(log n)
    */
   def max: Option[A] = {
     @tailrec def loop(sub: AvlSet[A], x: A): A = sub match {
@@ -76,8 +69,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Applies a function to each element, in ascending order
-   * O(n)
+   * Applies a function to each element, in ascending order O(n)
    */
   def foreach(f: A => Unit): Unit = this match {
     case Branch(v, l, r) => l.foreach(f); f(v); r.foreach(f)
@@ -85,9 +77,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * fold the elements together from min to max, using the passed
-   * seed, and accumulator function.
-   * O(n)
+   * fold the elements together from min to max, using the passed seed, and accumulator function. O(n)
    */
   def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
     case Branch(v, l, r) => r.foldLeft(f(l.foldLeft(z)(f), v))(f)
@@ -95,9 +85,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * fold the elements together from min to max, using the passed
-   * seed, and accumulator function.
-   * O(n)
+   * fold the elements together from min to max, using the passed seed, and accumulator function. O(n)
    */
   def foldRight[B](z: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = this match {
     case Branch(v, l, r) => l.foldRight(f(v, r.foldRight(z)(f)))(f)
@@ -105,8 +93,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Find the minimum element matching the given predicate. Returns
-   * None if there is no element matching the predicate.
+   * Find the minimum element matching the given predicate. Returns None if there is no element matching the predicate.
    * O(log n)
    */
   def find(pred: A => Boolean): Option[A] = this match {
@@ -116,8 +103,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Returns `true` if the given element is in the set.
-   * O(log n)
+   * Returns `true` if the given element is in the set. O(log n)
    */
   def contains(x: A)(implicit order: Order[A]): Boolean = this match {
     case Branch(a, l, r) =>
@@ -130,8 +116,7 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Add's the given element to the set if it is not already present.
-   * O(log n)
+   * Add's the given element to the set if it is not already present. O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Branch[A] =
     (this match {
@@ -145,14 +130,12 @@ sealed abstract class AvlSet[A] {
     }).balance
 
   /**
-   * Add's the given element to the set if it is not already present.
-   * O(log n)
+   * Add's the given element to the set if it is not already present. O(log n)
    */
   def +(x: A)(implicit order: Order[A]): AvlSet[A] = add(x)
 
   /**
-   * Return a set which does not contain the given element.
-   * O(log n)
+   * Return a set which does not contain the given element. O(log n)
    */
   def remove(x: A)(implicit order: Order[A]): AvlSet[A] =
     this match {
@@ -187,23 +170,17 @@ sealed abstract class AvlSet[A] {
     }
 
   /**
-   * Return a set containing the union of elements with this set and
-   * the given set.
-   * O(n log n)
+   * Return a set containing the union of elements with this set and the given set. O(n log n)
    */
   def union(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = another.foldLeft(this)(_ + _)
 
   /**
-   * Return a set containing the union of elements with this set and
-   * the given set.
-   * O(n log n)
+   * Return a set containing the union of elements with this set and the given set. O(n log n)
    */
   def |(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this.union(another)
 
   /**
-   * Return a set containing the intersection of elements with this set and
-   * the given set.
-   * O(n log n)
+   * Return a set containing the intersection of elements with this set and the given set. O(n log n)
    */
   def intersect(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = {
     def _intersect(small: AvlSet[A], large: AvlSet[A]): AvlSet[A] =
@@ -216,29 +193,23 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Return a set containing the intersection of elements with this set and
-   * the given set.
-   * O(n log n)
+   * Return a set containing the intersection of elements with this set and the given set. O(n log n)
    */
   def &(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this.intersect(another)
 
   /**
-   * Return a set containing the union of elements with this set and
-   * the given set.
-   * O(n log n)
+   * Return a set containing the union of elements with this set and the given set. O(n log n)
    */
   def ++(another: AvlSet[A])(implicit order: Order[A]): AvlSet[A] = this.union(another)
 
   /**
-   * Return a set that has any elements appearing in the removals set removed
-   * O(n log n)
+   * Return a set that has any elements appearing in the removals set removed O(n log n)
    */
   def diff(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
     removals.foldLeft(this)(_ remove _)
 
   /**
-   * Return a set that has any elements appearing in the removals set removed
-   * O(n log n)
+   * Return a set that has any elements appearing in the removals set removed O(n log n)
    */
   def -(removals: AvlSet[A])(implicit order: Order[A]): AvlSet[A] =
     removals.foldLeft(this)(_ remove _)
@@ -249,8 +220,7 @@ sealed abstract class AvlSet[A] {
   def predicate(implicit order: Order[A]): Predicate[A] = Predicate(contains)
 
   /**
-   * Converts this set into a Scala collection
-   * O(n)
+   * Converts this set into a Scala collection O(n)
    */
   def to[Col[_]](implicit cbf: Factory[A, Col[A]]): Col[A] = {
     val builder = cbf.newBuilder
@@ -259,14 +229,12 @@ sealed abstract class AvlSet[A] {
   }
 
   /**
-   * Return the sorted list of elements.
-   * O(n)
+   * Return the sorted list of elements. O(n)
    */
   def toList: List[A] = to[List]
 
   /**
-   * Return a Scala set containing the elements in the set
-   * O(n)
+   * Return a Scala set containing the elements in the set O(n)
    */
   def toScalaSet: Set[A] = to[Set]
 

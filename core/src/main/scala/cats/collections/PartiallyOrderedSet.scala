@@ -4,8 +4,8 @@ import cats.{Order, UnorderedFoldable}
 import scala.annotation.tailrec
 
 /**
- * This is a typeclass for Heap-like data-structures which are not totally ordered sets,
- * but can produce the minimimum value, add and remove items.
+ * This is a typeclass for Heap-like data-structures which are not totally ordered sets, but can produce the minimimum
+ * value, add and remove items.
  */
 trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
 

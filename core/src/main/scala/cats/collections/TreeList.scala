@@ -21,17 +21,16 @@ import cats.implicits._
 import scala.annotation.tailrec
 
 /**
- * Implementation of "Purely Functional Random Access Lists" by Chris Okasaki.
- * This gives O(1) cons and uncons, and 2 log_2 N lookup.
+ * Implementation of "Purely Functional Random Access Lists" by Chris Okasaki. This gives O(1) cons and uncons, and 2
+ * log_2 N lookup.
  *
- * A consequence of the log N complexity is that naive recursion on the inner
- * methods will (almost) never blow the stack since the depth of the structure
- * is log N, this greatly simplifies many methods. A key example is that unlike
- * List, using a TreeList you can sequence and traverse very large lists without
- * blowing the stack since the stack depth is only log N.
+ * A consequence of the log N complexity is that naive recursion on the inner methods will (almost) never blow the stack
+ * since the depth of the structure is log N, this greatly simplifies many methods. A key example is that unlike List,
+ * using a TreeList you can sequence and traverse very large lists without blowing the stack since the stack depth is
+ * only log N.
  *
- * This data-structure is useful when you want fast cons and uncons, but also
- * want to index. It does not have an optimized concatenation.
+ * This data-structure is useful when you want fast cons and uncons, but also want to index. It does not have an
+ * optimized concatenation.
  */
 sealed abstract class TreeList[+A] {
 
@@ -56,20 +55,17 @@ sealed abstract class TreeList[+A] {
   def prepend[A1 >: A](a1: A1): TreeList[A1]
 
   /**
-   * lookup the given index in the list. O(log N).
-   * if the item is < 0 or >= size, return None
+   * lookup the given index in the list. O(log N). if the item is < 0 or >= size, return None
    */
   def get(idx: Long): Option[A]
 
   /**
-   * lookup the given index in the list. O(log N).
-   * if the item is < 0 or >= size, else throw
+   * lookup the given index in the list. O(log N). if the item is < 0 or >= size, else throw
    */
   def getUnsafe(idx: Long): A
 
   /**
-   * get the last element, if it is not empty. O(log N)
-   * a bit more efficient than get(size - 1)
+   * get the last element, if it is not empty. O(log N) a bit more efficient than get(size - 1)
    */
   def lastOption: Option[A]
 
@@ -84,19 +80,16 @@ sealed abstract class TreeList[+A] {
   def foldLeft[B](init: B)(fn: (B, A) => B): B
 
   /**
-   * a strict, right-to-left fold.
-   * Note, cats.Foldable defines foldRight to work on Eval,
-   * we use a different name here not to collide with the cats
-   * syntax
+   * a strict, right-to-left fold. Note, cats.Foldable defines foldRight to work on Eval, we use a different name here
+   * not to collide with the cats syntax
    *
    * O(N)
    */
   def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
 
   /**
-   * standard map. O(N) operation.
-   * Since this preserves structure, it is more efficient than
-   * converting toIterator, mapping the iterator, and converting back
+   * standard map. O(N) operation. Since this preserves structure, it is more efficient than converting toIterator,
+   * mapping the iterator, and converting back
    */
   def map[B](fn: A => B): TreeList[B]
 
@@ -115,32 +108,26 @@ sealed abstract class TreeList[+A] {
   def toIterator: Iterator[A]
 
   /**
-   * Get a reverse iterator through the TreeList
-   * not as efficient as going in the left to right order.
+   * Get a reverse iterator through the TreeList not as efficient as going in the left to right order.
    *
-   * It appears this is N log N in cost (although possible only N, as
-   * we have not proven the bound on cost)
+   * It appears this is N log N in cost (although possible only N, as we have not proven the bound on cost)
    *
-   * This is useful if you only want a few things from the right,
-   * if you need to iterate the entire list, it is better to
-   * to use toListReverse which is O(N)
+   * This is useful if you only want a few things from the right, if you need to iterate the entire list, it is better
+   * to to use toListReverse which is O(N)
    *
-   * This is only a constant more efficient that iterating via random
-   * access using get
+   * This is only a constant more efficient that iterating via random access using get
    */
   def toReverseIterator: Iterator[A]
 
   /**
-   * If the given index is in the list, update it, else
-   * return the current list with no change.
+   * If the given index is in the list, update it, else return the current list with no change.
    *
    * O(log N)
    */
   def updatedOrThis[A1 >: A](idx: Long, value: A1): TreeList[A1]
 
   /**
-   * map to a type with a Monoid and combine in the order of the
-   * list, O(N)
+   * map to a type with a Monoid and combine in the order of the list, O(N)
    */
   def foldMap[B: Monoid](fn: A => B): B
 
@@ -160,15 +147,13 @@ sealed abstract class TreeList[+A] {
   def toList: List[A]
 
   /**
-   * Convert to a scala standard list, but reversed
-   * O(N)
+   * Convert to a scala standard list, but reversed O(N)
    */
   def toListReverse: List[A]
 
   /**
-   * return the right most full binary tree on the right, the rest on left
-   * val (l, r) = items.split
-   * assert((l ++ r) == items)
+   * return the right most full binary tree on the right, the rest on left val (l, r) = items.split assert((l ++ r) ==
+   * items)
    *
    * O(log N)
    */
@@ -204,8 +189,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * Concatenate two TreeLists. This requires doing as
-   * much work as this.size
+   * Concatenate two TreeLists. This requires doing as much work as this.size
    *
    * O(this.size)
    */
@@ -221,8 +205,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * keep the elements that match a predicate
-   * O(N)
+   * keep the elements that match a predicate O(N)
    */
   final def filter(fn: A => Boolean): TreeList[A] = {
     val as = toIterator
@@ -239,8 +222,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * same as filter(!fn(_))
-   * O(N)
+   * same as filter(!fn(_)) O(N)
    */
   final def filterNot(fn: A => Boolean): TreeList[A] = {
     // we reimplement this to avoid creating an extra
@@ -260,8 +242,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * Standard flatMap on a List type.
-   * O(result.size + this.size)
+   * Standard flatMap on a List type. O(result.size + this.size)
    */
   final def flatMap[B](fn: A => TreeList[B]): TreeList[B] = {
     @tailrec
@@ -301,8 +282,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * If the given index is in the list, update and return Some(updated).
-   * else return None
+   * If the given index is in the list, update and return Some(updated). else return None
    *
    * O(log N)
    */
@@ -347,8 +327,7 @@ object TreeList extends TreeListInstances0 {
       }
 
       /**
-       * This is a memoized Succ constructor since
-       * we generally only build a small number of Succ instances
+       * This is a memoized Succ constructor since we generally only build a small number of Succ instances
        */
       def succ[N <: Nat](n: N): Succ[N] = {
         val v = n.value

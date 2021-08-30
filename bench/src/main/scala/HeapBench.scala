@@ -9,8 +9,7 @@ import cats._
 import scala.annotation.tailrec
 
 /**
- * run using, e.g.
- * bench/jmh:run -i 3 -wi 3 -f1 -t1 .*HeapBench.*
+ * run using, e.g. bench/jmh:run -i 3 -wi 3 -f1 -t1 .*HeapBench.*
  */
 @State(Scope.Thread)
 class HeapBench {

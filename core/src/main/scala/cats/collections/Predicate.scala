@@ -3,9 +3,8 @@ package cats.collections
 import cats._
 
 /**
- * An intensional set, which is a set which instead of enumerating its
- * elements as a extensional set does, it is defined by a predicate
- * which is a test for membership.
+ * An intensional set, which is a set which instead of enumerating its elements as a extensional set does, it is defined
+ * by a predicate which is a test for membership.
  */
 abstract class Predicate[-A] extends scala.Function1[A, Boolean] { self =>
 

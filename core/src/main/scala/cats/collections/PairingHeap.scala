@@ -7,9 +7,7 @@ import scala.annotation.tailrec
 /**
  * A PairingHeap is a heap with excellent empirical performance.
  *
- * See:
- * https://en.wikipedia.org/wiki/Pairing_heap
- * in particular:
+ * See: https://en.wikipedia.org/wiki/Pairing_heap in particular:
  * https://en.wikipedia.org/wiki/Pairing_heap#Summary_of_running_times
  *
  * Additionally, it supports an efficient O(1) combine operation
@@ -19,8 +17,7 @@ sealed abstract class PairingHeap[A] {
   import PairingHeap._
 
   /**
-   * insert an item into the heap
-   * O(1)
+   * insert an item into the heap O(1)
    */
   def add(x: A)(implicit order: Order[A]): PairingHeap[A] =
     if (this.isEmpty) apply(x)
@@ -43,8 +40,7 @@ sealed abstract class PairingHeap[A] {
   }
 
   /**
-   * This is O(N) in the worst case, but we use the
-   * heap property to be lazy
+   * This is O(N) in the worst case, but we use the heap property to be lazy
    */
   def contains(a: A)(implicit order: Order[A]): Boolean =
     if (isEmpty) false
@@ -72,26 +68,22 @@ sealed abstract class PairingHeap[A] {
   def minimumOption: Option[A]
 
   /**
-   * Returns the size of the heap.
-   * O(1)
+   * Returns the size of the heap. O(1)
    */
   def size: Long
 
   /**
-   * Verifies if the heap is empty.
-   * O(1)
+   * Verifies if the heap is empty. O(1)
    */
   def isEmpty: Boolean
 
   /**
-   * Return true if this is not empty
-   * O(1)
+   * Return true if this is not empty O(1)
    */
   def nonEmpty: Boolean = !isEmpty
 
   /**
-   * Returns a sorted list of the elements within the heap.
-   * O(N log N)
+   * Returns a sorted list of the elements within the heap. O(N log N)
    */
   def toList(implicit order: Order[A]): List[A] = {
     @tailrec
@@ -110,20 +102,17 @@ sealed abstract class PairingHeap[A] {
   def combine(that: PairingHeap[A])(implicit order: Order[A]): PairingHeap[A]
 
   /**
-   * Check to see if a predicate is ever true
-   * worst case O(N) but stops at the first true
+   * Check to see if a predicate is ever true worst case O(N) but stops at the first true
    */
   def exists(fn: A => Boolean): Boolean
 
   /**
-   * Check to see if a predicate is always true
-   * worst case O(N) but stops at the first false
+   * Check to see if a predicate is always true worst case O(N) but stops at the first false
    */
   def forall(fn: A => Boolean): Boolean
 
   /**
-   * Aggregate with a commutative monoid, since the Heap is not totally
-   * ordered
+   * Aggregate with a commutative monoid, since the Heap is not totally ordered
    */
   def unorderedFoldMap[B](fn: A => B)(implicit m: CommutativeMonoid[B]): B =
     if (isEmpty) m.empty
@@ -143,11 +132,11 @@ sealed abstract class PairingHeap[A] {
     }
 
   /**
-   * do a foldLeft in the same order as toList.
-   * requires an Order[A], which prevents us from making a Foldable[PairingHeap] instance.
+   * do a foldLeft in the same order as toList. requires an Order[A], which prevents us from making a
+   * Foldable[PairingHeap] instance.
    *
-   * prefer unorderedFoldMap if you can express your operation as a commutative monoid
-   * since it is O(N) vs O(N log N) for this method
+   * prefer unorderedFoldMap if you can express your operation as a commutative monoid since it is O(N) vs O(N log N)
+   * for this method
    */
   def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
     @tailrec
@@ -161,8 +150,7 @@ sealed abstract class PairingHeap[A] {
   }
 
   /**
-   * Remove the min element from the heap (the root) and return it along with the updated heap.
-   * Order O(log n)
+   * Remove the min element from the heap (the root) and return it along with the updated heap. Order O(log n)
    */
   def pop(implicit order: Order[A]): Option[(A, PairingHeap[A])] = this match {
     case Tree(m, subtrees) => Some((m, combineAll(subtrees)))
@@ -170,8 +158,7 @@ sealed abstract class PairingHeap[A] {
   }
 
   /**
-   * if not empty, remove the min, else return empty
-   * this is thought to be O(log N) (but not proven to be so)
+   * if not empty, remove the min, else return empty this is thought to be O(log N) (but not proven to be so)
    */
   def remove(implicit order: Order[A]): PairingHeap[A] =
     if (isEmpty) this
@@ -234,9 +221,9 @@ object PairingHeap {
   }
 
   /**
-   * this is useful for finding the k maximum values in O(N) times for N items
-   * same as as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N)
-   * for a full sort. When N is very large, this can be a very large savings
+   * this is useful for finding the k maximum values in O(N) times for N items same as
+   * as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N) for a full sort. When N is very large, this
+   * can be a very large savings
    */
   def takeLargest[A](as: Iterable[A], count: Int)(implicit order: Order[A]): PairingHeap[A] =
     if (count <= 0) empty
