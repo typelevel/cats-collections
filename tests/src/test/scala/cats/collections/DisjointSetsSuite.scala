@@ -46,11 +46,11 @@ class DisjointSetsSuite extends FunSuite {
       dsets.union(v, v%10)._1
     }
 
-    val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet)
+    val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet).toMap
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
     assertEquals(
-      disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet),
+      disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap,
       groupByClassification
     )
   }
