@@ -19,7 +19,7 @@ lazy val buildSettings = Seq(
 ThisBuild / crossScalaVersions := Seq(Scala212, Scala213, Scala3)
 ThisBuild / scalaVersion := Scala212
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
-ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8", "adopt@1.11", "adopt@1.15")
+ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8", "adopt@1.11", "adopt@1.16")
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowBuildMatrixAdditions +=
   "ci" -> List("validateJS", "validateJVM")
