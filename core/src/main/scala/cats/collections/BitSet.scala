@@ -6,11 +6,6 @@ import scala.annotation.tailrec
 
 import BitSet.{Branch, Empty, Leaf}
 
-// This implementation uses a lot of tricks for performance, which
-// scalastyle is not always happy with. So we disable it.
-//
-// scalastyle:off
-
 /**
  * A fast, immutable BitSet.
  *
@@ -1106,5 +1101,3 @@ object BitSet {
     }
   }
 }
-
-// scalastyle:on
