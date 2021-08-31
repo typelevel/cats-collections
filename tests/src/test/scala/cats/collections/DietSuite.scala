@@ -123,7 +123,7 @@ class DietSuite extends DisciplineSuite {
     assert(dietEq.eqv(diet, inverted))
   }
 
-  property("same ranges define the same diet")(forAll { rs: Ranges =>
+  property("same ranges define the same diet")(forAll { (rs: Ranges) =>
     val ranges = rs.rs.map(_._2)
     val reversed = rs.rs.reverse.map(_._2)
 
@@ -133,7 +133,7 @@ class DietSuite extends DisciplineSuite {
     assert(dietEq.eqv(d1, d2))
   })
 
-  property("reshaping results on the same diet")(forAll { rs: Ranges =>
+  property("reshaping results on the same diet")(forAll { (rs: Ranges) =>
 
     val d1 = rs.rs.map(_._2).foldLeft(Diet.empty[Int]) { (diet, r) => r.addToDiet(diet) }
 
@@ -156,22 +156,22 @@ class DietSuite extends DisciplineSuite {
     assertEquals(diet.toList, List(20, 21, 28, 29, 30))
   }
 
-  property("insert/remove")(forAll { rs: Ranges =>
+  property("insert/remove")(forAll { (rs: Ranges) =>
     assertEquals(rs.toDiet.toList, rs.toSet.toList.sorted)
   })
 
-  property("distinct")(forAll { rs: Ranges =>
+  property("distinct")(forAll { (rs: Ranges) =>
     val list = rs.toDiet.toList
     assertEquals(list.distinct, list)
   })
 
-  property("min")(forAll { rs: Ranges =>
+  property("min")(forAll { (rs: Ranges) =>
     if (!rs.isEmpty) {
       assertEquals(rs.toDiet.min, Some(rs.toSet.min))
     }
   })
 
-  property("max")(forAll { rs: Ranges =>
+  property("max")(forAll { (rs: Ranges) =>
     if (!rs.isEmpty) {
       assertEquals(rs.toDiet.max, Some(rs.toSet.max))
     }
@@ -210,7 +210,7 @@ class DietSuite extends DisciplineSuite {
     assertEquals(other.toList, List(1, 2, 3, 4, 5, 6, 7))
   }
 
-  property("contains")(forAll { rs: Ranges =>
+  property("contains")(forAll { (rs: Ranges) =>
     val diet = rs.toDiet
     val set = rs.toSet
 
@@ -250,11 +250,11 @@ class DietSuite extends DisciplineSuite {
     assert(invariant(diet))
   }
 
-  property("invariant")(forAll { rs: Ranges =>
+  property("invariant")(forAll { (rs: Ranges) =>
     assert(invariant(rs.toDiet))
   })
 
-  property("one and fromRange are consistent")(forAll { x: Int =>
+  property("one and fromRange are consistent")(forAll { (x: Int) =>
     assertEquals(Diet.fromRange(Range(x, x)), Diet.one(x))
   })
 
@@ -267,7 +267,7 @@ class DietSuite extends DisciplineSuite {
     assertEquals(Diet.one(x).contains(y), x == y)
   })
 
-  property("one toList")(forAll { x: Int =>
+  property("one toList")(forAll { (x: Int) =>
     assertEquals(Diet.one(x).toList, x :: Nil)
   })
 

@@ -16,7 +16,7 @@ class AnotherDietSuite extends DisciplineSuite {
     assertEquals(rs.toDiet.foldLeft(start)(f), rs.toSet.toList.sorted.foldLeft(start)(f))
   })
 
-  property("foldLeft/toList")(forAll { rs: Ranges =>
+  property("foldLeft/toList")(forAll { (rs: Ranges) =>
     assertEquals(rs.toDiet.foldLeft(List.empty[Int])(_ :+ _), rs.toDiet.toList)
   })
 
@@ -26,14 +26,14 @@ class AnotherDietSuite extends DisciplineSuite {
       rs.toSet.toList.sorted.foldRight(start)(f))
   })
 
-  property("foldRight/toList")(forAll { rs: Ranges =>
+  property("foldRight/toList")(forAll { (rs: Ranges) =>
     assertEquals(
       rs.toDiet.foldRight(Eval.now(List.empty[Int]))((v, acc) => acc.map(v :: _)).value,
       rs.toDiet.toList
     )
   })
 
-  property("not be modified when inserting existing item")(forAll { d: Diet[Int] =>
+  property("not be modified when inserting existing item")(forAll { (d: Diet[Int]) =>
     d.toList.forall(elem =>
       // there may be structural changes, so fall back to list comparison
       d.add(elem).toList == d.toList

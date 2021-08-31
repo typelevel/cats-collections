@@ -8,15 +8,15 @@ class DiscreteSuite extends DisciplineSuite {
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
 
-  property("succ")(forAll { x: Int =>
+  property("succ")(forAll { (x: Int) =>
     assertEquals(Discrete[Int].succ(x), (x + 1))
   })
 
-  property("pred")(forAll { x: Int =>
+  property("pred")(forAll { (x: Int) =>
     assertEquals(Discrete[Int].pred(x), (x - 1))
   })
 
-  property("adj")(forAll { x: Int =>
+  property("adj")(forAll { (x: Int) =>
     assert(Discrete[Int].adj(x, x + 1))
   })
 
@@ -25,15 +25,15 @@ class DiscreteSuite extends DisciplineSuite {
     assertEquals(Discrete[Int].adj(x, yy), false)
   })
 
-  property("inverse succ")(forAll { x: Int =>
+  property("inverse succ")(forAll { (x: Int) =>
     assertEquals(Discrete[Int].inverse.succ(x), (x - 1))
   })
 
-  property("inverse pred")(forAll { x: Int =>
+  property("inverse pred")(forAll { (x: Int) =>
     assertEquals(Discrete[Int].inverse.pred(x), (x + 1))
   })
 
-  property("inverse adj")(forAll { x: Int =>
+  property("inverse adj")(forAll { (x: Int) =>
     assert(Discrete[Int].inverse.adj(x, x - 1))
   })
 

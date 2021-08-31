@@ -5,7 +5,7 @@ import cats.kernel.laws.discipline.OrderTests
 import cats.{Order, Show}
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
+import org.scalacheck.{Arbitrary, Cogen, Gen, Prop, Test}
 
 class HeapSuite extends DisciplineSuite {
   override def scalaCheckTestParameters: Test.Parameters =
@@ -112,9 +112,11 @@ class HeapSuite extends DisciplineSuite {
     forAll { (heap: Heap[Int]) =>
       val heap1 = heap.remove
       assert((heap1.size == (heap.size - 1)) || (heap1.isEmpty && heap.isEmpty))
-    }
+    } && {
+      val r = assert(Heap.empty[Int].remove == Heap.empty[Int])
 
-    assert(Heap.empty[Int].remove == Heap.empty[Int])
+      if (r == ()) passed else falsified
+    }
   }
 
   property("pop and remove return the same heap") {
