@@ -1,12 +1,17 @@
 package cats.collections
-package tests
 
+import cats._
 import cats.collections.arbitrary.predicate._
 import cats.laws.discipline.{ContravariantMonoidalTests, SerializableTests}
-import cats._
-import cats.tests.CatsSuite
+import cats.syntax.eq._
+import munit.DisciplineSuite
+import org.scalacheck.Prop._
+import org.scalacheck.Test
 
-class PredicateSpec extends CatsSuite {
+class PredicateSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+
   checkAll("Monoid[Predicate[Int]]", SerializableTests.serializable(Monoid[Predicate[Int]]))
   checkAll("MonoidK[Predicate]", SerializableTests.serializable(MonoidK[Predicate]))
   checkAll("Serializable[ContravariantMonoidal[Predicate]]", SerializableTests.serializable(ContravariantMonoidal[Predicate]))
@@ -21,7 +26,7 @@ class PredicateSpec extends CatsSuite {
     checkAll("ContravariantMonoidal[Predicate]", ContravariantMonoidalTests[Predicate].contravariantMonoidal[Int, Int, Int])
   }
 
-  test("intersection works")(
+  property("intersection works")(
     forAll { (as: List[Int], bs: List[Int]) =>
 
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
@@ -30,12 +35,11 @@ class PredicateSpec extends CatsSuite {
       val s1 = setA & setEven
       val s2 = setA intersection setEven
 
-      bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
-                  (s2(b) == (as.contains(b) && (b % 2 == 0)))) should be(true)
-
+      assert(bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
+                  (s2(b) == (as.contains(b) && (b % 2 == 0)))))
     })
 
-  test("union works")(
+  property("union works")(
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
@@ -43,12 +47,11 @@ class PredicateSpec extends CatsSuite {
       val s1 = setA | setEven
       val s2 = setA union setEven
 
-      bs.forall(b => (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
-                  (s2(b) == (as.contains(b) || (b % 2 == 0)))) should be (true)
-
+      assert(bs.forall(b => (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
+                  (s2(b) == (as.contains(b) || (b % 2 == 0)))))
     })
 
-  test("difference works") (
+  property("difference works") (
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
@@ -56,19 +59,17 @@ class PredicateSpec extends CatsSuite {
       val s1 = setA - setEven
       val s2 = setA diff setEven
 
-      bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
-                  (s2(b) == (as.contains(b) && (b % 2 != 0)))) should be (true)
-
+      assert(bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
+                  (s2(b) == (as.contains(b) && (b % 2 != 0)))))
     })
 
-  test("negation works")(
+  property("negation works")(
     forAll { (as: List[Int], bs: List[Int]) =>
       val setA: Predicate[Int] = AvlSet.fromList(as).predicate
       val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
 
       val s1 = !(setA - setEven)
 
-      bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))) should be(true)
-
+      assert(bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))))
     })
 }

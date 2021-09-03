@@ -1,12 +1,9 @@
 package cats.collections
-package tests
 
-import cats.tests.CatsSuite
+import munit.FunSuite
 
-class DisjointSetsSpec extends CatsSuite {
-
+class DisjointSetsSuite extends FunSuite {
   test("union-find operations using state/stator monad") {
-
     import DisjointSets._
 
     val operations = for {
@@ -34,15 +31,13 @@ class DisjointSetsSpec extends CatsSuite {
       Some(f)
     ) = operations.runA(DisjointSets(1,2,3,4)).value
 
-    a should not equal (b)
-    c shouldBe d
-    d shouldBe e
-    e shouldBe f
-
+    assertNotEquals(a, b)
+    assertEquals(c, d)
+    assertEquals(d, e)
+    assertEquals(e, f)
   }
 
   test("build unions with disjoint sets as if a set of sets were used") {
-
     import scala.collection.immutable.Range
 
     val numbers = Range(0,200)
@@ -51,10 +46,12 @@ class DisjointSetsSpec extends CatsSuite {
       dsets.union(v, v%10)._1
     }
 
-    val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet)
+    val groupByClassification = numbers.groupBy(_ % 10).mapValues(_.toSet).toMap
     val (_, disjointSetsClassification) = classifiedNumbers.toSets
 
-    disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap should be (groupByClassification.toMap)
+    assertEquals(
+      disjointSetsClassification.toScalaMap.mapValues(_.toScalaSet).toMap,
+      groupByClassification
+    )
   }
-
 }
