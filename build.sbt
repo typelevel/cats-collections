@@ -73,7 +73,8 @@ lazy val `cats-collections` = project
       releaseStepCommand("sonatypeReleaseAll"),
       setNextVersion,
       commitNextVersion,
-      pushChanges)
+      pushChanges
+    )
   )
 
 lazy val commonJsSettings = Seq(
@@ -151,11 +152,14 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(
     coverageEnabled := false,
     Test / testOptions += Tests.Argument(TestFrameworks.MUnit),
-    Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck, "-minSuccessfulTests", "1000"), // "-verbosity", "2"), // increase for stress tests
+    Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck,
+                                         "-minSuccessfulTests",
+                                         "1000"
+    ), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-laws"              % catsVersion                 % "test",
-      "org.typelevel" %%% "algebra-laws"           % algebraVersion              % "test",
-      "org.typelevel" %%% "discipline-munit"       % munitDisciplineVersion      % "test"
+      "org.typelevel" %%% "cats-laws" % catsVersion % "test",
+      "org.typelevel" %%% "algebra-laws" % algebraVersion % "test",
+      "org.typelevel" %%% "discipline-munit" % munitDisciplineVersion % "test"
     ),
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))

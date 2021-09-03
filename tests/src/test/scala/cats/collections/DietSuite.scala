@@ -201,7 +201,7 @@ class DietSuite extends DisciplineSuite {
   })
 
   property("intersection diet")(forAll { (rs1: Ranges, rs2: Ranges) =>
-    assertEquals((rs1.toDiet & rs2.toDiet).toList, (rs1.toSet intersect rs2.toSet).toList.sorted)
+    assertEquals((rs1.toDiet & rs2.toDiet).toList, rs1.toSet.intersect(rs2.toSet).toList.sorted)
   })
 
   test("join disjoint range") {
@@ -216,22 +216,20 @@ class DietSuite extends DisciplineSuite {
     val diet = rs.toDiet
     val set = rs.toSet
 
-    set.foreach(elem =>
-      assert(diet.contains(elem))
-    )
+    set.foreach(elem => assert(diet.contains(elem)))
   })
 
   property("not contains")(forAll { (rs: Ranges, elem: Int) =>
     val diet = rs.toDiet
     val set = rs.toSet
 
-    if(!set.contains(elem)) {
+    if (!set.contains(elem)) {
       assert(!diet.contains(elem))
     }
   })
 
   property("not be modified when removing non-existent item")(forAll { (d: Diet[Int], elem: Int) =>
-    if(!d.contains(elem)) {
+    if (!d.contains(elem)) {
       assert(d.remove(elem) == d)
     }
   })

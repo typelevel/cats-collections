@@ -9,7 +9,7 @@ class RangeSuite extends FunSuite {
   test("contain items within [start, end]") {
     val range = Range(1, 100)
 
-    assert(scala.Range(1,100).forall(i => range.contains(i)))
+    assert(scala.Range(1, 100).forall(i => range.contains(i)))
   }
 
   test("not contain items outside [start, end]") {
@@ -23,7 +23,7 @@ class RangeSuite extends FunSuite {
   test("contain sub range") {
     val range = Range(1, 10)
 
-    assert(range.contains(Range(2,9)))
+    assert(range.contains(Range(2, 9)))
   }
 
   test("apply function to each element") {
@@ -33,7 +33,7 @@ class RangeSuite extends FunSuite {
 
     range.foreach(i => s += i)
 
-    assertEquals(scala.Range(1,101).sum, s)
+    assertEquals(scala.Range(1, 101).sum, s)
   }
 
   test("map") {
@@ -47,26 +47,26 @@ class RangeSuite extends FunSuite {
   test("foldLeft") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldLeft[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
-    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
+    assertEquals(range.foldLeft[Int](0, (a, b) => a + b), scala.Range(1, 101).sum)
+    assertEquals(range.foldLeft[Int](0, (_, b) => b), 100)
   }
 
   test("foldLeft in the right order") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
+    assertEquals(range.foldLeft[Int](0, (_, b) => b), 100)
   }
 
   test("foldRight") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldRight[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
+    assertEquals(range.foldRight[Int](0, (a, b) => a + b), scala.Range(1, 101).sum)
   }
 
   test("foldRight in the right order") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldRight[Int](0, (a,_) => a), 1)
+    assertEquals(range.foldRight[Int](0, (a, _) => a), 1)
   }
 
   test("be able to diff (-)") {

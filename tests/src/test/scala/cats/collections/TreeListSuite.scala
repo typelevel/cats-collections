@@ -13,27 +13,16 @@ class TreeListSuite extends DisciplineSuite {
     DefaultScalaCheckPropertyCheckConfig.default
 
   implicit def arbPartialFn[A: Cogen, B: Arbitrary]: Arbitrary[PartialFunction[A, B]] =
-    Arbitrary(
-      Gen.zip(
-        Gen.choose(0, 32),
-        Gen.choose(Int.MinValue, Int.MaxValue),
-        Arbitrary.arbitrary[A => B]).map { case (shift, xor, fn) =>
-
-      { case a if (a.hashCode ^ xor) >>> shift == 0 => fn(a) }
+    Arbitrary(Gen.zip(Gen.choose(0, 32), Gen.choose(Int.MinValue, Int.MaxValue), Arbitrary.arbitrary[A => B]).map {
+      case (shift, xor, fn) => { case a if (a.hashCode ^ xor) >>> shift == 0 => fn(a) }
 
     })
 
-  checkAll("Traverse[TreeList]",
-    TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option]
-  )
+  checkAll("Traverse[TreeList]", TraverseTests[TreeList].traverse[Long, Int, String, Int, Option, Option])
 
-  checkAll("Alternative[TreeList]",
-    AlternativeTests[TreeList].alternative[Long, Int, String]
-  )
+  checkAll("Alternative[TreeList]", AlternativeTests[TreeList].alternative[Long, Int, String])
 
-  checkAll("FunctorFilter[TreeList]",
-    FunctorFilterTests[TreeList].functorFilter[Long, Int, String]
-  )
+  checkAll("FunctorFilter[TreeList]", FunctorFilterTests[TreeList].functorFilter[Long, Int, String])
 
   checkAll("Monad[TreeList]", MonadTests[TreeList].monad[Long, Int, String])
 
@@ -122,7 +111,7 @@ class TreeListSuite extends DisciplineSuite {
     val maxD = xs.maxDepth
     if (xs.isEmpty) assertEquals(maxD, 0)
     else {
-      val upper = 2.0 * math.log(xs.size.toDouble)/math.log(2.0) + 1.0
+      val upper = 2.0 * math.log(xs.size.toDouble) / math.log(2.0) + 1.0
       assert(maxD.toDouble <= upper)
     }
   })
@@ -229,7 +218,7 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(xs.sequence.void, xs.sequence_)
   })
 
-  test("Show matches toString")(forAll{ (xs: TreeList[Int]) =>
+  test("Show matches toString")(forAll { (xs: TreeList[Int]) =>
     assertEquals(xs.show, xs.toString)
   })
 
@@ -250,8 +239,7 @@ class TreeListSuite extends DisciplineSuite {
 
         assertEquals(xs1.toIterator.toVector, ls1)
         assertEquals(xs.updated(idx, v), Some(xs1))
-      }
-      else {
+      } else {
         assertEquals(xs, xs1)
         assertEquals(xs.updated(idx, v), None)
       }

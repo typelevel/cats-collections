@@ -21,9 +21,9 @@ class AnotherDietSuite extends DisciplineSuite {
   })
 
   property("foldRight")(forAll { (rs: Ranges, start: Int, f: (Int, Int) => Int) =>
-    assertEquals(
-      rs.toDiet.foldRight(Eval.now(start))((v, acc) => acc.map(f(v, _))).value,
-      rs.toSet.toList.sorted.foldRight(start)(f))
+    assertEquals(rs.toDiet.foldRight(Eval.now(start))((v, acc) => acc.map(f(v, _))).value,
+                 rs.toSet.toList.sorted.foldRight(start)(f)
+    )
   })
 
   property("foldRight/toList")(forAll { (rs: Ranges) =>

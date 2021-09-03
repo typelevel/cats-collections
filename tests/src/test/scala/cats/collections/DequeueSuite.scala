@@ -48,8 +48,8 @@ class DequeueSuite extends DisciplineSuite {
     val x = "xyzzy"
     val q = Dequeue.empty.cons(x)
 
-    assertEquals(q.uncons, Some((x,EmptyDequeue())))
-    assertEquals(q.unsnoc, Some((x,EmptyDequeue())))
+    assertEquals(q.uncons, Some((x, EmptyDequeue())))
+    assertEquals(q.unsnoc, Some((x, EmptyDequeue())))
   }
 
   property("cons and then uncons")(forAll { (xs: List[Int]) =>
@@ -85,12 +85,12 @@ class DequeueSuite extends DisciplineSuite {
     r <- getArbitrary[List[A]]
   } yield consL(l, snocL(r, Dequeue.empty)))
 
-  property("foldLeft")(forAll{ (q: Dequeue[Int]) =>
-    assertEquals(q.foldLeft[List[Int]](List.empty)((xs,x) => x :: xs), q.reverse.toList)
+  property("foldLeft")(forAll { (q: Dequeue[Int]) =>
+    assertEquals(q.foldLeft[List[Int]](List.empty)((xs, x) => x :: xs), q.reverse.toList)
   })
 
   property("foldRight")(forAll { (q: Dequeue[Int]) =>
-    assertEquals(q.foldRight[List[Int]](Eval.now(List.empty))((x,xs) => xs.map(xs => x ::xs)).value, q.toList)
+    assertEquals(q.foldRight[List[Int]](Eval.now(List.empty))((x, xs) => xs.map(xs => x :: xs)).value, q.toList)
   })
 
   property("toList")(forAll { (q: Dequeue[Int]) =>

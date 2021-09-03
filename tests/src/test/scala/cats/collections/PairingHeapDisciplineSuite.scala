@@ -11,8 +11,7 @@ class PairingHeapDisciplineSuite extends DisciplineSuite {
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
 
-  checkAll("PartiallyOrderedSet[PairingHeap]",
-    PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])
+  checkAll("PartiallyOrderedSet[PairingHeap]", PartiallyOrderedSetTests[PairingHeap].partiallyOrderedSet[Long, Int])
 
   checkAll("Order[PairingHeap[Int]]", OrderTests[PairingHeap[Int]].order)
 

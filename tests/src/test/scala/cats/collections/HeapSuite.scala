@@ -51,13 +51,12 @@ class HeapSuite extends DisciplineSuite {
 
   checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
 
-  property("sorted")(
-    forAll { (list: List[Int]) =>
+  property("sorted")(forAll { (list: List[Int]) =>
 
     val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-      assertEquals(heap.toList, list.sorted)
-    })
+    assertEquals(heap.toList, list.sorted)
+  })
 
   property("heapify is sorted") {
     forAll { (list: List[Int]) =>

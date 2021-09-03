@@ -31,8 +31,7 @@ class PredicateSuite extends DisciplineSuite {
     )
   }
 
-  property("intersection works")(
-    forAll { (as: List[Int], bs: List[Int]) =>
+  property("intersection works")(forAll { (as: List[Int], bs: List[Int]) =>
 
     val setA: Predicate[Int] = AvlSet.fromList(as).predicate
     val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
@@ -40,41 +39,50 @@ class PredicateSuite extends DisciplineSuite {
     val s1 = setA & setEven
     val s2 = setA.intersection(setEven)
 
-      assert(bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
-                  (s2(b) == (as.contains(b) && (b % 2 == 0)))))
-    })
+    assert(
+      bs.forall(b =>
+        (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
+          (s2(b) == (as.contains(b) && (b % 2 == 0)))
+      )
+    )
+  })
 
-  property("union works")(
-    forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: Predicate[Int] = AvlSet.fromList(as).predicate
-      val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
+  property("union works")(forAll { (as: List[Int], bs: List[Int]) =>
+    val setA: Predicate[Int] = AvlSet.fromList(as).predicate
+    val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
 
     val s1 = setA | setEven
     val s2 = setA.union(setEven)
 
-      assert(bs.forall(b => (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
-                  (s2(b) == (as.contains(b) || (b % 2 == 0)))))
-    })
+    assert(
+      bs.forall(b =>
+        (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
+          (s2(b) == (as.contains(b) || (b % 2 == 0)))
+      )
+    )
+  })
 
-  property("difference works") (
-    forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: Predicate[Int] = AvlSet.fromList(as).predicate
-      val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
+  property("difference works")(forAll { (as: List[Int], bs: List[Int]) =>
+    val setA: Predicate[Int] = AvlSet.fromList(as).predicate
+    val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
 
     val s1 = setA - setEven
     val s2 = setA.diff(setEven)
 
-      assert(bs.forall(b => (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
-                  (s2(b) == (as.contains(b) && (b % 2 != 0)))))
-    })
+    assert(
+      bs.forall(b =>
+        (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
+          (s2(b) == (as.contains(b) && (b % 2 != 0)))
+      )
+    )
+  })
 
-  property("negation works")(
-    forAll { (as: List[Int], bs: List[Int]) =>
-      val setA: Predicate[Int] = AvlSet.fromList(as).predicate
-      val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
+  property("negation works")(forAll { (as: List[Int], bs: List[Int]) =>
+    val setA: Predicate[Int] = AvlSet.fromList(as).predicate
+    val setEven: Predicate[Int] = Predicate(_ % 2 == 0)
 
     val s1 = !(setA - setEven)
 
-      assert(bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))))
-    })
+    assert(bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))))
+  })
 }
