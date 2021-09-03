@@ -1,18 +1,16 @@
 package cats.collections
-package tests
 
-import cats.{Order, Show}
 import cats.collections.laws.discipline.PartiallyOrderedSetTests
 import cats.kernel.laws.discipline.OrderTests
-import cats.tests.CatsSuite
-import org.scalacheck.{Arbitrary, Cogen, Gen}
+import cats.{Order, Show}
+import munit.DisciplineSuite
+import org.scalacheck.Prop._
+import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
 
-class HeapSpec extends CatsSuite {
-
-  implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    checkConfiguration.copy(
-      minSuccessful = 1000
-    )
+class HeapSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
+      .withMinSuccessfulTests(1000)
 
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[Heap[A]] = {
     val listA = Gen.listOfN(size, agen)
@@ -53,15 +51,15 @@ class HeapSpec extends CatsSuite {
 
   checkAll("Order[Heap[Int]]", OrderTests[Heap[Int]].order)
 
-  test("sorted")(forAll { (list: List[Int]) =>
+  property("sorted")(
+    forAll { (list: List[Int]) =>
 
     val heap = list.foldLeft(Heap.empty[Int])((h, i) => h.add(i))
 
-    heap.toList should be(list.sorted)
+      assertEquals(heap.toList, list.sorted)
+    })
 
-  })
-
-  test("heapify is sorted") {
+  property("heapify is sorted") {
     forAll { (list: List[Int]) =>
       val heap = Heap.heapify(list)
       val heapList = heap.toList
@@ -72,14 +70,14 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("adding increases size") {
+  property("adding increases size") {
     forAll { (heap: Heap[Int], x: Int) =>
       val heap1 = heap + x
       assert(heap1.size == (heap.size + 1))
     }
   }
 
-  test("add is the same as +") {
+  property("add is the same as +") {
     forAll { (heap: Heap[Int], x: Int) =>
       val heap1 = heap + x
       val heap2 = heap.add(x)
@@ -87,7 +85,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("addAll is the same as ++") {
+  property("addAll is the same as ++") {
     forAll { (heap: Heap[Int], x: List[Int]) =>
       val heap1 = heap ++ x
       val heap2 = heap.addAll(x)
@@ -95,7 +93,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("addAll is the same as folding with add") {
+  property("addAll is the same as folding with add") {
     forAll { (heap: Heap[Int], x: List[Int]) =>
       val heap1 = heap.addAll(x)
       val heap2 = x.foldLeft(heap)(_.add(_))
@@ -103,16 +101,18 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("remove decreases size") {
+  property("remove decreases size") {
     forAll { (heap: Heap[Int]) =>
       val heap1 = heap.remove
       assert((heap1.size == (heap.size - 1)) || (heap1.isEmpty && heap.isEmpty))
-    }
+    } && {
+      val r = assert(Heap.empty[Int].remove == Heap.empty[Int])
 
-    assert(Heap.empty[Int].remove == Heap.empty[Int])
+      if (r == ()) passed else falsified
+    }
   }
 
-  test("pop and remove return the same heap") {
+  property("pop and remove return the same heap") {
     forAll { (heap: Heap[Int]) =>
       val heap1 = heap.remove
       heap.pop.map(_._2) match {
@@ -122,7 +122,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("pop returns the minimum element") {
+  property("pop returns the minimum element") {
     forAll { (heap: Heap[Int]) =>
       val min1 = heap.pop.map(_._1)
       val min2 = heap.minimumOption
@@ -130,7 +130,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("size is consistent with isEmpty/nonEmpty") {
+  property("size is consistent with isEmpty/nonEmpty") {
     forAll { (heap: Heap[Int]) =>
       assert(heap.isEmpty == (heap.size == 0))
       assert(heap.nonEmpty == (heap.size > 0))
@@ -138,14 +138,14 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("height is <= log_2 N + 1 for all heaps") {
+  property("height is <= log_2 N + 1 for all heaps") {
     forAll { (heap: Heap[Int]) =>
       val bound = math.log(heap.size.toDouble) / math.log(2.0) + 1.0
       assert(heap.isEmpty || heap.height.toDouble <= bound)
     }
   }
 
-  test("heapify is the same as adding") {
+  property("heapify is the same as adding") {
     forAll { (init: List[Int]) =>
       val heap1 = Heap.fromIterable(init)
       val heap2 = init.foldLeft(Heap.empty[Int])(_.add(_))
@@ -153,7 +153,7 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("minimumOption after removing one is >= before") {
+  property("minimumOption after removing one is >= before") {
     forAll { (heap: Heap[Int]) =>
       val min0 = heap.minimumOption
       val min1 = heap.remove.minimumOption
@@ -168,7 +168,7 @@ class HeapSpec extends CatsSuite {
   }
 
   test("Heap.minimumOption is the real minimum") {
-    def heapLaw(heap: Heap[Int]) =
+    def heapLaw(heap: Heap[Int]): Unit =
       heap.minimumOption match {
         case None => assert(heap.isEmpty)
         case Some(min) =>
@@ -189,37 +189,37 @@ class HeapSpec extends CatsSuite {
     assert(Heap.empty[Int].minimumOption.isEmpty)
   }
 
-  test("Heap.foldLeft is consistent with toList.foldLeft") {
+  property("Heap.foldLeft is consistent with toList.foldLeft") {
     forAll { (heap: Heap[Int], init: Long, fn: (Long, Int) => Long) =>
       assert(heap.foldLeft(init)(fn) == heap.toList.foldLeft(init)(fn))
     }
   }
 
-  test("Show[Heap[Int]] works like toList.mkString") {
+  property("Show[Heap[Int]] works like toList.mkString") {
     forAll { (heap: Heap[Int]) =>
       assert(Show[Heap[Int]].show(heap) == heap.toList.mkString("Heap(", ", ", ")"))
     }
   }
 
-  test("Order[Heap[Int]] works like List[Int]") {
+  property("Order[Heap[Int]] works like List[Int]") {
     forAll { (a: Heap[Int], b: Heap[Int]) =>
       assert(Order[Heap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList))
     }
   }
 
-  test("Heap.exists is correct") {
+  property("Heap.exists is correct") {
     forAll { (a: Heap[Int], fn: Int => Boolean) =>
       assert(a.exists(fn) == a.toList.exists(fn))
     }
   }
 
-  test("Heap.forall is correct") {
+  property("Heap.forall is correct") {
     forAll { (a: Heap[Int], fn: Int => Boolean) =>
       assert(a.forall(fn) == a.toList.forall(fn))
     }
   }
 
-  test("Heap.empty is less than nonEmpty") {
+  property("Heap.empty is less than nonEmpty") {
     forAll { (item: Int, heap: Heap[Int]) =>
       val ord = Order[Heap[Int]]
       assert(ord.lteqv(Heap.empty, heap))
@@ -229,19 +229,19 @@ class HeapSpec extends CatsSuite {
     }
   }
 
-  test("takeLargest is the same as sort.reverse.take") {
+  property("takeLargest is the same as sort.reverse.take") {
     forAll { (as: Iterable[Int], k: Int) =>
       assert(Heap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k))
     }
   }
 
-  test("Heap.toPairingHeap.toList == Heap.toList") {
+  property("Heap.toPairingHeap.toList == Heap.toList") {
     forAll { (h: Heap[Int]) =>
       assert(h.toPairingHeap.toList == h.toList)
     }
   }
 
-  test("Heap property is always maintained") {
+  property("Heap property is always maintained") {
     def law[A](h: Heap[A], outer: Heap[A])(implicit ord: Order[A]): Unit =
       h match {
         case Heap.Leaf() => ()
