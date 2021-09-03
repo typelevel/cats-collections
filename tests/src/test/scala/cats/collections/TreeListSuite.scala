@@ -233,7 +233,7 @@ class TreeListSuite extends DisciplineSuite {
   property("updated works")(forAll { (xs: TreeList[Int], v: Int, idx0: Long) =>
     def test(idx: Long): Unit = {
       val xs1 = xs.updatedOrThis(idx, v)
-      if (0 <= idx && idx < xs.size) {
+      if (0 <= idx && idx < xs.size && xs.size > 0) {
         val ls = xs.toIterator.toVector
         val ls1 = ls.updated(idx.toInt, v)
 
