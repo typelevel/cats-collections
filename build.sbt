@@ -211,7 +211,7 @@ addCommandAlias("validateJVM", ";testsJVM/compile;testsJVM/test")
 addCommandAlias("validateJS", ";testsJS/compile;testsJS/test")
 
 lazy val scoverageSettings = Seq(
-  coverageMinimum := 60,
+  coverageMinimumStmtTotal := 60,
   coverageFailOnMinimum := false,
   coverageHighlighting := scalaBinaryVersion.value != "2.11"
 )
