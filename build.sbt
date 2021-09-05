@@ -206,7 +206,7 @@ lazy val commonSettings =
         case Some((3, _)) =>
           deps
         case _ =>
-          deps :+ compilerPlugin(("org.typelevel" %% "kind-projector" % "0.13.1").cross(CrossVersion.full))
+          deps :+ compilerPlugin("org.typelevel"  %% "kind-projector" % "0.13.2" cross CrossVersion.full)
       }
     },
     test / fork := true
@@ -219,7 +219,7 @@ addCommandAlias("validateJVM", ";testsJVM/compile;testsJVM/test")
 addCommandAlias("validateJS", ";testsJS/compile;testsJS/test")
 
 lazy val scoverageSettings = Seq(
-  coverageMinimum := 60,
+  coverageMinimumStmtTotal := 60,
   coverageFailOnMinimum := false,
   coverageHighlighting := scalaBinaryVersion.value != "2.11"
 )
