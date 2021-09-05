@@ -648,6 +648,7 @@ object TreeList extends TreeListInstances0 {
     def toIterator: Iterator[A] = new TreeListIterator(this)
     def toReverseIterator: Iterator[A] = new TreeListReverseIterator(this)
 
+    // format: off
     def updatedOrThis[A1 >: A](idx: Long, a: A1): TreeList[A1] = {
       @tailrec
       def loop(idx: Long, treeList: List[Tree[Nat, A1]], front: List[Tree[Nat, A1]]): TreeList[A1] =
@@ -658,12 +659,13 @@ object TreeList extends TreeListInstances0 {
           else {
             val h1 = h.updated(idx, a)
             // now rebuild the front of the list
-            Trees(front.reverse_:::(h1 :: tail))
+            Trees(front reverse_::: (h1 :: tail))
           }
         } else this
 
       loop(idx, treeList, Nil)
     }
+    // format: on
 
     def foldMap[B: Monoid](fn: A => B): B =
       Monoid[B].combineAll(treeList.map(_.foldMap(fn)))
