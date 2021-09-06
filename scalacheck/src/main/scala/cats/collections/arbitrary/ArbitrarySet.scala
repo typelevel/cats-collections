@@ -1,7 +1,7 @@
 package cats.collections
 package arbitrary
 
-import org.scalacheck.{Gen, Arbitrary}, Arbitrary._
+import org.scalacheck.{Arbitrary, Gen}, Arbitrary._
 import cats.Order
 
 trait ArbitrarySet {
@@ -12,4 +12,3 @@ trait ArbitrarySet {
   implicit def setArbitrary[A: Arbitrary: Order]: Arbitrary[AvlSet[A]] =
     Arbitrary(setGen[A])
 }
-

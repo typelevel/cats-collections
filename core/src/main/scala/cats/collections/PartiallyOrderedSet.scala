@@ -1,11 +1,11 @@
 package cats.collections
 
-import cats.{UnorderedFoldable, Order}
+import cats.{Order, UnorderedFoldable}
 import scala.annotation.tailrec
 
 /**
- * This is a typeclass for Heap-like data-structures which are not totally ordered sets,
- * but can produce the minimimum value, add and remove items.
+ * This is a typeclass for Heap-like data-structures which are not totally ordered sets, but can produce the minimimum
+ * value, add and remove items.
  */
 trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
 
@@ -58,7 +58,7 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
   def sortedFoldLeft[A, B](fa: F[A], init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
     @tailrec def loop(fa: F[A], init: B): B =
       minimumOption(fa) match {
-        case None => init
+        case None      => init
         case Some(min) => loop(removeMin(fa), fn(init, min))
       }
 
@@ -126,9 +126,9 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
 
       final def compare(left: F[A], right: F[A]): Int = {
         @tailrec
-        def loop(left: F[A], right: F[A]) : Int = {
+        def loop(left: F[A], right: F[A]): Int = {
           (minimumOption(left), minimumOption(right)) match {
-            case (None, None) => 0
+            case (None, None)    => 0
             case (None, Some(_)) => -1
             case (Some(_), None) => 1
             case (Some(l), Some(r)) =>

@@ -6,13 +6,13 @@ import munit.FunSuite
 class RangeSuite extends FunSuite {
   import Range._
 
-  test("contain items within [start, end]"){
+  test("contain items within [start, end]") {
     val range = Range(1, 100)
 
-    assert(scala.Range(1,100).forall(i => range.contains(i)))
+    assert(scala.Range(1, 100).forall(i => range.contains(i)))
   }
 
-  test("not contain items outside [start, end]"){
+  test("not contain items outside [start, end]") {
     val range = Range(1, 100)
 
     assertEquals(range.contains(0), false)
@@ -20,23 +20,23 @@ class RangeSuite extends FunSuite {
     assertEquals(range.contains(101), false)
   }
 
-  test("contain sub range"){
+  test("contain sub range") {
     val range = Range(1, 10)
 
-    assert(range.contains(Range(2,9)))
+    assert(range.contains(Range(2, 9)))
   }
 
-  test("apply function to each element"){
+  test("apply function to each element") {
     var s = 0
 
     val range = Range(1, 100)
 
     range.foreach(i => s += i)
 
-    assertEquals(scala.Range(1,101).sum, s)
+    assertEquals(scala.Range(1, 101).sum, s)
   }
 
-  test("map"){
+  test("map") {
     val range = Range(1, 10)
 
     val result = range.map(_ * 2).toList.sorted
@@ -44,35 +44,35 @@ class RangeSuite extends FunSuite {
     assertEquals(scala.Range(2, 21).toList.sorted, result)
   }
 
-  test("foldLeft"){
+  test("foldLeft") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldLeft[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
-    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
+    assertEquals(range.foldLeft[Int](0, (a, b) => a + b), scala.Range(1, 101).sum)
+    assertEquals(range.foldLeft[Int](0, (_, b) => b), 100)
   }
 
-  test("foldLeft in the right order"){
+  test("foldLeft in the right order") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldLeft[Int](0, (_,b) => b), 100)
+    assertEquals(range.foldLeft[Int](0, (_, b) => b), 100)
   }
 
-  test("foldRight"){
+  test("foldRight") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldRight[Int](0, (a,b) => a + b), scala.Range(1,101).sum)
+    assertEquals(range.foldRight[Int](0, (a, b) => a + b), scala.Range(1, 101).sum)
   }
 
-  test("foldRight in the right order"){
+  test("foldRight in the right order") {
     val range = Range(1, 100)
 
-    assertEquals(range.foldRight[Int](0, (a,_) => a), 1)
+    assertEquals(range.foldRight[Int](0, (a, _) => a), 1)
   }
 
-  test("be able to diff (-)"){
+  test("be able to diff (-)") {
     val range = Range(1, 10)
 
-    val Some((l, Some(r))) = range - Range(2,9)
+    val Some((l, Some(r))) = range - Range(2, 9)
 
     assertEquals(l.toList, List(1))
     assertEquals(r.toList, List(10))
@@ -102,13 +102,13 @@ class RangeSuite extends FunSuite {
     assertEquals(Range(3, 3).toIterator.toList, List(3))
   }
 
-  test("generate inverted range"){
+  test("generate inverted range") {
     val range = Range(5, 1)
 
     assertEquals(range.toList, List(5, 4, 3, 2, 1))
   }
 
-  test("map inverted range"){
+  test("map inverted range") {
     val range = Range(5, 1)
 
     val result = range.map(_ * 2).toList
@@ -116,14 +116,14 @@ class RangeSuite extends FunSuite {
     assertEquals(result, List(10, 9, 8, 7, 6, 5, 4, 3, 2))
   }
 
-  test("the reverse be equals to the reverted range"){
-    val range = Range (20, 50)
-    val other = Range (50, 20)
+  test("the reverse be equals to the reverted range") {
+    val range = Range(20, 50)
+    val other = Range(50, 20)
 
     assertEquals(range.reverse.toList, other.toList)
   }
 
-  test("be convertible to string in math form"){
+  test("be convertible to string in math form") {
     val range = Range(10, 20)
 
     assertEquals(range.show, "[10, 20]")

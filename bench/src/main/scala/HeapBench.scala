@@ -9,8 +9,7 @@ import cats._
 import scala.annotation.tailrec
 
 /**
- * run using, e.g.
- * bench/jmh:run -i 3 -wi 3 -f1 -t1 .*HeapBench.*
+ * run using, e.g. bench/jmh:run -i 3 -wi 3 -f1 -t1 .*HeapBench.*
  */
 @State(Scope.Thread)
 class HeapBench {
@@ -54,7 +53,7 @@ class HeapBench {
   @Benchmark
   def removeAllHeap(bh: Blackhole): Unit = {
     var h = heap
-    while(h.nonEmpty) {
+    while (h.nonEmpty) {
       h = h.remove
     }
     bh.consume(h)
@@ -63,7 +62,7 @@ class HeapBench {
   @Benchmark
   def removeAllPairingHeap(bh: Blackhole): Unit = {
     var h = pheap
-    while(h.nonEmpty) {
+    while (h.nonEmpty) {
       h = h.remove
     }
     bh.consume(h)
@@ -71,12 +70,12 @@ class HeapBench {
 
   @Benchmark
   def takeLargestHeap(bh: Blackhole): Unit = {
-    bh.consume(Heap.takeLargest(data, n/10).toList)
+    bh.consume(Heap.takeLargest(data, n / 10).toList)
   }
 
   @Benchmark
   def takeLargestPairingHeap(bh: Blackhole): Unit = {
-    bh.consume(PairingHeap.takeLargest(data, n/10).toList)
+    bh.consume(PairingHeap.takeLargest(data, n / 10).toList)
   }
 
 }

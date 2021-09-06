@@ -9,7 +9,7 @@ package object collections {
   @deprecated("ISet has been renamed to Predicate.", "cats-collections 0.8.0")
   val ISet = Predicate
 
-  @tailrec private[cats] def iteratorEq[A : Eq](i1: Iterator[A], i2: Iterator[A]): Boolean = {
+  @tailrec private[cats] def iteratorEq[A: Eq](i1: Iterator[A], i2: Iterator[A]): Boolean = {
     val i1N = i1.hasNext
     val i2N = i2.hasNext
     if (!i1N && !i2N)

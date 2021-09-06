@@ -2,14 +2,14 @@ package cats.collections
 
 import cats.{Order, Show}
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Cogen, Gen, Test, Properties}
+import org.scalacheck.{Arbitrary, Cogen, Gen, Properties, Test}
 
 object PairingHeapSuite {
   def heapGen[A: Order](size: Int, agen: Gen[A]): Gen[PairingHeap[A]] = {
     val listA = Gen.listOfN(size, agen)
     val startWith1 =
       listA.map {
-        case Nil => PairingHeap.empty[A]
+        case Nil       => PairingHeap.empty[A]
         case h :: tail => tail.foldLeft(PairingHeap(h))(_.add(_))
       }
     val addOnly = listA.map(_.foldLeft(PairingHeap.empty[A])(_.add(_)))
@@ -27,8 +27,7 @@ object PairingHeapSuite {
           a <- agen
           heap <- heapGen(size - 1, agen)
         } yield heap + a
-      }
-      else Gen.const(PairingHeap.empty[A])
+      } else Gen.const(PairingHeap.empty[A])
 
     val merged =
       for {
@@ -60,53 +59,47 @@ class PairingHeapSuite extends Properties("PairingHeap") {
       .withMinSize(0)
       .withWorkers(if (BuildInfo.isJvm) 2 else 1)
 
-  property("sorted") =
-    forAll { (list: List[Int]) =>
+  property("sorted") = forAll { (list: List[Int]) =>
 
-      val heap = list.foldLeft(PairingHeap.empty[Int])((h, i) => h.add(i))
+    val heap = list.foldLeft(PairingHeap.empty[Int])((h, i) => h.add(i))
 
-      heap.toList == list.sorted
+    heap.toList == list.sorted
+  }
+
+  property("fromIterable is sorted") = forAll { (list: List[Int]) =>
+    val heap = PairingHeap.fromIterable(list)
+    val heapList = heap.toList
+    val heap1 = PairingHeap.fromIterable(heapList)
+
+    (heapList == list.sorted) && Order[PairingHeap[Int]].eqv(heap, heap1)
+  }
+
+  property("size is consistent with isEmpty/nonEmpty") = forAll { (heap: PairingHeap[Int]) =>
+    val a = heap.isEmpty == (heap.size == 0)
+    val b = heap.nonEmpty == (heap.size > 0)
+    val c = heap.isEmpty == (!heap.nonEmpty)
+
+    a && b && c
+  }
+
+  property("fromIterable is the same as adding") = forAll { (init: List[Int]) =>
+    val heap1 = PairingHeap.fromIterable(init)
+    val heap2 = init.foldLeft(PairingHeap.empty[Int])(_.add(_))
+
+    heap1.toList == heap2.toList
+  }
+
+  property("minimumOption after removing one is >= before") = forAll { (heap: PairingHeap[Int]) =>
+    val min0 = heap.minimumOption
+    val min1 = heap.remove.minimumOption
+
+    (min0, min1) match {
+      case (None, next) => next.isEmpty
+      case (_, None)    => heap.size == 1
+      case (Some(m0), Some(m1)) =>
+        m0 <= m1
     }
-
-  property("fromIterable is sorted") =
-    forAll { (list: List[Int]) =>
-      val heap = PairingHeap.fromIterable(list)
-      val heapList = heap.toList
-      val heap1 = PairingHeap.fromIterable(heapList)
-
-
-      (heapList == list.sorted) && Order[PairingHeap[Int]].eqv(heap, heap1)
-    }
-
-  property("size is consistent with isEmpty/nonEmpty") =
-    forAll { (heap: PairingHeap[Int]) =>
-      val a = heap.isEmpty == (heap.size == 0)
-      val b = heap.nonEmpty == (heap.size > 0)
-      val c = heap.isEmpty == (!heap.nonEmpty)
-
-      a && b && c
-    }
-
-  property("fromIterable is the same as adding") =
-    forAll { (init: List[Int]) =>
-      val heap1 = PairingHeap.fromIterable(init)
-      val heap2 = init.foldLeft(PairingHeap.empty[Int])(_.add(_))
-
-      heap1.toList == heap2.toList
-    }
-
-  property("minimumOption after removing one is >= before") =
-    forAll { (heap: PairingHeap[Int]) =>
-      val min0 = heap.minimumOption
-      val min1 = heap.remove.minimumOption
-
-      (min0, min1) match {
-        case (None, next) => next.isEmpty
-        case (_, None) => heap.size == 1
-        case (Some(m0), Some(m1)) =>
-          m0 <= m1
-      }
-    }
+  }
 
   property("PairingHeap.minimumOption is the real minimum") = {
     def heapLaw(heap: PairingHeap[Int]): Boolean =
@@ -130,47 +123,42 @@ class PairingHeapSuite extends Properties("PairingHeap") {
     }
   }
 
-  property("PairingHeap.foldLeft is consistent with toList.foldLeft") =
-    forAll { (heap: PairingHeap[Int], init: Long, fn: (Long, Int) => Long) =>
+  property("PairingHeap.foldLeft is consistent with toList.foldLeft") = forAll {
+    (heap: PairingHeap[Int], init: Long, fn: (Long, Int) => Long) =>
       heap.foldLeft(init)(fn) == heap.toList.foldLeft(init)(fn)
-    }
+  }
 
-  property("Show[PairingHeap[Int]] works like toList.mkString") =
-    forAll { (heap: PairingHeap[Int]) =>
-      Show[PairingHeap[Int]].show(heap) == heap.toList.mkString("PairingHeap(", ", ", ")")
-    }
+  property("Show[PairingHeap[Int]] works like toList.mkString") = forAll { (heap: PairingHeap[Int]) =>
+    Show[PairingHeap[Int]].show(heap) == heap.toList.mkString("PairingHeap(", ", ", ")")
+  }
 
-  property("Order[PairingHeap[Int]] works like List[Int]") =
-    forAll { (a: PairingHeap[Int], b: PairingHeap[Int]) =>
-      Order[PairingHeap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList)
-    }
+  property("Order[PairingHeap[Int]] works like List[Int]") = forAll { (a: PairingHeap[Int], b: PairingHeap[Int]) =>
+    Order[PairingHeap[Int]].compare(a, b) == Order[List[Int]].compare(a.toList, b.toList)
+  }
 
-  property("PairingHeap.exists is correct") =
-    forAll { (a: PairingHeap[Int], fn: Int => Boolean) =>
-      a.exists(fn) == a.toList.exists(fn)
-    }
+  property("PairingHeap.exists is correct") = forAll { (a: PairingHeap[Int], fn: Int => Boolean) =>
+    a.exists(fn) == a.toList.exists(fn)
+  }
 
-  property("PairingHeap.forall is correct") =
-    forAll { (a: PairingHeap[Int], fn: Int => Boolean) =>
-      a.forall(fn) == a.toList.forall(fn)
-    }
+  property("PairingHeap.forall is correct") = forAll { (a: PairingHeap[Int], fn: Int => Boolean) =>
+    a.forall(fn) == a.toList.forall(fn)
+  }
 
-  property("PairingHeap.empty is less than nonEmpty") =
-    forAll { (item: Int, heap: PairingHeap[Int]) =>
-      val ord = Order[PairingHeap[Int]]
-      val a = ord.lteqv(PairingHeap.empty, heap)
-      val b = ord.lt(PairingHeap.empty, PairingHeap.empty + item)
-      val c = ord.gteqv(heap, PairingHeap.empty)
-      val d = ord.gt(PairingHeap.empty + item, PairingHeap.empty)
+  property("PairingHeap.empty is less than nonEmpty") = forAll { (item: Int, heap: PairingHeap[Int]) =>
+    val ord = Order[PairingHeap[Int]]
+    val a = ord.lteqv(PairingHeap.empty, heap)
+    val b = ord.lt(PairingHeap.empty, PairingHeap.empty + item)
+    val c = ord.gteqv(heap, PairingHeap.empty)
+    val d = ord.gt(PairingHeap.empty + item, PairingHeap.empty)
 
-      a && b && c && d
-    }
+    a && b && c && d
+  }
 
   def genPairingHeapLimitedSize(limit: Int): Gen[PairingHeap[Int]] =
     Gen.choose(0, limit).flatMap(heapGen[Int](_, Arbitrary.arbitrary[Int]))
 
-  property("PairingHeap.combineAll (remove) does < log_2 N + 8 work") =
-    forAll(genPairingHeapLimitedSize(10)) { (heap: PairingHeap[Int]) =>
+  property("PairingHeap.combineAll (remove) does < log_2 N + 8 work") = forAll(genPairingHeapLimitedSize(10)) {
+    (heap: PairingHeap[Int]) =>
       def isGood(heap: PairingHeap[Int]): Boolean = {
         if (heap.size > heap.subtrees.size) {
 
@@ -185,7 +173,7 @@ class PairingHeapSuite extends Properties("PairingHeap") {
       }
 
       isGood(heap)
-    }
+  }
 
   property("PairingHeap satisfies the heap property") = {
     def isHeap[A: Order](h: PairingHeap[A]): Boolean =
@@ -202,25 +190,21 @@ class PairingHeapSuite extends Properties("PairingHeap") {
     forAll { (h: PairingHeap[Int]) => isHeap(h) }
   }
 
-  property("takeLargest is the same as sort.reverse.take") =
-    forAll { (as: Iterable[Int], k: Int) =>
-      PairingHeap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k)
-    }
+  property("takeLargest is the same as sort.reverse.take") = forAll { (as: Iterable[Int], k: Int) =>
+    PairingHeap.takeLargest(as, k).toList.reverse == as.toList.sorted.reverse.take(k)
+  }
 
-  property("pop and remove return the same heap") =
-    forAll { (heap: PairingHeap[Int]) =>
-      val heap1 = heap.remove
-      heap.pop.map(_._2) match {
-        case Some(heap2) => Order[PairingHeap[Int]].eqv(heap1, heap2)
-        case None => heap1.isEmpty
-      }
+  property("pop and remove return the same heap") = forAll { (heap: PairingHeap[Int]) =>
+    val heap1 = heap.remove
+    heap.pop.map(_._2) match {
+      case Some(heap2) => Order[PairingHeap[Int]].eqv(heap1, heap2)
+      case None        => heap1.isEmpty
     }
+  }
 
-
-  property("pop returns the minimum element") =
-    forAll { (heap: PairingHeap[Int]) =>
-      val min1 = heap.pop.map(_._1)
-      val min2 = heap.minimumOption
-      min1 == min2
-    }
+  property("pop returns the minimum element") = forAll { (heap: PairingHeap[Int]) =>
+    val min1 = heap.pop.map(_._1)
+    val min2 = heap.minimumOption
+    min1 == min2
+  }
 }
