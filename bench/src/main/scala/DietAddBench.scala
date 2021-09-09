@@ -1,13 +1,13 @@
 /**
-  * Created by anicolaspp on 2/18/16.
-  */
+ * Created by anicolaspp on 2/18/16.
+ */
 
 package cats.collections
 package bench
 
 import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 import scala.util.Random
-import scalaz.{IList, Diev, Enum, Monoid, Show}
+import scalaz.{Diev, Enum, IList, Monoid, Show}
 import cats._
 
 @State(Scope.Thread)
@@ -22,14 +22,16 @@ class BestCaseRangesList {
   var dogValues: IndexedSeq[Int] = _
 
   def getBestCaseDataScalaz: scala.IndexedSeq[scala.Range] = {
-    for (x <- scala.Range(1, n)
-         if (x % 10 == 0)
+    for (
+      x <- scala.Range(1, n)
+      if x % 10 == 0
     ) yield scala.Range(x, x + 10)
   }
 
   def getBestCaseDataDogs: scala.IndexedSeq[Range[Int]] = {
-    for (x <- scala.Range(1, n)
-         if (x % 10 == 0)
+    for (
+      x <- scala.Range(1, n)
+      if x % 10 == 0
     ) yield Range(x, x + 10)
   }
 
@@ -38,8 +40,8 @@ class BestCaseRangesList {
     scalazRanges = getBestCaseDataScalaz
     dogRanges = getBestCaseDataDogs
 
-    scalazValues = (1 to n)
-    dogValues = (1 to n)
+    scalazValues = 1 to n
+    dogValues = 1 to n
   }
 }
 
@@ -52,7 +54,7 @@ class DietAddBench extends BestCaseRangesList {
   def dogsDietAdd: Unit = {
     var diet = Diet.empty[Int]
 
-    dogValues.foreach{ i => diet = diet + i }
+    dogValues.foreach { i => diet = diet + i }
   }
 
   @Benchmark

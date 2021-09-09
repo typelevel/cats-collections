@@ -1,7 +1,7 @@
 package cats.collections
 package arbitrary
 
-import org.scalacheck.{Gen, Arbitrary}
+import org.scalacheck.{Arbitrary, Gen}
 import cats.Order
 
 trait ArbitraryPredicate {
@@ -12,4 +12,3 @@ trait ArbitraryPredicate {
   implicit def predicateArbitrary[A: Arbitrary: Order]: Arbitrary[Predicate[A]] =
     Arbitrary(predicateGen[A])
 }
-

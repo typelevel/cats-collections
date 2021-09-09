@@ -14,15 +14,16 @@ trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
   override def laws: PartiallyOrderedSetLaws[F]
 
   def partiallyOrderedSet[A: Arbitrary, B: Arbitrary](implicit
-                                                    ArbFA: Arbitrary[F[A]],
-                                                    ArbF: Arbitrary[A => B],
-                                                    ArbFAFA: Arbitrary[F[A] => F[A]],
-                                                    ArbBAB: Arbitrary[(B, A) => B],
-                                                    CogenA: Cogen[A],
-                                                    A: CommutativeMonoid[A],
-                                                    B: CommutativeMonoid[B],
-                                                    OrdFA: Order[A],
-                                                    EqFB: Eq[B]): RuleSet = {
+    ArbFA: Arbitrary[F[A]],
+    ArbF: Arbitrary[A => B],
+    ArbFAFA: Arbitrary[F[A] => F[A]],
+    ArbBAB: Arbitrary[(B, A) => B],
+    CogenA: Cogen[A],
+    A: CommutativeMonoid[A],
+    B: CommutativeMonoid[B],
+    OrdFA: Order[A],
+    EqFB: Eq[B]
+  ): RuleSet = {
     implicit val ordFA: Order[F[A]] = laws.F.order[A]
     new RuleSet {
       val name = "partiallyOrderedSet"

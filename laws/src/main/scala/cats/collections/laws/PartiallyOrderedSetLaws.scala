@@ -54,7 +54,7 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
     F.size(fa) == (F.size(F.add(fa, a)) - 1L)
 
   def containsMatchesToList[A: Order](fa: F[A], a: A): Boolean =
-    F.contains(fa, a) == (F.toSortedList(fa).exists { aa => Order[A].eqv(aa, a) })
+    F.contains(fa, a) == F.toSortedList(fa).exists { aa => Order[A].eqv(aa, a) }
 
   def removeDecreasesSize[A: Order](fa: F[A]): Boolean =
     F.isEmpty(fa) || (F.size(fa) == (F.size(F.removeMin(fa)) + 1L))
@@ -70,9 +70,9 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
     val fa2 = F.removeMin(fa)
     val m2 = F.minimumOption(fa2)
     (m1, m2) match {
-      case (None, None) => F.isEmpty(fa) && F.isEmpty(fa2)
-      case (None, Some(_)) => false // this should never happen
-      case (Some(_), None) => F.isEmpty(fa2)
+      case (None, None)       => F.isEmpty(fa) && F.isEmpty(fa2)
+      case (None, Some(_))    => false // this should never happen
+      case (Some(_), None)    => F.isEmpty(fa2)
       case (Some(a), Some(b)) => Order[A].lteqv(a, b)
     }
   }

@@ -8,15 +8,14 @@ import cats.{Eq, Order, Show}
 final case class Range[A](val start: A, val end: A) {
 
   /**
-   * Subtract a Range from this range.
-   * The result will be 0, 1 or 2 ranges
+   * Subtract a Range from this range. The result will be 0, 1 or 2 ranges
    */
   def -(range: Range[A])(implicit discrete: Discrete[A], order: Order[A]): Option[(Range[A], Option[Range[A]])] =
     if (order.lteqv(range.start, start)) {
       if (order.lt(range.end, start))
         Some((this, None)) // they are completely to the left of us
       else if (order.gteqv(range.end, end))
-      // we are completely removed
+        // we are completely removed
         None
       else Some((Range(discrete.succ(range.end), end), None))
     } else {
@@ -52,10 +51,9 @@ final case class Range[A](val start: A, val end: A) {
     order.lteqv(start, range.start) && order.gteqv(end, range.end)
 
   /**
-   * Return an iterator for the values in the range. The iterator moves from
-   * start to end taking into consideration the provided ordering.
-   * If (start > end) it uses start's predecessor offered by the Discrete
-   * instance, otherwise it uses the start's successor.
+   * Return an iterator for the values in the range. The iterator moves from start to end taking into consideration the
+   * provided ordering. If (start > end) it uses start's predecessor offered by the Discrete instance, otherwise it uses
+   * the start's successor.
    */
   def toIterator(implicit discrete: Discrete[A], order: Order[A]): Iterator[A] = {
     val next: A => A = a => if (order.lteqv(a, end)) discrete.succ(a) else discrete.pred(a)
@@ -97,8 +95,8 @@ final case class Range[A](val start: A, val end: A) {
   def map[B](f: A => B): Range[B] = Range[B](f(start), f(end))
 
   /**
-   * Folds over the elements of the range from left to right; accumulates a value of type B
-   * by applying the function f to the current value and the next element.
+   * Folds over the elements of the range from left to right; accumulates a value of type B by applying the function f
+   * to the current value and the next element.
    */
   def foldLeft[B](s: B, f: (B, A) => B)(implicit discrete: Discrete[A], order: Order[A]): B = {
     var b = s
@@ -109,8 +107,8 @@ final case class Range[A](val start: A, val end: A) {
   }
 
   /**
-   * Folds over the elements of the range from right to left; accumulates a value of type B
-   * by applying the function f to the current value and the next element.
+   * Folds over the elements of the range from right to left; accumulates a value of type B by applying the function f
+   * to the current value and the next element.
    */
   def foldRight[B](s: B, f: (A, B) => B)(implicit discrete: Discrete[A], order: Order[A]): B =
     reverse.foldLeft(s, (b: B, a: A) => f(a, b))(discrete.inverse, Order.reverse(order))
