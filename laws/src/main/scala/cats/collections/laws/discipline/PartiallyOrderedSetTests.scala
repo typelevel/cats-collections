@@ -4,7 +4,7 @@ import cats.collections.laws.PartiallyOrderedSetLaws
 import cats.collections.PartiallyOrderedSet
 import cats.kernel.{CommutativeMonoid, Eq, Order}
 import cats.kernel.laws.discipline.OrderTests
-import cats.laws.discipline.{UnorderedFoldableTests, catsLawsIsEqToProp}
+import cats.laws.discipline.{catsLawsIsEqToProp, UnorderedFoldableTests}
 import org.scalacheck.{Arbitrary, Cogen, Prop}
 import org.scalacheck.Prop.forAll
 
