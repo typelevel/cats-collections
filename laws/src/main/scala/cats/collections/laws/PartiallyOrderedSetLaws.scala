@@ -105,8 +105,9 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
   def addAllLargestMatchesProxy[A: Order](fa: F[A], maxSize: Long, items: Iterable[A]): IsEq[F[A]] =
     F.addAllLargest(fa, maxSize, items) <-> proxy.addAllLargest(fa, maxSize, items)
 
+  @deprecated("Use popMatchesProxy instead", "0.9.4")
   def unaddMatchesProxy[A: Order](fa: F[A]): IsEq[Option[(A, F[A])]] =
-    F.unadd(fa) <-> proxy.unadd(fa)
+    F.pop(fa) <-> proxy.pop(fa)
 
   def popMatchesProxy[A: Order](fa: F[A]): IsEq[Option[(A, F[A])]] =
     F.pop(fa) <-> proxy.pop(fa)

@@ -4,9 +4,11 @@ import cats.collections.laws.PartiallyOrderedSetLaws
 import cats.collections.PartiallyOrderedSet
 import cats.kernel.{CommutativeMonoid, Eq, Order}
 import cats.kernel.laws.discipline.OrderTests
-import cats.laws.discipline.{catsLawsIsEqToProp, UnorderedFoldableTests}
+import cats.laws.discipline.{UnorderedFoldableTests, catsLawsIsEqToProp}
 import org.scalacheck.{Arbitrary, Cogen, Prop}
 import org.scalacheck.Prop.forAll
+
+import scala.annotation.nowarn
 
 trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
   override def laws: PartiallyOrderedSetLaws[F]
@@ -28,6 +30,8 @@ trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
       val bases = Nil
       val parents = List(unorderedFoldable[A, B])
 
+      @nowarn val unaddMatchesProxyProps = forAll(laws.unaddMatchesProxy[A] _)
+
       val props = List(
         "size matches unorderedFoldMap" -> forAll(laws.sizeMatchesUnorderedFoldMap[A] _),
         "add to empty is singleton" -> forAll(laws.addEmptyIsSingleton[A] _),
@@ -46,7 +50,7 @@ trait PartiallyOrderedSetTests[F[_]] extends UnorderedFoldableTests[F] {
         "addIfLarger matches default impl" -> forAll(laws.addIfLargerMatchesProxy[A] _),
         "toSortedList matches default impl" -> forAll(laws.toSortedListMatchesProxy[A] _),
         "addAllLargest matches default impl" -> forAll(laws.addAllLargestMatchesProxy[A] _),
-        "unadd matches default impl" -> forAll(laws.unaddMatchesProxy[A] _),
+        "unadd matches default impl" -> unaddMatchesProxyProps,
         "pop matches default impl" -> forAll(laws.popMatchesProxy[A] _)
       ) ++ OrderTests[F[A]].order.props
     }
