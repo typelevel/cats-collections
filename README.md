@@ -1,9 +1,9 @@
 ## Cats-Collections
 
-[![Build Status](https://api.travis-ci.org/typelevel/cats-collections.png)](https://travis-ci.org/typelevel/cats-collections)
+[![Build Status](https://github.com/typelevel/cats-collections/actions/workflows/ci.yml/badge.svg)](https://github.com/typelevel/cats-collections/actions/workflows/ci.yml?query=branch%3Amaster)
 [![codecov.io](http://codecov.io/github/typelevel/cats-collections/coverage.svg?branch=master)](http://codecov.io/github/typelevel/cats-collections?branch=master)
 [![Maven Central](https://img.shields.io/maven-central/v/org.typelevel/cats-collections-core_2.13.svg)](https://maven-badges.herokuapp.com/maven-central/org.typelevel/cats-collections-core_2.13)
-[![Join the chat at https://gitter.im/typelevel/cats-collections](https://badges.gitter.im/typelevel/cats-collections.svg)](https://gitter.im/typelevel/cats-collections?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Discord](https://img.shields.io/discord/632277896739946517?label=Typelevel%20Discord)](https://discord.gg/XF3CXcMzqD)
 
 It intends to be a library containing data structures which facilitate pure functional programming in the Scala programming language. Some of these are replacements for structures already present in the Scala standard library, but with improvements in safety, some are data structures for which there is no analogue in the Scala standard library.
 
