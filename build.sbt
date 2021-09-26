@@ -8,6 +8,7 @@ val algebraVersion = "2.2.3"
 val Scala212 = "2.12.15"
 val Scala213 = "2.13.6"
 val Scala3 = "3.0.2"
+val Java8 = "adoptium@8"
 val CrossVersions = Seq(Scala212, Scala213, Scala3)
 
 lazy val buildSettings = Seq(
@@ -18,8 +19,9 @@ lazy val buildSettings = Seq(
 
 ThisBuild / crossScalaVersions := Seq(Scala212, Scala213, Scala3)
 ThisBuild / scalaVersion := Scala212
+ThisBuild / githubWorkflowEnv += ("JABBA_INDEX" -> "https://github.com/typelevel/jdk-index/raw/main/index.json")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
-ThisBuild / githubWorkflowJavaVersions := Seq("adopt@1.8", "adopt@1.11", "adopt@1.16")
+ThisBuild / githubWorkflowJavaVersions := Seq("adoptium@8", "adoptium@11", "adoptium@17")
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowBuildMatrixAdditions +=
   "ci" -> List("validateJS", "validateJVM")
@@ -35,7 +37,8 @@ ThisBuild / githubWorkflowAddedJobs ++= Seq(
         .Sbt(List("coverage", "testsJVM/test", "testsJVM/coverageReport"), name = Some("Calculate test coverage")),
       WorkflowStep.Run(List("codecov"), name = Some("Upload coverage results"))
     ),
-    scalas = List(Scala212)
+    scalas = List(Scala212),
+    javas = List(Java8)
   ),
   WorkflowJob(
     "microsite",
@@ -50,7 +53,8 @@ ThisBuild / githubWorkflowAddedJobs ++= Seq(
       WorkflowStep.Sbt(List("docs/clean"), name = Some("Clean microsite")),
       WorkflowStep.Sbt(List("docs/makeMicrosite"), name = Some("Build microsite"))
     ),
-    scalas = List(Scala213)
+    scalas = List(Scala213),
+    javas = List(Java8)
   )
 )
 
