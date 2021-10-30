@@ -30,12 +30,12 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
         pa <- opa // If `a` was part of the collection
         pb <- opb // As well as `b`...
         flatEntries = dsets.entries
-        paEntry <- flatEntries.get(pa) //then their ranks are recovered...
+        paEntry <- flatEntries.get(pa) // then their ranks are recovered...
         pbEntry <- flatEntries.get(pb)
       } yield {
         val ((parent, parentEntry), (child, childEntry)) = {
-          //... so it is possible to determine which one should be placed below
-          //the other minimizing the resulting tree depth
+          // ... so it is possible to determine which one should be placed below
+          // the other minimizing the resulting tree depth
           val parent_child = (pa -> paEntry, pb -> pbEntry)
           if (paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
         }

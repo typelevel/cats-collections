@@ -39,9 +39,9 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
    */
   def singleton[A](a: A): F[A]
 
-  ////////
+  // //////
   // The following are not fundamental, but may be optimized by implementations
-  ////////
+  // //////
 
   def addAll[A](fa: F[A], items: Iterable[A])(implicit order: Order[A]): F[A] =
     items.foldLeft(fa)(add(_, _))
