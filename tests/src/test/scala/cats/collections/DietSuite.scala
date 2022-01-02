@@ -237,10 +237,10 @@ class DietSuite extends DisciplineSuite {
   def invariant[A](d: Diet[A])(implicit order: Order[A], discrete: Discrete[A]): Boolean = d match {
     case Diet.DietNode(rng, left, right) =>
       order.lteqv(rng.start, rng.end) &&
-        left.toList.forall(order.lt(_, discrete.pred(rng.start))) &&
-        right.toList.forall(order.gt(_, discrete.succ(rng.end))) &&
-        invariant(left) &&
-        invariant(right)
+      left.toList.forall(order.lt(_, discrete.pred(rng.start))) &&
+      right.toList.forall(order.gt(_, discrete.succ(rng.end))) &&
+      invariant(left) &&
+      invariant(right)
     case _ =>
       true
   }
