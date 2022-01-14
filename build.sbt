@@ -7,7 +7,7 @@ val scalacheckVersion = "1.15.4"
 val algebraVersion = "2.2.3"
 val Scala212 = "2.12.15"
 val Scala213 = "2.13.8"
-val Scala3 = "3.0.2"
+val Scala3 = "3.1.0"
 val Java8 = "adoptium@8"
 val CrossVersions = Seq(Scala212, Scala213, Scala3)
 
