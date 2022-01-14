@@ -1,13 +1,13 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import ReleaseTransformations._
 
-val catsVersion = "2.6.1"
+val catsVersion = "2.7.0"
 val munitDisciplineVersion = "1.0.9"
 val scalacheckVersion = "1.15.4"
 val algebraVersion = "2.2.3"
 val Scala212 = "2.12.15"
-val Scala213 = "2.13.7"
-val Scala3 = "3.1.0"
+val Scala213 = "2.13.8"
+val Scala3 = "3.0.2"
 val Java8 = "adoptium@8"
 val CrossVersions = Seq(Scala212, Scala213, Scala3)
 
@@ -190,7 +190,7 @@ lazy val bench = project
     run / fork := true,
     libraryDependencies += {
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((3, _)) => "org.scalaz" %% "scalaz-core" % "7.4.0-M8"
+        case Some((3, _)) => "org.scalaz" %% "scalaz-core" % "7.4.0-M10"
         case _            => "org.scalaz" %% "scalaz-core" % "7.3.5"
       }
     }
@@ -316,7 +316,6 @@ lazy val compilerFlags = Seq(
           "-language:higherKinds", // Allow higher-kinded types
           "-language:implicitConversions", // Allow definition of implicit functions called views
           "-unchecked", // Enable additional warnings where generated code depends on assumptions.
-          "-Xcheckinit", // Wrap field accessors to throw an exception on uninitialized access.
           "-Xlint:adapted-args", // Warn if an argument list is modified to match the receiver.
           "-Xlint:constant", // Evaluation of a constant arithmetic expression results in an error.
           "-Xlint:delayedinit-select", // Selecting member of DelayedInit.
