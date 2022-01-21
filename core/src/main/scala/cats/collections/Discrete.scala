@@ -3,7 +3,7 @@ package cats.collections
 /**
  * Represent discrete operations that can be performed on A
  */
-trait Discrete[@specialized(Specializable.Integral) A] {
+trait Discrete[@specialized(Specializable.Integral) A] extends Serializable {
 
   /**
    * Return the successor of x.
