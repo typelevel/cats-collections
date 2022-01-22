@@ -8,7 +8,7 @@ val algebraVersion = "2.7.0"
 val Scala212 = "2.12.15"
 val Scala213 = "2.13.8"
 val Scala3 = "3.0.2"
-val Java8 = "adoptium@8"
+val Java8 = JavaSpec.temurin("8")
 val CrossVersions = Seq(Scala212, Scala213, Scala3)
 
 lazy val buildSettings = Seq(
@@ -19,9 +19,12 @@ lazy val buildSettings = Seq(
 
 ThisBuild / crossScalaVersions := Seq(Scala212, Scala213, Scala3)
 ThisBuild / scalaVersion := Scala212
-ThisBuild / githubWorkflowEnv += ("JABBA_INDEX" -> "https://github.com/typelevel/jdk-index/raw/main/index.json")
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
-ThisBuild / githubWorkflowJavaVersions := Seq("adoptium@8", "adoptium@11", "adoptium@17")
+ThisBuild / githubWorkflowJavaVersions := Seq(
+    JavaSpec.temurin("8"),
+    JavaSpec.temurin("11"),
+    JavaSpec.temurin("17")
+)
 ThisBuild / githubWorkflowArtifactUpload := false
 ThisBuild / githubWorkflowBuildMatrixAdditions +=
   "ci" -> List("validateJS", "validateJVM")
