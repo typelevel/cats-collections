@@ -10,6 +10,8 @@ ThisBuild / tlBaseVersion := "0.9"
 ThisBuild / startYear := Some(2015)
 
 ThisBuild / crossScalaVersions := Seq(Scala3, Scala213, Scala212)
+ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
+ThisBuild / tlFatalWarningsInCi := !tlIsScala3.value
 ThisBuild / githubWorkflowJavaVersions := Seq("8", "11", "17").map(JavaSpec.temurin)
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
@@ -26,10 +28,11 @@ ThisBuild / githubWorkflowAddedJobs +=
     javas = List(githubWorkflowJavaVersions.value.head)
   )
 
-lazy val root = tlCrossRootProject.aggregate(core, bench, scalacheck, tests, laws).settings(commonSettings)
+lazy val root = tlCrossRootProject.aggregate(core, /*bench,*/ scalacheck, tests, laws).settings(commonSettings)
 
 lazy val commonJsSettings = Seq(
-  coverageEnabled := false
+  coverageEnabled := false,
+  tlVersionIntroduced ++= List("2.12", "2.13").map(_ -> "0.9.1").toMap
 )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
@@ -139,8 +142,7 @@ addCommandAlias("validateJS", ";testsJS/compile;testsJS/test")
 
 lazy val scoverageSettings = Seq(
   coverageMinimumStmtTotal := 60,
-  coverageFailOnMinimum := false,
-  coverageHighlighting := scalaBinaryVersion.value != "2.11"
+  coverageFailOnMinimum := false
 )
 
 ThisBuild / developers += tlGitHubDev("anicolaspp", "Nicolas A Perez")
