@@ -97,7 +97,10 @@ trait PredicateInstances {
     override def combine(l: Predicate[A], r: Predicate[A]): Predicate[A] = l.union(r)
   }
 
-  implicit val predicateMonoidK: MonoidK[Predicate] = new MonoidK[Predicate] {
+  @deprecated("Retained for bincompat", "0.9.1")
+  def predicateInstance: MonoidK[Predicate] = predicateMonoidK
+
+  implicit def predicateMonoidK: MonoidK[Predicate] = new MonoidK[Predicate] {
     override def empty[A]: Predicate[A] = Predicate.empty
     override def combineK[A](l: Predicate[A], r: Predicate[A]): Predicate[A] = l.union(r)
   }
