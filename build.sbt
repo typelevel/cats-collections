@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core._
+
 val catsVersion = "2.7.0"
 val munitVersion = "0.7.29"
 val munitDisciplineVersion = "1.0.9"
@@ -54,6 +56,13 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
           extraDirs("-2.13+")
         case _ => Nil
       }
+    },
+    mimaBinaryIssueFilters ++= {
+      if (tlIsScala3.value)
+        Seq(
+          ProblemFilters.exclude[DirectMissingMethodProblem]("cats.collections.PredicateInstances.$init$")
+        )
+      else Seq.empty
     }
   )
   .jsSettings(commonJsSettings)
