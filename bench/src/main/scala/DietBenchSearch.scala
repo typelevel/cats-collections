@@ -44,7 +44,7 @@ class DietBenchSearch {
       val e = s + Random.nextInt()
 
       diet = diet + Range(s, e)
-      diev = diev + (s, e)
+      diev = diev + ((s, e))
 
       i = i + 1
     }

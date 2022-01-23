@@ -86,6 +86,6 @@ class DietAddBench extends BestCaseRangesList {
 
   @Benchmark
   def scalazDievAddRange: Unit = {
-    scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + (r.start, r.end))
+    scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + ((r.start, r.end)))
   }
 }

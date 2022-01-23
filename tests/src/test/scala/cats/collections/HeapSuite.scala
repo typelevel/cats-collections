@@ -128,7 +128,7 @@ class HeapSuite extends DisciplineSuite {
     } && {
       val r = assert(Heap.empty[Int].remove == Heap.empty[Int])
 
-      if (r == ()) passed else falsified
+      if (r == (())) passed else falsified
     }
   }
 

@@ -56,6 +56,6 @@ class DietRandomizeBench extends BigNumberLists {
   def scalazDievAddRangeRandom: Unit = {
     var diev = Diev.empty[Int]
 
-    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + (r, r + 10))
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + ((r, r + 10)))
   }
 }
