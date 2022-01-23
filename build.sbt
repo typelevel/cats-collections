@@ -26,7 +26,7 @@ ThisBuild / githubWorkflowAddedJobs +=
     javas = List(githubWorkflowJavaVersions.value.head)
   )
 
-lazy val root = tlCrossRootProject.aggregate(core, bench, scalacheck, tests, laws)
+lazy val root = tlCrossRootProject.aggregate(core, bench, scalacheck, tests, laws).settings(commonSettings)
 
 lazy val commonJsSettings = Seq(
   coverageEnabled := false
@@ -115,16 +115,18 @@ lazy val bench = project
       "org.scalaz" %% "scalaz-core" % scalazV
     }
   )
+  .settings(commonSettings)
   .enablePlugins(JmhPlugin)
 
 lazy val dogsSettings = commonSettings ++ scoverageSettings
 
 lazy val commonSettings =
   Seq(
+    headerLicense := Some(HeaderLicense.MIT("2015", "Typelevel")),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core" % catsVersion,
       "org.typelevel" %%% "algebra" % algebraVersion
-    ),
+    )
   )
 
 addCommandAlias("fmt", "; Compile / scalafmt; Test / scalafmt; scalafmtSbt")
@@ -140,6 +142,6 @@ lazy val scoverageSettings = Seq(
 )
 
 ThisBuild / developers += tlGitHubDev("anicolaspp", "Nicolas A Perez")
-ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT-"),
+ThisBuild / licenses := Seq("MIT" -> url("https://opensource.org/licenses/MIT"),
                             "BSD-3" -> url("https://opensource.org/licenses/BSD-3-Clause")
 )
