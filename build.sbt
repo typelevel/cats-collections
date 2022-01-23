@@ -106,6 +106,7 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(core.jvm)
   .settings(dogsSettings: _*)
+  .settings(tlFatalWarnings := false)
 
 lazy val bench = project
   .settings(name := "cats-collections-bench")

@@ -1,10 +1,3 @@
----
-layout: page
-title:  "List"
-source: "core/src/main/scala/Option.scala"
-position: 7
-------------------------------------------
-
 # ListMatcher
 
 `ListMatcher` is a `ScalaTest Matcher` to be *mix* within our test classes
