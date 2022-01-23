@@ -1,4 +1,5 @@
 val catsVersion = "2.7.0"
+val munitVersion = "0.7.29"
 val munitDisciplineVersion = "1.0.9"
 val scalacheckVersion = "1.15.4"
 val algebraVersion = "2.7.0"
@@ -92,9 +93,10 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
                                          "1000"
     ), // "-verbosity", "2"), // increase for stress tests
     libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-laws" % catsVersion % "test",
-      "org.typelevel" %%% "algebra-laws" % algebraVersion % "test",
-      "org.typelevel" %%% "discipline-munit" % munitDisciplineVersion % "test"
+      "org.typelevel" %%% "cats-laws" % catsVersion % Test,
+      "org.typelevel" %%% "algebra-laws" % algebraVersion % Test,
+      "org.typelevel" %%% "discipline-munit" % munitDisciplineVersion % Test,
+      "org.scalameta" %%% "munit" % munitVersion % Test
     ),
     buildInfoPackage := "cats.collections",
     buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
