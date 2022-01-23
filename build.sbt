@@ -31,7 +31,7 @@ ThisBuild / githubWorkflowAddedJobs +=
     javas = List(githubWorkflowJavaVersions.value.head)
   )
 
-lazy val root = tlCrossRootProject.aggregate(core, /*bench,*/ scalacheck, tests, laws).settings(commonSettings)
+lazy val root = tlCrossRootProject.aggregate(core, bench, scalacheck, tests, laws).settings(commonSettings)
 
 lazy val commonJsSettings = Seq(
   coverageEnabled := false,
