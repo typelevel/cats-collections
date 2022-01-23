@@ -81,6 +81,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
   .settings(name := "cats-collections-tests")
   .settings(dogsSettings: _*)
   .settings(
+    tlFatalWarnings := false,
     coverageEnabled := false,
     Test / testOptions += Tests.Argument(TestFrameworks.MUnit),
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaCheck,
@@ -108,6 +109,7 @@ lazy val bench = project
   .dependsOn(core.jvm)
   .enablePlugins(NoPublishPlugin)
   .settings(
+    tlFatalWarnings := false,
     coverageEnabled := false,
     run / fork := true,
     libraryDependencies += {
