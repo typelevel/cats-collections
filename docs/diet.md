@@ -1,9 +1,3 @@
----
-layout: docs
-title:  "Diet"
-source: "core/src/main/scala/Diet.scala"
-position: 4
----
 # Diet
 
 `Diet` is a Discrete Interval Encoding Tree. It stores subset of types
@@ -12,7 +6,7 @@ successor and predecessor generator.
 
 The discrete interval encoding tree is based on the observation that
 the set of integers { i \| a<=i<=b } can be perfectly represented by
-the closed interval [a, b].
+the closed interval \[a, b\].
 
 `Diet` is a binary search tree where each node contains a set of
 continuous values. If a value is inserted and it fills the hole

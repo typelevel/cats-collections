@@ -1,9 +1,3 @@
----
-layout: docs
-title:  "AvlSet"
-source: "core/src/main/scala/Set.scala"
-position: 10
----
 # AvlSet
 
 `AvlSet` is a tree-based set which stores Orderable elements in

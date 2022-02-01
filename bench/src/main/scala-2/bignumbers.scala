@@ -20,27 +20,21 @@
  */
 
 package cats.collections
-package syntax
+package bench
 
-import cats.{Foldable, Order, Semigroup}
+import scalaz.IList
+import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 
-trait FoldableSyntax {
-  implicit def foldableSyntax[F[_]: Foldable, A](fa: F[A]): FoldableOps[F, A] =
-    new FoldableOps(fa)
-}
+trait BigNumberLists {
+  @Param(Array("10", "100", "1000", "10000"))
+  var n: Int = _
 
-final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
-  def toCatsVector: Vector[A] =
-    F.foldLeft[A, Vector[A]](fa, Vector.empty)(_ :+ _)
+  var scala: List[Int] = _
+  var scalazlst: IList[Int] = _
 
-  def toCatsMap[K, V](implicit K: Order[K], ev: A =:= (K, V)): AvlMap[K, V] = {
-    F.foldLeft(fa, AvlMap.empty[K, V])(_ + _)
-  }
-
-  def toCatsMultiMap[K, V](implicit K: Order[K], ev: A =:= (K, V), V: Semigroup[V]): AvlMap[K, V] = {
-    F.foldLeft(fa, AvlMap.empty[K, V]) { (m, a) =>
-      val (k, v) = ev(a)
-      m.updateAppend(k, v)
-    }
+  @Setup
+  def setup: Unit = {
+    scala = (1 to n).toList
+    scalazlst = IList.fromSeq(1 to n)
   }
 }
