@@ -1,9 +1,3 @@
----
-layout: docs
-title:  "Discrete"
-source: "core/src/main/scala/Discrete.scala"
-position: 5
----
 # Discrete
 
 `Discrete` represents discrete operations that can be performed on a type `A`

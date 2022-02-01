@@ -20,27 +20,42 @@
  */
 
 package cats.collections
-package syntax
+package bench
 
-import cats.{Foldable, Order, Semigroup}
+import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
+import scala.util.Random
+import scalaz.{Diev, Enum, Monoid, Show}
+import cats._
 
-trait FoldableSyntax {
-  implicit def foldableSyntax[F[_]: Foldable, A](fa: F[A]): FoldableOps[F, A] =
-    new FoldableOps(fa)
-}
+/**
+ * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
+ */
+@State(Scope.Benchmark)
+class DietRandomizeBench extends BigNumberLists {
 
-final class FoldableOps[F[_], A](fa: F[A])(implicit F: Foldable[F]) {
-  def toCatsVector: Vector[A] =
-    F.foldLeft[A, Vector[A]](fa, Vector.empty)(_ :+ _)
+//  import dogs.Predef._
 
-  def toCatsMap[K, V](implicit K: Order[K], ev: A =:= (K, V)): AvlMap[K, V] = {
-    F.foldLeft(fa, AvlMap.empty[K, V])(_ + _)
+  implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
+
+  @Benchmark
+  def dogsDietAddRandom: Unit = {
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
-  def toCatsMultiMap[K, V](implicit K: Order[K], ev: A =:= (K, V), V: Semigroup[V]): AvlMap[K, V] = {
-    F.foldLeft(fa, AvlMap.empty[K, V]) { (m, a) =>
-      val (k, v) = ev(a)
-      m.updateAppend(k, v)
-    }
+  @Benchmark
+  def scalazDievAddRandom: Unit = {
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r)
+  }
+
+  @Benchmark
+  def dogsDietAddRangeRandom: Unit = {
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
+  }
+
+  @Benchmark
+  def scalazDievAddRangeRandom: Unit = {
+    var diev = Diev.empty[Int]
+
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + ((r, r + 10)))
   }
 }

@@ -1,8 +1,3 @@
----
-layout: docs
-title:  "Binary Heap"
-position: 2
----
 # Binary Heap
 
 `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because

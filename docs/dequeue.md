@@ -1,9 +1,3 @@
----
-layout: docs
-title:  "Dequeue"
-source: "core/src/main/scala/Dequeue.scala"
-position: 3
----
 # Dequeue
 
 `Dequeue` is a double-ended queue. It offers constant time cons and

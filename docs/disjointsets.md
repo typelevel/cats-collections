@@ -1,9 +1,3 @@
----
-layout: docs
-title:  "DisjointSets"
-source: "core/src/main/scala/cats/collections/DisjointSets.scala"
-position: 6
----
 # Disjoint Sets
 
 `DisjointSets` provides a purely functional implementation for the union-find collection.
