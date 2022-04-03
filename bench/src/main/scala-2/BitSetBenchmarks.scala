@@ -92,53 +92,75 @@ abstract class DoSetup {
 
 // all benchmarks
 
-class AllBenchmarks extends DoSetup
-    with BuildSci with BuildScm with BuildIset with BuildCcbs
-    with BulkAddSci with BulkAddScm with BulkAddIset with BulkAddCcbs
-    with BulkRemoveSci with BulkRemoveScm with BulkRemoveIset with BulkRemoveCcbs
-    with FoldIntoSci with FoldIntoScm with FoldIntoIset with FoldIntoCcbs
-    with FoldOutOfSci with FoldOutOfScm with FoldOutOfIset with FoldOutOfCcbs
-    with LookupSci with LookupScm with LookupIset with LookupCcbs
-    with MergeSci with MergeScm with MergeIset with MergeCcbs
-    with IntersectSci with IntersectScm with IntersectIset with IntersectCcbs
-    with XorSci with XorScm with XorIset with XorCcbs
-    with DiffSci with DiffScm with DiffIset with DiffCcbs
+class AllBenchmarks
+    extends DoSetup
+    with BuildSci
+    with BuildScm
+    with BuildIset
+    with BuildCcbs
+    with BulkAddSci
+    with BulkAddScm
+    with BulkAddIset
+    with BulkAddCcbs
+    with BulkRemoveSci
+    with BulkRemoveScm
+    with BulkRemoveIset
+    with BulkRemoveCcbs
+    with FoldIntoSci
+    with FoldIntoScm
+    with FoldIntoIset
+    with FoldIntoCcbs
+    with FoldOutOfSci
+    with FoldOutOfScm
+    with FoldOutOfIset
+    with FoldOutOfCcbs
+    with LookupSci
+    with LookupScm
+    with LookupIset
+    with LookupCcbs
+    with MergeSci
+    with MergeScm
+    with MergeIset
+    with MergeCcbs
+    with IntersectSci
+    with IntersectScm
+    with IntersectIset
+    with IntersectCcbs
+    with XorSci
+    with XorScm
+    with XorIset
+    with XorCcbs
+    with DiffSci
+    with DiffScm
+    with DiffIset
+    with DiffCcbs
 
 // per-method benchmarks
 
-class BuildBenchmarks extends DoSetup
-    with BuildSci with BuildScm with BuildIset with BuildCcbs
+class BuildBenchmarks extends DoSetup with BuildSci with BuildScm with BuildIset with BuildCcbs
 
-class BulkAddBenchmarks extends DoSetup
-    with BulkAddSci with BulkAddScm with BulkAddIset with BulkAddCcbs
+class BulkAddBenchmarks extends DoSetup with BulkAddSci with BulkAddScm with BulkAddIset with BulkAddCcbs
 
-class BulkRemoveBenchmarks extends DoSetup
-    with BulkRemoveSci with BulkRemoveScm with BulkRemoveIset with BulkRemoveCcbs
+class BulkRemoveBenchmarks extends DoSetup with BulkRemoveSci with BulkRemoveScm with BulkRemoveIset with BulkRemoveCcbs
 
-class FoldIntoBenchmarks extends DoSetup
-    with FoldIntoSci with FoldIntoScm with FoldIntoIset with FoldIntoCcbs
+class FoldIntoBenchmarks extends DoSetup with FoldIntoSci with FoldIntoScm with FoldIntoIset with FoldIntoCcbs
 
-class FoldOutOfBenchmarks extends DoSetup
-    with FoldOutOfSci with FoldOutOfScm with FoldOutOfIset with FoldOutOfCcbs
+class FoldOutOfBenchmarks extends DoSetup with FoldOutOfSci with FoldOutOfScm with FoldOutOfIset with FoldOutOfCcbs
 
-class LookupBenchmarks extends DoSetup
-    with LookupSci with LookupScm with LookupIset with LookupCcbs
+class LookupBenchmarks extends DoSetup with LookupSci with LookupScm with LookupIset with LookupCcbs
 
-class MergeBenchmarks extends DoSetup
-    with MergeSci with MergeScm with MergeIset with MergeCcbs
+class MergeBenchmarks extends DoSetup with MergeSci with MergeScm with MergeIset with MergeCcbs
 
-class IntersectBenchmarks extends DoSetup
-    with IntersectSci with IntersectScm with IntersectIset with IntersectCcbs
+class IntersectBenchmarks extends DoSetup with IntersectSci with IntersectScm with IntersectIset with IntersectCcbs
 
-class XorBenchmarks extends DoSetup
-    with XorSci with XorScm with XorIset with XorCcbs
+class XorBenchmarks extends DoSetup with XorSci with XorScm with XorIset with XorCcbs
 
-class DiffBenchmarks extends DoSetup
-    with DiffSci with DiffScm with DiffIset with DiffCcbs
+class DiffBenchmarks extends DoSetup with DiffSci with DiffScm with DiffIset with DiffCcbs
 
 // per-data type benchmarks
 
-class SciBenchmarks extends DoSetup
+class SciBenchmarks
+    extends DoSetup
     with BuildSci
     with BulkAddSci
     with BulkRemoveSci
@@ -150,7 +172,8 @@ class SciBenchmarks extends DoSetup
     with XorSci
     with DiffSci
 
-class ScmBenchmarks extends DoSetup
+class ScmBenchmarks
+    extends DoSetup
     with BuildScm
     with BulkAddScm
     with BulkRemoveScm
@@ -162,7 +185,8 @@ class ScmBenchmarks extends DoSetup
     with XorScm
     with DiffScm
 
-class IsetBenchmarks extends DoSetup
+class IsetBenchmarks
+    extends DoSetup
     with BuildIset
     with BulkAddIset
     with BulkRemoveIset
@@ -174,7 +198,8 @@ class IsetBenchmarks extends DoSetup
     with XorIset
     with DiffIset
 
-class CcbsBenchmarks extends DoSetup
+class CcbsBenchmarks
+    extends DoSetup
     // with BuildCcbs
     // with BulkAddCcbs
     // with BulkRemoveCcbs
@@ -183,8 +208,8 @@ class CcbsBenchmarks extends DoSetup
     // with LookupCcbs
     // with MergeCcbs
     with IntersectCcbs
-    // with XorCcbs
-    // with DiffCcbs
+// with XorCcbs
+// with DiffCcbs
 
 // benchmark traits
 
@@ -394,7 +419,7 @@ trait IntersectCcbs { self: DoSetup =>
   def intersectCcbs(): cc.BitSet = ccbs & ccbs2
 
   @Benchmark
-  def intersectTestCcbs(): Boolean = ccbs intersects ccbs2
+  def intersectTestCcbs(): Boolean = ccbs.intersects(ccbs2)
 }
 
 trait XorSci { self: DoSetup =>
