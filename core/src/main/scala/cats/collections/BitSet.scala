@@ -36,15 +36,8 @@ import BitSet.{Branch, Empty, Leaf}
  *
  * Unlike scala's default immutable this BitSet does not do a full copy on each added value.
  *
-<<<<<<< HEAD
- * Interally the implementation is a tree. Each leaf uses an
- * Array[Int] value to hold up to 1024 bits, and each branch uses an
- * Array[BitSet] to hold up to 32 subtrees (null subtrees are treated
- * as empty).
-=======
- * Internally the implementation is a tree. Each leaf uses an Array[Long] value to hold up to 2048 bits, and each branch
+ * Interally the implementation is a tree. Each leaf uses an Array[Int] value to hold up to 1024 bits, and each branch
  * uses an Array[BitSet] to hold up to 32 subtrees (null subtrees are treated as empty).
->>>>>>> master
  *
  * Bitset treats the values it stores as 32-bit unsigned values, which is relevant to the internal addressing methods as
  * well as the order used by `iterator`.
@@ -67,22 +60,12 @@ sealed abstract class BitSet { lhs =>
   /**
    * Limit is the first value beyond the range this subtree supports.
    *
-<<<<<<< HEAD
-   * In other words, the last value in the subtree's range is `limit - 1`.
-   * Like `offset`, `limit` will always be a multiple of 1024.
-   *
-   * Offset, limit, and height are related:
-   *
-   *     limit = offset + (32^height) * 1024
-   *     limit > offset (assuming both values are unsigned)
-=======
    * In other words, the last value in the subtree's range is `limit - 1`. Like `offset`, `limit` will always be a
    * multiple of 2048.
    *
    * Offset, limit, and height are related:
    *
    * limit = offset + (32^height) * 2048 limit > offset (assuming both values are unsigned)
->>>>>>> master
    *
    * Like `offset`, `limit` is interpreted as a 32-bit unsigned integer.
    */
@@ -95,12 +78,7 @@ sealed abstract class BitSet { lhs =>
    * offset=0 and height=5 will have limit=68719476736, which exceeds the largest unsigned 32-bit value we might want to
    * store (4294967295).
    *
-<<<<<<< HEAD
-   * The calculation `(32^height) * 1024` tells you how many values a
-   * subtree contains (i.e. how many bits it holds).
-=======
    * The calculation `(32^height) * 2048` tells you how many values a subtree contains (i.e. how many bits it holds).
->>>>>>> master
    */
   private[collections] def height: Int
 
@@ -118,7 +96,6 @@ sealed abstract class BitSet { lhs =>
   def +(n: Int): BitSet
 
   /**
-<<<<<<< HEAD
    * Return a bitset that contains all elements of `ns`.
    *
    * (b ++ ns) is equivalent to ns.foldLeft(b)(_ + _) but more efficient.
@@ -173,13 +150,8 @@ sealed abstract class BitSet { lhs =>
   }
 
   /**
-   * Return a bitset that does not contain `n` and whose other values
-   * are identical to this one's. If this bitset does not contain `n`
-   * then this method does nothing.
-=======
    * Return a bitset that does not contain `n` and whose other values are identical to this one's. If this bitset does
    * not contain `n` then this method does nothing.
->>>>>>> master
    */
   def -(n: Int): BitSet
 
@@ -487,7 +459,6 @@ object BitSet {
     if (ns.isEmpty) Empty
     else {
       var bs = newEmpty(0)
-<<<<<<< HEAD
       val it = ns.iterator
       while (it.hasNext) bs = bs.mutableAdd(it.next())
       bs
@@ -501,11 +472,6 @@ object BitSet {
       while (i < ns.length) {
         bs = bs.mutableAdd(ns(i))
         i += 1
-=======
-      val iter = xs.iterator
-      while (iter.hasNext) {
-        bs = bs.mutableAdd(iter.next())
->>>>>>> master
       }
       bs
     }
@@ -514,9 +480,10 @@ object BitSet {
    * Given a value (`n`), and offset (`o`) and a height (`h`), compute the array index used to store the given value's
    * bit.
    */
-  @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
+  private[collections] def index(n: Int, o: Int, h: Int): Int =
     (n - o) >>> (h * 5 + 5)
-  @inline private[collections] def bit(n: Int, o: Int): Int = (n - o) & 31
+
+  private[collections] def bit(n: Int, o: Int): Int = (n - o) & 31
 
   case class InternalError(msg: String) extends Exception(msg)
 
@@ -590,10 +557,9 @@ object BitSet {
   /**
    * Make a full copy of this BitSet.
    *
-   * This method is used to create fresh arrays that are safe to
-   * modify (guaranteed not to be shared). This method defeats any
-   * structural sharing that was going on -- it uses extra space in
-   * exchange for saving extra time during a bulk operation.
+   * This method is used to create fresh arrays that are safe to modify (guaranteed not to be shared). This method
+   * defeats any structural sharing that was going on -- it uses extra space in exchange for saving extra time during a
+   * bulk operation.
    */
   protected def copyOf(b: BitSet): BitSet =
     b match {
@@ -1017,8 +983,7 @@ object BitSet {
         if (values eq BitSet.zeroVector) {
           // we already have all the single bit values
           Leaf(offset, BitSet.oneVectors(n - offset))
-        }
-        else {
+        } else {
           val mask = 1 << bit(n)
           val vsi = values(i)
           if ((vsi & mask) == 1L) this
@@ -1038,11 +1003,7 @@ object BitSet {
       if (i < 0 || 32 <= i) {
         this
       } else {
-<<<<<<< HEAD
         val mask = 1 << bit(n)
-=======
-        val mask = 1L << bit(n)
->>>>>>> master
         val vsi = values(i)
         if ((vsi & mask) == 0L) this
         else {
@@ -1053,24 +1014,15 @@ object BitSet {
       }
     }
 
-<<<<<<< HEAD
     def isEmpty: Boolean =
       (values eq BitSet.zeroVector) || {
         var idx = 0
         while (idx < values.length) {
-          val empty = (values(idx) == 0L)
+          val empty = values(idx) == 0L
           if (!empty) return false
           idx += 1
         }
         true
-=======
-    def isEmpty: Boolean = {
-      var idx = 0
-      while (idx < values.length) {
-        val empty = values(idx) == 0L
-        if (!empty) return false
-        idx += 1
->>>>>>> master
       }
 
     def size: Long =
@@ -1119,11 +1071,9 @@ object BitSet {
           } else if (values eq BitSet.zeroVector) {
             // we are zero
             this
-          }
-          else if (values2 eq BitSet.zeroVector) {
+          } else if (values2 eq BitSet.zeroVector) {
             rhs
-          }
-          else {
+          } else {
             val vs = alloc()
             var i = 0
             while (i < 32) {
