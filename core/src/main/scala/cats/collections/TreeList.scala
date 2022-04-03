@@ -1,24 +1,60 @@
+/*
+ * Copyright (c) 2015 Typelevel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package cats.collections
 
-import cats.{Applicative, Alternative, CoflatMap, Eval, Eq, Functor, FunctorFilter, Monad, Monoid, Order, PartialOrder, Semigroup, Show, Traverse}
+import cats.{
+  Alternative,
+  Applicative,
+  CoflatMap,
+  Eq,
+  Eval,
+  Functor,
+  FunctorFilter,
+  Monad,
+  Monoid,
+  Order,
+  PartialOrder,
+  Semigroup,
+  Show,
+  Traverse
+}
 
 import cats.implicits._
 import scala.annotation.tailrec
 
 /**
- * Implementation of "Purely Functional Random Access Lists" by Chris Okasaki.
- * This gives O(1) cons and uncons, and 2 log_2 N lookup.
+ * Implementation of "Purely Functional Random Access Lists" by Chris Okasaki. This gives O(1) cons and uncons, and 2
+ * log_2 N lookup.
  *
- * A consequence of the log N complexity is that naive recursion on the inner
- * methods will (almost) never blow the stack since the depth of the structure
- * is log N, this greatly simplifies many methods. A key example is that unlike
- * List, using a TreeList you can sequence and traverse very large lists without
- * blowing the stack since the stack depth is only log N.
+ * A consequence of the log N complexity is that naive recursion on the inner methods will (almost) never blow the stack
+ * since the depth of the structure is log N, this greatly simplifies many methods. A key example is that unlike List,
+ * using a TreeList you can sequence and traverse very large lists without blowing the stack since the stack depth is
+ * only log N.
  *
- * This data-structure is useful when you want fast cons and uncons, but also
- * want to index. It does not have an optimized concatenation.
+ * This data-structure is useful when you want fast cons and uncons, but also want to index. It does not have an
+ * optimized concatenation.
  */
 sealed abstract class TreeList[+A] {
+
   /**
    * This is like headOption and tailOption in one call. O(1)
    */
@@ -28,115 +64,117 @@ sealed abstract class TreeList[+A] {
    * The first item if nonempty
    */
   def headOption: Option[A]
+
   /**
    * All but the first item if nonempty
    */
   def tailOption: Option[TreeList[A]]
+
   /**
    * put an item on the front. O(1)
    */
   def prepend[A1 >: A](a1: A1): TreeList[A1]
+
   /**
-   * lookup the given index in the list. O(log N).
-   * if the item is < 0 or >= size, return None
+   * lookup the given index in the list. O(log N). if the item is < 0 or >= size, return None
    */
   def get(idx: Long): Option[A]
+
   /**
-   * lookup the given index in the list. O(log N).
-   * if the item is < 0 or >= size, else throw
+   * lookup the given index in the list. O(log N). if the item is < 0 or >= size, else throw
    */
   def getUnsafe(idx: Long): A
+
   /**
-   * get the last element, if it is not empty. O(log N)
-   * a bit more efficient than get(size - 1)
+   * get the last element, if it is not empty. O(log N) a bit more efficient than get(size - 1)
    */
   def lastOption: Option[A]
+
   /**
    * How many items are in this TreeList. O(log N)
    */
   def size: Long
+
   /**
    * A strict, left-to-right fold: O(N)
    */
   def foldLeft[B](init: B)(fn: (B, A) => B): B
+
   /**
-   * a strict, right-to-left fold.
-   * Note, cats.Foldable defines foldRight to work on Eval,
-   * we use a different name here not to collide with the cats
-   * syntax
+   * a strict, right-to-left fold. Note, cats.Foldable defines foldRight to work on Eval, we use a different name here
+   * not to collide with the cats syntax
    *
    * O(N)
    */
   def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
+
   /**
-   * standard map. O(N) operation.
-   * Since this preserves structure, it is more efficient than
-   * converting toIterator, mapping the iterator, and converting back
+   * standard map. O(N) operation. Since this preserves structure, it is more efficient than converting toIterator,
+   * mapping the iterator, and converting back
    */
   def map[B](fn: A => B): TreeList[B]
+
   /**
    * We can efficiently drop things off the front without rebuilding
    *
    * O(n) operation (complexity is the number of things being dropped)
    */
   def drop(n: Long): TreeList[A]
+
   /**
    * Get an iterator through the TreeList
    *
    * We can iterate through in O(N) time
    */
   def toIterator: Iterator[A]
+
   /**
-   * Get a reverse iterator through the TreeList
-   * not as efficient as going in the left to right order.
+   * Get a reverse iterator through the TreeList not as efficient as going in the left to right order.
    *
-   * It appears this is N log N in cost (although possible only N, as
-   * we have not proven the bound on cost)
+   * It appears this is N log N in cost (although possible only N, as we have not proven the bound on cost)
    *
-   * This is useful if you only want a few things from the right,
-   * if you need to iterate the entire list, it is better to
-   * to use toListReverse which is O(N)
+   * This is useful if you only want a few things from the right, if you need to iterate the entire list, it is better
+   * to to use toListReverse which is O(N)
    *
-   * This is only a constant more efficent that iterating via random
-   * access using get
+   * This is only a constant more efficient that iterating via random access using get
    */
   def toReverseIterator: Iterator[A]
+
   /**
-   * If the given index is in the list, update it, else
-   * return the current list with no change.
+   * If the given index is in the list, update it, else return the current list with no change.
    *
    * O(log N)
    */
   def updatedOrThis[A1 >: A](idx: Long, value: A1): TreeList[A1]
 
   /**
-   * map to a type with a Monoid and combine in the order of the
-   * list, O(N)
+   * map to a type with a Monoid and combine in the order of the list, O(N)
    */
   def foldMap[B: Monoid](fn: A => B): B
+
   /**
    * returns true if size == 0. O(1)
    */
   def isEmpty: Boolean
+
   /**
    * returns true if size != 0. O(1)
    */
   def nonEmpty: Boolean
+
   /**
    * Convert to a scala standard List. O(N)
    */
   def toList: List[A]
 
   /**
-   * Convert to a scala standard list, but reversed
-   * O(N)
+   * Convert to a scala standard list, but reversed O(N)
    */
   def toListReverse: List[A]
 
   /**
-   * return the right most full binary tree on the right, the rest on left
-   * val (l, r) = items.split
-   * assert((l ++ r) == items)
+   * return the right most full binary tree on the right, the rest on left val (l, r) = items.split assert((l ++ r) ==
+   * items)
    *
    * O(log N)
    */
@@ -172,8 +210,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * Concatenate two TreeLists. This requires doing as
-   * much work as this.size
+   * Concatenate two TreeLists. This requires doing as much work as this.size
    *
    * O(this.size)
    */
@@ -181,21 +218,21 @@ sealed abstract class TreeList[+A] {
     @tailrec
     def loop(ls: List[A], that: TreeList[A1]): TreeList[A1] =
       ls match {
-        case Nil => that
+        case Nil       => that
         case h :: tail => loop(tail, h :: that)
       }
-    loop(toListReverse, that)
+    if (that.nonEmpty) loop(toListReverse, that)
+    else this
   }
 
   /**
-   * keep the elements that match a predicate
-   * O(N)
+   * keep the elements that match a predicate O(N)
    */
   final def filter(fn: A => Boolean): TreeList[A] = {
     val as = toIterator
     var resList = List.empty[A]
     var changed = false
-    while(as.hasNext) {
+    while (as.hasNext) {
       val a = as.next()
       if (fn(a)) {
         resList = a :: resList
@@ -206,8 +243,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * same as filter(!fn(_))
-   * O(N)
+   * same as filter(!fn(_)) O(N)
    */
   final def filterNot(fn: A => Boolean): TreeList[A] = {
     // we reimplement this to avoid creating an extra
@@ -216,7 +252,7 @@ sealed abstract class TreeList[+A] {
     val as = toIterator
     var resList = List.empty[A]
     var changed = false
-    while(as.hasNext) {
+    while (as.hasNext) {
       val a = as.next()
       if (!fn(a)) {
         resList = a :: resList
@@ -227,8 +263,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * Standard flatMap on a List type.
-   * O(result.size + this.size)
+   * Standard flatMap on a List type. O(result.size + this.size)
    */
   final def flatMap[B](fn: A => TreeList[B]): TreeList[B] = {
     @tailrec
@@ -247,7 +282,7 @@ sealed abstract class TreeList[+A] {
   final def reverse: TreeList[A] = {
     val revTrees = toIterator
     var res: TreeList[A] = TreeList.Empty
-    while(revTrees.hasNext) {
+    while (revTrees.hasNext) {
       res = revTrees.next() :: res
     }
     res
@@ -260,7 +295,7 @@ sealed abstract class TreeList[+A] {
     val takeIt = toIterator
     var cnt = 0L
     var res = List.empty[A]
-    while(takeIt.hasNext && cnt < n) {
+    while (takeIt.hasNext && cnt < n) {
       res = takeIt.next() :: res
       cnt += 1L
     }
@@ -268,8 +303,7 @@ sealed abstract class TreeList[+A] {
   }
 
   /**
-   * If the given index is in the list, update and return Some(updated).
-   * else return None
+   * If the given index is in the list, update and return Some(updated). else return None
    *
    * O(log N)
    */
@@ -314,8 +348,7 @@ object TreeList extends TreeListInstances0 {
       }
 
       /**
-       * This is a memoized Succ constructor since
-       * we generally only build a small number of Succ instances
+       * This is a memoized Succ constructor since we generally only build a small number of Succ instances
        */
       def succ[N <: Nat](n: N): Succ[N] = {
         val v = n.value
@@ -482,7 +515,7 @@ object TreeList extends TreeListInstances0 {
 
   import Impl._
 
-  private final case class Trees[A](treeList: List[Tree[Nat, A]]) extends TreeList[A] {
+  final private case class Trees[A](treeList: List[Tree[Nat, A]]) extends TreeList[A] {
     def prepend[A1 >: A](a1: A1): TreeList[A1] =
       treeList match {
         case h1 :: h2 :: rest =>
@@ -504,19 +537,16 @@ object TreeList extends TreeListInstances0 {
       // benchmarks show this to be faster, ugly, but faster
       if (head.isInstanceOf[Root[_]]) {
         treeList.tail
-      }
-      else {
+      } else {
         val balanced = head.asInstanceOf[Balanced[Nat, A]]
         balanced.left :: balanced.right :: treeList.tail
       }
-
 
     def uncons: Option[(A, TreeList[A])] =
       if (treeList.nonEmpty) {
         val h = treeList.head
         Some((h.value, Trees(tailTreeList(h))))
-      }
-      else None
+      } else None
 
     def headOption: Option[A] =
       if (treeList.isEmpty) None
@@ -536,8 +566,7 @@ object TreeList extends TreeListInstances0 {
           val h = treeList.head
           if (h.size <= idx) loop(idx - h.size, treeList.tail)
           else h.get(idx)
-        }
-        else None
+        } else None
 
       loop(idx, treeList)
     }
@@ -549,8 +578,7 @@ object TreeList extends TreeListInstances0 {
           val h = treeList.head
           if (h.size <= idx) loop(idx - h.size, treeList.tail)
           else h.getUnsafe(idx)
-        }
-        else throw new NoSuchElementException(s"invalid index: $idx0")
+        } else throw new NoSuchElementException(s"invalid index: $idx0")
       }
 
       loop(idx0, treeList)
@@ -563,7 +591,7 @@ object TreeList extends TreeListInstances0 {
           case head :: tail =>
             if (tail.isEmpty)
               head match {
-                case Root(a) => Some(a)
+                case Root(a)           => Some(a)
                 case Balanced(_, _, r) => loop(r :: Nil)
               }
             else loop(tail)
@@ -585,11 +613,10 @@ object TreeList extends TreeListInstances0 {
       def loop(init: B, rest: List[Tree[Nat, A]]): B =
         if (rest.nonEmpty) {
           rest.head match {
-            case Root(a) => loop(fn(init, a), rest.tail)
+            case Root(a)           => loop(fn(init, a), rest.tail)
             case Balanced(a, l, r) => loop(fn(init, a), l :: r :: rest.tail)
           }
-        }
-        else init
+        } else init
 
       loop(init, treeList)
     }
@@ -608,7 +635,7 @@ object TreeList extends TreeListInstances0 {
       @tailrec
       def loop(n: Long, treeList: List[Tree[Nat, A]]): TreeList[A] =
         treeList match {
-          case Nil => empty
+          case Nil          => empty
           case _ if n <= 0L => Trees(treeList)
           case h :: tail =>
             if (h.size <= n) loop(n - h.size, tail)
@@ -621,7 +648,7 @@ object TreeList extends TreeListInstances0 {
                 case Root(_) =>
                   // $COVERAGE-OFF$
                   sys.error(s"unreachable, $h has size == 1 which is <= n ($n)")
-                  // $COVERAGE-ON$
+                // $COVERAGE-ON$
               }
             }
         }
@@ -631,7 +658,7 @@ object TreeList extends TreeListInstances0 {
 
     def split: (TreeList[A], TreeList[A]) =
       treeList match {
-        case Nil => (empty, empty)
+        case Nil            => (empty, empty)
         case Root(_) :: Nil => (this, empty)
         case Balanced(a, l, r) :: Nil =>
           (Trees(Root(a) :: l :: Nil), Trees(r :: Nil))
@@ -654,8 +681,7 @@ object TreeList extends TreeListInstances0 {
             // now rebuild the front of the list
             Trees(front reverse_::: (h1 :: tail))
           }
-        }
-        else this
+        } else this
 
       loop(idx, treeList, Nil)
     }
@@ -696,7 +722,7 @@ object TreeList extends TreeListInstances0 {
     private[collections] def maxDepth: Int = {
       val listLength = treeList.size
       val treeDepth = treeList.map(_.depth.value) match {
-        case Nil => 0
+        case Nil  => 0
         case nonE => nonE.max
       }
       listLength + treeDepth
@@ -720,7 +746,7 @@ object TreeList extends TreeListInstances0 {
     @tailrec
     def loop(rev: List[A], acc: TreeList[A]): TreeList[A] =
       rev match {
-        case Nil => acc
+        case Nil       => acc
         case h :: tail => loop(tail, acc.prepend(h))
       }
 
@@ -738,7 +764,7 @@ object TreeList extends TreeListInstances0 {
       @tailrec
       def compare(l: TreeList[A], r: TreeList[A]): Int = {
         (l.uncons, r.uncons) match {
-          case (None, None) => 0
+          case (None, None)    => 0
           case (Some(_), None) => 1
           case (None, Some(_)) => -1
           case (Some((l0, l1)), Some((r0, r1))) =>
@@ -765,15 +791,23 @@ object TreeList extends TreeListInstances0 {
       ts.toIterator.map(sa.show(_)).mkString("TreeList(", ", ", ")")
     }
 
-  implicit val catsCollectionTreeListInstances: Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] with FunctorFilter[TreeList] =
-    new Traverse[TreeList] with Alternative[TreeList] with Monad[TreeList] with CoflatMap[TreeList] with FunctorFilter[TreeList] {
+  implicit val catsCollectionTreeListInstances: Traverse[TreeList]
+    with Alternative[TreeList]
+    with Monad[TreeList]
+    with CoflatMap[TreeList]
+    with FunctorFilter[TreeList] =
+    new Traverse[TreeList]
+      with Alternative[TreeList]
+      with Monad[TreeList]
+      with CoflatMap[TreeList]
+      with FunctorFilter[TreeList] {
       def coflatMap[A, B](fa: TreeList[A])(fn: TreeList[A] => B): TreeList[B] = {
         @tailrec
         def loop(fa: TreeList[A], revList: List[B]): TreeList[B] =
           fa match {
-            case Empty => fromListReverse(revList)
             case NonEmpty(_, tail) =>
               loop(tail, fn(fa) :: revList)
+            case Empty => fromListReverse(revList)
           }
         loop(fa, Nil)
       }
@@ -816,10 +850,10 @@ object TreeList extends TreeListInstances0 {
       def mapFilter[A, B](ta: TreeList[A])(fn: A => Option[B]): TreeList[B] = {
         val as = ta.toIterator
         var resList = List.empty[B]
-        while(as.hasNext) {
+        while (as.hasNext) {
           fn(as.next()) match {
             case Some(b) => resList = b :: resList
-            case None => ()
+            case None    => ()
           }
         }
         TreeList.fromListReverse(resList)
@@ -876,19 +910,25 @@ object TreeList extends TreeListInstances0 {
       }
 
       def tailRecM[A, B](a: A)(fn: A => TreeList[Either[A, B]]): TreeList[B] = {
-        var res = List.empty[B]
         @tailrec
-        def loop(stack: List[TreeList[Either[A, B]]]): Unit =
+        def loop(stack: List[TreeList[Either[A, B]]], acc: List[B]): List[B] =
           stack match {
-            case Nil => ()
-            case Empty :: tail => loop(tail)
-            case NonEmpty(Right(b), rest) :: tail =>
-              res = b :: res
-              loop(rest :: tail)
-            case NonEmpty(Left(a), rest) :: tail =>
-              loop(fn(a) :: rest :: tail)
+            case head :: tail =>
+              head match {
+                case NonEmpty(either, rest) =>
+                  either match {
+                    case Right(b) =>
+                      loop(rest :: tail, b :: acc)
+                    case Left(a) =>
+                      loop(fn(a) :: rest :: tail, acc)
+                  }
+                case Empty =>
+                  loop(tail, acc)
+              }
+            case Nil => acc
           }
-        loop(fn(a) :: Nil)
+
+        val res = loop(fn(a) :: Nil, Nil)
         fromListReverse(res)
       }
 
@@ -918,7 +958,7 @@ object TreeList extends TreeListInstances0 {
     }
 }
 
-private[collections] abstract class TreeListInstances0 extends TreeListInstances1 {
+abstract private[collections] class TreeListInstances0 extends TreeListInstances1 {
   implicit def catsCollectionTreeListPartialOrder[A: PartialOrder]: PartialOrder[TreeList[A]] =
     new PartialOrder[TreeList[A]] {
       val ordA: PartialOrder[A] = PartialOrder[A]
@@ -926,7 +966,7 @@ private[collections] abstract class TreeListInstances0 extends TreeListInstances
         @tailrec
         def loop(l: TreeList[A], r: TreeList[A]): Double =
           (l.uncons, r.uncons) match {
-            case (None, None) => 0.0
+            case (None, None)    => 0.0
             case (Some(_), None) => 1.0
             case (None, Some(_)) => -1.0
             case (Some((l0, l1)), Some((r0, r1))) =>
@@ -939,7 +979,7 @@ private[collections] abstract class TreeListInstances0 extends TreeListInstances
     }
 }
 
-private[collections] abstract class TreeListInstances1 {
+abstract private[collections] class TreeListInstances1 {
   implicit def catsCollectionTreeListEq[A: Eq]: Eq[TreeList[A]] =
     TreeList.eqTree
 }

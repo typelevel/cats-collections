@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2015 Typelevel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package cats.collections
 
 import cats.Order
@@ -6,34 +27,30 @@ import scala.annotation.tailrec
 
 import BitSet.{Branch, Empty, Leaf}
 
-// This implementation uses a lot of tricks for performance, which
-// scalastyle is not always happy with. So we disable it.
-//
-// scalastyle:off
-
 /**
  * A fast, immutable BitSet.
  *
- * A Bitset is a specialized type of set that tracks the `Int` values
- * it contains: for each integer value, a BitSet uses a single bit to
- * track whether the value is present (1) or absent (0). Bitsets are
- * often sparse, since "missing" bits can be assumed to be zero.
+ * A Bitset is a specialized type of set that tracks the `Int` values it contains: for each integer value, a BitSet uses
+ * a single bit to track whether the value is present (1) or absent (0). Bitsets are often sparse, since "missing" bits
+ * can be assumed to be zero.
  *
- * Unlike scala's default immutable this BitSet does not do a full
- * copy on each added value.
+ * Unlike scala's default immutable this BitSet does not do a full copy on each added value.
  *
+<<<<<<< HEAD
  * Interally the implementation is a tree. Each leaf uses an
  * Array[Int] value to hold up to 1024 bits, and each branch uses an
  * Array[BitSet] to hold up to 32 subtrees (null subtrees are treated
  * as empty).
+=======
+ * Internally the implementation is a tree. Each leaf uses an Array[Long] value to hold up to 2048 bits, and each branch
+ * uses an Array[BitSet] to hold up to 32 subtrees (null subtrees are treated as empty).
+>>>>>>> master
  *
- * Bitset treats the values it stores as 32-bit unsigned values, which
- * is relevant to the internal addressing methods as well as the order
- * used by `iterator`.
+ * Bitset treats the values it stores as 32-bit unsigned values, which is relevant to the internal addressing methods as
+ * well as the order used by `iterator`.
  *
- * The benchmarks suggest this bitset is MUCH faster than Scala's
- * built-in bitset for cases where you may need many modifications and
- * merges, (for example in a BloomFilter).
+ * The benchmarks suggest this bitset is MUCH faster than Scala's built-in bitset for cases where you may need many
+ * modifications and merges, (for example in a BloomFilter).
  */
 sealed abstract class BitSet { lhs =>
 
@@ -42,16 +59,15 @@ sealed abstract class BitSet { lhs =>
    *
    * Offset will always be a multiple of 1024 (2^11).
    *
-   * The `offset` is interpreted as a 32-bit unsigned integer. In
-   * other words, `(offset & 0xffffffffL)` will return the equivalent
-   * value as a signed 64-bit integer (between 0 and 4294967295).
+   * The `offset` is interpreted as a 32-bit unsigned integer. In other words, `(offset & 0xffffffffL)` will return the
+   * equivalent value as a signed 64-bit integer (between 0 and 4294967295).
    */
   private[collections] def offset: Int
 
   /**
-   * Limit is the first value beyond the range this subtree
-   * supports.
+   * Limit is the first value beyond the range this subtree supports.
    *
+<<<<<<< HEAD
    * In other words, the last value in the subtree's range is `limit - 1`.
    * Like `offset`, `limit` will always be a multiple of 1024.
    *
@@ -59,22 +75,32 @@ sealed abstract class BitSet { lhs =>
    *
    *     limit = offset + (32^height) * 1024
    *     limit > offset (assuming both values are unsigned)
+=======
+   * In other words, the last value in the subtree's range is `limit - 1`. Like `offset`, `limit` will always be a
+   * multiple of 2048.
    *
-   * Like `offset`, `limit` is interpreted as a 32-bit unsigned
-   * integer.
+   * Offset, limit, and height are related:
+   *
+   * limit = offset + (32^height) * 2048 limit > offset (assuming both values are unsigned)
+>>>>>>> master
+   *
+   * Like `offset`, `limit` is interpreted as a 32-bit unsigned integer.
    */
   private[collections] def limit: Long
 
   /**
    * Height represents the number of "levels" this subtree contains.
    *
-   * For leaves, height is zero. For branches, height will always be
-   * between 1 and 5. This is because a branch with offset=0 and
-   * height=5 will have limit=68719476736, which exceeds the largest
-   * unsigned 32-bit value we might want to store (4294967295).
+   * For leaves, height is zero. For branches, height will always be between 1 and 5. This is because a branch with
+   * offset=0 and height=5 will have limit=68719476736, which exceeds the largest unsigned 32-bit value we might want to
+   * store (4294967295).
    *
+<<<<<<< HEAD
    * The calculation `(32^height) * 1024` tells you how many values a
    * subtree contains (i.e. how many bits it holds).
+=======
+   * The calculation `(32^height) * 2048` tells you how many values a subtree contains (i.e. how many bits it holds).
+>>>>>>> master
    */
   private[collections] def height: Int
 
@@ -86,13 +112,13 @@ sealed abstract class BitSet { lhs =>
   def apply(n: Int): Boolean
 
   /**
-   * Return a bitset that contains `n` and whose other values are
-   * identical to this one's. If this bitset already contains `n` then this
-   * method does nothing.
+   * Return a bitset that contains `n` and whose other values are identical to this one's. If this bitset already
+   * contains `n` then this method does nothing.
    */
   def +(n: Int): BitSet
 
   /**
+<<<<<<< HEAD
    * Return a bitset that contains all elements of `ns`.
    *
    * (b ++ ns) is equivalent to ns.foldLeft(b)(_ + _) but more efficient.
@@ -150,22 +176,24 @@ sealed abstract class BitSet { lhs =>
    * Return a bitset that does not contain `n` and whose other values
    * are identical to this one's. If this bitset does not contain `n`
    * then this method does nothing.
+=======
+   * Return a bitset that does not contain `n` and whose other values are identical to this one's. If this bitset does
+   * not contain `n` then this method does nothing.
+>>>>>>> master
    */
   def -(n: Int): BitSet
 
   /**
    * Return the union of two bitsets as a new immutable bitset.
    *
-   * If either bitset contains a given value, the resulting bitset
-   * will also contain it.
+   * If either bitset contains a given value, the resulting bitset will also contain it.
    */
   def |(rhs: BitSet): BitSet
 
   /**
    * Return the intersection of two bitsets as a new immutable bitset.
    *
-   * The resulting bitset will only contain a value if that value is
-   * present in both input bitsets.
+   * The resulting bitset will only contain a value if that value is present in both input bitsets.
    */
   def &(rhs: BitSet): BitSet
 
@@ -182,15 +210,12 @@ sealed abstract class BitSet { lhs =>
   def ^(rhs: BitSet): BitSet
 
   /**
-   * Return this bitset minus the bits contained in the other bitset
-   * as a new immutable bitset.
+   * Return this bitset minus the bits contained in the other bitset as a new immutable bitset.
    *
-   * The resulting bitset will contain exactly those values which do
-   * appear in the left-hand side but do not appear in the right-hand
-   * side.
+   * The resulting bitset will contain exactly those values which do appear in the left-hand side but do not appear in
+   * the right-hand side.
    *
-   * If the bitsets do not intersect, the left-hand side will be
-   * returned.
+   * If the bitsets do not intersect, the left-hand side will be returned.
    */
   def &~(rhs: BitSet): BitSet
 
@@ -220,8 +245,8 @@ sealed abstract class BitSet { lhs =>
   /**
    * Add a single value `n` to this bitset.
    *
-   * This method modifies this bitset. We require that the value `n`
-   * is in this node's range (i.e. `offset <= n < limit`).
+   * This method modifies this bitset. We require that the value `n` is in this node's range (i.e. `offset <= n <
+   * limit`).
    */
   private[collections] def +=(n: Int): Unit
 
@@ -235,36 +260,29 @@ sealed abstract class BitSet { lhs =>
   /**
    * Add all values from `rhs` to this bitset.
    *
-   * This method modifies this bitset. We require that `this` and
-   * `rhs` are aligned (i.e. they both must have the same `offset` and
-   * `height`).
+   * This method modifies this bitset. We require that `this` and `rhs` are aligned (i.e. they both must have the same
+   * `offset` and `height`).
    */
   private[collections] def |=(rhs: BitSet): Unit
 
   /**
-   * Add a single value `n` to this bitset to this bitset or to the
-   * smallest valid bitset that could contain it.
+   * Add a single value `n` to this bitset to this bitset or to the smallest valid bitset that could contain it.
    *
-   * Unlike `+=` this method can be called with `n` outside of this
-   * node's range. If the value is in range, the method is equivalent
-   * to `+=` (and returns `this`). Otherwise, it wraps `this` in new
-   * branches until the node's range is large enough to contain `n`,
-   * then adds the value to that node, and returns it.
+   * Unlike `+=` this method can be called with `n` outside of this node's range. If the value is in range, the method
+   * is equivalent to `+=` (and returns `this`). Otherwise, it wraps `this` in new branches until the node's range is
+   * large enough to contain `n`, then adds the value to that node, and returns it.
    */
   private[collections] def mutableAdd(n: Int): BitSet
 
   /**
    * Return a compacted bitset containing the same values as this one.
    *
-   * This method is used to prune out "empty" branches that don't
-   * contain values. By default, bitset does not try to remove empty
-   * leaves when removing values (since repeatedly checking for this
-   * across many deletions would be expensive).
+   * This method is used to prune out "empty" branches that don't contain values. By default, bitset does not try to
+   * remove empty leaves when removing values (since repeatedly checking for this across many deletions would be
+   * expensive).
    *
-   * The bitset returned will have the same values as the current
-   * bitset, but is guaranteed not to contain any empty branches.
-   * Empty branches are not usually observable but would result in
-   * increased memory usage.
+   * The bitset returned will have the same values as the current bitset, but is guaranteed not to contain any empty
+   * branches. Empty branches are not usually observable but would result in increased memory usage.
    */
   final def compact: BitSet = {
     def recur(x: BitSet): BitSet =
@@ -299,20 +317,18 @@ sealed abstract class BitSet { lhs =>
   /**
    * Returns the number of distinct values in this bitset.
    *
-   * For branches, this method will return the sum of the sizes of all
-   * its subtrees. For leaves it returns the number of bits set in the
-   * leaf (i.e. the number of values the leaf contains).
+   * For branches, this method will return the sum of the sizes of all its subtrees. For leaves it returns the number of
+   * bits set in the leaf (i.e. the number of values the leaf contains).
    */
   def size: Long
 
   /**
    * Iterate across all values in the bitset.
    *
-   * Values in the iterator will be seen in "unsigned order" (e.g. if
-   * present, -1 will always come last). Here's an abbreviated view of
-   * this order in practice:
+   * Values in the iterator will be seen in "unsigned order" (e.g. if present, -1 will always come last). Here's an
+   * abbreviated view of this order in practice:
    *
-   *   0, 1, 2, ... 2147483646, 2147483647, -2147483648, -2147483647, ... -1
+   * 0, 1, 2, ... 2147483646, 2147483647, -2147483648, -2147483647, ... -1
    *
    * (This "unsigned order" is identical to the tree's internal order.)
    */
@@ -328,10 +344,8 @@ sealed abstract class BitSet { lhs =>
   /**
    * Present a view of this bitset as a `scala.Set[Int]`.
    *
-   * This is provided for compatibility with Scala collections. Many
-   * of the set operations are implemented in terms of `BitSet`, but
-   * other operations (for example `map`) may copy these values into a
-   * different `Set` implementation.
+   * This is provided for compatibility with Scala collections. Many of the set operations are implemented in terms of
+   * `BitSet`, but other operations (for example `map`) may copy these values into a different `Set` implementation.
    */
   final def toSet: Set[Int] =
     new compat.BitSetWrapperSet(this)
@@ -349,8 +363,8 @@ sealed abstract class BitSet { lhs =>
   /**
    * Produce a string representation of this BitSet.
    *
-   * This representation will contain all the values in the bitset.
-   * For large bitsets, this operation may be very expensive.
+   * This representation will contain all the values in the bitset. For large bitsets, this operation may be very
+   * expensive.
    */
   override def toString: String =
     iterator.map(_.toString).mkString("BitSet(", ", ", ")")
@@ -358,38 +372,37 @@ sealed abstract class BitSet { lhs =>
   /**
    * Produce a structured representation of this BitSet.
    *
-   * This representation is for internal-use only. It gives a view of
-   * how the bitset is encoded in a tree, showing leaves and branches.
+   * This representation is for internal-use only. It gives a view of how the bitset is encoded in a tree, showing
+   * leaves and branches.
    */
   private[collections] def structure: String =
     // This is for debugging, we don't care about coverage here
     // $COVERAGE-OFF$
     this match {
       case Branch(o, h, cs) =>
-        val s = cs.iterator
-          .zipWithIndex
+        val s = cs.iterator.zipWithIndex
           .filter { case (c, _) => c != null }
           .map { case (c, i) => s"$i -> ${c.structure}" }
           .mkString("Array(", ", ", ")")
         s"Branch($o, $h, $s)"
       case Leaf(o, vs) =>
-        val s = vs.zipWithIndex.collect {
-          case (n, i) if n != 0 => s"$i -> $n"
-        }.mkString("{", ", ", "}")
+        val s = vs.zipWithIndex
+          .collect {
+            case (n, i) if n != 0 => s"$i -> $n"
+          }
+          .mkString("{", ", ", "}")
         s"Leaf($o, $s)"
     }
-    // $COVERAGE-ON$
+  // $COVERAGE-ON$
 
   /**
    * Universal equality.
    *
-   * This method will only return true if the right argument is also a
-   * `BitSet`. It does not attempt to coerce either argument in any
-   * way (unlike Scala collections, for example).
+   * This method will only return true if the right argument is also a `BitSet`. It does not attempt to coerce either
+   * argument in any way (unlike Scala collections, for example).
    *
-   * Two bitsets can be equal even if they have different underlying
-   * tree structure. (For example, one bitset's tree may have empty
-   * branches that the other lacks.)
+   * Two bitsets can be equal even if they have different underlying tree structure. (For example, one bitset's tree may
+   * have empty branches that the other lacks.)
    */
   override def equals(that: Any): Boolean =
     that match {
@@ -407,9 +420,8 @@ sealed abstract class BitSet { lhs =>
   /**
    * Universal hash code.
    *
-   * Bitsets that are the equal will hash to the same value. As in
-   * `equals`, the values present determine the hash code, as opposed
-   * to the tree structure.
+   * Bitsets that are the equal will hash to the same value. As in `equals`, the values present determine the hash code,
+   * as opposed to the tree structure.
    */
   override def hashCode: Int = {
     var hash: Int = 1500450271 // prime number
@@ -459,9 +471,8 @@ object BitSet {
   /**
    * Returns an empty leaf.
    *
-   * This is used internally with the assumption that it will be
-   * mutated to "add" values to it. In cases where no values need to
-   * be added, `empty` should be used instead.
+   * This is used internally with the assumption that it will be mutated to "add" values to it. In cases where no values
+   * need to be added, `empty` should be used instead.
    */
   private[collections] def newEmpty(offset: Int): BitSet =
     Leaf(offset, alloc())
@@ -476,6 +487,7 @@ object BitSet {
     if (ns.isEmpty) Empty
     else {
       var bs = newEmpty(0)
+<<<<<<< HEAD
       val it = ns.iterator
       while (it.hasNext) bs = bs.mutableAdd(it.next())
       bs
@@ -489,13 +501,18 @@ object BitSet {
       while (i < ns.length) {
         bs = bs.mutableAdd(ns(i))
         i += 1
+=======
+      val iter = xs.iterator
+      while (iter.hasNext) {
+        bs = bs.mutableAdd(iter.next())
+>>>>>>> master
       }
       bs
     }
 
   /**
-   * Given a value (`n`), and offset (`o`) and a height (`h`), compute
-   * the array index used to store the given value's bit.
+   * Given a value (`n`), and offset (`o`) and a height (`h`), compute the array index used to store the given value's
+   * bit.
    */
   @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
     (n - o) >>> (h * 5 + 5)
@@ -506,8 +523,7 @@ object BitSet {
   /**
    * Construct a parent for the given bitset.
    *
-   * The parent is guaranteed to be correctly aligned, and to have a
-   * height one greater than the given bitset.
+   * The parent is guaranteed to be correctly aligned, and to have a height one greater than the given bitset.
    */
   private[collections] def parentFor(b: BitSet): BitSet = {
     val h = b.height + 1
@@ -521,9 +537,10 @@ object BitSet {
   /**
    * Return a branch containing the given bitset `b` and value `n`.
    *
-   * This method assumes that `n` is outside of the range of `b`. It
-   * will return the smallest branch that contains both `b` and `n`.
+   * This method assumes that `n` is outside of the range of `b`. It will return the smallest branch that contains both
+   * `b` and `n`.
    */
+  @tailrec
   private def adoptedPlus(b: BitSet, n: Int): Branch = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 10))
@@ -545,10 +562,10 @@ object BitSet {
   /**
    * Return a branch containing the given bitsets `b` and `rhs`.
    *
-   * This method assumes that `rhs` is at least partially-outside of
-   * the range of `b`. It will return the smallest branch that
-   * contains both `b` and `rhs`.
+   * This method assumes that `rhs` is at least partially-outside of the range of `b`. It will return the smallest
+   * branch that contains both `b` and `rhs`.
    */
+  @tailrec
   private def adoptedUnion(b: BitSet, rhs: BitSet): BitSet = {
     val h = b.height + 1
     val o = b.offset & -(1 << (h * 5 + 10))
@@ -613,7 +630,7 @@ object BitSet {
 
     def isEmpty: Boolean = {
       var idx = 0
-      while(idx < children.length) {
+      while (idx < children.length) {
         val c = children(idx)
         val empty = (c == null) || c.isEmpty
         if (!empty) return false
@@ -634,11 +651,13 @@ object BitSet {
         BitSet.adoptedPlus(this, n)
       } else {
         val c0 = children(i)
-        val c1 = if (c0 != null) c0 + n else {
-          val cc = newChild(i)
-          cc += n
-          cc
-        }
+        val c1 =
+          if (c0 != null) c0 + n
+          else {
+            val cc = newChild(i)
+            cc += n
+            cc
+          }
         // we already had this item
         if (c0 eq c1) this
         else replace(i, c1)
@@ -755,11 +774,11 @@ object BitSet {
           // this branch contains rhs, so find its index
           val i = index(rhs.offset)
           val c0 = children(i)
-          if (c0 != null) c0 intersects rhs else false
+          if (c0 != null) c0.intersects(rhs) else false
         }
       } else if (height < rhs.height) {
         // use commuativity to handle this in previous case
-        rhs intersects this
+        rhs.intersects(this)
       } else if (offset != rhs.offset) {
         // same height, but non-overlapping
         false
@@ -770,7 +789,7 @@ object BitSet {
         while (i < 32) {
           val x = children(i)
           val y = rcs(i)
-          if (x != null && y != null && (x intersects y)) return true
+          if (x != null && y != null && (x.intersects(y))) return true
           i += 1
         }
         false
@@ -951,13 +970,13 @@ object BitSet {
     def iterator: Iterator[Int] =
       children.iterator.flatMap {
         case null => Iterator.empty
-        case c => c.iterator
+        case c    => c.iterator
       }
 
     def reverseIterator: Iterator[Int] =
       children.reverseIterator.flatMap {
         case null => Iterator.empty
-        case c => c.reverseIterator
+        case c    => c.reverseIterator
       }
 
     def size: Long = {
@@ -1019,7 +1038,11 @@ object BitSet {
       if (i < 0 || 32 <= i) {
         this
       } else {
+<<<<<<< HEAD
         val mask = 1 << bit(n)
+=======
+        val mask = 1L << bit(n)
+>>>>>>> master
         val vsi = values(i)
         if ((vsi & mask) == 0L) this
         else {
@@ -1030,6 +1053,7 @@ object BitSet {
       }
     }
 
+<<<<<<< HEAD
     def isEmpty: Boolean =
       (values eq BitSet.zeroVector) || {
         var idx = 0
@@ -1039,6 +1063,14 @@ object BitSet {
           idx += 1
         }
         true
+=======
+    def isEmpty: Boolean = {
+      var idx = 0
+      while (idx < values.length) {
+        val empty = values(idx) == 0L
+        if (!empty) return false
+        idx += 1
+>>>>>>> master
       }
 
     def size: Long =
@@ -1118,7 +1150,7 @@ object BitSet {
             false
           }
         case Branch(_, _, _) =>
-          rhs intersects this
+          rhs.intersects(this)
       }
 
     def ^(rhs: BitSet): BitSet =
@@ -1234,8 +1266,8 @@ object BitSet {
   /**
    * Efficient, low-level iterator for BitSet.Leaf values.
    *
-   * As mentioned in `BitSet.iterator`, this method will return values
-   * in unsigned order (e.g. Int.MaxValue comes before Int.MinValue).
+   * As mentioned in `BitSet.iterator`, this method will return values in unsigned order (e.g. Int.MaxValue comes before
+   * Int.MinValue).
    */
   private class LeafIterator(offset: Int, values: Array[Int]) extends Iterator[Int] {
     var i: Int = 0
@@ -1272,8 +1304,7 @@ object BitSet {
   /**
    * Efficient, low-level reversed iterator for BitSet.Leaf values.
    *
-   * This class is very similar to LeafIterator but returns values in
-   * the reverse order.
+   * This class is very similar to LeafIterator but returns values in the reverse order.
    */
   private class LeafReverseIterator(offset: Int, values: Array[Int]) extends Iterator[Int] {
     var i: Int = 31
@@ -1307,5 +1338,3 @@ object BitSet {
     }
   }
 }
-
-// scalastyle:on

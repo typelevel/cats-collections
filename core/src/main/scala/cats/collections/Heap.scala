@@ -1,17 +1,35 @@
-/**
- * Created by nperez on 3/28/16.
+/*
+ * Copyright (c) 2015 Typelevel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package cats.collections
 
-import cats.{Order, UnorderedFoldable, Show}
+import cats.{Order, Show}
 import cats.kernel.CommutativeMonoid
 import scala.annotation.tailrec
 
 /**
  * `Heap` is a Purely Functional Binary Heap. Binary Heaps are not common in the functional space, especially because
  * their implementation depends on mutable arrays in order to gain in performance. This functional binary heap is based
- * on [[https://arxiv.org/pdf/1312.4666.pdf Vladimir Kostyukov's paper]] and it does support the basic operations on a heap without compromising performance.
+ * on [[https://arxiv.org/pdf/1312.4666.pdf Vladimir Kostyukov's paper]] and it does support the basic operations on a
+ * heap without compromising performance.
  *
  * It is important to note that we can, in fact, to create the Binary Heap in order O(n) from a `List` using the
  * function `heapify`.
@@ -55,15 +73,14 @@ sealed abstract class Heap[A] {
   def nonEmpty: Boolean = !isEmpty
 
   /**
-   * Insert a new element into the heap.
-   * Order O(log n)
+   * Insert a new element into the heap. Order O(log n)
    */
   def add(x: A)(implicit order: Order[A]): Heap[A] =
     if (isEmpty) Heap(x)
     else {
       // this is safe since we are non-empty
       val branch = this.asInstanceOf[Branch[A]]
-      import branch.{min, left, right}
+      import branch.{left, min, right}
       if (left.unbalanced)
         bubbleUp(min, left.add(x), right)
       else if (right.unbalanced)
@@ -74,17 +91,33 @@ sealed abstract class Heap[A] {
         bubbleUp(min, left.add(x), right)
     }
 
-  /**
+  /*
    * Add a collection of items in. This is O(N log N) if as is size N
    */
   def addAll(as: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ait = as.iterator
     var heap = this
-    while(ait.hasNext) {
+    while (ait.hasNext) {
       heap = heap + ait.next()
     }
     heap
   }
+
+  /**
+   * This is O(N) in the worst case, but we use the heap property to be lazy
+   */
+  def contains(a: A)(implicit order: Order[A]): Boolean =
+    if (isEmpty) false
+    else {
+      val br = this.asInstanceOf[Branch[A]]
+      val c = order.compare(a, br.min)
+      if (c < 0) false // a is less than the min
+      else if (c == 0) true // a == min
+      else {
+        // check left and right
+        br.left.contains(a) || br.right.contains(a)
+      }
+    }
 
   /**
    * Check to see if a predicate is ever true
@@ -92,7 +125,7 @@ sealed abstract class Heap[A] {
   def exists(fn: A => Boolean): Boolean =
     this match {
       case Branch(a, l, r) => fn(a) || l.exists(fn) || r.exists(fn)
-      case _ => false
+      case _               => false
     }
 
   /**
@@ -101,20 +134,26 @@ sealed abstract class Heap[A] {
   def forall(fn: A => Boolean): Boolean =
     this match {
       case Branch(a, l, r) => fn(a) && l.forall(fn) && r.forall(fn)
-      case _ => true
+      case _               => true
     }
 
   /**
-   * Avoid this, it should really have been on the companion because
-   * this totally ignores `this`.
+   * Avoid this, it should really have been on the companion because this totally ignores `this`.
    */
   @deprecated("this method ignores `this` and is very easy to misuse. Use Heap.fromIterable", "0.8.0")
   def heapify(a: List[A])(implicit order: Order[A]): Heap[A] =
     Heap.heapify(a)
 
   /**
-   * Remove the min element from the heap (the root).
-   * Order O(log n)
+   * Remove the min element from the heap (the root) and return it along with the updated heap. Order O(log n)
+   */
+  def pop(implicit order: Order[A]): Option[(A, Heap[A])] = this match {
+    case Branch(m, l, r) => Some((m, bubbleRootDown(mergeChildren(l, r))))
+    case Leaf()          => None
+  }
+
+  /**
+   * Remove the min element from the heap (the root). Order O(log n)
    */
   def remove(implicit order: Order[A]): Heap[A] = this match {
     case Branch(_, l, r) => bubbleRootDown(mergeChildren(l, r))
@@ -122,8 +161,7 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * Aggregate with a commutative monoid, since the Heap is not totally
-   * ordered
+   * Aggregate with a commutative monoid, since the Heap is not totally ordered
    */
   final def unorderedFoldMap[B](fn: A => B)(implicit m: CommutativeMonoid[B]): B =
     this match {
@@ -139,7 +177,7 @@ sealed abstract class Heap[A] {
   final def unorderedFold(implicit m: CommutativeMonoid[A]): A =
     this match {
       case Branch(min, left, right) => m.combine(min, m.combine(left.unorderedFold, right.unorderedFold))
-      case _ => m.empty
+      case _                        => m.empty
     }
 
   /**
@@ -157,11 +195,11 @@ sealed abstract class Heap[A] {
   }
 
   /**
-   * do a foldLeft in the same order as toList.
-   * requires an Order[A], which prevents us from making a Foldable[Heap] instance.
+   * do a foldLeft in the same order as toList. requires an Order[A], which prevents us from making a Foldable[Heap]
+   * instance.
    *
-   * prefer unorderedFoldMap if you can express your operation as a commutative monoid
-   * since it is O(N) vs O(N log N) for this method
+   * prefer unorderedFoldMap if you can express your operation as a commutative monoid since it is O(N) vs O(N log N)
+   * for this method
    */
   def foldLeft[B](init: B)(fn: (B, A) => B)(implicit order: Order[A]): B = {
     @tailrec
@@ -190,14 +228,13 @@ sealed abstract class Heap[A] {
   def --(implicit order: Order[A]): Heap[A] = remove
 
   /**
-   * convert to a PairingHeap which can do fast merges,
-   * this is an O(N) operation
+   * convert to a PairingHeap which can do fast merges, this is an O(N) operation
    */
   def toPairingHeap: PairingHeap[A] =
     if (isEmpty) PairingHeap.empty
     else {
       val thisBranch = this.asInstanceOf[Branch[A]]
-      import thisBranch.{min, left, right}
+      import thisBranch.{left, min, right}
       PairingHeap.Tree(min, left.toPairingHeap :: right.toPairingHeap :: Nil)
     }
 }
@@ -220,9 +257,9 @@ object Heap {
     heapify(as)
 
   /**
-   * this is useful for finding the k maximum values in O(N) times for N items
-   * same as as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N)
-   * for a full sort. When N is very large, this can be a very large savings
+   * this is useful for finding the k maximum values in O(N) times for N items same as
+   * as.toList.sorted.reverse.take(count), but O(N log(count)) vs O(N log N) for a full sort. When N is very large, this
+   * can be a very large savings
    */
   def takeLargest[A](as: Iterable[A], count: Int)(implicit order: Order[A]): Heap[A] =
     if (count <= 0) empty
@@ -241,8 +278,7 @@ object Heap {
     }
 
   /**
-   * Build a heap using an Iterable
-   * Order O(n)
+   * Build a heap using an Iterable Order O(n)
    */
   def heapify[A](a: Iterable[A])(implicit order: Order[A]): Heap[A] = {
     val ary = (a: Iterable[Any]).toArray
@@ -253,8 +289,7 @@ object Heap {
         // But since A was already boxed, and needs to be boxed in Heap
         // this shouldn't cause a performance problem
         bubbleDown(ary(i).asInstanceOf[A], loop((i << 1) + 1), loop((i + 1) << 1))
-      }
-      else {
+      } else {
         Leaf()
       }
 
@@ -296,11 +331,12 @@ object Heap {
     case (_, _)                                   => Heap(x, l, r)
   }
 
-  private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {
-    case (Branch(y, _, _), Branch(z, lt, rt)) if (order.lt(z, y) && order.gt(x, z)) => Heap(z, l, bubbleDown(x, lt, rt))
-    case (Branch(y, lt, rt), _) if order.gt(x, y)                                   => Heap(y, bubbleDown(x, lt, rt), r)
-    case (_, _)                                                                     => Heap(x, l, r)
-  }
+  private[collections] def bubbleDown[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] =
+    (l, r) match {
+      case (Branch(y, _, _), Branch(z, lt, rt)) if order.lt(z, y) && order.gt(x, z) => Heap(z, l, bubbleDown(x, lt, rt))
+      case (Branch(y, lt, rt), _) if order.gt(x, y)                                 => Heap(y, bubbleDown(x, lt, rt), r)
+      case (_, _)                                                                   => Heap(x, l, r)
+    }
 
   private[collections] def bubbleRootDown[A](h: Heap[A])(implicit order: Order[A]): Heap[A] =
     h match {
@@ -316,23 +352,19 @@ object Heap {
   private[collections] def mergeChildren[A](l: Heap[A], r: Heap[A]): Heap[A] =
     if (l.isEmpty && r.isEmpty) {
       Leaf()
-    }
-    else if (l.unbalanced) {
+    } else if (l.unbalanced) {
       // empty Heaps are never unbalanced, so we can cast l to a branch:
       val bl: Branch[A] = l.asInstanceOf[Branch[A]]
       floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
-    }
-    else if (r.unbalanced) {
+    } else if (r.unbalanced) {
       // empty Heaps are never unbalanced, so we can cast r to a branch:
       val br: Branch[A] = r.asInstanceOf[Branch[A]]
       floatRight(br.min, l, mergeChildren(br.left, br.right))
-    }
-    else if (r.height < l.height) {
+    } else if (r.height < l.height) {
       // l.height >= 1, because r.height >= 0, so, l must be a branch
       val bl: Branch[A] = l.asInstanceOf[Branch[A]]
       floatLeft(bl.min, mergeChildren(bl.left, bl.right), r)
-    }
-    else {
+    } else {
       // we know r.height >= l.height,
       // we also know both r and l are not empty.
       // since l and r are not both empty, if r is empty,
@@ -366,8 +398,8 @@ object Heap {
     }
   }
 
-  implicit val catsCollectionHeapUnorderedFoldable: UnorderedFoldable[Heap] =
-    new UnorderedFoldable[Heap] {
+  implicit val catsCollectionHeapPartiallyOrderedSet: PartiallyOrderedSet[Heap] =
+    new PartiallyOrderedSet[Heap] {
       def unorderedFoldMap[A, B: CommutativeMonoid](ha: Heap[A])(fn: A => B): B =
         ha.unorderedFoldMap(fn)
 
@@ -379,6 +411,26 @@ object Heap {
       override def exists[A](ha: Heap[A])(fn: A => Boolean) = ha.exists(fn)
       override def forall[A](ha: Heap[A])(fn: A => Boolean) = ha.forall(fn)
       override def size[A](h: Heap[A]) = h.size
+
+      // PartiallyOrderedSet methods
+      override def add[A](fa: Heap[A], a: A)(implicit order: Order[A]): Heap[A] =
+        fa.add(a)
+      override def addAll[A: Order](fa: Heap[A], as: Iterable[A]): Heap[A] =
+        fa.addAll(as)
+      override def contains[A](fa: Heap[A], a: A)(implicit order: Order[A]): Boolean =
+        fa.contains(a)
+      override def build[A](as: Iterable[A])(implicit order: Order[A]): Heap[A] =
+        Heap.fromIterable(as)
+      override def empty[A]: Heap[A] = Heap.empty[A]
+      override def minimumOption[A](fa: Heap[A]): Option[A] = fa.getMin
+      override def removeMin[A](fa: Heap[A])(implicit order: Order[A]): Heap[A] = fa.remove
+      override def singleton[A](a: A): Heap[A] = Heap(a)
+      override def toSortedList[A: Order](fa: Heap[A]): List[A] =
+        fa.toList
+      override def sortedFoldLeft[A: Order, B](fa: Heap[A], init: B)(fn: (B, A) => B): B =
+        fa.foldLeft(init)(fn)
+
+      override def order[A: Order] = new HeapOrder[A]
     }
 
   private[collections] class HeapOrder[A](implicit ordA: Order[A]) extends Order[Heap[A]] {
@@ -387,8 +439,7 @@ object Heap {
       if (left.isEmpty) {
         if (right.isEmpty) 0
         else -1
-      }
-      else if (right.isEmpty) 1
+      } else if (right.isEmpty) 1
       else {
         // both are not empty
         val lb = left.asInstanceOf[Branch[A]]
@@ -398,6 +449,7 @@ object Heap {
         else compare(left.remove, right.remove)
       }
   }
+
   /**
    * This is the same order as you would get by doing `.toList` and ordering by that
    */
