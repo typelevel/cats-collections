@@ -200,16 +200,16 @@ class IsetBenchmarks
 
 class CcbsBenchmarks
     extends DoSetup
-    // with BuildCcbs
-    // with BulkAddCcbs
-    // with BulkRemoveCcbs
-    // with FoldIntoCcbs
-    // with FoldOutOfCcbs
-    // with LookupCcbs
-    // with MergeCcbs
+    with BuildCcbs
+    with BulkAddCcbs
+    with BulkRemoveCcbs
+    with FoldIntoCcbs
+    with FoldOutOfCcbs
+    with LookupCcbs
+    with MergeCcbs
     with IntersectCcbs
-// with XorCcbs
-// with DiffCcbs
+    with XorCcbs
+    with DiffCcbs
 
 // benchmark traits
 
