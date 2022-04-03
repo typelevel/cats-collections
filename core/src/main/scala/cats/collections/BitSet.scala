@@ -480,10 +480,10 @@ object BitSet {
    * Given a value (`n`), and offset (`o`) and a height (`h`), compute the array index used to store the given value's
    * bit.
    */
-  private[collections] def index(n: Int, o: Int, h: Int): Int =
+  @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
     (n - o) >>> (h * 5 + 5)
 
-  private[collections] def bit(n: Int, o: Int): Int = (n - o) & 31
+  @inline private[collections] def bit(n: Int, o: Int): Int = (n - o) & 31
 
   case class InternalError(msg: String) extends Exception(msg)
 
