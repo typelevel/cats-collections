@@ -93,7 +93,7 @@ class RangeSuite extends FunSuite {
   test("be able to diff (-)") {
     val range = Range(1, 10)
 
-    val Some((l, Some(r))) = range - Range(2, 9)
+    val Some(l, Some(r)) = range - Range(2, 9)
 
     assertEquals(l.toList, List(1))
     assertEquals(r.toList, List(10))
@@ -102,11 +102,11 @@ class RangeSuite extends FunSuite {
 
     assertEquals(x1.isDefined, false)
 
-    val Some((x2, None)) = range - Range(-1, 5)
+    val Some(x2, None) = range - Range(-1, 5)
 
     assertEquals(x2.toList, List(6, 7, 8, 9, 10))
 
-    val Some((x3, None)) = range - Range(3, 12)
+    val Some(x3, None) = range - Range(3, 12)
 
     assertEquals(x3.toList, List(1, 2))
   }

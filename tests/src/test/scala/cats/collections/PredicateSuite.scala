@@ -62,8 +62,8 @@ class PredicateSuite extends DisciplineSuite {
 
     assert(
       bs.forall(b =>
-        (s1(b) == (as.contains(b) && (b % 2 == 0))) &&
-          (s2(b) == (as.contains(b) && (b % 2 == 0)))
+        s1(b) == (as.contains(b) && b % 2 == 0) &&
+          s2(b) == (as.contains(b) && b % 2 == 0)
       )
     )
   })
@@ -77,8 +77,8 @@ class PredicateSuite extends DisciplineSuite {
 
     assert(
       bs.forall(b =>
-        (s1(b) == (as.contains(b) || (b % 2 == 0))) &&
-          (s2(b) == (as.contains(b) || (b % 2 == 0)))
+        s1(b) == (as.contains(b) || b % 2 == 0) &&
+          s2(b) == (as.contains(b) || b % 2 == 0)
       )
     )
   })
@@ -92,8 +92,8 @@ class PredicateSuite extends DisciplineSuite {
 
     assert(
       bs.forall(b =>
-        (s1(b) == (as.contains(b) && (b % 2 != 0))) &&
-          (s2(b) == (as.contains(b) && (b % 2 != 0)))
+        s1(b) == (as.contains(b) && b % 2 != 0) &&
+          s2(b) == (as.contains(b) && b % 2 != 0)
       )
     )
   })
@@ -104,6 +104,6 @@ class PredicateSuite extends DisciplineSuite {
 
     val s1 = !(setA - setEven)
 
-    assert(bs.forall(b => (s1(b) != (as.contains(b) && (b % 2 != 0)))))
+    assert(bs.forall(b => s1(b) != (as.contains(b) && b % 2 != 0)))
   })
 }

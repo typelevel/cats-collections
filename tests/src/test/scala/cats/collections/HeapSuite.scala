@@ -93,7 +93,7 @@ class HeapSuite extends DisciplineSuite {
   property("adding increases size") {
     forAll { (heap: Heap[Int], x: Int) =>
       val heap1 = heap + x
-      assert(heap1.size == (heap.size + 1))
+      assert(heap1.size == heap.size + 1)
     }
   }
 
@@ -124,7 +124,7 @@ class HeapSuite extends DisciplineSuite {
   property("remove decreases size") {
     forAll { (heap: Heap[Int]) =>
       val heap1 = heap.remove
-      assert((heap1.size == (heap.size - 1)) || (heap1.isEmpty && heap.isEmpty))
+      assert(heap1.size == heap.size - 1 || heap1.isEmpty && heap.isEmpty)
     } && {
       val r = assert(Heap.empty[Int].remove == Heap.empty[Int])
 
@@ -153,8 +153,8 @@ class HeapSuite extends DisciplineSuite {
   property("size is consistent with isEmpty/nonEmpty") {
     forAll { (heap: Heap[Int]) =>
       assert(heap.isEmpty == (heap.size == 0))
-      assert(heap.nonEmpty == (heap.size > 0))
-      assert(heap.isEmpty == (!heap.nonEmpty))
+      assert(heap.nonEmpty == heap.size > 0)
+      assert(heap.isEmpty == !heap.nonEmpty)
     }
   }
 
@@ -271,7 +271,7 @@ class HeapSuite extends DisciplineSuite {
           right.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on right") }
           // we expect fully balanced heaps, but we put the size on the left first:
           assert(left.size >= right.size, s"$heapStr has left size = ${left.size} vs right size = ${right.size}")
-          assert((left.height == right.height) || (left.height == right.height + 1),
+          assert(left.height == right.height || left.height == right.height + 1,
                  s"$heapStr has unbalanced height: ${left.height} vs ${right.height}"
           )
 

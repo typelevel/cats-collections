@@ -122,13 +122,13 @@ class DietSuite extends DisciplineSuite {
   }
 
   test("remove side ranges") {
-    val diet = ((Diet.empty[Int]
+    val diet = (Diet.empty[Int]
       + Range(20, 21)
       + Range(9, 10)
       + Range(12, 18)
       + Range(23, 30)
       + Range(40, 50)
-      + Range(35, 48))
+      + Range(35, 48)
       - Range(15, 18)
       - Range(25, 60))
 
@@ -174,7 +174,7 @@ class DietSuite extends DisciplineSuite {
   })
 
   test("remove inner range") {
-    val diet = (Diet.empty[Int] + Range(20, 30)) - Range(22, 27)
+    val diet = Diet.empty[Int] + Range(20, 30) - Range(22, 27)
 
     assertEquals(diet.toList, List(20, 21, 28, 29, 30))
   }

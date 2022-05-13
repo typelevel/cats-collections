@@ -157,9 +157,9 @@ sealed abstract class Diet[A] {
         val left = if (order.lt(range.start, rng.start)) l.removeRangeIncreasing(range) else l
         val right = if (order.gt(range.end, rng.end)) r.removeRangeIncreasing(range) else r
         rng - range match {
-          case None               => merge(left, right)
-          case Some((m, None))    => DietNode(m, left, right)
-          case Some((m, Some(n))) => merge(DietNode(m, left, EmptyDiet()), DietNode(n, EmptyDiet(), right))
+          case None             => merge(left, right)
+          case Some(m, None)    => DietNode(m, left, right)
+          case Some(m, Some(n)) => merge(DietNode(m, left, EmptyDiet()), DietNode(n, EmptyDiet(), right))
         }
     }
 

@@ -272,7 +272,7 @@ sealed abstract class AvlSet[A] {
     }
 
     @tailrec override def next(): A = stack match {
-      case Nil => throw new NoSuchElementException()
+      case Nil => throw new NoSuchElementException
       case Left(v) :: ss =>
         stack = ss
         v

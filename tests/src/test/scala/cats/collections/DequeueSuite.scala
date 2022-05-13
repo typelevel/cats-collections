@@ -49,8 +49,8 @@ class DequeueSuite extends DisciplineSuite {
 
   @annotation.tailrec
   final def unconsL[A](q: Dequeue[A], acc: List[A]): List[A] = q.uncons match {
-    case None         => acc
-    case Some((i, q)) => unconsL(q, i :: acc)
+    case None       => acc
+    case Some(i, q) => unconsL(q, i :: acc)
   }
 
   @annotation.tailrec
@@ -61,8 +61,8 @@ class DequeueSuite extends DisciplineSuite {
 
   @annotation.tailrec
   final def unsnocL[A](q: Dequeue[A], acc: List[A]): List[A] = q.unsnoc match {
-    case None         => acc
-    case Some((i, q)) => unsnocL(q, i :: acc)
+    case None       => acc
+    case Some(i, q) => unsnocL(q, i :: acc)
   }
 
   test("enqueue onto an empty q can be fetched from either end") {

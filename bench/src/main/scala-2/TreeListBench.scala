@@ -75,8 +75,8 @@ class TreeListBench {
     @tailrec
     def loop(ls: TreeList[Int], acc: Int): Int =
       ls.uncons match {
-        case None            => acc
-        case Some((h, tail)) => loop(tail, acc + h)
+        case None          => acc
+        case Some(h, tail) => loop(tail, acc + h)
       }
 
     bh.consume(loop(treeList, 0))

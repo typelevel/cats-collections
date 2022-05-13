@@ -288,7 +288,7 @@ object Heap {
         // so we can't create an array of type A.
         // But since A was already boxed, and needs to be boxed in Heap
         // this shouldn't cause a performance problem
-        bubbleDown(ary(i).asInstanceOf[A], loop((i << 1) + 1), loop((i + 1) << 1))
+        bubbleDown(ary(i).asInstanceOf[A], loop((i << 1) + 1), loop(i + 1 << 1))
       } else {
         Leaf()
       }

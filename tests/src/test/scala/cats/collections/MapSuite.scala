@@ -50,7 +50,7 @@ class MapSuite extends DisciplineSuite {
     val m2 = fromSetS(xs)
 
     assert(xs.forall { case (k, _) =>
-      m.containsKey(k) && (m.get(k) == m2.get(k))
+      m.containsKey(k) && m.get(k) == m2.get(k)
     })
   })
 
@@ -60,7 +60,7 @@ class MapSuite extends DisciplineSuite {
 
     val m = xs.foldLeft[AvlMap[String, Int]](n)((mm, kvr) => if (kvr._2) mm.remove(kvr._1._1) else mm)
 
-    val m2 = xs.foldLeft[Map[String, Int]](n2)((mm, kvr) => if (kvr._2) mm - (kvr._1._1) else mm)
+    val m2 = xs.foldLeft[Map[String, Int]](n2)((mm, kvr) => if (kvr._2) mm - kvr._1._1 else mm)
 
     assert(xs.forall { case (k, _) =>
       m.get(k._1) == m2.get(k._1)

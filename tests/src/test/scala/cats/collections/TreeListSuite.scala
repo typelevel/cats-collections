@@ -61,7 +61,7 @@ class TreeListSuite extends DisciplineSuite {
   }
 
   property("++ works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
-    testHomomorphism(xs)({ l => (l ++ ys).toList }, { _ ++ (ys.toList) })
+    testHomomorphism(xs)({ l => (l ++ ys).toList }, { _ ++ ys.toList })
   })
 
   property("drop/take work")(forAll { (xs: TreeList[Int], n: Int) =>

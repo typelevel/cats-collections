@@ -92,13 +92,13 @@ class PairingHeapSuite extends Properties("PairingHeap") {
     val heapList = heap.toList
     val heap1 = PairingHeap.fromIterable(heapList)
 
-    (heapList == list.sorted) && Order[PairingHeap[Int]].eqv(heap, heap1)
+    heapList == list.sorted && Order[PairingHeap[Int]].eqv(heap, heap1)
   }
 
   property("size is consistent with isEmpty/nonEmpty") = forAll { (heap: PairingHeap[Int]) =>
     val a = heap.isEmpty == (heap.size == 0)
-    val b = heap.nonEmpty == (heap.size > 0)
-    val c = heap.isEmpty == (!heap.nonEmpty)
+    val b = heap.nonEmpty == heap.size > 0
+    val c = heap.isEmpty == !heap.nonEmpty
 
     a && b && c
   }

@@ -326,7 +326,7 @@ sealed abstract class BitSet { lhs =>
     var hash: Int = 1500450271 // prime number
     val it = iterator
     while (it.hasNext) {
-      hash = (hash * 1023465798) + it.next() // prime number
+      hash = hash * 1023465798 + it.next() // prime number
     }
     hash
   }
@@ -373,7 +373,7 @@ object BitSet {
    * bit.
    */
   @inline private[collections] def index(n: Int, o: Int, h: Int): Int =
-    (n - o) >>> (h * 5 + 6)
+    n - o >>> h * 5 + 6
 
   case class InternalError(msg: String) extends Exception(msg)
 
@@ -384,9 +384,9 @@ object BitSet {
    */
   private[collections] def parentFor(b: BitSet): BitSet = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << h * 5 + 11)
     val cs = new Array[BitSet](32)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = b.offset - o >>> h * 5 + 6
     cs(i) = b
     Branch(o, h, cs)
   }
@@ -400,10 +400,10 @@ object BitSet {
   @tailrec
   private def adoptedPlus(b: BitSet, n: Int): Branch = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << h * 5 + 11)
     val cs = new Array[BitSet](32)
     val parent = Branch(o, h, cs)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = b.offset - o >>> h * 5 + 6
     // this looks unsafe since we are going to mutate parent which points
     // to b, but critically we never mutate the Array containing b
     cs(i) = b
@@ -425,10 +425,10 @@ object BitSet {
   @tailrec
   private def adoptedUnion(b: BitSet, rhs: BitSet): BitSet = {
     val h = b.height + 1
-    val o = b.offset & -(1 << (h * 5 + 11))
+    val o = b.offset & -(1 << h * 5 + 11)
     val cs = new Array[BitSet](32)
     val parent = Branch(o, h, cs)
-    val i = (b.offset - o) >>> (h * 5 + 6)
+    val i = b.offset - o >>> h * 5 + 6
     cs(i) = b
     val j = BitSet.index(rhs.offset, o, h)
     if (j < 0 || 32 <= j || rhs.height > parent.height) {
@@ -446,9 +446,9 @@ object BitSet {
 
   private case class Branch(offset: Int, height: Int, children: Array[BitSet]) extends BitSet {
 
-    @inline private[collections] def limit: Long = offset + (1L << (height * 5 + 11))
+    @inline private[collections] def limit: Long = offset + (1L << height * 5 + 11)
 
-    @inline private[collections] def index(n: Int): Int = (n - offset) >>> (height * 5 + 6)
+    @inline private[collections] def index(n: Int): Int = n - offset >>> height * 5 + 6
     @inline private[collections] def valid(i: Int): Boolean = 0 <= i && i < 32
     @inline private[collections] def invalid(i: Int): Boolean = i < 0 || 32 <= i
 
@@ -464,7 +464,7 @@ object BitSet {
       var idx = 0
       while (idx < children.length) {
         val c = children(idx)
-        val empty = (c == null) || c.isEmpty
+        val empty = c == null || c.isEmpty
         if (!empty) return false
         idx += 1
       }
@@ -621,7 +621,7 @@ object BitSet {
         while (i < 32) {
           val x = children(i)
           val y = rcs(i)
-          if (x != null && y != null && (x.intersects(y))) return true
+          if (x != null && y != null && x.intersects(y)) return true
           i += 1
         }
         false
@@ -818,14 +818,14 @@ object BitSet {
 
     @inline private[collections] def limit: Long = offset + 2048L
 
-    @inline private[collections] def index(n: Int): Int = (n - offset) >>> 6
-    @inline private[collections] def bit(n: Int): Int = (n - offset) & 63
+    @inline private[collections] def index(n: Int): Int = n - offset >>> 6
+    @inline private[collections] def bit(n: Int): Int = n - offset & 63
 
     def height: Int = 0
 
     def apply(n: Int): Boolean = {
       val i = index(n)
-      (0 <= i && i < 32) && (((values(i) >>> bit(n)) & 1) == 1)
+      0 <= i && i < 32 && (values(i) >>> bit(n) & 1) == 1
     }
 
     def arrayCopy: Array[Long] = {
@@ -860,7 +860,7 @@ object BitSet {
         if ((vsi & mask) == 0L) this
         else {
           val vs = arrayCopy
-          vs(i) = vsi & (~mask)
+          vs(i) = vsi & ~mask
           Leaf(offset, vs)
         }
       }
@@ -979,7 +979,7 @@ object BitSet {
             val vs = new Array[Long](32)
             var i = 0
             while (i < 32) {
-              vs(i) = values(i) & (~values2(i))
+              vs(i) = values(i) & ~values2(i)
               i += 1
             }
             Leaf(offset, vs)
@@ -997,13 +997,13 @@ object BitSet {
     private[collections] def +=(n: Int): Unit = {
       val i = index(n)
       val j = bit(n)
-      values(i) |= (1L << j)
+      values(i) |= 1L << j
     }
 
     private[collections] def mutableAdd(n: Int): BitSet = {
       val i = index(n)
       if (0 <= i && i < 32) {
-        values(i) |= (1L << bit(n))
+        values(i) |= 1L << bit(n)
         this
       } else {
         BitSet.adoptedPlus(this, n)

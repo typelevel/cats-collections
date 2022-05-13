@@ -66,19 +66,19 @@ trait PartiallyOrderedSetLaws[F[_]] extends UnorderedFoldableLaws[F] {
     F.add(F.empty[A], a) <-> F.singleton(a)
 
   def addMonoidConsistency[A: Order, B: CommutativeMonoid](fa: F[A], a: A, fn: A => B): IsEq[B] =
-    F.unorderedFoldMap(F.add(fa, a))(fn) <-> (CommutativeMonoid[B].combine(F.unorderedFoldMap(fa)(fn), fn(a)))
+    F.unorderedFoldMap(F.add(fa, a))(fn) <-> CommutativeMonoid[B].combine(F.unorderedFoldMap(fa)(fn), fn(a))
 
   def emptyIsEmpty[A: CommutativeMonoid]: IsEq[A] =
     F.unorderedFold(F.empty[A]) <-> CommutativeMonoid[A].empty
 
   def addIncreasesSize[A: Order](fa: F[A], a: A): Boolean =
-    F.size(fa) == (F.size(F.add(fa, a)) - 1L)
+    F.size(fa) == F.size(F.add(fa, a)) - 1L
 
   def containsMatchesToList[A: Order](fa: F[A], a: A): Boolean =
     F.contains(fa, a) == F.toSortedList(fa).exists { aa => Order[A].eqv(aa, a) }
 
   def removeDecreasesSize[A: Order](fa: F[A]): Boolean =
-    F.isEmpty(fa) || (F.size(fa) == (F.size(F.removeMin(fa)) + 1L))
+    F.isEmpty(fa) || F.size(fa) == F.size(F.removeMin(fa)) + 1L
 
   def minimumOptionIsTheMinimum[A: Order](fa: F[A]): Boolean = {
     val mo = F.minimumOption(fa)

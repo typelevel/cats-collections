@@ -198,7 +198,7 @@ sealed abstract class TreeList[+A] {
     def loop(first: Boolean, l: TreeList[A]): Unit =
       l.uncons match {
         case None => ()
-        case Some((h, t)) =>
+        case Some(h, t) =>
           if (!first) strb.append(", ")
           strb.append(h.toString)
           loop(false, t)
@@ -672,7 +672,7 @@ object TreeList extends TreeListInstances0 {
     def updatedOrThis[A1 >: A](idx: Long, a: A1): TreeList[A1] = {
       @tailrec
       def loop(idx: Long, treeList: List[Tree[Nat, A1]], front: List[Tree[Nat, A1]]): TreeList[A1] =
-        if (treeList.nonEmpty && (idx >= 0)) {
+        if (treeList.nonEmpty && idx >= 0) {
           val h = treeList.head
           val tail = treeList.tail
           if (h.size <= idx) loop(idx - h.size, tail, h :: front)
@@ -767,7 +767,7 @@ object TreeList extends TreeListInstances0 {
           case (None, None)    => 0
           case (Some(_), None) => 1
           case (None, Some(_)) => -1
-          case (Some((l0, l1)), Some((r0, r1))) =>
+          case (Some(l0, l1), Some(r0, r1)) =>
             val c0 = ordA.compare(l0, r0)
             if (c0 == 0) compare(l1, r1)
             else c0
@@ -878,7 +878,7 @@ object TreeList extends TreeListInstances0 {
       override def reduceLeftToOption[A, B](fa: TreeList[A])(f: A => B)(g: (B, A) => B): Option[B] =
         fa.uncons match {
           case None => None
-          case Some((a, tail)) =>
+          case Some(a, tail) =>
             Some {
               if (tail.isEmpty) f(a)
               else tail.foldLeft(f(a))(g)
@@ -888,7 +888,7 @@ object TreeList extends TreeListInstances0 {
       override def reduceRightToOption[A, B](fa: TreeList[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
         fa.uncons match {
           case None => Eval.now(None)
-          case Some((a, tail)) =>
+          case Some(a, tail) =>
             if (tail.isEmpty) Eval.now(Some(f(a)))
             else foldRight(tail, Eval.now(f(a)))(g).map(Some(_))
         }
@@ -969,7 +969,7 @@ abstract private[collections] class TreeListInstances0 extends TreeListInstances
             case (None, None)    => 0.0
             case (Some(_), None) => 1.0
             case (None, Some(_)) => -1.0
-            case (Some((l0, l1)), Some((r0, r1))) =>
+            case (Some(l0, l1), Some(r0, r1)) =>
               val c0 = ordA.partialCompare(l0, r0)
               if (c0 == 0.0) loop(l1, r1)
               else c0

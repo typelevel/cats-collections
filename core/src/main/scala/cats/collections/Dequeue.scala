@@ -115,8 +115,8 @@ sealed abstract class Dequeue[+A] {
     override def hasNext: Boolean = !pos.isEmpty
 
     override def next(): A = pos.uncons match {
-      case None => throw new NoSuchElementException()
-      case Some((a, rest)) =>
+      case None => throw new NoSuchElementException
+      case Some(a, rest) =>
         pos = rest
         a
     }
@@ -125,7 +125,7 @@ sealed abstract class Dequeue[+A] {
   def to[Col[_], AA >: A](implicit cbf: Factory[AA, Col[AA]]): Col[AA] = {
     val builder = cbf.newBuilder
     @tailrec def go(cur: Dequeue[A]): Unit = cur.uncons match {
-      case Some((a, rest)) =>
+      case Some(a, rest) =>
         builder += a
         go(rest)
       case _ =>
@@ -145,7 +145,7 @@ sealed abstract class Dequeue[+A] {
       other match {
         case SingletonDequeue(a) => this :+ a
         case FullDequeue(of, ofs, ob, obs) =>
-          FullDequeue(NonEmptyList(f.head, f.tail ++ (b.reverse.toList) ++ of.toList), fs + bs + ofs, ob, obs)
+          FullDequeue(NonEmptyList(f.head, f.tail ++ b.reverse.toList ++ of.toList), fs + bs + ofs, ob, obs)
         case _ => this
       }
     case _ => other
@@ -249,8 +249,8 @@ sealed abstract class Dequeue[+A] {
   def coflatMap[B](f: Dequeue[A] => B): Dequeue[B] = {
     def loop(op: Option[(A, Dequeue[A])], last: Dequeue[A], acc: Dequeue[B]): Dequeue[B] =
       op match {
-        case None            => acc
-        case Some((_, rest)) => loop(rest.uncons, rest, acc :+ f(last))
+        case None          => acc
+        case Some(_, rest) => loop(rest.uncons, rest, acc :+ f(last))
       }
 
     loop(this.uncons, this, EmptyDequeue())
