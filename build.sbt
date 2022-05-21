@@ -116,7 +116,7 @@ lazy val bench = project
     coverageEnabled := false,
     run / fork := true,
     libraryDependencies += {
-      val scalazV = if (tlIsScala3.value) "7.4.0-M11" else "7.3.6"
+      val scalazV = if (tlIsScala3.value) "7.4.0-M12" else "7.3.6"
       "org.scalaz" %% "scalaz-core" % scalazV
     }
   )
