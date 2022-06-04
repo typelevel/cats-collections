@@ -70,7 +70,7 @@ class TreeListSuite extends DisciplineSuite {
     // we should be able to drop for all sizes:
     (-1L to xs.size).foreach { cnt =>
       assertEquals(xs.drop(cnt).toList, xs.toList.drop(cnt.toInt))
-      assertEquals((xs.take(cnt) ++ xs.drop(cnt)), xs)
+      assertEquals(xs.take(cnt) ++ xs.drop(cnt), xs)
     }
   })
 
@@ -101,7 +101,7 @@ class TreeListSuite extends DisciplineSuite {
 
   property("split combined is identity")(forAll { (xs: TreeList[Int]) =>
     val (left, right) = xs.split
-    assertEquals((left.toList ::: right.toList), xs.toList)
+    assertEquals(left.toList ::: right.toList, xs.toList)
   })
 
   property("split produces a full left tree")(forAll { (xs: TreeList[Int]) =>
