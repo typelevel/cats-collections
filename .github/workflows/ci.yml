@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [3.0.2, 2.13.8, 2.12.15]
+        scala: [3.0.2, 2.13.8, 2.12.16]
         java: [temurin@8, temurin@11, temurin@17]
         project: [rootJS, rootJVM]
         exclude:
@@ -155,7 +155,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.15]
+        scala: [2.12.16]
         java: [temurin@8]
     runs-on: ${{ matrix.os }}
     steps:
@@ -323,7 +323,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.15]
+        scala: [2.12.16]
         java: [temurin@8]
     runs-on: ${{ matrix.os }}
     steps:
@@ -409,7 +409,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        scala: [2.12.15]
+        scala: [2.12.16]
         java: [temurin@8]
     runs-on: ${{ matrix.os }}
     steps:
