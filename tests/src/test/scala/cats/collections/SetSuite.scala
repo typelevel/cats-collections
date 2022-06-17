@@ -108,24 +108,24 @@ class SetSuite extends DisciplineSuite {
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
-    assertEquals(xt.intersect(yt).toScalaSet, (xs.intersect(ys)))
-    assertEquals((xt & yt).toScalaSet, (xs.intersect(ys)))
+    assertEquals(xt.intersect(yt).toScalaSet, xs.intersect(ys))
+    assertEquals((xt & yt).toScalaSet, xs.intersect(ys))
   })
 
   property("union is correct")(forAll { (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
-    assertEquals(xt.union(yt).toScalaSet, (xs.union(ys)))
-    assertEquals((xt | yt).toScalaSet, (xs.union(ys)))
+    assertEquals(xt.union(yt).toScalaSet, xs.union(ys))
+    assertEquals((xt | yt).toScalaSet, xs.union(ys))
   })
 
   property("we can take the difference of sets")(forAll { (xs: Set[Int], ys: Set[Int]) =>
     val xt = AvlSet(xs.toSeq: _*)
     val yt = AvlSet(ys.toSeq: _*)
 
-    assertEquals(xt.diff(yt).toScalaSet, (xs.diff(ys)))
-    assertEquals((xt - yt).toScalaSet, (xs.diff(ys)))
+    assertEquals(xt.diff(yt).toScalaSet, xs.diff(ys))
+    assertEquals((xt - yt).toScalaSet, xs.diff(ys))
   })
 
   property("map works")(forAll { (xs: Set[Int]) =>
@@ -133,13 +133,13 @@ class SetSuite extends DisciplineSuite {
 
     val xt = AvlSet(xs.toSeq: _*)
 
-    assertEquals(xt.map(f).toScalaSet, (xs.map(f)))
+    assertEquals(xt.map(f).toScalaSet, xs.map(f))
   })
 
   property("fromFoldable works")(forAll { (xs: List[Int]) =>
     val xt = AvlSet.fromFoldable(xs)
 
-    assertEquals(xt.toScalaSet, (xs.toSet))
+    assertEquals(xt.toScalaSet, xs.toSet)
   })
 
   property("Show instance is consistent with toString")(forAll { (as: AvlSet[Int]) =>
