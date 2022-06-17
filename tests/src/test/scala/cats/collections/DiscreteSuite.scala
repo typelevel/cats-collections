@@ -30,11 +30,11 @@ class DiscreteSuite extends DisciplineSuite {
     DefaultScalaCheckPropertyCheckConfig.default
 
   property("succ")(forAll { (x: Int) =>
-    assertEquals(Discrete[Int].succ(x), (x + 1))
+    assertEquals(Discrete[Int].succ(x), x + 1)
   })
 
   property("pred")(forAll { (x: Int) =>
-    assertEquals(Discrete[Int].pred(x), (x - 1))
+    assertEquals(Discrete[Int].pred(x), x - 1)
   })
 
   property("adj")(forAll { (x: Int) =>
@@ -47,11 +47,11 @@ class DiscreteSuite extends DisciplineSuite {
   })
 
   property("inverse succ")(forAll { (x: Int) =>
-    assertEquals(Discrete[Int].inverse.succ(x), (x - 1))
+    assertEquals(Discrete[Int].inverse.succ(x), x - 1)
   })
 
   property("inverse pred")(forAll { (x: Int) =>
-    assertEquals(Discrete[Int].inverse.pred(x), (x + 1))
+    assertEquals(Discrete[Int].inverse.pred(x), x + 1)
   })
 
   property("inverse adj")(forAll { (x: Int) =>
