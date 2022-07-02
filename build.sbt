@@ -7,7 +7,7 @@ val scalacheckVersion = "1.16.0"
 val algebraVersion = "2.8.0"
 val Scala212 = "2.12.15"
 val Scala213 = "2.13.8"
-val Scala3 = "3.1.2"
+val Scala3 = "3.1.3"
 
 ThisBuild / tlBaseVersion := "0.9"
 ThisBuild / startYear := Some(2015)
