@@ -40,7 +40,12 @@ lazy val commonJsSettings = Seq(
   tlVersionIntroduced ++= List("2.12", "2.13").map(_ -> "0.9.1").toMap
 )
 
-lazy val core = crossProject(JSPlatform, JVMPlatform)
+lazy val commonNativeSettings = Seq(
+  coverageEnabled := false,
+  tlVersionIntroduced ++= List("2.12", "2.13").map(_ -> "0.9.4").toMap
+)
+
+lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .settings(moduleName := "cats-collections-core")
   .settings(dogsSettings: _*)
@@ -54,8 +59,9 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     }
   )
   .jsSettings(commonJsSettings)
+  .nativeSettings(commonNativeSettings)
 
-lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
+lazy val scalacheck = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .dependsOn(core)
   .settings(moduleName := "cats-collections-scalacheck")
@@ -64,8 +70,9 @@ lazy val scalacheck = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies += "org.scalacheck" %%% "scalacheck" % scalacheckVersion
   )
   .jsSettings(commonJsSettings)
+  .nativeSettings(commonNativeSettings)
 
-lazy val laws = crossProject(JSPlatform, JVMPlatform)
+lazy val laws = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .dependsOn(core)
   .settings(dogsSettings: _*)
@@ -74,8 +81,9 @@ lazy val laws = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies += "org.typelevel" %%% "cats-laws" % catsVersion
   )
   .jsSettings(commonJsSettings)
+  .nativeSettings(commonNativeSettings)
 
-lazy val tests = crossProject(JSPlatform, JVMPlatform)
+lazy val tests = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Pure)
   .enablePlugins(BuildInfoPlugin, NoPublishPlugin)
   .dependsOn(scalacheck, laws)
@@ -99,6 +107,7 @@ lazy val tests = crossProject(JSPlatform, JVMPlatform)
     buildInfoKeys := Seq("isJvm" -> (crossProjectPlatform.value == JVMPlatform))
   )
   .jsSettings(commonJsSettings)
+  .nativeSettings(commonNativeSettings)
 
 lazy val docs = project
   .in(file("site"))
