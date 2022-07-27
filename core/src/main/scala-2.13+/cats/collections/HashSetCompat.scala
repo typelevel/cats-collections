@@ -21,12 +21,15 @@
 
 package cats.collections
 
-package object arbitrary {
-  object all extends AllArbitrary
+private[collections] trait HashSetCompat[A] extends IterableOnce[A] { self: HashSet[A] =>
+  override def knownSize = self.size
 
-  object set extends ArbitrarySet
-  object hashset extends ArbitraryHashSet
-  object map extends ArbitraryMap
-  object predicate extends ArbitraryPredicate
-  object cogen extends CogenInstances
+  final def intersect(set: scala.collection.Set[A]): HashSet[A] = {
+    if (this.isEmpty)
+      this
+    else if (set.isEmpty)
+      HashSet.empty[A]
+    else
+      filter(set.contains)
+  }
 }
