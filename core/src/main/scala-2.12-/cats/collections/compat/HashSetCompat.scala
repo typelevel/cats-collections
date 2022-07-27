@@ -20,11 +20,13 @@
  */
 
 package cats.collections
+package compat
 
-private[collections] trait HashSetCompat[A] extends IterableOnce[A] { self: HashSet[A] =>
-  override def knownSize = self.size
+import scala.collection.GenSet
 
-  final def intersect(set: scala.collection.Set[A]): HashSet[A] = {
+private[collections] trait HashSetCompat[A] { self: HashSet[A] =>
+
+  final def intersect(set: GenSet[A]): HashSet[A] = {
     if (this.isEmpty)
       this
     else if (set.isEmpty)
@@ -32,4 +34,5 @@ private[collections] trait HashSetCompat[A] extends IterableOnce[A] { self: Hash
     else
       filter(set.contains)
   }
+
 }

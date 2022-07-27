@@ -22,20 +22,23 @@
 package cats.collections
 
 import cats.collections.arbitrary.hashset._
-import cats.collections.arbitrary.cogen._
 import cats.kernel.laws.discipline.CommutativeMonoidTests
 import cats.kernel.laws.discipline.HashTests
-import cats.laws.discipline.UnorderedFoldableTests
 import cats.laws.discipline.SerializableTests
+import cats.laws.discipline.UnorderedFoldableTests
 import cats.syntax.eq._
-import org.scalacheck.Gen
+import munit.DisciplineSuite
 import org.scalacheck.Arbitrary
+import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
+import org.scalacheck.Test
+
 import scala.collection.mutable
 import scala.util.Random
-import munit.DisciplineSuite
 
 class HashSetSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
+    DefaultScalaCheckPropertyCheckConfig.default
 
   checkAll("HashSet[Int]", HashTests[HashSet[Int]].hash)
   checkAll("Hash[HashSet[Int]]", SerializableTests.serializable(HashSet.catsDataHashForHashSet[Int]))

@@ -56,70 +56,82 @@ import HashSet.improve
 import HashSet.WrappedHashSet
 
 /**
-  * An immutable hash set using [[cats.kernel.Hash]] for hashing.
-  *
-  * Implemented using the CHAMP encoding.
-  *
-  * @see [[https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf Efficient Immutable Collections]]
-  *
-  * @tparam A the type of the elements contained in this hash set.
-  * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-  */
+ * An immutable hash set using [[cats.kernel.Hash]] for hashing.
+ *
+ * Implemented using the CHAMP encoding.
+ *
+ * @see
+ *   [[https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf Efficient Immutable Collections]]
+ *
+ * @tparam A
+ *   the type of the elements contained in this hash set.
+ * @param hash
+ *   the [[cats.kernel.Hash]] instance used for hashing values.
+ */
 final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit val hash: Hash[A])
-    extends HashSetCompat[A] {
+    extends compat.HashSetCompat[A] {
 
   /**
-    * An iterator for this set that can be used only once.
-    *
-    * @return an iterator that iterates through the elements of this set.
-    */
+   * An iterator for this set that can be used only once.
+   *
+   * @return
+   *   an iterator that iterates through the elements of this set.
+   */
   final def iterator: Iterator[A] =
     new HashSet.Iterator(rootNode)
 
   /**
-    * The size of this set.
-    *
-    * @return the number of elements in this set.
-    */
+   * The size of this set.
+   *
+   * @return
+   *   the number of elements in this set.
+   */
   final def size: Int = rootNode.size
 
   /**
-    * Tests whether the set is empty.
-    *
-    * @return `true` if the set contains no elements, `false` otherwise.
-    */
+   * Tests whether the set is empty.
+   *
+   * @return
+   *   `true` if the set contains no elements, `false` otherwise.
+   */
   final def isEmpty: Boolean = size == 0
 
   /**
-    * Tests whether the set is not empty.
-    *
-    * @return `true` if the set contains at least one element, `false` otherwise.
-    */
+   * Tests whether the set is not empty.
+   *
+   * @return
+   *   `true` if the set contains at least one element, `false` otherwise.
+   */
   final def nonEmpty: Boolean = !isEmpty
 
   /**
-    * Apply `f` to each element for its side effects.
-    *
-    * @param f the function to apply to each element.
-    */
+   * Apply `f` to each element for its side effects.
+   *
+   * @param f
+   *   the function to apply to each element.
+   */
   final def foreach[U](f: A => U): Unit =
     rootNode.foreach(f)
 
   /**
-    * Test whether the set contains `value`.
-    *
-    * @param value the element to check for set membership.
-    * @return `true` if the set contains `value`, `false` otherwise.
-    */
+   * Test whether the set contains `value`.
+   *
+   * @param value
+   *   the element to check for set membership.
+   * @return
+   *   `true` if the set contains `value`, `false` otherwise.
+   */
   final def contains(value: A): Boolean =
     rootNode.contains(value, improve(hash.hash(value)), 0)
 
   /**
-    * Creates a new set with an additional element, unless the element is already present.
-    *
-    * @param value the element to be added.
-    * @return a new set that contains all elements of this set and that also contains `value`.
-    */
+   * Creates a new set with an additional element, unless the element is already present.
+   *
+   * @param value
+   *   the element to be added.
+   * @return
+   *   a new set that contains all elements of this set and that also contains `value`.
+   */
   final def add(value: A): HashSet[A] = {
     val valueHash = improve(hash.hash(value))
     val newRootNode = rootNode.add(value, valueHash, 0)
@@ -131,11 +143,13 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   }
 
   /**
-    * Creates a new set with the given element removed from this set.
-    *
-    * @param value the element to be removed.
-    * @return a new set that contains all elements of this set but that does not contain `value`.
-    */
+   * Creates a new set with the given element removed from this set.
+   *
+   * @param value
+   *   the element to be removed.
+   * @return
+   *   a new set that contains all elements of this set but that does not contain `value`.
+   */
   final def remove(value: A): HashSet[A] = {
     val valueHash = improve(hash.hash(value))
     val newRootNode = rootNode.remove(value, valueHash, 0)
@@ -147,11 +161,13 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   }
 
   /**
-    * Creates a new set with all of the elements of both this set and the provided `set`.
-    *
-    * @param set the set whose values should be added to this set.
-    * @return a new set that contains all elements of this set and all of the elements of `set`.
-    */
+   * Creates a new set with all of the elements of both this set and the provided `set`.
+   *
+   * @param set
+   *   the set whose values should be added to this set.
+   * @return
+   *   a new set that contains all elements of this set and all of the elements of `set`.
+   */
   final def union(set: HashSet[A]): HashSet[A] = {
     if (this.isEmpty)
       set
@@ -164,11 +180,13 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   }
 
   /**
-    * Creates a new set with all of the elements of both this set and the provided `iterable`.
-    *
-    * @param set the iterable whose values should be added to this set.
-    * @return a new set that contains all elements of this set and all of the elements of `iterable`.
-    */
+   * Creates a new set with all of the elements of both this set and the provided `iterable`.
+   *
+   * @param set
+   *   the iterable whose values should be added to this set.
+   * @return
+   *   a new set that contains all elements of this set and all of the elements of `iterable`.
+   */
   final def union(iterable: IterableOnce[A]): HashSet[A] = {
     val newRootNode = iterable.iterator.foldLeft(rootNode) { case (node, a) =>
       node.add(a, improve(hash.hash(a)), 0)
@@ -253,13 +271,14 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   /**
    * Typesafe equality operator.
    *
-   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashSet]]
-   * values of the same element type to be compared to each other, and uses equality provided
-   * by [[cats.kernel.Eq]] instances, rather than using the universal equality provided by
-   * [[java.lang.Object#equals]].
+   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashSet]] values of the same
+   * element type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather than
+   * using the universal equality provided by [[java.lang.Object#equals]].
    *
-   * @param that the [[cats.data.HashSet]] to check for equality with this set.
-   * @return `true` if this set and `that` are equal, `false` otherwise.
+   * @param that
+   *   the [[cats.data.HashSet]] to check for equality with this set.
+   * @return
+   *   `true` if this set and `that` are equal, `false` otherwise.
    */
   final def ===(that: HashSet[A]): Boolean = {
     (this eq that) || (this.rootNode === that.rootNode)
@@ -278,11 +297,13 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   /**
    * Typesafe stringification operator.
    *
-   * This method is similar to [[java.lang.Object#toString]] except that it stringifies values according
-   * to [[cats.Show]] instances.
+   * This method is similar to [[java.lang.Object#toString]] except that it stringifies values according to
+   * [[cats.Show]] instances.
    *
-   * @param show the [[cats.Show]] instance to use for showing values of type `A`.
-   * @return a [[java.lang.String]] representation of this set.
+   * @param show
+   *   the [[cats.Show]] instance to use for showing values of type `A`.
+   * @return
+   *   a [[java.lang.String]] representation of this set.
    */
   final def show(implicit show: Show[A]): String =
     iterator.map(show.show).mkString("HashSet(", ", ", ")")
@@ -291,36 +312,44 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
     iterator.mkString("HashSet(", ", ", ")")
 }
 
-object HashSet extends HashSetCompatCompanion {
+object HashSet extends compat.HashSetCompatCompanion {
   final private[HashSet] def improve(hash: Int): Int =
     scala.util.hashing.byteswap32(hash)
 
   /**
-    * Creates a new empty [[cats.data.HashSet]] which uses `hash` for hashing.
-    *
-    * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-    * @return a new empty [[cats.data.HashSet]].
-    */
+   * Creates a new empty [[cats.data.HashSet]] which uses `hash` for hashing.
+   *
+   * @param hash
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new empty [[cats.data.HashSet]].
+   */
   final def empty[A](implicit hash: Hash[A]): HashSet[A] =
     new HashSet(Node.empty[A])
 
   /**
-  * Creates a new [[cats.data.HashSet]] which contains all elements of `as`.
-  *
-  * @param as the elements to add to the [[cats.data.HashSet]].
-  * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashSet]] which contains all elements of `as`.
-  */
+   * Creates a new [[cats.data.HashSet]] which contains all elements of `as`.
+   *
+   * @param as
+   *   the elements to add to the [[cats.data.HashSet]].
+   * @param hash
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashSet]] which contains all elements of `as`.
+   */
   final def apply[A](as: A*)(implicit hash: Hash[A]) =
     fromSeq(as)
 
   /**
-  * Creates a new [[cats.data.HashSet]] which contains all elements of `seq`.
-  *
-  * @param seq the sequence of elements to add to the [[cats.data.HashSet]].
-  * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashSet]] which contains all elements of `seq`.
-  */
+   * Creates a new [[cats.data.HashSet]] which contains all elements of `seq`.
+   *
+   * @param seq
+   *   the sequence of elements to add to the [[cats.data.HashSet]].
+   * @param hash
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashSet]] which contains all elements of `seq`.
+   */
   final def fromSeq[A](seq: Seq[A])(implicit hash: Hash[A]): HashSet[A] = {
     val rootNode = seq.foldLeft(Node.empty[A]) { case (node, a) =>
       node.add(a, improve(hash.hash(a)), 0)
@@ -329,12 +358,15 @@ object HashSet extends HashSetCompatCompanion {
   }
 
   /**
-  * Creates a new [[cats.data.HashSet]] which contains all elements of `iterable`.
-  *
-  * @param seq the iterable source of elements to add to the [[cats.data.HashSet]].
-  * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashSet]] which contains all elements of `iterable`.
-  */
+   * Creates a new [[cats.data.HashSet]] which contains all elements of `iterable`.
+   *
+   * @param seq
+   *   the iterable source of elements to add to the [[cats.data.HashSet]].
+   * @param hash
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashSet]] which contains all elements of `iterable`.
+   */
   final def fromIterableOnce[A](iterable: IterableOnce[A])(implicit hash: Hash[A]): HashSet[A] = {
     iterable match {
       case seq: Seq[A @unchecked] =>
@@ -348,13 +380,17 @@ object HashSet extends HashSetCompatCompanion {
   }
 
   /**
-  * Creates a new [[cats.data.HashSet]] which contains all elements of `fkv`.
-  *
-  * @param fa the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashSet]].
-  * @param F the [[cats.Foldable]] instance used for folding the structure.
-  * @param hash the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashSet]] which contains all elements of `fa`.
-  */
+   * Creates a new [[cats.data.HashSet]] which contains all elements of `fkv`.
+   *
+   * @param fa
+   *   the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashSet]].
+   * @param F
+   *   the [[cats.Foldable]] instance used for folding the structure.
+   * @param hash
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashSet]] which contains all elements of `fa`.
+   */
   final def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F], hash: Hash[A]): HashSet[A] = {
     val rootNode = F.foldLeft(fa, Node.empty[A]) { case (node, a) =>
       node.add(a, improve(hash.hash(a)), 0)
@@ -365,111 +401,137 @@ object HashSet extends HashSetCompatCompanion {
   sealed abstract private class Node[A] {
 
     /**
-      * @return The number of value and node elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of value and node elements in the contents array of this trie node.
+     */
     def allElementsCount: Int
 
     /**
-      * @return The number of value elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of value elements in the contents array of this trie node.
+     */
     def valueCount: Int
 
     /**
-      * @return The number of node elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of node elements in the contents array of this trie node.
+     */
     def nodeCount: Int
 
     /**
-     * @return the number of value elements in this subtree.
+     * @return
+     *   the number of value elements in this subtree.
      */
     def size: Int
 
     /**
-      * @param index the index of the value among the value elements of this trie node.
-      * @return the value element at the provided `index`.
-      */
+     * @param index
+     *   the index of the value among the value elements of this trie node.
+     * @return
+     *   the value element at the provided `index`.
+     */
     def getValue(index: Int): A
 
     /**
-      * @param index the index of the node among the node elements of this trie node.
-      * @return the node element at the provided `index`.
-      */
+     * @param index
+     *   the index of the node among the node elements of this trie node.
+     * @return
+     *   the node element at the provided `index`.
+     */
     def getNode(index: Int): Node[A]
 
     /**
-      * @return a [[scala.Boolean]] indicating whether the current trie node contains any node elements.
-      */
+     * @return
+     *   a [[scala.Boolean]] indicating whether the current trie node contains any node elements.
+     */
     def hasNodes: Boolean
 
     /**
-      * @return a [[scala.Boolean]] indicating whether the current trie node contains any value elements.
-      */
+     * @return
+     *   a [[scala.Boolean]] indicating whether the current trie node contains any value elements.
+     */
     def hasValues: Boolean
 
     /**
-      * Apply f to each element of the current trie node and its sub-nodes for its side effects.
-      *
-      * @param f
-      */
+     * Apply f to each element of the current trie node and its sub-nodes for its side effects.
+     *
+     * @param f
+     */
     def foreach[U](f: A => U): Unit
 
     /**
-      * Determines whether the current trie node or its sub-nodes contain the provided element.
-      *
-      * @param element the element to query
-      * @param elementHash the hash of the element to query
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a [[scala.Boolean]] indicating whether this [[HashSet.Node]] or any of its child nodes contains the element.
-      */
+     * Determines whether the current trie node or its sub-nodes contain the provided element.
+     *
+     * @param element
+     *   the element to query
+     * @param elementHash
+     *   the hash of the element to query
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a [[scala.Boolean]] indicating whether this [[HashSet.Node]] or any of its child nodes contains the element.
+     */
     def contains(element: A, elementHash: Int, depth: Int): Boolean
 
     /**
-      * The current trie node updated to add the provided element.
-      *
-      * @param newElement the element to add.
-      * @param newElementHash the hash of the element to add.
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a new [[HashSet.Node]] containing the element to add.
-      */
+     * The current trie node updated to add the provided element.
+     *
+     * @param newElement
+     *   the element to add.
+     * @param newElementHash
+     *   the hash of the element to add.
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a new [[HashSet.Node]] containing the element to add.
+     */
     def add(newElement: A, newElementHash: Int, depth: Int): Node[A]
 
     /**
-      * The current trie node updated to remove the provided element.
-      *
-      * @param removeElement the element to remove.
-      * @param removeElementHash the 32-bit hash of the element to remove.
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a new [[HashSet.Node]] with the element removed.
-      */
+     * The current trie node updated to remove the provided element.
+     *
+     * @param removeElement
+     *   the element to remove.
+     * @param removeElementHash
+     *   the 32-bit hash of the element to remove.
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a new [[HashSet.Node]] with the element removed.
+     */
     def remove(removeElement: A, removeElementHash: Int, depth: Int): Node[A]
 
     /**
      * Typesafe equality operator.
      *
-     * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashSet.Node]]
-     * values of the same element type to be compared to each other, and uses equality provided
-     * by [[cats.kernel.Eq]] instances, rather than using the universal equality provided by
-     * [[java.lang.Object#equals]].
+     * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashSet.Node]] values of
+     * the same element type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances,
+     * rather than using the universal equality provided by [[java.lang.Object#equals]].
      *
-     * @param that the [[cats.data.HashSet.Node]] to check for equality with this set.
-     * @return `true` if this set and `that` are equal, `false` otherwise.
+     * @param that
+     *   the [[cats.data.HashSet.Node]] to check for equality with this set.
+     * @return
+     *   `true` if this set and `that` are equal, `false` otherwise.
      */
     def ===(that: Node[A]): Boolean
 
     /**
-      * An approximation of the CHAMP "branch size", used for the deletion algorithm.
-      *
-      * The branch size indicates the number of elements transitively reachable from this node, but that is expensive to compute.
-      *
-      * There are three important cases when implementing the deletion algorithm:
-      * - a sub-tree has no elements ([[Node.SizeNone]])
-      * - a sub-tree has exactly one element ([[Node.SizeOne]])
-      * - a sub-tree has more than one element ([[Node.SizeMany]])
-      *
-      * This approximation assumes that nodes contain many elements (because the deletion algorithm inlines singleton nodes).
-      *
-      * @return either [[Node.SizeNone]], [[Node.SizeOne]] or [[Node.SizeMany]]
-      */
+     * An approximation of the CHAMP "branch size", used for the deletion algorithm.
+     *
+     * The branch size indicates the number of elements transitively reachable from this node, but that is expensive to
+     * compute.
+     *
+     * There are three important cases when implementing the deletion algorithm:
+     *   - a sub-tree has no elements ([[Node.SizeNone]])
+     *   - a sub-tree has exactly one element ([[Node.SizeOne]])
+     *   - a sub-tree has more than one element ([[Node.SizeMany]])
+     *
+     * This approximation assumes that nodes contain many elements (because the deletion algorithm inlines singleton
+     * nodes).
+     *
+     * @return
+     *   either [[Node.SizeNone]], [[Node.SizeOne]] or [[Node.SizeMany]]
+     */
     final def sizeHint = {
       if (nodeCount > 0)
         Node.SizeMany
@@ -483,14 +545,17 @@ object HashSet extends HashSetCompatCompanion {
   }
 
   /**
-    * A CHAMP hash collision node. In the event that the 32-bit hash codes of multiple elements collide,
-    * this node type is used to collect all of the colliding elements and implement the [[HashSet.Node]]
-    * interface at a performance cost compared with a [[HashSet.BitMapNode]].
-    *
-    * @tparam A the type of the elements contained in this node.
-    * @param collisionHash the hash value at which all of the contents of this node collide.
-    * @param contents the value elements whose hashes collide.
-    */
+   * A CHAMP hash collision node. In the event that the 32-bit hash codes of multiple elements collide, this node type
+   * is used to collect all of the colliding elements and implement the [[HashSet.Node]] interface at a performance cost
+   * compared with a [[HashSet.BitMapNode]].
+   *
+   * @tparam A
+   *   the type of the elements contained in this node.
+   * @param collisionHash
+   *   the hash value at which all of the contents of this node collide.
+   * @param contents
+   *   the value elements whose hashes collide.
+   */
   final private class CollisionNode[A](
     val collisionHash: Int,
     val contents: NonEmptyVector[A]
@@ -571,29 +636,34 @@ object HashSet extends HashSetCompatCompanion {
   }
 
   /**
-    * A CHAMP bitmap node. Stores value and node positions in the `contents` array in the `valueMap` and `nodeMap`
-    * integer bitmaps respectively.
-    *
-    * The index of an element is calculated from a 5-bit segment of the hash of the element. The segment to use is
-    * determined according to the depth in the structure, starting with the least significant bits at the root level.
-    *
-    * When there are collisions in the 5-bit segment of the hash at the current depth in the structure, a new subnode
-    * must be created in order to store the colliding elements. In this subnode, the next 5-bit segment is used to
-    * determine the order of elements.
-    *
-    * Values are indexed from the start of the array and ordered according to the relative indices calculated from
-    * their hashes.
-    *
-    * Sub-nodes are stored at the end of the array, indexed from the end of the array and ordered according
-    * to the relative indices calculated from the hashes of their elements. As a result of this indexing
-    * method they are stored in reverse order.
-    *
-    * @tparam A the type of the elements contained in this node.
-    * @param valueMap integer bitmap indicating the notional positions of value elements in the `contents` array.
-    * @param nodeMap integer bitmap indicating the notional positions of node elements in the `contents` array.
-    * @param contents an array of `A` value elements and `Node[A]` sub-node elements.
-    * @param size the number of value elements in this subtree.
-    */
+   * A CHAMP bitmap node. Stores value and node positions in the `contents` array in the `valueMap` and `nodeMap`
+   * integer bitmaps respectively.
+   *
+   * The index of an element is calculated from a 5-bit segment of the hash of the element. The segment to use is
+   * determined according to the depth in the structure, starting with the least significant bits at the root level.
+   *
+   * When there are collisions in the 5-bit segment of the hash at the current depth in the structure, a new subnode
+   * must be created in order to store the colliding elements. In this subnode, the next 5-bit segment is used to
+   * determine the order of elements.
+   *
+   * Values are indexed from the start of the array and ordered according to the relative indices calculated from their
+   * hashes.
+   *
+   * Sub-nodes are stored at the end of the array, indexed from the end of the array and ordered according to the
+   * relative indices calculated from the hashes of their elements. As a result of this indexing method they are stored
+   * in reverse order.
+   *
+   * @tparam A
+   *   the type of the elements contained in this node.
+   * @param valueMap
+   *   integer bitmap indicating the notional positions of value elements in the `contents` array.
+   * @param nodeMap
+   *   integer bitmap indicating the notional positions of node elements in the `contents` array.
+   * @param contents
+   *   an array of `A` value elements and `Node[A]` sub-node elements.
+   * @param size
+   *   the number of value elements in this subtree.
+   */
   final private class BitMapNode[A](
     val valueMap: Int,
     val nodeMap: Int,
@@ -896,50 +966,62 @@ object HashSet extends HashSetCompatCompanion {
     final val SizeMany = 2
 
     /**
-      * The `mask` is a 5-bit segment of a 32-bit element hash.
-      *
-      * The `depth` value is used to determine which segment of the hash we are currently inspecting by shifting the `elementHash` to the right in [[Node.BitPartitionSize]] bit increments.
-      *
-      * A 5-bit segment of the hash can represent numbers 0 to 31, which matches the branching factor of the trie structure.
-      *
-      * It represents the notional index of the element in the current trie node.
-      *
-      * @param elementHash the hash of the element we are operating on.
-      * @param depth the depth of the current node in the trie structure.
-      * @return the relevant 5-bit segment of the `elementHash`.
-      */
+     * The `mask` is a 5-bit segment of a 32-bit element hash.
+     *
+     * The `depth` value is used to determine which segment of the hash we are currently inspecting by shifting the
+     * `elementHash` to the right in [[Node.BitPartitionSize]] bit increments.
+     *
+     * A 5-bit segment of the hash can represent numbers 0 to 31, which matches the branching factor of the trie
+     * structure.
+     *
+     * It represents the notional index of the element in the current trie node.
+     *
+     * @param elementHash
+     *   the hash of the element we are operating on.
+     * @param depth
+     *   the depth of the current node in the trie structure.
+     * @return
+     *   the relevant 5-bit segment of the `elementHash`.
+     */
     final def maskFrom(elementHash: Int, depth: Int): Int =
       (elementHash >>> (depth * Node.BitPartitionSize)) & BitPartitionMask
 
     /**
-      * Sets a single bit at the position of the notional index indicated by `mask`.
-      *
-      * Used to determine the bit which represents the notional index of a data value or node in the trie node bitmaps.
-      *
-      * @param mask the notional index of an element at this depth in the trie.
-      * @return an integer with a single bit set at the notional index indicated by `mask`.
-      */
+     * Sets a single bit at the position of the notional index indicated by `mask`.
+     *
+     * Used to determine the bit which represents the notional index of a data value or node in the trie node bitmaps.
+     *
+     * @param mask
+     *   the notional index of an element at this depth in the trie.
+     * @return
+     *   an integer with a single bit set at the notional index indicated by `mask`.
+     */
     final def bitPosFrom(mask: Int): Int =
       1 << mask
 
     /**
-      * Calculates the absolute index of an element in the contents array of a trie node.
-      *
-      * This is calculated by counting how many bits are set to the right of the notional index in the relevant bitmap.
-      *
-      * @param bitMap the bitmap indicating either data value or node positions in the contents array.
-      * @param bitPos the notional index of the element in the trie node.
-      * @return the absolute index of an element in the contents array.
-      */
+     * Calculates the absolute index of an element in the contents array of a trie node.
+     *
+     * This is calculated by counting how many bits are set to the right of the notional index in the relevant bitmap.
+     *
+     * @param bitMap
+     *   the bitmap indicating either data value or node positions in the contents array.
+     * @param bitPos
+     *   the notional index of the element in the trie node.
+     * @return
+     *   the absolute index of an element in the contents array.
+     */
     final def indexFrom(bitMap: Int, bitPos: Int): Int =
       Integer.bitCount(bitMap & (bitPos - 1))
 
     /**
-      * Creates a new empty bitmap node.
-      *
-      * @param hash the [[cats.kernel.Hash]] instance to use to hash elements.
-      * @return a new empty bitmap node.
-      */
+     * Creates a new empty bitmap node.
+     *
+     * @param hash
+     *   the [[cats.kernel.Hash]] instance to use to hash elements.
+     * @return
+     *   a new empty bitmap node.
+     */
     final def empty[A](implicit hash: Hash[A]): Node[A] =
       new BitMapNode(0, 0, Array.empty[Any], 0)
   }

@@ -21,4 +21,9 @@
 
 package cats.collections.arbitrary
 
-trait AllArbitrary extends ArbitrarySet with ArbitraryHashSet with ArbitraryMap with ArbitraryPredicate with CogenInstances
+trait AllArbitrary
+    extends ArbitrarySet
+    with ArbitraryHashSet
+    with ArbitraryMap
+    with ArbitraryPredicate
+    with CogenInstances

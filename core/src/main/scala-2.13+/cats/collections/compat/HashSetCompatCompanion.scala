@@ -20,6 +20,7 @@
  */
 
 package cats.collections
+package compat
 
 import scala.collection.immutable.AbstractSet
 
