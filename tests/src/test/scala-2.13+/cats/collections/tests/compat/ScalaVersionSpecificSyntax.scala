@@ -19,14 +19,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package cats.collections
+package cats.collections.tests.compat
 
-package object arbitrary {
-  object all extends AllArbitrary
-
-  object set extends ArbitrarySet
-  object map extends ArbitraryMap
-  object hashmap extends ArbitraryHashMap
-  object predicate extends ArbitraryPredicate
-  object cogen extends CogenInstances
-}
+private[collections] trait ScalaVersionSpecificSyntax {}

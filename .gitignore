@@ -18,5 +18,6 @@ TAGS
 .metals/
 .bloop/
 .bsp/
+.vscode/
 project/project/**
 project/metals.sbt

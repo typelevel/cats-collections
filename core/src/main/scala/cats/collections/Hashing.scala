@@ -21,12 +21,4 @@
 
 package cats.collections
 
-package object arbitrary {
-  object all extends AllArbitrary
-
-  object set extends ArbitrarySet
-  object map extends ArbitraryMap
-  object hashmap extends ArbitraryHashMap
-  object predicate extends ArbitraryPredicate
-  object cogen extends CogenInstances
-}
+private[collections] object Hashing extends compat.HashCompat
