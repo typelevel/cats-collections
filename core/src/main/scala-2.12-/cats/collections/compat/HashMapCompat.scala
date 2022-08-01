@@ -27,11 +27,13 @@ import HashMap.improve
 private[collections] trait HashMapCompat[K, +V] { self: HashMap[K, V] =>
 
   /**
-    * Creates a new map with all key-value pairs of this map, and all key-value pairs of `traversable`.
-    *
-    * @param traversable the collection of key-value pairs to be added.
-    * @return a new map that contains all key-value pairs of this map and `traversable`.
-    */
+   * Creates a new map with all key-value pairs of this map, and all key-value pairs of `traversable`.
+   *
+   * @param traversable
+   *   the collection of key-value pairs to be added.
+   * @return
+   *   a new map that contains all key-value pairs of this map and `traversable`.
+   */
   final def concat[VV >: V](traversable: TraversableOnce[(K, VV)]): HashMap[K, VV] = {
     val newRootNode = traversable.foldLeft(self.rootNode: HashMap.Node[K, VV]) { case (node, (k, v)) =>
       node.updated(k, improve(self.hashKey.hash(k)), v, replaceExisting = true, 0)
@@ -44,11 +46,13 @@ private[collections] trait HashMapCompat[K, +V] { self: HashMap[K, V] =>
   }
 
   /**
-    * Creates a new map with all key-value pairs of this map, and all key-value pairs of `map`.
-    *
-    * @param traversable the collection of key-value pairs to be added.
-    * @return a new map that contains all key-value pairs of this map and `traversable`.
-    */
+   * Creates a new map with all key-value pairs of this map, and all key-value pairs of `map`.
+   *
+   * @param traversable
+   *   the collection of key-value pairs to be added.
+   * @return
+   *   a new map that contains all key-value pairs of this map and `traversable`.
+   */
   final def concat[VV >: V](hm: HashMap[K, VV]): HashMap[K, VV] = {
     val newRootNode = if (self.size <= hm.size) {
       self.iterator.foldLeft(hm.rootNode) { case (node, (k, v)) =>

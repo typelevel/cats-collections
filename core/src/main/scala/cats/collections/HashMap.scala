@@ -66,104 +66,126 @@ import cats.data.NonEmptyVector
  * An immutable hash map using [[cats.kernel.Hash]] for hashing.
  *
  * Implemented using the CHAMP encoding.
- * @see [[https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf Efficient Immutable Collections]]
+ * @see
+ *   [[https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf Efficient Immutable Collections]]
  *
- * @tparam K the type of the keys contained in this hash map.
- * @tparam V the type of the values contained in this hash map.
- * @param hashKey the [[cats.kernel.Hash]] instance used for hashing keys.
+ * @tparam K
+ *   the type of the keys contained in this hash map.
+ * @tparam V
+ *   the type of the values contained in this hash map.
+ * @param hashKey
+ *   the [[cats.kernel.Hash]] instance used for hashing keys.
  */
-final class HashMap[K, +V] private[collections] (private[collections] val rootNode: HashMap.Node[K, V])(implicit val hashKey: Hash[K])
-    extends compat.HashMapCompat[K, V] {
+final class HashMap[K, +V] private[collections] (private[collections] val rootNode: HashMap.Node[K, V])(implicit
+  val hashKey: Hash[K]
+) extends compat.HashMapCompat[K, V] {
 
   /**
-    * An iterator for this map that can be used only once.
-    *
-    * @return an iterator that iterates through the key-value pairs of this map.
-    */
+   * An iterator for this map that can be used only once.
+   *
+   * @return
+   *   an iterator that iterates through the key-value pairs of this map.
+   */
   final def iterator: Iterator[(K, V)] =
     new HashMap.Iterator(rootNode)
 
   /**
-    * An iterator for the keys of this map that can be used only once.
-    *
-    * @return an iterator that iterates through the keys of this map.
-    */
+   * An iterator for the keys of this map that can be used only once.
+   *
+   * @return
+   *   an iterator that iterates through the keys of this map.
+   */
   final def keysIterator: Iterator[K] =
     iterator.map { case (k, _) => k }
 
   /**
-    * An iterator for the values of this map that can be used only once.
-    *
-    * @return an iterator that iterates through the values of this map.
-    */
+   * An iterator for the values of this map that can be used only once.
+   *
+   * @return
+   *   an iterator that iterates through the values of this map.
+   */
   final def valuesIterator: Iterator[V] =
     iterator.map { case (_, v) => v }
 
   /**
-    * The size of this map.
-    *
-    * @return the number of elements in this map.
-    */
+   * The size of this map.
+   *
+   * @return
+   *   the number of elements in this map.
+   */
   final def size: Int = rootNode.size
 
   /**
-    * Tests whether the map is empty.
-    *
-    * @return `true` if the map contains no elements, `false` otherwise.
-    */
+   * Tests whether the map is empty.
+   *
+   * @return
+   *   `true` if the map contains no elements, `false` otherwise.
+   */
   final def isEmpty: Boolean = size == 0
 
   /**
-    * Tests whether the map is not empty.
-    *
-    * @return `true` if the map contains at least one element, `false` otherwise.
-    */
+   * Tests whether the map is not empty.
+   *
+   * @return
+   *   `true` if the map contains at least one element, `false` otherwise.
+   */
   final def nonEmpty: Boolean = !isEmpty
 
   /**
-    * Apply `f` to each key-value pair for its side effects.
-    *
-    * @param f the function to apply to each key-value pair.
-    */
+   * Apply `f` to each key-value pair for its side effects.
+   *
+   * @param f
+   *   the function to apply to each key-value pair.
+   */
   final def foreach[U](f: (K, V) => U): Unit =
     rootNode.foreach(f)
 
   /**
-    * Test whether the map contains `key`.
-    *
-    * @param key the key to check for map membership.
-    * @return `true` if the map contains `key`, `false` otherwise.
-    */
+   * Test whether the map contains `key`.
+   *
+   * @param key
+   *   the key to check for map membership.
+   * @return
+   *   `true` if the map contains `key`, `false` otherwise.
+   */
   final def contains(key: K): Boolean =
     rootNode.contains(key, improve(hashKey.hash(key)), 0)
 
   /**
-    * Get the value associated with `key` in this map.
-    *
-    * @param key the key to check for map membership.
-    * @return A [[scala.Some]] containing the value if present, else [[scala.None]].
-    */
+   * Get the value associated with `key` in this map.
+   *
+   * @param key
+   *   the key to check for map membership.
+   * @return
+   *   A [[scala.Some]] containing the value if present, else [[scala.None]].
+   */
   final def get(key: K): Option[V] =
     rootNode.get(key, improve(hashKey.hash(key)), 0)
 
   /**
-    * Get the value associated with `key` in this map, or `default` if not present.
-    *
-    * @param key the key to check for map membership.
-    * @param default the value to use in case `key` is not present.
-    * @return the value if present, else `default`.
-    */
+   * Get the value associated with `key` in this map, or `default` if not present.
+   *
+   * @param key
+   *   the key to check for map membership.
+   * @param default
+   *   the value to use in case `key` is not present.
+   * @return
+   *   the value if present, else `default`.
+   */
   final def getOrElse[VV >: V](key: K, default: => VV): VV =
     get(key).getOrElse(default)
 
   /**
-    * Creates a new map with an additional key-value pair, unless the key is already present,
-    * in which case the value for `key` is replaced by `value`.
-    *
-    * @param key the key to be added.
-    * @param value the value to be added.
-    * @return a new map that contains all key-value pairs of this map and that also contains a mapping from `key` to `value`.
-    */
+   * Creates a new map with an additional key-value pair, unless the key is already present, in which case the value for
+   * `key` is replaced by `value`.
+   *
+   * @param key
+   *   the key to be added.
+   * @param value
+   *   the value to be added.
+   * @return
+   *   a new map that contains all key-value pairs of this map and that also contains a mapping from `key` to `value`.
+   */
   final def updated[VV >: V](key: K, value: VV): HashMap[K, VV] = {
     val keyHash = improve(hashKey.hash(key))
     val newRootNode = rootNode.updated(key, keyHash, value, replaceExisting = true, depth = 0)
@@ -171,11 +193,13 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
   }
 
   /**
-    * Creates a new map with the given key removed from the map.
-    *
-    * @param key the key to be removed.
-    * @return a new map that contains all elements of this map but that does not contain `key`.
-    */
+   * Creates a new map with the given key removed from the map.
+   *
+   * @param key
+   *   the key to be removed.
+   * @return
+   *   a new map that contains all elements of this map but that does not contain `key`.
+   */
   final def removed(key: K): HashMap[K, V] = {
     val keyHash = improve(hashKey.hash(key))
     val newRootNode = rootNode.removed(key, keyHash, 0)
@@ -192,14 +216,16 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
   /**
    * Typesafe equality operator.
    *
-   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashMap]]
-   * values of the same key-value type to be compared to each other, and uses equality provided
-   * by [[cats.kernel.Eq]] instances, rather than using the universal equality provided by
-   * [[java.lang.Object#equals]].
+   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashMap]] values of the same
+   * key-value type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather
+   * than using the universal equality provided by [[java.lang.Object#equals]].
    *
-   * @param that the [[cats.data.HashMap]] to check for equality with this map.
-   * @param eqValue the [[cats.kernel.Eq]] instance to use for comparing values.
-   * @return `true` if this map and `that` are equal, `false` otherwise.
+   * @param that
+   *   the [[cats.data.HashMap]] to check for equality with this map.
+   * @param eqValue
+   *   the [[cats.kernel.Eq]] instance to use for comparing values.
+   * @return
+   *   `true` if this map and `that` are equal, `false` otherwise.
    */
   final def ===[VV >: V](that: HashMap[K, VV])(implicit eqValue: Eq[VV]): Boolean =
     (this eq that) || (this.rootNode === that.rootNode)
@@ -214,11 +240,13 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
   /**
    * Compute a hash code value for this map.
    *
-   * This method is similar to [[java.lang.Object#hashCode]] except that it computes a hash code
-   * according to [[cats.Hash]] instances.
+   * This method is similar to [[java.lang.Object#hashCode]] except that it computes a hash code according to
+   * [[cats.Hash]] instances.
    *
-   * @param hashValue the [[cats.kernel.Hash]] instance to use for hashing values of type `VV`.
-   * @return a hash code value for this map.
+   * @param hashValue
+   *   the [[cats.kernel.Hash]] instance to use for hashing values of type `VV`.
+   * @return
+   *   a hash code value for this map.
    */
   final def hash[VV >: V](implicit hashValue: Hash[VV]): Int =
     Hashing.unorderedHash(this.iterator: Iterator[(K, VV)])
@@ -231,12 +259,15 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
   /**
    * Typesafe stringification operator.
    *
-   * This method is similar to [[java.lang.Object#toString]] except that it stringifies values according
-   * to [[cats.Show]] instances.
+   * This method is similar to [[java.lang.Object#toString]] except that it stringifies values according to
+   * [[cats.Show]] instances.
    *
-   * @param showKey the [[cats.Show]] instance to use for showing keys of type `K`.
-   * @param showValue the [[cats.Show]] instance to use for showing values of type `V`.
-   * @return a [[java.lang.String]] representation of this map.
+   * @param showKey
+   *   the [[cats.Show]] instance to use for showing keys of type `K`.
+   * @param showValue
+   *   the [[cats.Show]] instance to use for showing values of type `V`.
+   * @return
+   *   a [[java.lang.String]] representation of this map.
    */
   final def show[VV >: V](implicit showKey: Show[K], showValue: Show[VV]): String =
     iterator.map { case (k, v) => s"${showKey.show(k)} -> ${showValue.show(v)}" }.mkString("HashMap(", ", ", ")")
@@ -250,31 +281,39 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
     scala.util.hashing.byteswap32(hash)
 
   /**
-    * Creates a new empty [[cats.data.HashMap]] which uses `hashKey` for hashing.
-    *
-    * @param hashKey the [[cats.kernel.Hash]] instance used for hashing keys.
-    * @return a new empty [[cats.data.HashMap]].
-    */
+   * Creates a new empty [[cats.data.HashMap]] which uses `hashKey` for hashing.
+   *
+   * @param hashKey
+   *   the [[cats.kernel.Hash]] instance used for hashing keys.
+   * @return
+   *   a new empty [[cats.data.HashMap]].
+   */
   final def empty[K, V](implicit hashKey: Hash[K]): HashMap[K, V] =
     new HashMap[K, V](Node.empty[K, V])
 
   /**
-  * Creates a new [[cats.data.HashMap]] which contains all elements of `kvs`.
-  *
-  * @param kvs the key-value pairs to add to the [[cats.data.HashMap]].
-  * @param hashKey the [[cats.kernel.Hash]] instance used for hashing keys.
-  * @return a new [[cats.data.HashMap]] which contains all elements of `kvs`.
-  */
+   * Creates a new [[cats.data.HashMap]] which contains all elements of `kvs`.
+   *
+   * @param kvs
+   *   the key-value pairs to add to the [[cats.data.HashMap]].
+   * @param hashKey
+   *   the [[cats.kernel.Hash]] instance used for hashing keys.
+   * @return
+   *   a new [[cats.data.HashMap]] which contains all elements of `kvs`.
+   */
   final def apply[K, V](kvs: (K, V)*)(implicit hashKey: Hash[K]) =
     fromSeq(kvs)
 
   /**
-  * Creates a new [[cats.data.HashMap]] which contains all elements of `seq`.
-  *
-  * @param seq the sequence of elements to add to the [[cats.data.HashMap]].
-  * @param hashKey the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashMap]] which contains all elements of `seq`.
-  */
+   * Creates a new [[cats.data.HashMap]] which contains all elements of `seq`.
+   *
+   * @param seq
+   *   the sequence of elements to add to the [[cats.data.HashMap]].
+   * @param hashKey
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashMap]] which contains all elements of `seq`.
+   */
   final def fromSeq[K, V](seq: Seq[(K, V)])(implicit hashKey: Hash[K]): HashMap[K, V] = {
     val rootNode = seq.foldLeft(Node.empty[K, V]) { case (node, (k, v)) =>
       node.updated(k, improve(hashKey.hash(k)), v, replaceExisting = true, depth = 0)
@@ -283,12 +322,15 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-  * Creates a new [[cats.data.HashMap]] which contains all elements of `iterable`.
-  *
-  * @param iterable the iterable source of elements to add to the [[cats.data.HashMap]].
-  * @param hashKey the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashMap]] which contains all elements of `iterable`.
-  */
+   * Creates a new [[cats.data.HashMap]] which contains all elements of `iterable`.
+   *
+   * @param iterable
+   *   the iterable source of elements to add to the [[cats.data.HashMap]].
+   * @param hashKey
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashMap]] which contains all elements of `iterable`.
+   */
   final def fromIterableOnce[K, V](iterable: IterableOnce[(K, V)])(implicit hashKey: Hash[K]): HashMap[K, V] = {
     iterable match {
       case seq: Seq[(K, V) @unchecked] =>
@@ -302,13 +344,17 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-  * Creates a new [[cats.data.HashMap]] which contains all elements of `fkv`.
-  *
-  * @param fkv the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashMap]].
-  * @param F the [[cats.Foldable]] instance used for folding the structure.
-  * @param hashKey the [[cats.kernel.Hash]] instance used for hashing values.
-  * @return a new [[cats.data.HashMap]] which contains all elements of `fkv`.
-  */
+   * Creates a new [[cats.data.HashMap]] which contains all elements of `fkv`.
+   *
+   * @param fkv
+   *   the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashMap]].
+   * @param F
+   *   the [[cats.Foldable]] instance used for folding the structure.
+   * @param hashKey
+   *   the [[cats.kernel.Hash]] instance used for hashing values.
+   * @return
+   *   a new [[cats.data.HashMap]] which contains all elements of `fkv`.
+   */
   final def fromFoldable[F[_], K, V](fkv: F[(K, V)])(implicit F: Foldable[F], hashKey: Hash[K]): HashMap[K, V] = {
     val rootNode = F.foldLeft(fkv, Node.empty[K, V]) { case (node, (k, v)) =>
       node.updated(k, improve(hashKey.hash(k)), v, replaceExisting = true, depth = 0)
@@ -319,130 +365,165 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   sealed abstract private[collections] class Node[K, +V] {
 
     /**
-      * @return The number of value and node elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of value and node elements in the contents array of this trie node.
+     */
     def allElementsCount: Int
 
     /**
-      * @return The number of value elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of value elements in the contents array of this trie node.
+     */
     def keyValueCount: Int
 
     /**
-      * @return The number of node elements in the contents array of this trie node.
-      */
+     * @return
+     *   The number of node elements in the contents array of this trie node.
+     */
     def nodeCount: Int
 
     /**
-     * @return the number of value elements in this subtree.
+     * @return
+     *   the number of value elements in this subtree.
      */
     def size: Int
 
     /**
-      * @param index the index of the value among the value elements of this trie node.
-      * @return the key element at the provided `index`.
-      */
+     * @param index
+     *   the index of the value among the value elements of this trie node.
+     * @return
+     *   the key element at the provided `index`.
+     */
     def getKey(index: Int): K
 
     /**
-      * @param index the index of the value among the value elements of this trie node.
-      * @return the value at the provided `index`.
-      */
+     * @param index
+     *   the index of the value among the value elements of this trie node.
+     * @return
+     *   the value at the provided `index`.
+     */
     def getValue(index: Int): V
 
     /**
-      * @param index the index of the node among the node elements of this trie node.
-      * @return the node element at the provided `index`.
-      */
+     * @param index
+     *   the index of the node among the node elements of this trie node.
+     * @return
+     *   the node element at the provided `index`.
+     */
     def getNode(index: Int): Node[K, V]
 
     /**
-      * @return a [[scala.Boolean]] indicating whether the current trie node contains any node elements.
-      */
+     * @return
+     *   a [[scala.Boolean]] indicating whether the current trie node contains any node elements.
+     */
     def hasNodes: Boolean
 
     /**
-      * @return a [[scala.Boolean]] indicating whether the current trie node contains any value elements.
-      */
+     * @return
+     *   a [[scala.Boolean]] indicating whether the current trie node contains any value elements.
+     */
     def hasKeyValues: Boolean
 
     /**
-      * Apply f to each key-value pair of the current trie node and its sub-nodes for its side effects.
-      *
-      * @param f
-      */
+     * Apply f to each key-value pair of the current trie node and its sub-nodes for its side effects.
+     *
+     * @param f
+     */
     def foreach[U](f: (K, V) => U): Unit
 
     /**
-      * Determines whether the current trie node or its sub-nodes contain the provided key.
-      *
-      * @param key the key to query
-      * @param keyHash the hash of the key to query
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a [[scala.Boolean]] indicating whether this [[HashMap.Node]] or any of its child nodes contains the element.
-      */
+     * Determines whether the current trie node or its sub-nodes contain the provided key.
+     *
+     * @param key
+     *   the key to query
+     * @param keyHash
+     *   the hash of the key to query
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a [[scala.Boolean]] indicating whether this [[HashMap.Node]] or any of its child nodes contains the element.
+     */
     def contains(key: K, keyHash: Int, depth: Int): Boolean
 
     /**
-      * Get the value associated with `key` in the current trie node or its sub-nodes.
-      *
-      * @param key the key to query
-      * @param keyHash the hash of the key to query
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a [[scala.Some]] containing the value if present, else [[scala.None]].
-      */
+     * Get the value associated with `key` in the current trie node or its sub-nodes.
+     *
+     * @param key
+     *   the key to query
+     * @param keyHash
+     *   the hash of the key to query
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a [[scala.Some]] containing the value if present, else [[scala.None]].
+     */
     def get(key: K, keyHash: Int, depth: Int): Option[V]
 
     /**
-      * The current trie node updated to add the provided key-value pair.
-      *
-      * @param newKey the key to add.
-      * @param newKeyHash the hash of the key to add.
-      * @param value the value to add.
-      * @param replaceExisting whether to replace the existing value if a matching key already exists.
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a new [[HashMap.Node]] containing the element to add.
-      */
+     * The current trie node updated to add the provided key-value pair.
+     *
+     * @param newKey
+     *   the key to add.
+     * @param newKeyHash
+     *   the hash of the key to add.
+     * @param value
+     *   the value to add.
+     * @param replaceExisting
+     *   whether to replace the existing value if a matching key already exists.
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a new [[HashMap.Node]] containing the element to add.
+     */
     def updated[VV >: V](newKey: K, newKeyHash: Int, value: VV, replaceExisting: Boolean, depth: Int): Node[K, VV]
 
     /**
-      * The current trie node updated to remove the provided key.
-      *
-      * @param removeKey the key to remove.
-      * @param removeKeyHash the hash of the element to remove.
-      * @param depth the 0-indexed depth in the trie structure.
-      * @return a new [[HashMap.Node]] with the element removed.
-      */
+     * The current trie node updated to remove the provided key.
+     *
+     * @param removeKey
+     *   the key to remove.
+     * @param removeKeyHash
+     *   the hash of the element to remove.
+     * @param depth
+     *   the 0-indexed depth in the trie structure.
+     * @return
+     *   a new [[HashMap.Node]] with the element removed.
+     */
     def removed(removeKey: K, removeKeyHash: Int, depth: Int): Node[K, V]
 
     /**
      * Typesafe equality operator.
      *
-     * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashMap.Node]]
-     * values of the same key-value type to be compared to each other, and uses equality provided
-     * by [[cats.kernel.Eq]] instances, rather than using the universal equality provided by
-     * [[java.lang.Object#equals]].
+     * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashMap.Node]] values of
+     * the same key-value type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances,
+     * rather than using the universal equality provided by [[java.lang.Object#equals]].
      *
-     * @param that the [[cats.data.HashMap.Node]] to check for equality with this node.
-     * @param eqValue the [[cats.kernel.Eq]] instance to use for comparing values.
-     * @return `true` if this node and `that` are equal, `false` otherwise.
+     * @param that
+     *   the [[cats.data.HashMap.Node]] to check for equality with this node.
+     * @param eqValue
+     *   the [[cats.kernel.Eq]] instance to use for comparing values.
+     * @return
+     *   `true` if this node and `that` are equal, `false` otherwise.
      */
     def ===[VV >: V](that: Node[K, VV])(implicit eqValue: Eq[VV]): Boolean
 
     /**
-      * An approximation of the CHAMP "branch size", used for the deletion algorithm.
-      *
-      * The branch size indicates the number of elements transitively reachable from this node, but that is expensive to compute.
-      *
-      * There are three important cases when implementing the deletion algorithm:
-      * - a sub-tree has no elements ([[Node.SizeNone]])
-      * - a sub-tree has exactly one element ([[Node.SizeOne]])
-      * - a sub-tree has more than one element ([[Node.SizeMany]])
-      *
-      * This approximation assumes that nodes contain many elements (because the deletion algorithm inlines singleton nodes).
-      *
-      * @return either [[Node.SizeNone]], [[Node.SizeOne]] or [[Node.SizeMany]]
-      */
+     * An approximation of the CHAMP "branch size", used for the deletion algorithm.
+     *
+     * The branch size indicates the number of elements transitively reachable from this node, but that is expensive to
+     * compute.
+     *
+     * There are three important cases when implementing the deletion algorithm:
+     *   - a sub-tree has no elements ([[Node.SizeNone]])
+     *   - a sub-tree has exactly one element ([[Node.SizeOne]])
+     *   - a sub-tree has more than one element ([[Node.SizeMany]])
+     *
+     * This approximation assumes that nodes contain many elements (because the deletion algorithm inlines singleton
+     * nodes).
+     *
+     * @return
+     *   either [[Node.SizeNone]], [[Node.SizeOne]] or [[Node.SizeMany]]
+     */
     final def sizeHint = {
       if (nodeCount > 0)
         Node.SizeMany
@@ -456,15 +537,19 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-    * A CHAMP hash collision node. In the event that the hash codes of multiple elements collide,
-    * this node type is used to collect all of the colliding elements and implement the [[HashMap.Node]]
-    * interface at a performance cost compared with a [[HashMap.BitMapNode]].
-    *
-    * @tparam K the type of the keys contained in this node.
-    * @tparam V the type of the values contained in this node.
-    * @param collisionHash the hash value at which all of the contents of this node collide.
-    * @param contents the value elements whose hashes collide.
-    */
+   * A CHAMP hash collision node. In the event that the hash codes of multiple elements collide, this node type is used
+   * to collect all of the colliding elements and implement the [[HashMap.Node]] interface at a performance cost
+   * compared with a [[HashMap.BitMapNode]].
+   *
+   * @tparam K
+   *   the type of the keys contained in this node.
+   * @tparam V
+   *   the type of the values contained in this node.
+   * @param collisionHash
+   *   the hash value at which all of the contents of this node collide.
+   * @param contents
+   *   the value elements whose hashes collide.
+   */
   final private[HashMap] class CollisionNode[K, +V](
     val collisionHash: Int,
     val contents: NonEmptyVector[(K, V)]
@@ -597,30 +682,36 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-    * A CHAMP bitmap node. Stores key-value pair and node positions in the `contents` array in the `keyValueMap` and
-    * `nodeMap` integer bitmaps respectively.
-    *
-    * The index of an element is calculated from a 5-bit segment of the hash of the key. The segment to use is
-    * determined according to the depth in the structure, starting with the least significant bits at the root level.
-    *
-    * When there are collisions in the 5-bit segment of the hash at the current depth in the structure, a new subnode
-    * must be created in order to store the colliding elements. In this subnode, the next 5-bit segment is used to
-    * determine the order of elements.
-    *
-    * Key-value pairs are stored at consecutive indices in the array, indexed from the start of the array
-    * and ordered according to the relative indices calculated from the hash of the key.
-    *
-    * Sub-nodes are stored at the end of the array, indexed from the end of the array and ordered according
-    * to the relative indices calculated from the hash of their keys. As a result of this indexing method
-    * they are stored in reverse order.
-    *
-    * @tparam K the type of the keys contained in this node.
-    * @tparam V the type of the values contained in this node.
-    * @param keyValueMap integer bitmap indicating the notional positions of key-value elements in the `contents` array.
-    * @param nodeMap integer bitmap indicating the notional positions of node elements in the `contents` array.
-    * @param contents an array of `A` value elements and `Node[A]` sub-node elements.
-    * @param size the number of value elements in this subtree.
-    */
+   * A CHAMP bitmap node. Stores key-value pair and node positions in the `contents` array in the `keyValueMap` and
+   * `nodeMap` integer bitmaps respectively.
+   *
+   * The index of an element is calculated from a 5-bit segment of the hash of the key. The segment to use is determined
+   * according to the depth in the structure, starting with the least significant bits at the root level.
+   *
+   * When there are collisions in the 5-bit segment of the hash at the current depth in the structure, a new subnode
+   * must be created in order to store the colliding elements. In this subnode, the next 5-bit segment is used to
+   * determine the order of elements.
+   *
+   * Key-value pairs are stored at consecutive indices in the array, indexed from the start of the array and ordered
+   * according to the relative indices calculated from the hash of the key.
+   *
+   * Sub-nodes are stored at the end of the array, indexed from the end of the array and ordered according to the
+   * relative indices calculated from the hash of their keys. As a result of this indexing method they are stored in
+   * reverse order.
+   *
+   * @tparam K
+   *   the type of the keys contained in this node.
+   * @tparam V
+   *   the type of the values contained in this node.
+   * @param keyValueMap
+   *   integer bitmap indicating the notional positions of key-value elements in the `contents` array.
+   * @param nodeMap
+   *   integer bitmap indicating the notional positions of node elements in the `contents` array.
+   * @param contents
+   *   an array of `A` value elements and `Node[A]` sub-node elements.
+   * @param size
+   *   the number of value elements in this subtree.
+   */
   final private[HashMap] class BitMapNode[K, +V](
     val keyValueMap: Int,
     val nodeMap: Int,
@@ -1025,50 +1116,62 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
     final val SizeMany = 2
 
     /**
-      * The `mask` is a 5-bit segment of a 32-bit element hash.
-      *
-      * The `depth` value is used to determine which segment of the hash we are currently inspecting by shifting the `elementHash` to the right in [[Node.BitPartitionSize]] bit increments.
-      *
-      * A 5-bit segment of the hash can represent numbers 0 to 31, which matches the branching factor of the trie structure.
-      *
-      * It represents the notional index of the element in the current trie node.
-      *
-      * @param elementHash the hash of the element we are operating on.
-      * @param depth the depth of the current node in the trie structure.
-      * @return the relevant 5-bit segment of the `elementHash`.
-      */
+     * The `mask` is a 5-bit segment of a 32-bit element hash.
+     *
+     * The `depth` value is used to determine which segment of the hash we are currently inspecting by shifting the
+     * `elementHash` to the right in [[Node.BitPartitionSize]] bit increments.
+     *
+     * A 5-bit segment of the hash can represent numbers 0 to 31, which matches the branching factor of the trie
+     * structure.
+     *
+     * It represents the notional index of the element in the current trie node.
+     *
+     * @param elementHash
+     *   the hash of the element we are operating on.
+     * @param depth
+     *   the depth of the current node in the trie structure.
+     * @return
+     *   the relevant 5-bit segment of the `elementHash`.
+     */
     final def maskFrom(elementHash: Int, depth: Int): Int =
       (elementHash >>> (depth * Node.BitPartitionSize)) & BitPartitionMask
 
     /**
-      * Sets a single bit at the position of the notional index indicated by `mask`.
-      *
-      * Used to determine the bit which represents the notional index of a data value or node in the trie node bitmaps.
-      *
-      * @param mask the notional index of an element at this depth in the trie.
-      * @return an integer with a single bit set at the notional index indicated by `mask`.
-      */
+     * Sets a single bit at the position of the notional index indicated by `mask`.
+     *
+     * Used to determine the bit which represents the notional index of a data value or node in the trie node bitmaps.
+     *
+     * @param mask
+     *   the notional index of an element at this depth in the trie.
+     * @return
+     *   an integer with a single bit set at the notional index indicated by `mask`.
+     */
     final def bitPosFrom(mask: Int): Int =
       1 << mask
 
     /**
-      * Calculates the absolute index of an element in the contents array of a trie node.
-      *
-      * This is calculated by counting how many bits are set to the right of the notional index in the relevant bitmap.
-      *
-      * @param bitMap the bitmap indicating either data value or node positions in the contents array.
-      * @param bitPos the notional index of the element in the trie node.
-      * @return the absolute index of an element in the contents array.
-      */
+     * Calculates the absolute index of an element in the contents array of a trie node.
+     *
+     * This is calculated by counting how many bits are set to the right of the notional index in the relevant bitmap.
+     *
+     * @param bitMap
+     *   the bitmap indicating either data value or node positions in the contents array.
+     * @param bitPos
+     *   the notional index of the element in the trie node.
+     * @return
+     *   the absolute index of an element in the contents array.
+     */
     final def indexFrom(bitMap: Int, bitPos: Int): Int =
       Integer.bitCount(bitMap & (bitPos - 1))
 
     /**
-      * Creates a new empty bitmap node.
-      *
-      * @param hash the [[cats.kernel.Hash]] instance to use to hash elements.
-      * @return a new empty bitmap node.
-      */
+     * Creates a new empty bitmap node.
+     *
+     * @param hash
+     *   the [[cats.kernel.Hash]] instance to use to hash elements.
+     * @return
+     *   a new empty bitmap node.
+     */
     final def empty[K, V](implicit hashKey: Hash[K]): Node[K, V] =
       new BitMapNode[K, V](0, 0, Array.empty[Any], 0)
   }
@@ -1198,7 +1301,8 @@ sealed abstract private[collections] class HashMapInstances extends HashMapInsta
       }
     }
 
-  implicit def catsCollectionsCommutativeMonoidForHashMap[K: Hash, V: CommutativeSemigroup]: CommutativeMonoid[HashMap[K, V]] =
+  implicit def catsCollectionsCommutativeMonoidForHashMap[K: Hash, V: CommutativeSemigroup]
+    : CommutativeMonoid[HashMap[K, V]] =
     new HashMapMonoid[K, V] with CommutativeMonoid[HashMap[K, V]]
 
   implicit def catsCollectionsShowForHashMap[K: Show, V: Show]: Show[HashMap[K, V]] =

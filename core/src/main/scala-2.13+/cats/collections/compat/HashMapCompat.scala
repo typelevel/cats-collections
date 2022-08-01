@@ -29,11 +29,13 @@ private[collections] trait HashMapCompat[K, +V] extends IterableOnce[(K, V)] { s
   override def knownSize = self.size
 
   /**
-    * Creates a new map with all key-value pairs of this map, and all key-value pairs of `iterable`.
-    *
-    * @param iterable the collection of key-value pairs to be added.
-    * @return a new map that contains all key-value pairs of this map and `iterable`.
-    */
+   * Creates a new map with all key-value pairs of this map, and all key-value pairs of `iterable`.
+   *
+   * @param iterable
+   *   the collection of key-value pairs to be added.
+   * @return
+   *   a new map that contains all key-value pairs of this map and `iterable`.
+   */
   final def concat[VV >: V](iterable: IterableOnce[(K, VV)]): HashMap[K, VV] = {
     val newRootNode = iterable match {
       case hm: HashMap[K, V] @unchecked if self.size <= hm.size =>
