@@ -21,6 +21,7 @@
 
 package cats.collections
 
+import algebra.laws.LatticeLaws
 import cats.collections.arbitrary.hashset._
 import cats.kernel.laws.discipline.CommutativeMonoidTests
 import cats.kernel.laws.discipline.HashTests
@@ -41,14 +42,23 @@ class HashSetSuite extends DisciplineSuite {
     DefaultScalaCheckPropertyCheckConfig.default
 
   checkAll("HashSet[Int]", HashTests[HashSet[Int]].hash)
-  checkAll("Hash[HashSet[Int]]", SerializableTests.serializable(HashSet.catsDataHashForHashSet[Int]))
+  checkAll("Hash[HashSet[Int]]", SerializableTests.serializable(HashSet.catsCollectionsHashForHashSet[Int]))
 
   checkAll("HashSet[Int]", UnorderedFoldableTests[HashSet].unorderedFoldable[Int, Int])
-  checkAll("UnorderedFoldable[HashSet]", SerializableTests.serializable(HashSet.catsDataUnorderedFoldableForHashSet))
+  checkAll("UnorderedFoldable[HashSet]",
+           SerializableTests.serializable(HashSet.catsCollectionsUnorderedFoldableForHashSet)
+  )
 
   checkAll("HashSet[String]", CommutativeMonoidTests[HashSet[String]].commutativeMonoid)
+
   checkAll("CommutativeMonoid[HashSet[String]]",
-           SerializableTests.serializable(HashSet.catsDataCommutativeMonoidForHashSet[String])
+           SerializableTests.serializable(HashSet.catsCollectionsCommutativeMonoidForHashSet[String])
+  )
+
+  checkAll("HashSet[String]", LatticeLaws[HashSet[String]].distributiveLattice)
+
+  checkAll("DistributiveLattice[HashSet[String]]",
+           SerializableTests.serializable(HashSet.catsCollectionsDistributiveLatticeForHashSet[String])
   )
 
   // Based on https://stackoverflow.com/questions/9406775/why-does-string-hashcode-in-java-have-many-conflicts

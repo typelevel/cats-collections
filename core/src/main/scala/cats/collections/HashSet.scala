@@ -41,6 +41,7 @@
 
 package cats.collections
 
+import algebra.lattice.DistributiveLattice
 import cats.Foldable
 import cats.Show
 import cats.UnorderedFoldable
@@ -1108,7 +1109,7 @@ object HashSet extends compat.HashSetCompatCompanion {
     }
   }
 
-  implicit val catsDataUnorderedFoldableForHashSet: UnorderedFoldable[HashSet] =
+  implicit val catsCollectionsUnorderedFoldableForHashSet: UnorderedFoldable[HashSet] =
     new UnorderedFoldable[HashSet] {
       override def isEmpty[A](fa: HashSet[A]): Boolean = fa.isEmpty
 
@@ -1127,18 +1128,37 @@ object HashSet extends compat.HashSetCompatCompanion {
         C.combineAll(fa.iterator.map(f))
     }
 
-  implicit def catsDataCommutativeMonoidForHashSet[A](implicit hash: Hash[A]): CommutativeMonoid[HashSet[A]] =
-    new CommutativeMonoid[HashSet[A]] {
-      def empty: HashSet[A] = HashSet.empty[A]
-      def combine(x: HashSet[A], y: HashSet[A]): HashSet[A] = x.union(y)
-    }
+  implicit def catsCollectionsCommutativeMonoidForHashSet[A](implicit hash: Hash[A]): CommutativeMonoid[HashSet[A]] =
+    new HashSetUnionMonoid[A]
 
-  implicit def catsDataShowForHashSet[A](implicit A: Show[A]): Show[HashSet[A]] =
+  implicit def catsCollectionsShowForHashSet[A](implicit A: Show[A]): Show[HashSet[A]] =
     Show.show[HashSet[A]](_.show)
 
-  implicit def catsDataHashForHashSet[A](implicit A: Hash[A]): Hash[HashSet[A]] =
+  implicit def catsCollectionsHashForHashSet[A](implicit A: Hash[A]): Hash[HashSet[A]] =
     new Hash[HashSet[A]] {
       def hash(hs: HashSet[A]): Int = hs.hashCode
       def eqv(x: HashSet[A], y: HashSet[A]): Boolean = x === y
     }
+
+  implicit def catsCollectionsDistributiveLatticeForHashSet[A](implicit A: Hash[A]): DistributiveLattice[HashSet[A]] =
+    new DistributiveLattice[HashSet[A]] {
+      private val joinMonoid = new HashSetUnionMonoid[A]
+      private val meetMonoid = new HashSetIntersectionMonoid[A]
+
+      override def join(lhs: HashSet[A], rhs: HashSet[A]): HashSet[A] =
+        joinMonoid.combine(lhs, rhs)
+
+      override def meet(lhs: HashSet[A], rhs: HashSet[A]): HashSet[A] =
+        meetMonoid.combine(lhs, rhs)
+    }
+}
+
+class HashSetUnionMonoid[A: Hash] extends CommutativeMonoid[HashSet[A]] {
+  override def empty: HashSet[A] = HashSet.empty[A]
+  override def combine(x: HashSet[A], y: HashSet[A]): HashSet[A] = x.union(y)
+}
+
+class HashSetIntersectionMonoid[A: Hash] extends CommutativeMonoid[HashSet[A]] {
+  override def empty: HashSet[A] = HashSet.empty[A]
+  override def combine(x: HashSet[A], y: HashSet[A]): HashSet[A] = x.intersect(y)
 }
