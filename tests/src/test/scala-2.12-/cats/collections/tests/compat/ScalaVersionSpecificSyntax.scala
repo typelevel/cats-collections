@@ -19,15 +19,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package cats.collections
+package cats.collections.tests.compat
 
-package object arbitrary {
-  object all extends AllArbitrary
+import scala.collection.immutable.Seq
 
-  object set extends ArbitrarySet
-  object hashset extends ArbitraryHashSet
-  object map extends ArbitraryMap
-  object hashmap extends ArbitraryHashMap
-  object predicate extends ArbitraryPredicate
-  object cogen extends CogenInstances
+private[collections] trait ScalaVersionSpecificSyntax {
+  implicit final private[collections] def catsCollectionsTestsCompatSeqOps[C[a] <: Seq[a], A](self: C[A]) =
+    new SeqOps[C, A](self)
 }
