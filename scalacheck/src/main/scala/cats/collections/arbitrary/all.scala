@@ -23,6 +23,7 @@ package cats.collections.arbitrary
 
 trait AllArbitrary
     extends ArbitrarySet
+    with ArbitraryHashSet
     with ArbitraryMap
     with ArbitraryHashMap
     with ArbitraryPredicate

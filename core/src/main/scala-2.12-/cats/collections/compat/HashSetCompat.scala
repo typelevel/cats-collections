@@ -20,14 +20,19 @@
  */
 
 package cats.collections
+package compat
 
-package object arbitrary {
-  object all extends AllArbitrary
+import scala.collection.GenSet
 
-  object set extends ArbitrarySet
-  object hashset extends ArbitraryHashSet
-  object map extends ArbitraryMap
-  object hashmap extends ArbitraryHashMap
-  object predicate extends ArbitraryPredicate
-  object cogen extends CogenInstances
+private[collections] trait HashSetCompat[A] { self: HashSet[A] =>
+
+  final def intersect(set: GenSet[A]): HashSet[A] = {
+    if (this.isEmpty)
+      this
+    else if (set.isEmpty)
+      HashSet.empty[A]
+    else
+      filter(set.contains)
+  }
+
 }
