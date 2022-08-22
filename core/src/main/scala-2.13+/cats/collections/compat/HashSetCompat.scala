@@ -19,11 +19,18 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package cats.collections.arbitrary
+package cats.collections
+package compat
 
-trait AllArbitrary
-    extends ArbitrarySet
-    with ArbitraryHashSet
-    with ArbitraryMap
-    with ArbitraryPredicate
-    with CogenInstances
+private[collections] trait HashSetCompat[A] extends IterableOnce[A] { self: HashSet[A] =>
+  override def knownSize = self.size
+
+  final def intersect(set: scala.collection.Set[A]): HashSet[A] = {
+    if (this.isEmpty)
+      this
+    else if (set.isEmpty)
+      HashSet.empty[A]
+    else
+      filter(set.contains)
+  }
+}

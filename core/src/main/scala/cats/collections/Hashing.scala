@@ -19,11 +19,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package cats.collections.arbitrary
+package cats.collections
 
-trait AllArbitrary
-    extends ArbitrarySet
-    with ArbitraryHashSet
-    with ArbitraryMap
-    with ArbitraryPredicate
-    with CogenInstances
+private[collections] object Hashing extends compat.HashCompat

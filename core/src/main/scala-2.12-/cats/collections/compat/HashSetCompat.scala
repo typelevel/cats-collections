@@ -19,11 +19,20 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package cats.collections.arbitrary
+package cats.collections
+package compat
 
-trait AllArbitrary
-    extends ArbitrarySet
-    with ArbitraryHashSet
-    with ArbitraryMap
-    with ArbitraryPredicate
-    with CogenInstances
+import scala.collection.GenSet
+
+private[collections] trait HashSetCompat[A] { self: HashSet[A] =>
+
+  final def intersect(set: GenSet[A]): HashSet[A] = {
+    if (this.isEmpty)
+      this
+    else if (set.isEmpty)
+      HashSet.empty[A]
+    else
+      filter(set.contains)
+  }
+
+}

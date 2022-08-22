@@ -25,6 +25,7 @@ package object arbitrary {
   object all extends AllArbitrary
 
   object set extends ArbitrarySet
+  object hashset extends ArbitraryHashSet
   object map extends ArbitraryMap
   object predicate extends ArbitraryPredicate
   object cogen extends CogenInstances
