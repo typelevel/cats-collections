@@ -371,7 +371,7 @@ object BitSet {
   /**
    * Construct an immutable bitset from the given integer [[scala.collection.immutable.Range]].
    */
-  def apply(xs: scala.collection.immutable.Range): BitSet =
+  def fromScalaRange(xs: scala.collection.immutable.Range): BitSet =
     if (xs.isEmpty) Empty
     else {
       var bs = newEmpty(0)
