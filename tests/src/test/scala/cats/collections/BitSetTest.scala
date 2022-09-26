@@ -376,7 +376,7 @@ object BitSetTest extends Properties("BitSet") {
   }
 
   property("Range-constructor consistent with varargs-constructor") =
-    forAll(Gen.chooseNum(0, Short.MaxValue), Gen.chooseNum(0, Short.MaxValue)) { (start, stop) =>
+    forAll(Gen.chooseNum(0, Short.MaxValue.toInt), Gen.chooseNum(0, Short.MaxValue.toInt)) { (start, stop) =>
       forAll(Gen.chooseNum(1, (stop - start).abs.max(1))) { step =>
         val xs = start until stop by step
         val lhs = BitSet(xs)
