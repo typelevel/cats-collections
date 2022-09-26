@@ -369,6 +369,19 @@ object BitSet {
     }
 
   /**
+   * Construct an immutable bitset from the given integer [[scala.collection.immutable.Range]].
+   */
+  def apply(xs: scala.collection.immutable.Range): BitSet =
+    if (xs.isEmpty) Empty
+    else {
+      var bs = newEmpty(0)
+      xs.foreach { i =>
+        bs = bs.mutableAdd(i)
+      }
+      bs
+    }
+
+  /**
    * Given a value (`n`), and offset (`o`) and a height (`h`), compute the array index used to store the given value's
    * bit.
    */

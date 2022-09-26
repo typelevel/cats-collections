@@ -375,4 +375,14 @@ object BitSetTest extends Properties("BitSet") {
     law(x, y, "--")(_ -- _)
   }
 
+  property("Range-constructor consistent with varargs-constructor") =
+    forAll(Gen.chooseNum(0, Short.MaxValue), Gen.chooseNum(0, Short.MaxValue)) { (start, stop) =>
+      forAll(Gen.chooseNum(1, (stop - start).abs.max(1))) { step =>
+        val xs = start until stop by step
+        val lhs = BitSet(xs)
+        val rhs = BitSet(xs: _*)
+        (lhs == rhs) :| s"$lhs == $rhs"
+      }
+    }
+
 }
