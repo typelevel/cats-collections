@@ -375,4 +375,14 @@ object BitSetTest extends Properties("BitSet") {
     law(x, y, "--")(_ -- _)
   }
 
+  property("Bitset.fromScalaRange consistent with BitSet(...)") =
+    forAll(Gen.chooseNum(0, Short.MaxValue.toInt), Gen.chooseNum(0, Short.MaxValue.toInt)) { (start, stop) =>
+      forAll(Gen.chooseNum(1, (stop - start).abs.max(1))) { step =>
+        val xs = start until stop by step
+        val lhs = BitSet.fromScalaRange(xs)
+        val rhs = BitSet(xs: _*)
+        (lhs == rhs) :| s"$lhs == $rhs"
+      }
+    }
+
 }
