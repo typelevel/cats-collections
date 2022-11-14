@@ -22,10 +22,11 @@
 package cats.collections
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
-import scala.util.Random
-import scalaz.{Diev, Enum, IList, Monoid, Show}
-import cats._
+import org.openjdk.jmh.annotations._
+import scalaz.Diev
+import scalaz.Enum
+import scalaz.Monoid
+import scalaz.Show
 
 @State(Scope.Thread)
 class BestCaseRangesList {
@@ -53,7 +54,7 @@ class BestCaseRangesList {
   }
 
   @Setup
-  def setup: Unit = {
+  def setup(): Unit = {
     scalazRanges = getBestCaseDataScalaz
     dogRanges = getBestCaseDataDogs
 
@@ -68,24 +69,24 @@ class DietAddBench extends BestCaseRangesList {
   implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   @Benchmark
-  def dogsDietAdd: Unit = {
+  def dogsDietAdd(): Unit = {
     var diet = Diet.empty[Int]
 
     dogValues.foreach { i => diet = diet + i }
   }
 
   @Benchmark
-  def scalazDievAdd: Unit = {
+  def scalazDievAdd(): Unit = {
     scalazValues.foldLeft(Diev.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
-  def dogsDietAddRange: Unit = {
+  def dogsDietAddRange(): Unit = {
     dogRanges.foldLeft(Diet.empty[Int])((d, r) => d + Range(r.start, r.end))
   }
 
   @Benchmark
-  def scalazDievAddRange: Unit = {
+  def scalazDievAddRange(): Unit = {
     scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + ((r.start, r.end)))
   }
 }
