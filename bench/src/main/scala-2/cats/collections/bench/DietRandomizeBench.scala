@@ -22,10 +22,13 @@
 package cats.collections
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Scope, State}
+import org.openjdk.jmh.annotations._
+import scalaz.Diev
+import scalaz.Enum
+import scalaz.Monoid
+import scalaz.Show
+
 import scala.util.Random
-import scalaz.{Diev, Enum, Monoid, Show}
-import cats._
 
 /**
  * In reality, no one uses the best and worst scenario, so this is a complete randomized benchmark
@@ -38,22 +41,22 @@ class DietRandomizeBench extends BigNumberLists {
   implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   @Benchmark
-  def dogsDietAddRandom: Unit = {
+  def dogsDietAddRandom(): Unit = {
     Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
-  def scalazDievAddRandom: Unit = {
+  def scalazDievAddRandom(): Unit = {
     Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r)
   }
 
   @Benchmark
-  def dogsDietAddRangeRandom: Unit = {
+  def dogsDietAddRangeRandom(): Unit = {
     Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
   }
 
   @Benchmark
-  def scalazDievAddRangeRandom: Unit = {
+  def scalazDievAddRangeRandom(): Unit = {
     var diev = Diev.empty[Int]
 
     Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + ((r, r + 10)))
