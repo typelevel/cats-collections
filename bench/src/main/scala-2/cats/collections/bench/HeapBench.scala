@@ -22,12 +22,10 @@
 package cats.collections
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import scala.util.Random
-import cats._
 
-import scala.annotation.tailrec
+import scala.util.Random
 
 /**
  * run using, e.g. bench/jmh:run -i 3 -wi 3 -f1 -t1 .*HeapBench.*
@@ -42,7 +40,7 @@ class HeapBench {
   var pheap: PairingHeap[Int] = _
 
   @Setup
-  def setup: Unit = {
+  def setup(): Unit = {
     val rng = new Random(n)
     data = (0 until n).iterator.map(_ => rng.nextInt()).toArray
     heap = data.foldLeft(Heap.empty[Int])(_.add(_))

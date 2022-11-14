@@ -22,8 +22,8 @@
 package cats.collections
 package bench
 
+import org.openjdk.jmh.annotations._
 import scalaz.IList
-import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
 
 trait BigNumberLists {
   @Param(Array("10", "100", "1000", "10000"))
@@ -33,7 +33,7 @@ trait BigNumberLists {
   var scalazlst: IList[Int] = _
 
   @Setup
-  def setup: Unit = {
+  def setup(): Unit = {
     scala = (1 to n).toList
     scalazlst = IList.fromSeq(1 to n)
   }

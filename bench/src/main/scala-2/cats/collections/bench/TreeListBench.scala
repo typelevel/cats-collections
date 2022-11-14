@@ -22,10 +22,8 @@
 package cats.collections
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Param, Scope, Setup, State}
+import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import scala.util.Random
-import cats._
 
 import scala.annotation.tailrec
 
@@ -39,7 +37,7 @@ class TreeListBench {
   var vect: Vector[Int] = _
 
   @Setup
-  def setup: Unit = {
+  def setup(): Unit = {
     list = (0 until n).toList
     treeList = TreeList.fromList(list)
     vect = list.toVector
@@ -116,7 +114,7 @@ class TreeListBench {
     val rand = new java.util.Random(42)
     @tailrec
     def loop(cnt: Int, acc: Int): Int = {
-      val v = treeList.getUnsafe((rand.nextInt() & Int.MaxValue) % n) + acc
+      val v = treeList.getUnsafe((rand.nextInt() & Int.MaxValue).toLong % n) + acc
       if (cnt <= 0) v
       else loop(cnt - 1, v)
     }
