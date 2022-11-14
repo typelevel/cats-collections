@@ -22,22 +22,24 @@
 package cats.collections
 package bench
 
-import org.openjdk.jmh.annotations.{Benchmark, Scope, Setup, State}
+import org.openjdk.jmh.annotations._
+import scalaz.Diev
+import scalaz.Enum
+import scalaz.Monoid
+import scalaz.Show
 
 import scala.util.Random
-import scalaz.{Diev, Enum, Monoid, Show}
-import cats._
 
 @State(Scope.Benchmark)
 class DietBenchSearch {
 
   implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
-  var diet = Diet.empty[Int]
-  var diev = Diev.empty[Int]
+  var diet: Diet[Int] = Diet.empty[Int]
+  var diev: Diev[Int] = Diev.empty[Int]
 
   @Setup
-  def setup: Unit = {
+  def setup(): Unit = {
     var i = 0
     while (i < 1000) {
       val s = Random.nextInt()
@@ -51,12 +53,12 @@ class DietBenchSearch {
   }
 
   @Benchmark
-  def dogsDietSearch: Unit = {
+  def dogsDietSearch(): Unit = {
     scala.Range(0, 1000).foreach(i => diet.contains(i))
   }
 
   @Benchmark
-  def scalazDievSearch: Unit = {
+  def scalazDievSearch(): Unit = {
     scala.Range(0, 1000).foreach(i => diev.contains(i))
   }
 }
