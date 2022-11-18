@@ -11,10 +11,10 @@ It intends to be a library containing data structures which facilitate pure func
 
 Cats Collections is currently available for Scala 2.12, 2.13, and 3.
 
-To get started with sbt, simply add the following to your `build.sbt` file:
+To get started with sbt, simply add the following to your `build.sbt` file (you may find the latest version via a badge on top of this page or on release page):
 
 ```scala
-libraryDependencies += "org.typelevel" %% "cats-collections-core" % "0.9.0"
+libraryDependencies += "org.typelevel" %% "cats-collections-core" % "<version>"
 ```
 
 ### CONTRIBUTING
