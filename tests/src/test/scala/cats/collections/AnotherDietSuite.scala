@@ -66,4 +66,11 @@ class AnotherDietSuite extends DisciplineSuite {
     d2.toList.foreach(elem => assert(!d.contains(elem)))
     d1.toList.foreach(elem => assert(d2.contains(elem) || d.contains(elem)))
   })
+
+  property("toIterator/toList")(forAll { (d: Diet[Int]) =>
+    assertEquals(
+      d.toIterator.flatMap(_.toIterator).toList,
+      d.toList
+    )
+  })
 }
