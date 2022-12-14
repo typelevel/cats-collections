@@ -36,29 +36,25 @@ import scala.util.Random
 @State(Scope.Benchmark)
 class DietRandomizeBench extends BigNumberLists {
 
-//  import dogs.Predef._
-
   implicit val scalazEnumInt: Monoid[Int] with Enum[Int] with Show[Int] = scalaz.std.anyVal.intInstance
 
   @Benchmark
   def dogsDietAddRandom(): Unit = {
-    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + r)
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + r): Unit
   }
 
   @Benchmark
   def scalazDievAddRandom(): Unit = {
-    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r)
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + r): Unit
   }
 
   @Benchmark
   def dogsDietAddRangeRandom(): Unit = {
-    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10))
+    Random.shuffle(scala).foldLeft(Diet.empty[Int])((d, r) => d + Range(r, r + 10)): Unit
   }
 
   @Benchmark
   def scalazDievAddRangeRandom(): Unit = {
-    var diev = Diev.empty[Int]
-
-    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + ((r, r + 10)))
+    Random.shuffle(scalazlst.toList).foldLeft(Diev.empty[Int])((d, r) => d + ((r, r + 10))): Unit
   }
 }

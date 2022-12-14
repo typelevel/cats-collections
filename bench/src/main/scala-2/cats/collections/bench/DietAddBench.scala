@@ -77,16 +77,16 @@ class DietAddBench extends BestCaseRangesList {
 
   @Benchmark
   def scalazDievAdd(): Unit = {
-    scalazValues.foldLeft(Diev.empty[Int])((d, r) => d + r)
+    scalazValues.foldLeft(Diev.empty[Int])((d, r) => d + r): Unit
   }
 
   @Benchmark
   def dogsDietAddRange(): Unit = {
-    dogRanges.foldLeft(Diet.empty[Int])((d, r) => d + Range(r.start, r.end))
+    dogRanges.foldLeft(Diet.empty[Int])((d, r) => d + Range(r.start, r.end)): Unit
   }
 
   @Benchmark
   def scalazDievAddRange(): Unit = {
-    scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + ((r.start, r.end)))
+    scalazRanges.foldLeft(Diev.empty[Int])((d, r) => d + ((r.start, r.end))): Unit
   }
 }
