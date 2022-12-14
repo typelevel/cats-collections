@@ -44,13 +44,13 @@ class BitSetBenchmarks {
   var size: Int = _
   var indices: Array[Int] = _
 
-  var values: Array[Int] = _
+  var values: Vector[Int] = _
   var sci: immutable.BitSet = _
   var scm: mutable.BitSet = _
   var iset: immutable.Set[Int] = _
   var ccbs: _root_.cats.collections.BitSet = _
 
-  var values2: Array[Int] = _
+  var values2: Vector[Int] = _
   var sci2: immutable.BitSet = _
   var scm2: mutable.BitSet = _
   var iset2: immutable.Set[Int] = _
@@ -63,8 +63,8 @@ class BitSetBenchmarks {
     val r = new Random(0x13572468)
 
     values = (0 until size).iterator.filter { _ =>
-      r.nextDouble < density
-    }.toArray
+      r.nextDouble() < density
+    }.toVector
 
     sci = immutable.BitSet(values: _*)
     scm = mutable.BitSet(values: _*)
@@ -72,8 +72,8 @@ class BitSetBenchmarks {
     ccbs = _root_.cats.collections.BitSet(values: _*)
 
     values2 = (0 until size).iterator.filter { _ =>
-      r.nextDouble < density
-    }.toArray
+      r.nextDouble() < density
+    }.toVector
 
     sci2 = immutable.BitSet(values2: _*)
     scm2 = mutable.BitSet(values2: _*)
