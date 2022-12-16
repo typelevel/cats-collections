@@ -69,6 +69,7 @@ import HashSet.WrappedHashSet
  * @param hash
  *   the [[cats.kernel.Hash]] instance used for hashing values.
  */
+@suppressUnusedImportWarningForScalaVersionSpecific
 final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit val hash: Hash[A])
     extends compat.HashSetCompat[A] {
 
@@ -1134,11 +1135,15 @@ object HashSet extends compat.HashSetCompatCompanion {
   implicit def catsCollectionsShowForHashSet[A](implicit A: Show[A]): Show[HashSet[A]] =
     Show.show[HashSet[A]](_.show)
 
-  implicit def catsCollectionsHashForHashSet[A](implicit A: Hash[A]): Hash[HashSet[A]] =
+  implicit def catsCollectionsHashForHashSet[A]: Hash[HashSet[A]] =
     new Hash[HashSet[A]] {
       def hash(hs: HashSet[A]): Int = hs.hashCode
       def eqv(x: HashSet[A], y: HashSet[A]): Boolean = x === y
     }
+
+  @deprecated("use unconstrained version instead", "0.9.6")
+  def catsCollectionsHashForHashSet[A](A: Hash[A]): Hash[HashSet[A]] =
+    catsCollectionsHashForHashSet
 
   implicit def catsCollectionsDistributiveLatticeForHashSet[A](implicit A: Hash[A]): DistributiveLattice[HashSet[A]] =
     new DistributiveLattice[HashSet[A]] {
