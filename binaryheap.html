@@ -126,7 +126,7 @@
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">_</span><span>, </span><span class="identifier">cats</span><span>.</span><span class="identifier">implicits</span><span>.</span><span class="identifier">_</span><span>, </span><span class="identifier">cats</span><span>.</span><span class="identifier">collections</span><span>.</span><span class="identifier">_</span><span>, </span><span class="identifier">cats</span><span>.</span><span class="identifier">collections</span><span>.</span><span class="identifier">syntax</span><span>.</span><span class="identifier">all</span><span>.</span><span class="identifier">_</span><span>
 
 </span><span class="keyword">val</span><span> </span><span class="identifier">h</span><span> = </span><span class="type-name">Heap</span><span>.</span><span class="identifier">empty</span><span>[</span><span class="type-name">Int</span><span>]
-</span><span class="comment">// h: Heap[Int] = Leaf
+</span><span class="comment">// h: Heap[Int] = Leaf()
 </span><span class="identifier">h</span><span>.</span><span class="identifier">isEmpty</span><span>
 </span><span class="comment">// res0: Boolean = true
 </span><span>
@@ -137,7 +137,7 @@
 </span><span class="comment">// res2: Option[Int] = None</span></code></pre>
         <p>And we can add an item:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">h2</span><span> = </span><span class="identifier">h</span><span>.</span><span class="identifier">add</span><span>(</span><span class="number-literal">12</span><span>)
-</span><span class="comment">// h2: Heap[Int] = Branch(12, Leaf, Leaf)
+</span><span class="comment">// h2: Heap[Int] = Branch(12, Leaf(), Leaf())
 </span><span class="identifier">h2</span><span>.</span><span class="identifier">isEmpty</span><span>
 </span><span class="comment">// res3: Boolean = false
 </span><span>
@@ -147,8 +147,8 @@
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">h3</span><span> = </span><span class="identifier">h2</span><span> + </span><span class="number-literal">5</span><span> + </span><span class="number-literal">1</span><span> + </span><span class="number-literal">7</span><span>
 </span><span class="comment">// h3: Heap[Int] = Branch(
 //   1,
-//   Branch(7, Branch(12, Leaf, Leaf), Leaf),
-//   Branch(5, Leaf, Leaf)
+//   Branch(7, Branch(12, Leaf(), Leaf()), Leaf()),
+//   Branch(5, Leaf(), Leaf())
 // )
 </span><span class="identifier">h3</span><span>.</span><span class="identifier">getMin</span><span>
 </span><span class="comment">// res5: Option[Int] = Some(1)
@@ -158,7 +158,11 @@
 </span><span class="comment">// res6: String = &quot;Heap(1, 5, 7, 12)&quot;</span></code></pre>
         <p>If we call <code>remove</code> it removes the min value:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">r</span><span> = </span><span class="identifier">h3</span><span>.</span><span class="identifier">remove</span><span>
-</span><span class="comment">// r: Heap[Int] = Branch(5, Branch(7, Leaf, Leaf), Branch(12, Leaf, Leaf))
+</span><span class="comment">// r: Heap[Int] = Branch(
+//   5,
+//   Branch(7, Leaf(), Leaf()),
+//   Branch(12, Leaf(), Leaf())
+// )
 </span><span>
 </span><span class="identifier">r</span><span>.</span><span class="identifier">show</span><span>
 </span><span class="comment">// res7: String = &quot;Heap(5, 7, 12)&quot;</span></code></pre>
