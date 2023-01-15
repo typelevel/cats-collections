@@ -308,11 +308,7 @@ object Heap {
     override def unbalanced: Boolean = size < (1L << height) - 1L
   }
 
-  private[collections] case object Leaf extends Heap[Nothing] {
-    def apply[A](): Heap[A] = this.asInstanceOf[Heap[A]]
-
-    def unapply[A](heap: Heap[A]): Boolean = heap.isEmpty
-
+  final private[collections] case class Leaf[A] private () extends Heap[A] {
     override def size: Long = 0L
 
     override def height: Int = 0
@@ -323,6 +319,13 @@ object Heap {
     override def isEmpty: Boolean = true
 
     override def minimumOption: Option[Nothing] = None
+  }
+
+  private[collections] object Leaf {
+    // Cached singleton instance for Leaf.
+    private val instance = new Leaf
+
+    def apply[A](): Leaf[A] = instance.asInstanceOf[Leaf[A]]
   }
 
   private[collections] def bubbleUp[A](x: A, l: Heap[A], r: Heap[A])(implicit order: Order[A]): Heap[A] = (l, r) match {

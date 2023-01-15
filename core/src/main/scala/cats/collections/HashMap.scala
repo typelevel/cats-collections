@@ -41,8 +41,6 @@
 
 package cats.collections
 
-import cats.kernel.compat.scalaVersionSpecific._
-
 import cats.Always
 import cats.CommutativeApplicative
 import cats.Eval
@@ -50,17 +48,19 @@ import cats.Foldable
 import cats.Semigroup
 import cats.Show
 import cats.UnorderedTraverse
+import cats.data.NonEmptyVector
 import cats.kernel.CommutativeMonoid
 import cats.kernel.CommutativeSemigroup
-import cats.kernel.Monoid
 import cats.kernel.Eq
 import cats.kernel.Hash
+import cats.kernel.Monoid
+import cats.kernel.compat.scalaVersionSpecific._
 import cats.syntax.eq._
+
 import java.util.Arrays
 
 import HashMap.improve
 import HashMap.WrappedHashMap
-import cats.data.NonEmptyVector
 
 /**
  * An immutable hash map using [[cats.kernel.Hash]] for hashing.
@@ -76,6 +76,7 @@ import cats.data.NonEmptyVector
  * @param hashKey
  *   the [[cats.kernel.Hash]] instance used for hashing keys.
  */
+@suppressUnusedImportWarningForScalaVersionSpecific
 final class HashMap[K, +V] private[collections] (private[collections] val rootNode: HashMap.Node[K, V])(implicit
   val hashKey: Hash[K]
 ) extends compat.HashMapCompat[K, V] {

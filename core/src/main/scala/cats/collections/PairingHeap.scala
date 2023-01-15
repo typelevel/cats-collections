@@ -308,24 +308,27 @@ object PairingHeap {
       }
   }
 
-  final private case object Leaf extends PairingHeap[Nothing] {
-    def apply[A](): PairingHeap[A] = this.asInstanceOf[PairingHeap[A]]
-
-    def unapply[A](heap: PairingHeap[A]): Boolean = heap.isEmpty
-
-    override def subtrees: List[PairingHeap[Nothing]] = Nil
+  final private case class Leaf[A] private () extends PairingHeap[A] {
+    override def subtrees: List[PairingHeap[A]] = Nil
 
     override def size: Long = 0L
 
     override def isEmpty: Boolean = true
 
-    override def minimumOption: Option[Nothing] = None
+    override def minimumOption: Option[A] = None
 
-    override def exists(fn: Nothing => Boolean): Boolean = false
+    override def exists(fn: A => Boolean): Boolean = false
 
-    override def forall(fn: Nothing => Boolean): Boolean = true
+    override def forall(fn: A => Boolean): Boolean = true
 
-    override def combine(that: PairingHeap[Nothing])(implicit order: Order[Nothing]): PairingHeap[Nothing] = that
+    override def combine(that: PairingHeap[A])(implicit order: Order[A]): PairingHeap[A] = that
+  }
+
+  private object Leaf {
+    // Cached singleton instance for Leaf.
+    private val instance = new Leaf
+
+    def apply[A](): Leaf[A] = instance.asInstanceOf[Leaf[A]]
   }
 
   implicit def toShowable[A](implicit s: Show[A], order: Order[A]): Show[PairingHeap[A]] = new Show[PairingHeap[A]] {
