@@ -159,6 +159,26 @@ class RangeSuite extends ScalaCheckSuite {
     }
   }
 
+  property("overlaps(Range): behavior should be consistent with & method") {
+    val genOverlapping = for {
+      range1 <- genAscRangeX(minX.succ, maxX.pred)
+      range2 <- genAscRangeX(minX, range1.end.pred, maxX, maxX)
+    } yield (range1, range2)
+
+    val genNonOverlapping = for {
+      range1 <- genAscRangeX(minX, maxX.pred)
+      range2 <- genAscRangeX(range1.end.succ, maxX)
+    } yield (range1, range2)
+
+    forAll(genOverlapping) { case (range1: Range[X], range2: Range[X]) =>
+      assert((range1 & range2).isDefined && range1.overlaps(range2))
+    }
+
+    forAll(genNonOverlapping) { case (range1: Range[X], range2: Range[X]) =>
+      assert((range1 & range2).isEmpty && !range1.overlaps(range2))
+    }
+  }
+
   property("foreach: enumerates all values of a range") {
     // Executes a passed `foreach` function and calculates some value that can be used for comparison.
     def calc[A](f: A => Int, foreach: (A => Unit) => Unit) = {
