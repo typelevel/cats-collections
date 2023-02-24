@@ -62,6 +62,14 @@ val range = Range(1, 10)
 range.contains(20)
 ```
 
+Asking whether a Range overlaps another
+
+```scala mdoc:nest
+val range1 = Range(1,10)
+val range2 = Range(5,15)
+range1.overlaps(range2)
+```
+
 Asking for the difference between two Ranges returns 0, 1, or 2 result ranges
 
 ```scala mdoc:nest

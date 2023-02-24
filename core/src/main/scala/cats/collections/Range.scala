@@ -74,6 +74,12 @@ final case class Range[A](start: A, end: A) {
     order.lteqv(start, range.start) && order.gteqv(end, range.end)
 
   /**
+   * Verify whether or not the passed range overlaps the current range
+   */
+  def overlaps(range: Range[A])(implicit order: Order[A]): Boolean =
+    contains(range.start) || contains(range.end) || range.contains(start) || range.contains(end)
+
+  /**
    * Return an iterator for the values in the range. The iterator moves from start to end taking into consideration the
    * provided ordering. If (start > end) it uses start's predecessor offered by the Discrete instance, otherwise it uses
    * the start's successor.
