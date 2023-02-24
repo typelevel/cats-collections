@@ -154,25 +154,32 @@
 </span><span class="comment">// range: Range[Int] = Range(1, 10)
 </span><span class="identifier">range</span><span>.</span><span class="identifier">contains</span><span>(</span><span class="number-literal">20</span><span>)
 </span><span class="comment">// res6: Boolean = false</span></code></pre>
+        <p>Asking whether a Range overlaps another</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">range1</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">1</span><span>,</span><span class="number-literal">10</span><span>)
+</span><span class="comment">// range1: Range[Int] = Range(1, 10)
+</span><span class="keyword">val</span><span> </span><span class="identifier">range2</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">5</span><span>,</span><span class="number-literal">15</span><span>)
+</span><span class="comment">// range2: Range[Int] = Range(5, 15)
+</span><span class="identifier">range1</span><span>.</span><span class="identifier">overlaps</span><span>(</span><span class="identifier">range2</span><span>)
+</span><span class="comment">// res7: Boolean = true</span></code></pre>
         <p>Asking for the difference between two Ranges returns 0, 1, or 2 result ranges</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">range</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="number-literal">10</span><span>)
 </span><span class="comment">// range: Range[Int] = Range(1, 10)
 </span><span class="type-name">Range</span><span>(</span><span class="number-literal">10</span><span>, </span><span class="number-literal">20</span><span>).</span><span class="identifier">show</span><span>
-</span><span class="comment">// res7: String = &quot;[10, 20]&quot;
+</span><span class="comment">// res8: String = &quot;[10, 20]&quot;
 </span><span>(</span><span class="identifier">range</span><span> - </span><span class="type-name">Range</span><span>(</span><span class="number-literal">5</span><span>, </span><span class="number-literal">9</span><span>)).</span><span class="identifier">show</span><span>
-</span><span class="comment">// res8: String = &quot;Some(([1, 4],Some([10, 10])))&quot;
+</span><span class="comment">// res9: String = &quot;Some(([1, 4],Some([10, 10])))&quot;
 </span><span>(</span><span class="identifier">range</span><span> - </span><span class="type-name">Range</span><span>(</span><span class="number-literal">30</span><span>, </span><span class="number-literal">40</span><span>)).</span><span class="identifier">show</span><span>
-</span><span class="comment">// res9: String = &quot;Some(([1, 10],None))&quot;
-</span><span>(</span><span class="identifier">range</span><span> - </span><span class="type-name">Range</span><span>(</span><span class="number-literal">15</span><span>, </span><span class="number-literal">18</span><span>)).</span><span class="identifier">show</span><span>
 </span><span class="comment">// res10: String = &quot;Some(([1, 10],None))&quot;
+</span><span>(</span><span class="identifier">range</span><span> - </span><span class="type-name">Range</span><span>(</span><span class="number-literal">15</span><span>, </span><span class="number-literal">18</span><span>)).</span><span class="identifier">show</span><span>
+</span><span class="comment">// res11: String = &quot;Some(([1, 10],None))&quot;
 </span><span>(</span><span class="identifier">range</span><span> - </span><span class="type-name">Range</span><span> (</span><span class="number-literal">5</span><span>, </span><span class="number-literal">30</span><span>)).</span><span class="identifier">show</span><span>
-</span><span class="comment">// res11: String = &quot;Some(([1, 4],None))&quot;</span></code></pre>
+</span><span class="comment">// res12: String = &quot;Some(([1, 4],None))&quot;</span></code></pre>
         <p>Creating an <strong>inverted</strong> range</p>
         <pre><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">range</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">50</span><span>, </span><span class="number-literal">20</span><span>)
 </span><span class="comment">// range: Range[Int] = Range(50, 20)
 </span><span>
 </span><span class="identifier">range</span><span>.</span><span class="identifier">toList</span><span>
-</span><span class="comment">// res12: List[Int] = List(
+</span><span class="comment">// res13: List[Int] = List(
 //   50,
 //   49,
 //   48,
@@ -209,15 +216,15 @@
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">range</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">20</span><span>, </span><span class="number-literal">30</span><span>)
 </span><span class="comment">// range: Range[Int] = Range(20, 30)
 </span><span class="identifier">range</span><span>.</span><span class="identifier">show</span><span>
-</span><span class="comment">// res13: String = &quot;[20, 30]&quot;
+</span><span class="comment">// res14: String = &quot;[20, 30]&quot;
 </span><span>
 </span><span class="keyword">val</span><span> </span><span class="identifier">other</span><span> = </span><span class="type-name">Range</span><span>(</span><span class="number-literal">30</span><span>, </span><span class="number-literal">20</span><span>)
 </span><span class="comment">// other: Range[Int] = Range(30, 20)
 </span><span class="identifier">other</span><span>.</span><span class="identifier">show</span><span>
-</span><span class="comment">// res14: String = &quot;[30, 20]&quot;
+</span><span class="comment">// res15: String = &quot;[30, 20]&quot;
 </span><span>
 </span><span class="identifier">range</span><span>.</span><span class="identifier">reverse</span><span>.</span><span class="identifier">toList</span><span> == </span><span class="identifier">other</span><span>.</span><span class="identifier">toList</span><span>
-</span><span class="comment">// res15: Boolean = true</span></code></pre>
+</span><span class="comment">// res16: Boolean = true</span></code></pre>
 
         <hr style="margin-top: 30px"/>
         <footer style="font-size: 90%; text-align: center">
