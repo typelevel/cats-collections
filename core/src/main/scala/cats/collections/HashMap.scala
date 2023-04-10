@@ -617,7 +617,7 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
         this
       else if (contents.toVector.lengthCompare(2) == 0) {
         // There will no longer be any collisions once the key is removed
-        val keepIndex = ~keyIndex
+        val keepIndex = if (keyIndex == 0) 1 else 0
         // This is a singleton node so the depth doesn't matter;
         // we only need to index into it to inline the value in our parent node
         val mask = Node.maskFrom(collisionHash, depth = 0)
