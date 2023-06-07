@@ -6,7 +6,7 @@ val munitDisciplineVersion = "2.0.0-M3"
 val scalacheckVersion = "1.17.0"
 val algebraVersion = "2.9.0"
 val Scala212 = "2.12.17"
-val Scala213 = "2.13.10"
+val Scala213 = "2.13.11"
 val Scala3 = "3.3.0"
 
 ThisBuild / tlBaseVersion := "0.9"
