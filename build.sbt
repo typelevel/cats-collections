@@ -1,10 +1,10 @@
 import com.typesafe.tools.mima.core._
 
-val catsVersion = "2.9.0"
+val catsVersion = "2.10.0"
 val munitVersion = "1.0.0-M8"
 val munitDisciplineVersion = "2.0.0-M3"
 val scalacheckVersion = "1.17.0"
-val algebraVersion = "2.9.0"
+val algebraVersion = "2.10.0"
 val Scala212 = "2.12.18"
 val Scala213 = "2.13.11"
 val Scala3 = "3.3.0"
