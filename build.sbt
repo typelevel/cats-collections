@@ -14,7 +14,7 @@ ThisBuild / startYear := Some(2015)
 
 ThisBuild / crossScalaVersions := Seq(Scala3, Scala213, Scala212)
 ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
-ThisBuild / tlFatalWarningsInCi := false
+ThisBuild / tlFatalWarnings := false
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / tlSitePublishBranch := Some("master")
 ThisBuild / githubWorkflowJavaVersions := Seq("8", "11", "17").map(JavaSpec.temurin)
