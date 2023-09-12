@@ -23,6 +23,7 @@ package cats.collections
 
 import cats.collections.arbitrary.hashmap._
 import cats.collections.tests.compat._
+import cats.kernel.Hash
 import cats.kernel.laws.discipline.CommutativeMonoidTests
 import cats.kernel.laws.discipline.HashTests
 import cats.laws.discipline.SerializableTests
@@ -162,6 +163,18 @@ class HashMapSuite extends DisciplineSuite with ScalaVersionSpecificSyntax {
           assert(removed === initial)
       }
     }
+  }
+
+  test("removed with collision") {
+    val myHash: Hash[Int] = new Hash[Int] {
+      final override def eqv(x: Int, y: Int): Boolean =
+        (x % 8) === (y % 8)
+      final override def hash(x: Int): Int =
+        x % 4
+    }
+    val m1 = HashMap(1 -> 1, 8 -> 8, 4 -> 4)(myHash)
+    val m2 = m1.removed(16)
+    assertEquals(m2, HashMap(1 -> 1, 4 -> 4)(myHash))
   }
 
   test("concat") {
