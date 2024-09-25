@@ -18,7 +18,7 @@ ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
 ThisBuild / tlFatalWarnings := false
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / tlSitePublishBranch := Some("master")
-ThisBuild / githubWorkflowJavaVersions := Seq("8", "11", "17").map(JavaSpec.temurin)
+ThisBuild / githubWorkflowJavaVersions := Seq("8", "21").map(JavaSpec.temurin)
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
     "coverage",
