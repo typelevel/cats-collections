@@ -43,7 +43,7 @@ lazy val commonJsSettings = Seq(
 
 lazy val commonNativeSettings = Seq(
   coverageEnabled := false,
-  tlVersionIntroduced ++= List("2.12", "2.13", "3").map(_ -> "0.9.4").toMap
+  tlVersionIntroduced ++= List("2.12", "2.13", "3").map(_ -> "0.9.9").toMap
 )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
