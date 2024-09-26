@@ -1,10 +1,10 @@
 import com.typesafe.tools.mima.core._
 
-val catsVersion = "2.11.0"
+val catsVersion = "2.12.0"
 val munitVersion = "1.0.0"
-val munitDisciplineVersion = "2.0.0-M3"
-val scalacheckVersion = "1.17.1"
-val algebraVersion = "2.11.0"
+val munitDisciplineVersion = "2.0.0"
+val scalacheckVersion = "1.18.1"
+val algebraVersion = "2.12.0"
 
 val Scala212 = "2.12.20"
 val Scala213 = "2.13.15"
@@ -18,7 +18,7 @@ ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
 ThisBuild / tlFatalWarnings := false
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / tlSitePublishBranch := Some("master")
-ThisBuild / githubWorkflowJavaVersions := Seq("8", "11", "17").map(JavaSpec.temurin)
+ThisBuild / githubWorkflowJavaVersions := Seq("8", "21").map(JavaSpec.temurin)
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
     "coverage",
@@ -43,7 +43,7 @@ lazy val commonJsSettings = Seq(
 
 lazy val commonNativeSettings = Seq(
   coverageEnabled := false,
-  tlVersionIntroduced ++= List("2.12", "2.13", "3").map(_ -> "0.9.4").toMap
+  tlVersionIntroduced ++= List("2.12", "2.13", "3").map(_ -> "0.9.9").toMap
 )
 
 lazy val core = crossProject(JSPlatform, JVMPlatform, NativePlatform)
