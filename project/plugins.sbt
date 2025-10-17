@@ -2,7 +2,7 @@ addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.6.0")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.13.1")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.8")
 addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.3.1")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.18.2")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.20.1")
 addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.8")
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
 val sbtTypelevelVersion = "0.8.2"
