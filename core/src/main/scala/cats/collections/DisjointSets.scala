@@ -113,7 +113,8 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
    */
   def toSets: (DisjointSets[T], AvlMap[T, AvlSet[T]]) =
     entries.foldLeft((this, AvlMap[T, AvlSet[T]]())) { case ((dsets, acc), (k, _)) =>
-      val (newSt, Some(label)) = dsets.find(k)
+      // Each `k` is from the `entries`` map, so it must be found.
+      val (newSt, Some(label)) = dsets.find(k): @unchecked
       val updatedSet = acc.get(label).getOrElse(AvlSet.empty[T]) + k
       (newSt, acc + (label -> updatedSet))
     }
