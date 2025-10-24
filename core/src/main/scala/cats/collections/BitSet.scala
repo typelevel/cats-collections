@@ -559,7 +559,7 @@ object BitSet {
         BitSet.adoptedUnion(this, rhs)
       } else {
         // height == rhs.height, so we know rhs is a Branch.
-        val Branch(_, _, rcs) = rhs
+        val Branch(_, _, rcs) = rhs: @unchecked
         val cs = new Array[BitSet](32)
         var i = 0
         while (i < 32) {
@@ -591,7 +591,7 @@ object BitSet {
         Empty
       } else {
         // height == rhs.height, so we know rhs is a Branch.
-        val Branch(_, _, rcs) = rhs
+        val Branch(_, _, rcs) = rhs: @unchecked
         val cs = new Array[BitSet](32)
         var i = 0
         var nonEmpty = false
@@ -629,7 +629,7 @@ object BitSet {
         false
       } else {
         // height == rhs.height, so we know rhs is a Branch.
-        val Branch(_, _, rcs) = rhs
+        val Branch(_, _, rcs) = rhs: @unchecked
         var i = 0
         while (i < 32) {
           val x = children(i)
@@ -674,7 +674,7 @@ object BitSet {
         this | rhs
       } else {
         // height == rhs.height, so we know rhs is a Branch.
-        val Branch(_, _, rcs) = rhs
+        val Branch(_, _, rcs) = rhs: @unchecked
         val cs = new Array[BitSet](32)
         var i = 0
         while (i < 32) {
@@ -791,7 +791,7 @@ object BitSet {
         throw InternalError("branch misaligned")
       } else {
         // height == rhs.height, so we know rhs is a Branch.
-        val Branch(_, _, rcs) = rhs
+        val Branch(_, _, rcs) = rhs: @unchecked
         var i = 0
         while (i < 32) {
           val x = children(i)
