@@ -233,8 +233,8 @@ sealed abstract class Dequeue[+A] {
               SingletonDequeue(a)
             else
               FullDequeue(NonEmptyList(a, List.empty), 1, bl.toList.asInstanceOf[NonEmptyList[B]], bs - 1)
-          case (Some(f), Some(b)) =>
-            fl += f
+          case (Some(ff), Some(b)) =>
+            fl += ff
             bl += b
             FullDequeue(fl.toList.asInstanceOf[NonEmptyList[B]],
                         fs,
