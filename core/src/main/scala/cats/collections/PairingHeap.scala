@@ -336,7 +336,7 @@ object PairingHeap {
       val sb = new java.lang.StringBuilder
       sb.append("PairingHeap(")
       f.foldLeft(false) { (notFirst, a) =>
-        if (notFirst) sb.append(", ")
+        if (notFirst) sb.append(", "): Unit
         sb.append(s.show(a))
         true
       }

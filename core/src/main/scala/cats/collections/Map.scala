@@ -173,8 +173,8 @@ trait AvlMapInstances {
 
     override def tailRecM[A, B](a: A)(f: A => AvlMap[K, Either[A, B]]): AvlMap[K, B] = {
       @tailrec def extract(kv: (K, Either[A, B])): AvlSet[(K, B)] = kv._2 match {
-        case Left(a) =>
-          f(a).get(kv._1) match {
+        case Left(aa) =>
+          f(aa).get(kv._1) match {
             case Some(x) => extract(kv._1 -> x)
             case _       => AvlSet.empty[(K, B)]
           }
