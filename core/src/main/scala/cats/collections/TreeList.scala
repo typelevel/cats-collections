@@ -199,7 +199,7 @@ sealed abstract class TreeList[+A] {
       l.uncons match {
         case None => ()
         case Some((h, t)) =>
-          if (!first) strb.append(", ")
+          if (!first) strb.append(", "): Unit
           strb.append(h.toString)
           loop(false, t)
       }
@@ -807,7 +807,7 @@ object TreeList extends TreeListInstances0 {
           fa match {
             case NonEmpty(_, tail) =>
               loop(tail, fn(fa) :: revList)
-            case Empty => fromListReverse(revList)
+            case _ => fromListReverse(revList)
           }
         loop(fa, Nil)
       }
@@ -919,10 +919,10 @@ object TreeList extends TreeListInstances0 {
                   either match {
                     case Right(b) =>
                       loop(rest :: tail, b :: acc)
-                    case Left(a) =>
-                      loop(fn(a) :: rest :: tail, acc)
+                    case Left(aa) =>
+                      loop(fn(aa) :: rest :: tail, acc)
                   }
-                case Empty =>
+                case _ =>
                   loop(tail, acc)
               }
             case Nil => acc
