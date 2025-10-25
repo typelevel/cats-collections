@@ -47,7 +47,7 @@ println(updateBobScore)                 //HashMap(Alice -> 95, Bob -> 70)
 
 ### d. Remove an entry
 ```scala mdoc
-val withoutBob = scores.removed("Bob")
+val withoutBob = scores - "Bob"
 println(withoutBob.size)                // 1
 println(withoutBob.contains("Bob"))     //false
 ```
