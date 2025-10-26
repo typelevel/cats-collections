@@ -46,19 +46,15 @@ class DisjointSetsSuite extends FunSuite {
       allFromFour
     )
 
-    val (
-      Some(a),
-      Some(b),
-      Some(c),
-      Some(d),
-      Some(e),
-      Some(f)
-    ) = operations.runA(DisjointSets(1, 2, 3, 4)).value
-
-    assertNotEquals(a, b)
-    assertEquals(c, d)
-    assertEquals(d, e)
-    assertEquals(e, f)
+    operations.runA(DisjointSets(1, 2, 3, 4)).value match {
+      case (Some(a), Some(b), Some(c), Some(d), Some(e), Some(f)) =>
+        assertNotEquals(a, b)
+        assertEquals(c, d)
+        assertEquals(d, e)
+        assertEquals(e, f)
+      case other =>
+        fail(s"unexpected result: $other")
+    }
   }
 
   test("build unions with disjoint sets as if a set of sets were used") {

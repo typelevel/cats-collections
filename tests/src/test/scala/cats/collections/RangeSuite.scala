@@ -183,11 +183,9 @@ class RangeSuite extends ScalaCheckSuite {
     // Executes a passed `foreach` function and calculates some value that can be used for comparison.
     def calc[A](f: A => Int, foreach: (A => Unit) => Unit) = {
       val bldr = Vector.newBuilder[Int]
-      var count = 0
 
       foreach { b =>
         bldr += f(b)
-        count += 1
       }
 
       bldr.result()
@@ -252,8 +250,8 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val expected = Range(range2.end.succ, range1.end)
-      val Some((obtained, None)) = range1 - range2
+      val obtained = range1 - range2
+      val expected = Some((Range(range2.end.succ, range1.end), None))
       assertEquals(obtained, expected)
     }
   }
@@ -264,8 +262,8 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val expected = Range(range1.start, X(range2.start.x - 1))
-      val Some((obtained, None)) = range1 - range2
+      val obtained = range1 - range2
+      val expected = Some((Range(range1.start, X(range2.start.x - 1)), None))
       assertEquals(obtained, expected)
     }
   }
@@ -276,12 +274,9 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val expected1 = Range(range1.start, range2.start.pred)
-      val expected2 = Range(range2.end.succ, range1.end)
-
-      val Some((obtained1, Some(obtained2))) = range1 - range2
-      assertEquals(obtained1, expected1)
-      assertEquals(obtained2, expected2)
+      val obtained = range1 - range2
+      val expected = Some((Range(range1.start, range2.start.pred), Some(Range(range2.end.succ, range1.end))))
+      assertEquals(obtained, expected)
     }
   }
 
@@ -292,9 +287,9 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val expected = Range(range1.start, range1.end)
-      val (obtained1, None) = range1 + range2
-      val (obtained2, None) = range2 + range1
+      val expected = (Range(range1.start, range1.end), None)
+      val obtained1 = range1 + range2
+      val obtained2 = range2 + range1
 
       assertEquals(obtained1, expected)
       assertEquals(obtained2, expected)
@@ -307,9 +302,9 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val expected = Range(range1.start, range2.end)
-      val (obtained1, None) = range1 + range2
-      val (obtained2, None) = range2 + range1
+      val expected = (Range(range1.start, range2.end), None)
+      val obtained1 = range1 + range2
+      val obtained2 = range2 + range1
 
       assertEquals(obtained1, expected)
       assertEquals(obtained2, expected)
@@ -322,13 +317,11 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val (obtained11, Some(obtained12)) = range1 + range2
-      val (obtained21, Some(obtained22)) = range2 + range1
+      val obtained1 = range1 + range2
+      val obtained2 = range2 + range1
 
-      assertEquals(obtained11, range1)
-      assertEquals(obtained12, range2)
-      assertEquals(obtained21, range1)
-      assertEquals(obtained22, range2)
+      assertEquals(obtained1, (range1, Some(range2)))
+      assertEquals(obtained2, (range1, Some(range2)))
     }
   }
 
@@ -339,11 +332,11 @@ class RangeSuite extends ScalaCheckSuite {
     } yield (range1, range2)
 
     forAll(gen) { case (range1: Range[X], range2: Range[X]) =>
-      val Some(obtained1) = range1 & range2
-      val Some(obtained2) = range2 & range1
+      val obtained1 = range1 & range2
+      val obtained2 = range2 & range1
 
-      assertEquals(obtained1, range2)
-      assertEquals(obtained2, range2)
+      assertEquals(obtained1, Some(range2))
+      assertEquals(obtained2, Some(range2))
     }
   }
   property("intersect(&): returns None for non-overlapping ranged") {
