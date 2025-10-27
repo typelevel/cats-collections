@@ -24,7 +24,7 @@ It uses a hashing system from `cats.kernel.Hash` to keep track of its keys. Unde
 ### a. Create an empty HashMap
 
 ```scala mdoc
-import scala.collection.immutable.HashMap
+import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
 
 // Create an empty HashMap
 val emptyScores = HashMap.empty[String, Int]
@@ -80,6 +80,7 @@ Prefer `HashMap` over Scala’s standard immutable `Map` when you:
    **[Efficient Immutable Collections](https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf)**.  
    PhD Thesis, Vrije Universiteit Amsterdam.
 
+- **Cats Collections** – https://typelevel.org/cats-collections/
 
 - **ptimizing Hash-Array Mapped Tries for
 Fast and Lean Immutable JVM Collections** - https://michael.steindorfer.name/publications/oopsla15.pdf?utm_source
