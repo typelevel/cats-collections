@@ -25,7 +25,7 @@ This gives it fast lookups, efficient updates, and low memory use without any mu
 ### a. Create an empty set
 
 ```scala mdoc
-import scala.collection.immutable.HashSet
+import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
 
 // Create an empty HashMap
 val nofruits = HashSet.empty[String]
@@ -86,5 +86,7 @@ Prefer `HashSet` over Scala’s standard immutable `Set` when you:
 - Steindorfer, M. J. (2019).  
    **[Efficient Immutable Collections](https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf)**.  
    PhD Thesis, Vrije Universiteit Amsterdam.
+
+- **Cats Collections** – https://typelevel.org/cats-collections/
 
     **HashSet | Piotr Kosmowski** - https://kospiotr.github.io/docs/notes/development/data_structures/hash_set/?utm_source
