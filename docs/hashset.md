@@ -192,14 +192,3 @@ x.show
 - It supports full set algebra and integrates with Cats typeclasses.  
 - Efficient, persistent structure with compact memory layout and safe updates.
 
-
-
-## References
-
-- Steindorfer, M. J. (2019).  
-   **[Efficient Immutable Collections](https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf)**.  
-   PhD Thesis, Vrije Universiteit Amsterdam.
-
-- **Cats Collections** – https://typelevel.org/cats-collections/
-
-    **HashSet | Piotr Kosmowski** - https://kospiotr.github.io/docs/notes/development/data_structures/hash_set/?utm_source
