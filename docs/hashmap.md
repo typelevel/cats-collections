@@ -191,14 +191,3 @@ a.hash == b.hash // consistent hashing
 | **Complexity** | O(1) average lookup/update |
 | **Immutable** | Yes — all updates return a new structure |
 
-
-## References
-
-- Steindorfer, M. J. (2019).  
-   **[Efficient Immutable Collections](https://michael.steindorfer.name/publications/phd-thesis-efficient-immutable-collections.pdf)**.  
-   PhD Thesis, Vrije Universiteit Amsterdam.
-
-- **Cats Collections** – https://typelevel.org/cats-collections/
-
-- **ptimizing Hash-Array Mapped Tries for
-Fast and Lean Immutable JVM Collections** - https://michael.steindorfer.name/publications/oopsla15.pdf?utm_source
