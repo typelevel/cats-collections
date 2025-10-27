@@ -1,77 +1,195 @@
 # HashMap
 
-`HashMap` is an **immutable**, high-performance map implementation in `cats.collections`. 
+`HashMap` is an immutable hash map using [`cats.kernel.Hash`](https://typelevel.org/cats/api/cats/kernel/Hash.html) for hashing.  
+It is implemented using the **CHAMP encoding** (Compressed Hash-Array Mapped Prefix Tree).
 
+CHAMP is an efficient persistent data structure that combines **bit-mapped indexing** and **structural sharing**, providing high performance for functional programming.
 
-It uses a hashing system from `cats.kernel.Hash` to keep track of its keys. Under the hood, it relies on a clever data structure called **CHAMP**. This setup helps it deliver fast lookups, efficient updates, and minimal memory overhead, all while preserving immutability.
+---
 
-## How CHAMP Powers HashMap
+## Internal Representation
 
-**CHAMP** (Compressed Hash-Array Mapped Prefix-tree) is a modern trie-based design optimized for immutable hash tables. CHAMP uses:
+The structure of `HashMap` is based on the observation that hash codes can be viewed as **prefix trees** of bits.  
+Each key’s hash code is divided into 5-bit segments (for 32 possible branches).  
+Each segment determines which path to take down the tree.
 
-- **Bitmap-compressed nodes** to track occupied slots, reducing memory waste  
-- **5-bit hash chunks** to navigate a 32-ary trie (log₃₂ depth) which keeps the tree shallow for fast lookups and updates 
-- **Structural sharing** to reuse unchanged subtrees during updates, saving memory and time  
-- **Cache-friendly layouts** store data close together, making access faster
+For example, a 32-bit hash is broken into up to **7 segments** (since 7 × 5 bits = 35 bits, covering all bits of the hash).
 
+Each node in this tree (a **BitMapNode**) stores:
+- A *bitmap* indicating positions of key-value pairs.
+- Another *bitmap* indicating positions of child nodes.
 
+When two keys share the same hash, they are stored in a **CollisionNode**, which simply holds all colliding key-value pairs.
 
-## Usage
-`HashMap[K, V]` stores key–value pairs:  
-- **K** = key (e.g., a name, ID, or lookup label)  
-- **V** = value (e.g., a score, setting, or associated data)
+This design ensures:
+- Efficient updates and lookups (`O(1)` average)
+- Memory efficiency through **bitmaps**
+- Full immutability and **structural sharing**
 
-### a. Create an empty HashMap
+---
+
+## Best and Worst Case Analysis
+
+| Case | Description | Space | Time Complexity |
+|------|--------------|--------|-----------------|
+| **Best Case** | Hashes are uniformly distributed (no collisions). The structure is shallow and branchless. | O(n) | O(1) average for lookup, insert, remove |
+| **Worst Case** | All keys share identical hash codes. Stored as a single `CollisionNode`. | O(n) | O(n) per lookup due to linear scan within collisions |
+
+In practice, using a good `Hash` instance (such as `Hash.fromUniversalHashCode`) avoids pathological cases.
+
+---
+
+## Supported Operations
+
+- `empty`: create an empty map  
+- `apply`: create a map from key–value pairs  
+- `fromSeq`: build from a Scala sequence  
+- `fromIterableOnce`: build from any iterable collection  
+- `fromFoldable`: build from a Cats Foldable  
+- `contains`: test whether a key exists  
+- `get`: get the value associated with a key  
+- `getOrElse`: get the value or return a default  
+- `updated`: add or update a key–value pair  
+- `removed`: remove a key  
+- `iterator`: iterate over key–value pairs  
+- `keysIterator`: iterate over keys  
+- `valuesIterator`: iterate over values  
+- `===`: type-safe equality check using `Eq`  
+- `hash`: compute a hash using `cats.kernel.Hash`  
+- `show`: string representation using `cats.Show`
+
+---
+
+## `HashMap` is *showable* and *comparable* so you can call `show` or `===` on it.
+
+---
+
+## Example usage
+
+Start by creating an empty HashMap:
 
 ```scala mdoc
-import cats._, cats.implicits._, cats.collections._, cats.collections.syntax.all._
+import cats._
+import cats.implicits._
+import cats.collections._
 
-// Create an empty HashMap
-val emptyScores = HashMap.empty[String, Int]
-println(emptyScores)                    //HashMap()
-
+val hm = HashMap.empty[Int, String]
+hm.isEmpty
+hm.show
 ```
-### b. Add entries
+
+Add some key-value pairs:
+
 ```scala mdoc
-val scores = HashMap("Alice" -> 95, "Bob" -> 88)
-println(scores.size)                    // 2
-println(emptyScores ++ scores)          //HashMap(Bob -> 88, Alice -> 95)           
+val hm2 = hm.updated(1, "One").updated(2, "Two")
+hm2.show
 ```
 
-### c. Update value
+You can check for existence and get values:
+
 ```scala mdoc
-val updateBobScore = scores.updated("Bob", 70)
-println(updateBobScore.get("Bob"))      // Some(70)
-println(updateBobScore)                 //HashMap(Alice -> 95, Bob -> 70)              
+hm2.contains(1)
+hm2.contains(3)
+
+hm2.get(1)
+hm2.getOrElse(3, "Unknown")
 ```
 
-### d. Remove an entry
+If we remove an element, we get a new map:
+
 ```scala mdoc
-val withoutBob = scores - "Bob"
-println(withoutBob.size)                // 1
-println(withoutBob.contains("Bob"))     //false
+val hm3 = hm2.removed(1)
+hm3.show
 ```
 
-Every operation on an immutable HashMap creates a new instance — the original map (scores) is never changed.
+Building a map directly:
 
-## Performance Characteristics
+```scala mdoc
+val hm4 = HashMap(1 -> "A", 2 -> "B", 3 -> "C")
+hm4.show
+```
 
-- Fast operations: Lookups, inserts, updates, and deletes are all very quick.
+Creating from a collection:
 
-- Predictable speed: Performance stays consistent as your data grows.
+```scala mdoc:nest
+val seqMap = HashMap.fromSeq(Seq(10 -> "X", 20 -> "Y", 30 -> "Z"))
+seqMap.contains(20)
+seqMap.get(30)
+```
 
-- Low memory use: Only stores what’s needed and shares unchanged parts when you make a new version.
+Using Cats abstractions:
 
+```scala mdoc:nest
+val doubled = seqMap.unorderedTraverse(v => Option(v + v))
+doubled.map(_.show)
+```
 
+---
 
-## When to Use HashMap
+## Internal Visualization
 
-Prefer `HashMap` over Scala’s standard immutable `Map` when you:
+Consider inserting keys `1`, `2`, and `33` into an empty `HashMap`.
 
-- Work in a **purely functional** codebase (e.g., with Cats, ZIO, or fs2)  
-- Need **frequent updates** without sacrificing performance  
-- Value **predictable memory usage** and **thread safety** via immutability  
-- Build interpreters, caches, or stateful pipelines that rely on persistent data  
+Their (simplified) hash codes might look like this (in binary):
+
+```
+1  => 00001 00000 ...
+2  => 00010 00000 ...
+33 => 00001 00001 ...
+```
+
+- The **first 5 bits** decide the *branch position* at the root level.
+- Keys `1` and `33` share the prefix `00001`, so they go into the same branch.
+- Within that branch, the next 5 bits are compared:
+  - `1` continues at sub-index `00000`
+  - `33` continues at sub-index `00001`
+
+The structure becomes:
+
+```
+Root
+ ├── [00001] → Node
+ │     ├── [00000] = (1 -> "One")
+ │     └── [00001] = (33 -> "Thirty-Three")
+ └── [00010] = (2 -> "Two")
+```
+
+If `1` and `33` had identical hashes, they’d be stored together in a `CollisionNode`:
+```
+CollisionNode(hash=..., values=[(1 -> "One"), (33 -> "Thirty-Three")])
+```
+
+This structure allows **fast lookups** by traversing at most one path determined by hash segments.
+
+---
+
+## Example of Equality and Hashing
+
+```scala mdoc
+import cats.kernel.instances.int._
+import cats.kernel.instances.string._
+
+val a = HashMap(1 -> "A", 2 -> "B")
+val b = HashMap(1 -> "A", 2 -> "B")
+
+a === b   // true
+
+a.hash == b.hash // consistent hashing
+```
+
+---
+
+## Summary
+
+| Feature | Description |
+|----------|--------------|
+| **Type** | Immutable HashMap |
+| **Hashing** | Uses `cats.kernel.Hash` |
+| **Implementation** | CHAMP (Compressed Hash-Array Mapped Prefix Tree) |
+| **Handles** | Key collisions using `CollisionNode` |
+| **Typeclasses** | `Eq`, `Hash`, `Show`, `UnorderedTraverse`, `CommutativeMonoid` |
+| **Complexity** | O(1) average lookup/update |
+| **Immutable** | Yes — all updates return a new structure |
 
 
 ## References
