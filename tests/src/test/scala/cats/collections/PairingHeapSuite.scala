@@ -115,8 +115,8 @@ class PairingHeapSuite extends Properties("PairingHeap") {
     val min1 = heap.remove.minimumOption
 
     (min0, min1) match {
-      case (None, next) => next.isEmpty
-      case (_, None)    => heap.size == 1
+      case (None, next)         => next.isEmpty
+      case (_, None)            => heap.size == 1
       case (Some(m0), Some(m1)) =>
         m0 <= m1
     }
@@ -125,7 +125,7 @@ class PairingHeapSuite extends Properties("PairingHeap") {
   property("PairingHeap.minimumOption is the real minimum") = {
     def heapLaw(heap: PairingHeap[Int]): Boolean =
       heap.minimumOption match {
-        case None => heap.isEmpty
+        case None      => heap.isEmpty
         case Some(min) =>
           val heap1 = heap.remove
           heap1.isEmpty || {
