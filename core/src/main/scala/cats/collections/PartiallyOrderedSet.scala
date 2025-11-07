@@ -149,9 +149,9 @@ trait PartiallyOrderedSet[F[_]] extends UnorderedFoldable[F] {
         @tailrec
         def loop(left: F[A], right: F[A]): Int = {
           (minimumOption(left), minimumOption(right)) match {
-            case (None, None)    => 0
-            case (None, Some(_)) => -1
-            case (Some(_), None) => 1
+            case (None, None)       => 0
+            case (None, Some(_))    => -1
+            case (Some(_), None)    => 1
             case (Some(l), Some(r)) =>
               val c = ordA.compare(l, r)
               if (c != 0) c

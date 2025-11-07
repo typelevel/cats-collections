@@ -197,7 +197,7 @@ sealed abstract class TreeList[+A] {
     @tailrec
     def loop(first: Boolean, l: TreeList[A]): Unit =
       l.uncons match {
-        case None => ()
+        case None         => ()
         case Some((h, t)) =>
           if (!first) strb.append(", "): Unit
           strb.append(h.toString)
@@ -269,7 +269,7 @@ sealed abstract class TreeList[+A] {
     @tailrec
     def loop(rev: List[A], acc: TreeList[B]): TreeList[B] =
       rev match {
-        case Nil => acc
+        case Nil       => acc
         case h :: tail =>
           loop(tail, fn(h) ++ acc)
       }
@@ -441,7 +441,7 @@ object TreeList extends TreeListInstances0 {
 
     def traverseTree[F[_]: Applicative, A, B, N <: Nat](ta: Tree[N, A], fn: A => F[B]): F[Tree[N, B]] =
       ta match {
-        case Root(a) => fn(a).map(Root(_))
+        case Root(a)                  => fn(a).map(Root(_))
         case Balanced(a, left, right) =>
           (fn(a), traverseTree(left, fn), traverseTree(right, fn)).mapN { (b, l, r) =>
             Balanced(b, l, r)
@@ -453,7 +453,7 @@ object TreeList extends TreeListInstances0 {
         val eqA: Eq[A] = Eq[A]
         def eqv(l: Tree[Nat, A], r: Tree[Nat, A]): Boolean =
           (l, r) match {
-            case (Root(a), Root(b)) => eqA.eqv(a, b)
+            case (Root(a), Root(b))                         => eqA.eqv(a, b)
             case (Balanced(a, al, ar), Balanced(b, bl, br)) =>
               eqA.eqv(a, b) && eqv(al, bl) && eqv(ar, br)
             case _ => false
@@ -637,7 +637,7 @@ object TreeList extends TreeListInstances0 {
         treeList match {
           case Nil          => empty
           case _ if n <= 0L => Trees(treeList)
-          case h :: tail =>
+          case h :: tail    =>
             if (h.size <= n) loop(n - h.size, tail)
             else {
               h match {
@@ -658,8 +658,8 @@ object TreeList extends TreeListInstances0 {
 
     def split: (TreeList[A], TreeList[A]) =
       treeList match {
-        case Nil            => (empty, empty)
-        case Root(_) :: Nil => (this, empty)
+        case Nil                      => (empty, empty)
+        case Root(_) :: Nil           => (this, empty)
         case Balanced(a, l, r) :: Nil =>
           (Trees(Root(a) :: l :: Nil), Trees(r :: Nil))
         case moreThanOne =>
@@ -764,9 +764,9 @@ object TreeList extends TreeListInstances0 {
       @tailrec
       def compare(l: TreeList[A], r: TreeList[A]): Int = {
         (l.uncons, r.uncons) match {
-          case (None, None)    => 0
-          case (Some(_), None) => 1
-          case (None, Some(_)) => -1
+          case (None, None)                     => 0
+          case (Some(_), None)                  => 1
+          case (None, Some(_))                  => -1
           case (Some((l0, l1)), Some((r0, r1))) =>
             val c0 = ordA.compare(l0, r0)
             if (c0 == 0) compare(l1, r1)
@@ -832,7 +832,7 @@ object TreeList extends TreeListInstances0 {
       def foldRight[A, B](fa: TreeList[A], fin: Eval[B])(fn: (A, Eval[B]) => Eval[B]): Eval[B] = {
         def loop(as: List[Tree[Nat, A]]): Eval[B] =
           as match {
-            case Nil => fin
+            case Nil             => fin
             case Root(a) :: tail =>
               fn(a, Eval.defer(loop(tail)))
             case Balanced(a, l, r) :: tail =>
@@ -877,7 +877,7 @@ object TreeList extends TreeListInstances0 {
 
       override def reduceLeftToOption[A, B](fa: TreeList[A])(f: A => B)(g: (B, A) => B): Option[B] =
         fa.uncons match {
-          case None => None
+          case None            => None
           case Some((a, tail)) =>
             Some {
               if (tail.isEmpty) f(a)
@@ -887,7 +887,7 @@ object TreeList extends TreeListInstances0 {
 
       override def reduceRightToOption[A, B](fa: TreeList[A])(f: A => B)(g: (A, Eval[B]) => Eval[B]): Eval[Option[B]] =
         fa.uncons match {
-          case None => Eval.now(None)
+          case None            => Eval.now(None)
           case Some((a, tail)) =>
             if (tail.isEmpty) Eval.now(Some(f(a)))
             else foldRight(tail, Eval.now(f(a)))(g).map(Some(_))
@@ -899,7 +899,7 @@ object TreeList extends TreeListInstances0 {
       override def sequence_[G[_], A](fa: TreeList[G[A]])(implicit G: Applicative[G]): G[Unit] = {
         def loop(treeList: List[Tree[Nat, G[A]]]): G[Unit] =
           treeList match {
-            case Nil => G.unit
+            case Nil             => G.unit
             case Root(a) :: tail =>
               a *> loop(tail)
             case Balanced(a, l, r) :: tail =>
@@ -935,7 +935,7 @@ object TreeList extends TreeListInstances0 {
       override def traverse_[G[_], A, B](fa: TreeList[A])(f: A => G[B])(implicit G: Applicative[G]): G[Unit] = {
         def loop(treeList: List[Tree[Nat, A]]): G[Unit] =
           treeList match {
-            case Nil => G.unit
+            case Nil             => G.unit
             case Root(a) :: tail =>
               f(a) *> loop(tail)
             case Balanced(a, l, r) :: tail =>
@@ -948,7 +948,7 @@ object TreeList extends TreeListInstances0 {
       def traverse[G[_], A, B](fa: TreeList[A])(f: A => G[B])(implicit G: Applicative[G]): G[TreeList[B]] = {
         def loop(treeList: List[Tree[Nat, A]]): G[List[Tree[Nat, B]]] =
           treeList match {
-            case Nil => G.pure(Nil)
+            case Nil          => G.pure(Nil)
             case head :: tail =>
               (traverseTree(head, f), loop(tail)).mapN(_ :: _)
           }
@@ -966,9 +966,9 @@ abstract private[collections] class TreeListInstances0 extends TreeListInstances
         @tailrec
         def loop(l: TreeList[A], r: TreeList[A]): Double =
           (l.uncons, r.uncons) match {
-            case (None, None)    => 0.0
-            case (Some(_), None) => 1.0
-            case (None, Some(_)) => -1.0
+            case (None, None)                     => 0.0
+            case (Some(_), None)                  => 1.0
+            case (None, Some(_))                  => -1.0
             case (Some((l0, l1)), Some((r0, r1))) =>
               val c0 = ordA.partialCompare(l0, r0)
               if (c0 == 0.0) loop(l1, r1)

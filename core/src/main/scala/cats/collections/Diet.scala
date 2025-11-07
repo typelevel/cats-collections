@@ -335,7 +335,7 @@ object Diet {
   private[collections] def merge[A](l: Diet[A], r: Diet[A]): Diet[A] = (l, r) match {
     case (l, _: EmptyDiet[_]) => l
     case (_: EmptyDiet[_], r) => r
-    case (l: DietNode[A], r) =>
+    case (l: DietNode[A], r)  =>
       val (lp, rng) = splitMax(l)
 
       DietNode(rng, lp, r)
