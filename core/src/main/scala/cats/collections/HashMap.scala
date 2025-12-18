@@ -762,7 +762,7 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
     ): G[Node[K, U]] = {
       // avoiding using syntax here to make it clearer where the methods are coming from
       val travNEV = Traverse[NonEmptyVector]
-      val gvec = travNEV.traverse(contents) { case (k, v) => G.map(fn(k, v))((k, _)) }
+      val gvec = travNEV.traverse(contents) { case (k, v) => G.tupleLeft(fn(k, v), k) }
       G.map(gvec) { nev =>
         new CollisionNode[K, U](collisionHash, nev)
       }
@@ -1245,8 +1245,7 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
           val v = contents(idx + 1).asInstanceOf[V]
           val gu = fn(k, v)
           // now add the key, then the value:
-          val withKey = G.map(acc)(k :: _)
-          val nextAcc = G.map2(withKey, gu)((list, u) => u :: list)
+          val nextAcc = G.map2(acc, gu)((list, u) => u :: k :: list)
           loop(idx + 2, nextAcc)
         } else if (idx >= contents.length) {
           // done
