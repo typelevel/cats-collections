@@ -41,12 +41,11 @@
 
 package cats.collections
 
-import cats.Always
 import cats.CommutativeApplicative
-import cats.Eval
 import cats.Foldable
 import cats.Semigroup
 import cats.Show
+import cats.Traverse
 import cats.UnorderedTraverse
 import cats.data.NonEmptyVector
 import cats.kernel.CommutativeMonoid
@@ -275,6 +274,34 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
 
   final override def toString() =
     iterator.map { case (k, v) => s"$k -> $v" }.mkString("HashMap(", ", ", ")")
+
+  /**
+   * Transform each value given the key.
+   *
+   * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+   *
+   * @param fn
+   *   the [[scala.Function2]] to tranform each value with.
+   * @return
+   *   a [[cats.collections.HashMap]] with the transformed values
+   */
+  final def transform[U](fn: (K, V) => U): HashMap[K, U] =
+    new HashMap(rootNode.transform(fn))
+
+  /**
+   * Transform each value given the key inside a CommutativeApplicative
+   *
+   * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+   *
+   * @param fn
+   *   the [[scala.Function2]] to tranform each value with.
+   * @return
+   *   a [[cats.collections.HashMap]] with the transformed values
+   */
+  final def unorderedTransformA[G[_], U](fn: (K, V) => G[U])(implicit
+    G: CommutativeApplicative[G]
+  ): G[HashMap[K, U]] =
+    G.map(rootNode.unorderedTransformA(fn))(new HashMap(_))
 }
 
 object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
@@ -535,6 +562,32 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
           case _ => Node.SizeMany
         }
     }
+
+    /**
+     * Transform each value given the key.
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a [[cats.collections.HashMap.Node]] with the transformed values
+     */
+    def transform[U](fn: (K, V) => U): Node[K, U]
+
+    /**
+     * Transform each value given the key inside a CommutativeApplicative
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a G[cats.collections.HashMap.Node[K, V]] with the transformed values
+     */
+    def unorderedTransformA[G[_], U](fn: (K, V) => G[U])(implicit
+      G: CommutativeApplicative[G]
+    ): G[Node[K, U]]
   }
 
   /**
@@ -679,6 +732,40 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
 
     final override def toString(): String = {
       s"""CollisionNode(hash=${collisionHash}, values=${contents.iterator.mkString("[", ",", "]")})"""
+    }
+
+    /**
+     * Transform each value given the key.
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a [[cats.collections.HashMap.Node]] with the transformed values
+     */
+    final override def transform[U](fn: (K, V) => U): Node[K, U] =
+      new CollisionNode(collisionHash, contents.map { case (k, v) => (k, fn(k, v)) })
+
+    /**
+     * Transform each value given the key inside a CommutativeApplicative
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a G[cats.collections.HashMap.Node[K, V]] with the transformed values
+     */
+    def unorderedTransformA[G[_], U](fn: (K, V) => G[U])(implicit
+      G: CommutativeApplicative[G]
+    ): G[Node[K, U]] = {
+      // avoiding using syntax here to make it clearer where the methods are coming from
+      val travNEV = Traverse[NonEmptyVector]
+      val gvec = travNEV.traverse(contents) { case (k, v) => G.map(fn(k, v))((k, _)) }
+      G.map(gvec) { nev =>
+        new CollisionNode[K, U](collisionHash, nev)
+      }
     }
   }
 
@@ -1104,6 +1191,82 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
 
       s"""BitMapNode(keyValueMap=$keyValueMapStr, nodeMap=$nodeMapStr, size=$size, contents=${contentsStr})"""
     }
+
+    /**
+     * Transform each value given the key.
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a [[cats.collections.HashMap.Node]] with the transformed values
+     */
+    final override def transform[U](fn: (K, V) => U): Node[K, U] = {
+      val newContents = new Array[Any](contents.length)
+      System.arraycopy(contents, 0, newContents, 0, contents.length)
+      var i = 0
+      while (i < keyValueCount) {
+        val k = getKey(i)
+        val u = fn(k, getValue(i))
+        // update the value
+        newContents(Node.StrideLength * i) = k
+        newContents(Node.StrideLength * i + 1) = u
+        i += 1
+      }
+
+      i = 0
+      while (i < nodeCount) {
+        val innerNode = getNode(i)
+        val replacedNode = innerNode.transform(fn)
+        newContents(contents.length - 1 - i) = replacedNode
+        i += 1
+      }
+      new BitMapNode[K, U](keyValueMap, nodeMap, newContents, size)
+    }
+
+    /**
+     * Transform each value given the key inside a CommutativeApplicative
+     *
+     * This doesn't require rehashing since it preserves the keys and structure of the HashMap
+     *
+     * @param fn
+     *   the [[scala.Function2]] to tranform each value with.
+     * @return
+     *   a G[cats.collections.HashMap.Node[K, V]] with the transformed values
+     */
+    def unorderedTransformA[G[_], U](fn: (K, V) => G[U])(implicit
+      G: CommutativeApplicative[G]
+    ): G[Node[K, U]] = {
+
+      def loop(idx: Int, acc: G[List[Any]]): G[List[Any]] =
+        if (idx < keyValueCount * Node.StrideLength) {
+          val k = contents(idx).asInstanceOf[K]
+          val v = contents(idx + 1).asInstanceOf[V]
+          val gu = fn(k, v)
+          // now add the key, then the value:
+          val withKey = G.map(acc)(k :: _)
+          val nextAcc = G.map2(withKey, gu)((list, u) => u :: list)
+          loop(idx + 2, nextAcc)
+        } else if (idx >= contents.length) {
+          // done
+          acc
+        } else {
+          val v = contents(idx)
+          val nextAcc =
+            if (idx > contents.length - 1 - nodeCount) {
+              val gNode = v.asInstanceOf[Node[K, V]].unorderedTransformA(fn)
+              G.map2(acc, gNode)((list, node) => node :: list)
+            } else {
+              G.map(acc)(v :: _)
+            }
+          loop(idx + 1, nextAcc)
+        }
+
+      G.map(loop(0, G.pure(List.empty[Any]))) { list =>
+        new BitMapNode[K, U](keyValueMap, nodeMap, list.reverse.toArray, size)
+      }
+    }
   }
 
   private[HashMap] object Node {
@@ -1287,19 +1450,7 @@ sealed abstract private[collections] class HashMapInstances extends HashMapInsta
 
       def unorderedTraverse[G[_], U, V](hashMap: HashMap[K, U])(f: U => G[V])(implicit
         G: CommutativeApplicative[G]
-      ): G[HashMap[K, V]] = {
-        val emptyHm: Eval[G[HashMap[K, V]]] =
-          Always(G.pure(HashMap.empty[K, V]))
-
-        val gHashMap = Foldable
-          .iterateRight(hashMap.toMap, emptyHm) { case ((k, u), hm) =>
-            G.map2Eval(f(u), hm) { (v, map) =>
-              map.updated(k, v)
-            }
-          }
-
-        gHashMap.value
-      }
+      ): G[HashMap[K, V]] = hashMap.unorderedTransformA { case (_, u) => f(u) }
     }
 
   implicit def catsCollectionsCommutativeMonoidForHashMap[K: Hash, V: CommutativeSemigroup]
