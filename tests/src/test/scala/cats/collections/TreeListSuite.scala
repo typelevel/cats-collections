@@ -55,13 +55,13 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(TreeList.fromList(xs.toIterator.toList), xs)
   })
 
-  private def testHomomorphism[A, B: Eq](as: TreeList[A])(fn: TreeList[A] => B, gn: List[A] => B) = {
+  private def testHomomorphism[A, B: Eq](as: TreeList[A])(fn: TreeList[A] => B, gn: List[A] => B): Unit = {
     val la = as.toList
     assert(Eq[B].eqv(fn(as), gn(la)))
   }
 
   property("++ works")(forAll { (xs: TreeList[Int], ys: TreeList[Int]) =>
-    testHomomorphism(xs)({ l => (l ++ ys).toList }, { _ ++ (ys.toList) })
+    testHomomorphism(xs)({ l => (l ++ ys).toList }, { _ ++ ys.toList })
   })
 
   property("drop/take work")(forAll { (xs: TreeList[Int], n: Int) =>
@@ -115,16 +115,17 @@ class TreeListSuite extends DisciplineSuite {
 
   property("pattern matching works")(forAll { (xs: TreeList[Int]) =>
     xs match {
-      case TreeList.Empty =>
-        assertEquals(xs.uncons, None)
-        assert(xs.isEmpty)
-        assertEquals(xs.headOption, None)
-        assertEquals(xs.tailOption, None)
       case TreeList.NonEmpty(head, tail) =>
         assert(xs.nonEmpty)
         assertEquals(Option((head, tail)), xs.uncons)
         assertEquals(Option(head), xs.headOption)
         assertEquals(Option(tail), xs.tailOption)
+      case _ =>
+        assert(xs.isEmpty)
+        assertEquals(xs, TreeList.Empty)
+        assertEquals(xs.uncons, None)
+        assertEquals(xs.headOption, None)
+        assertEquals(xs.tailOption, None)
     }
   })
 
@@ -137,8 +138,8 @@ class TreeListSuite extends DisciplineSuite {
     }
   })
 
-  trait Opaque1
-  object Opaque1 {
+  sealed private trait Opaque1
+  private object Opaque1 {
     private case class OI(toInt: Int) extends Opaque1
     implicit val eqOpaque: Eq[Opaque1] =
       Eq[Int].contramap[Opaque1] { case OI(i) => i }
@@ -157,8 +158,8 @@ class TreeListSuite extends DisciplineSuite {
     assertEquals(Order[TreeList[Int]].compare(xs, xs), 0)
   })
 
-  trait Opaque2
-  object Opaque2 {
+  sealed private trait Opaque2
+  private object Opaque2 {
     private case class OI(toInt: Int) extends Opaque2
     implicit val partialOrd: PartialOrder[Opaque2] =
       PartialOrder[Int].contramap[Opaque2] { case OI(i) => i }
@@ -204,8 +205,8 @@ class TreeListSuite extends DisciplineSuite {
     val it = xs.toIterator
     // exhaust the iterator
     it.size
-    intercept[NoSuchElementException](Nil.iterator.next)
-    intercept[NoSuchElementException](it.next)
+    intercept[NoSuchElementException](Nil.iterator.next())
+    intercept[NoSuchElementException](it.next())
     ()
   })
 
@@ -213,8 +214,8 @@ class TreeListSuite extends DisciplineSuite {
     val it = xs.toReverseIterator
     // exhaust the iterator
     it.size
-    intercept[NoSuchElementException](Nil.iterator.next)
-    intercept[NoSuchElementException](it.next)
+    intercept[NoSuchElementException](Nil.iterator.next())
+    intercept[NoSuchElementException](it.next())
     ()
   })
 
@@ -269,7 +270,7 @@ class TreeListSuite extends DisciplineSuite {
     val idx = if (xs.size > 0) idx0 % xs.size else idx0
     test(idx)
     // also test all valid lengths:
-    (-1L to xs.size).foreach(test(_))
+    (-1L to xs.size).foreach(test)
   })
 
   test("we don't stack overflow on large sequences") {
@@ -282,7 +283,7 @@ class TreeListSuite extends DisciplineSuite {
   }
 
   property("filter/filterNot consistency")(forAll { (xs: TreeList[Int], fn: Int => Boolean) =>
-    testHomomorphism(xs)({ l => l.filter(fn).toList }, { _.toList.filter(fn) })
+    testHomomorphism(xs)({ l => l.filter(fn).toList }, { _.filter(fn) })
     assertEquals(xs.filterNot(fn), xs.filter { a => !fn(a) })
   })
 }
