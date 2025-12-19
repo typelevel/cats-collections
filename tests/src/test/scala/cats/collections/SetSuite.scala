@@ -63,7 +63,7 @@ class SetSuite extends DisciplineSuite {
 
   import AvlSet._
   def balanced[A](t: AvlSet[A]): Boolean = t match {
-    case BTNil => true
+    case BTNil           => true
     case Branch(_, l, r) =>
       java.lang.Math.abs(l.height - r.height) <= 1 && balanced(l) && balanced(r)
   }

@@ -221,7 +221,7 @@ class TreeListSuite extends DisciplineSuite {
 
   property("TreeList.NonEmpty.apply/unapply are inverses")(forAll { (head: Int, tail: TreeList[Int]) =>
     TreeList.NonEmpty(head, tail) match {
-      case TreeList.Empty => fail("should not be empty")
+      case TreeList.Empty          => fail("should not be empty")
       case TreeList.NonEmpty(h, t) =>
         assertEquals(h, head)
         assertEquals(t, tail)
