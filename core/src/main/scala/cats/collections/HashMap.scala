@@ -1204,7 +1204,6 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
      */
     final override def transform[U](fn: (K, V) => U): Node[K, U] = {
       val newContents = new Array[Any](contents.length)
-      System.arraycopy(contents, 0, newContents, 0, contents.length)
       var i = 0
       while (i < keyValueCount) {
         val k = getKey(i)
@@ -1251,19 +1250,23 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
           // done
           acc
         } else {
-          val v = contents(idx)
-          val nextAcc =
-            if (idx > contents.length - 1 - nodeCount) {
-              val gNode = v.asInstanceOf[Node[K, V]].unorderedTransformA(fn)
-              G.map2(acc, gNode)((list, node) => node :: list)
-            } else {
-              G.map(acc)(v :: _)
-            }
+          val gNode = contents(idx).asInstanceOf[Node[K, V]].unorderedTransformA(fn)
+          val nextAcc = G.map2(acc, gNode)((list, node) => node :: list)
           loop(idx + 1, nextAcc)
         }
 
       G.map(loop(0, G.pure(List.empty[Any]))) { list =>
-        new BitMapNode[K, U](keyValueMap, nodeMap, list.reverse.toArray, size)
+        // minor optimization to only traverse the list once
+        val newContents = new Array[Any](contents.length)
+        // we go back to front because the list is in reverse order
+        var i = contents.length - 1
+        var listVar = list
+        while (i >= 0) {
+          newContents(i) = listVar.head
+          listVar = listVar.tail
+          i = i - 1
+        }
+        new BitMapNode[K, U](keyValueMap, nodeMap, newContents, size)
       }
     }
   }
