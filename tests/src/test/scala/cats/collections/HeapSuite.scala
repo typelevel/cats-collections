@@ -178,8 +178,8 @@ class HeapSuite extends DisciplineSuite {
       val min1 = heap.remove.minimumOption
 
       (min0, min1) match {
-        case (None, next) => assert(next.isEmpty)
-        case (_, None)    => assert(heap.size == 1)
+        case (None, next)         => assert(next.isEmpty)
+        case (_, None)            => assert(heap.size == 1)
         case (Some(m0), Some(m1)) =>
           assert(m0 <= m1)
       }
@@ -189,7 +189,7 @@ class HeapSuite extends DisciplineSuite {
   test("Heap.minimumOption is the real minimum") {
     def heapLaw(heap: Heap[Int]): Unit =
       heap.minimumOption match {
-        case None => assert(heap.isEmpty)
+        case None      => assert(heap.isEmpty)
         case Some(min) =>
           val heap1 = heap.remove
           assert(heap1.isEmpty || {
@@ -263,7 +263,7 @@ class HeapSuite extends DisciplineSuite {
   property("Heap property is always maintained") {
     def law[A](h: Heap[A], outer: Heap[A])(implicit ord: Order[A]): Unit =
       h match {
-        case Heap.Leaf() => ()
+        case Heap.Leaf()                   => ()
         case Heap.Branch(min, left, right) =>
           lazy val heapStr = if (outer != h) s"in $outer, subheap $h" else h.toString
           left.getMin.foreach { m => assert(ord.gteqv(m, min), s"$heapStr violates heap order property on left") }

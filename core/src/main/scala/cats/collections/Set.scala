@@ -180,7 +180,7 @@ sealed abstract class AvlSet[A] {
         B.compare(x, f(a)) match {
           case 0 =>
             r.min match {
-              case None => l
+              case None    => l
               case Some(v) =>
                 Branch(v, l, r.removef(f(v), f)).balance
             }
@@ -266,13 +266,13 @@ sealed abstract class AvlSet[A] {
       case Nil                         => false
       case Left(_) :: _                => true
       case Right(Branch(_, _, _)) :: _ => true
-      case _ :: ss =>
+      case _ :: ss                     =>
         stack = ss
         hasNext
     }
 
     @tailrec override def next(): A = stack match {
-      case Nil => throw new NoSuchElementException()
+      case Nil           => throw new NoSuchElementException()
       case Left(v) :: ss =>
         stack = ss
         v
