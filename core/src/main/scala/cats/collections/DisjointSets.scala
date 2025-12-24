@@ -47,26 +47,27 @@ class DisjointSets[T: Order] private (private val entries: AvlMap[T, Entry[T]]) 
         opa <- findSt(a) // Find `a` parent's label, track path compression
         opb <- findSt(b) // Find `b` parent's label, track path compression
         dsets <- get // Get the state (the compressed [[DisjointSets]])
-      } yield for {
-        pa <- opa // If `a` was part of the collection
-        pb <- opb // As well as `b`...
-        flatEntries = dsets.entries
-        paEntry <- flatEntries.get(pa) // then their ranks are recovered...
-        pbEntry <- flatEntries.get(pb)
-      } yield {
-        val ((parent, parentEntry), (child, childEntry)) = {
-          // ... so it is possible to determine which one should be placed below
-          // the other minimizing the resulting tree depth
-          val parent_child = (pa -> paEntry, pb -> pbEntry)
-          if (paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
-        }
-        new DisjointSets[T](
-          flatEntries ++ AvlMap(
-            child -> childEntry.copy(parent = parent),
-            parent -> parentEntry.copy(rank = scala.math.max(parentEntry.rank, childEntry.rank + 1))
+      } yield
+        for {
+          pa <- opa // If `a` was part of the collection
+          pb <- opb // As well as `b`...
+          flatEntries = dsets.entries
+          paEntry <- flatEntries.get(pa) // then their ranks are recovered...
+          pbEntry <- flatEntries.get(pb)
+        } yield {
+          val ((parent, parentEntry), (child, childEntry)) = {
+            // ... so it is possible to determine which one should be placed below
+            // the other minimizing the resulting tree depth
+            val parent_child = (pa -> paEntry, pb -> pbEntry)
+            if (paEntry.rank >= pbEntry.rank) parent_child else parent_child.swap
+          }
+          new DisjointSets[T](
+            flatEntries ++ AvlMap(
+              child -> childEntry.copy(parent = parent),
+              parent -> parentEntry.copy(rank = scala.math.max(parentEntry.rank, childEntry.rank + 1))
+            )
           )
-        )
-      }
+        }
     }.runA(this).value
 
     result.getOrElse(this) -> result.isDefined
