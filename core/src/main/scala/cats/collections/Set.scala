@@ -180,7 +180,7 @@ sealed abstract class AvlSet[A] {
         B.compare(x, f(a)) match {
           case 0 =>
             r.min match {
-              case None => l
+              case None    => l
               case Some(v) =>
                 Branch(v, l, r.removef(f(v), f)).balance
             }
@@ -266,13 +266,13 @@ sealed abstract class AvlSet[A] {
       case Nil                         => false
       case Left(_) :: _                => true
       case Right(Branch(_, _, _)) :: _ => true
-      case _ :: ss =>
+      case _ :: ss                     =>
         stack = ss
         hasNext
     }
 
     @tailrec override def next(): A = stack match {
-      case Nil => throw new NoSuchElementException()
+      case Nil           => throw new NoSuchElementException()
       case Left(v) :: ss =>
         stack = ss
         v
@@ -376,7 +376,8 @@ object AvlSet extends AvlSetInstances {
         left match {
           case Branch(lv, ll, lr) =>
             if (rotation(ll.height, lr.height, 0) < 0) {
-              val Branch(lrv, lrl, lrr) = lr
+              // If `lr` is taller than `ll`, then `lr` cannot be empty.
+              val Branch(lrv, lrl, lrr) = lr: @unchecked
               Branch(lrv, Branch(lv, ll, lrl), Branch(value, lrr, right))
             } else {
               Branch(lv, ll, Branch(value, lr, right))
@@ -387,7 +388,8 @@ object AvlSet extends AvlSetInstances {
         right match {
           case Branch(rv, rl, rr) =>
             if (rotation(rl.height, rr.height, 0) > 0) {
-              val Branch(rlv, rll, rlr) = rl
+              // If `rl` is taller than `rr`, then `rl` cannot be empty.
+              val Branch(rlv, rll, rlr) = rl: @unchecked
               Branch(rlv, Branch(value, left, rll), Branch(rv, rlr, rr))
             } else {
               Branch(rv, Branch(value, left, rl), rr)

@@ -292,4 +292,20 @@ class HashMapSuite extends DisciplineSuite with ScalaVersionSpecificSyntax {
       assertEquals(scalaMap, wrappedHashMap)
     }
   }
+
+  property("transform is equivalent to unorderedTransformA with Id") {
+    forAll { (h0: HashMap[Int, String], fn: (Int, String) => Short) =>
+      val h1 = h0.transform(fn)
+      val h2 = h0.unorderedTransformA[cats.Id, Short](fn)
+      assertEquals(h1, h2)
+    }
+  }
+
+  property("transform is same as the standard transform") {
+    forAll { (h0: HashMap[Int, String], fn: (Int, String) => Short) =>
+      val h1 = h0.transform(fn).iterator.toMap
+      val h2 = h0.iterator.toMap.transform(fn)
+      assertEquals(h1, h2)
+    }
+  }
 }

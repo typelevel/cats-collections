@@ -55,13 +55,13 @@ sealed abstract class Dequeue[+A] {
    * destructure from the front of the queue
    */
   def uncons: Option[(A, Dequeue[A])] = this match {
-    case SingletonDequeue(a) => Some((a, EmptyDequeue()))
+    case SingletonDequeue(a)                                                 => Some((a, EmptyDequeue()))
     case FullDequeue(NonEmptyList(f, Nil), 1, NonEmptyList(x, xx :: xs), bs) => {
       val xsr = NonEmptyList(xx, xs).reverse
       Some((f, FullDequeue(xsr, bs - 1, NonEmptyList(x, Nil), 1)))
     }
     case FullDequeue(NonEmptyList(f, Nil), 1, NonEmptyList(single, Nil), 1) => Some((f, SingletonDequeue(single)))
-    case FullDequeue(NonEmptyList(f, ff :: fs), s, back, bs) =>
+    case FullDequeue(NonEmptyList(f, ff :: fs), s, back, bs)                =>
       Some((f, FullDequeue(NonEmptyList(ff, fs), s - 1, back, bs)))
     case _ => None
   }
@@ -70,13 +70,13 @@ sealed abstract class Dequeue[+A] {
    * destructure from the back of the queue
    */
   def unsnoc: Option[(A, Dequeue[A])] = this match {
-    case SingletonDequeue(a) => Some((a, EmptyDequeue()))
+    case SingletonDequeue(a)                                                 => Some((a, EmptyDequeue()))
     case FullDequeue(NonEmptyList(x, xx :: xs), fs, NonEmptyList(b, Nil), 1) => {
       val xsr = NonEmptyList(xx, xs).reverse
       Some((b, FullDequeue(NonEmptyList(x, List.empty), 1, xsr, fs - 1)))
     }
     case FullDequeue(NonEmptyList(single, Nil), 1, NonEmptyList(b, Nil), 1) => Some((b, SingletonDequeue(single)))
-    case FullDequeue(front, fs, NonEmptyList(b, bb :: bs), s) =>
+    case FullDequeue(front, fs, NonEmptyList(b, bb :: bs), s)               =>
       Some((b, FullDequeue(front, fs, NonEmptyList(bb, bs), s - 1)))
     case _ => None
   }
@@ -115,7 +115,7 @@ sealed abstract class Dequeue[+A] {
     override def hasNext: Boolean = !pos.isEmpty
 
     override def next(): A = pos.uncons match {
-      case None => throw new NoSuchElementException()
+      case None            => throw new NoSuchElementException()
       case Some((a, rest)) =>
         pos = rest
         a
@@ -140,10 +140,10 @@ sealed abstract class Dequeue[+A] {
    * Append another Dequeue to this dequeue
    */
   def ++[AA >: A](other: Dequeue[AA]): Dequeue[AA] = this match {
-    case SingletonDequeue(a) => a +: other
+    case SingletonDequeue(a)       => a +: other
     case FullDequeue(f, fs, b, bs) =>
       other match {
-        case SingletonDequeue(a) => this :+ a
+        case SingletonDequeue(a)           => this :+ a
         case FullDequeue(of, ofs, ob, obs) =>
           FullDequeue(NonEmptyList(f.head, f.tail ++ (b.reverse.toList) ++ of.toList), fs + bs + ofs, ob, obs)
         case _ => this
@@ -152,7 +152,7 @@ sealed abstract class Dequeue[+A] {
   }
 
   def foldLeft[B](b: B)(f: (B, A) => B): B = this match {
-    case SingletonDequeue(a) => f(b, a)
+    case SingletonDequeue(a)            => f(b, a)
     case FullDequeue(front, _, back, _) => {
       val frontb = front.tail.foldLeft(f(b, front.head))(f)
       val backb = back.tail.foldRight(Eval.now(frontb))((a, b) => b.map(f(_, a))).value
@@ -162,7 +162,7 @@ sealed abstract class Dequeue[+A] {
   }
 
   def foldRight[B](b: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = this match {
-    case SingletonDequeue(a) => f(a, b)
+    case SingletonDequeue(a)            => f(a, b)
     case FullDequeue(front, _, back, _) =>
       front.foldRight(Eval.defer(back.reverse.foldRight(b)(f)))(f)
     case _ => b
@@ -170,7 +170,7 @@ sealed abstract class Dequeue[+A] {
 
   def map[B](f: A => B): Dequeue[B] = {
     this match {
-      case SingletonDequeue(a) => SingletonDequeue(f(a))
+      case SingletonDequeue(a)              => SingletonDequeue(f(a))
       case FullDequeue(front, fs, back, bs) => {
         FullDequeue(front.map(f), fs, back.map(f), bs)
       }
@@ -216,13 +216,13 @@ sealed abstract class Dequeue[+A] {
     }
 
     this match {
-      case SingletonDequeue(a) => f(a)
+      case SingletonDequeue(a)            => f(a)
       case FullDequeue(front, _, back, _) =>
         val (fl, fs, fo) = go(front)
         val (bl, bs, bo) = go(back.reverse)
 
         (fo, bo) match {
-          case (None, None) => EmptyDequeue()
+          case (None, None)    => EmptyDequeue()
           case (Some(a), None) =>
             if (fs == 1)
               SingletonDequeue(a)
@@ -233,8 +233,8 @@ sealed abstract class Dequeue[+A] {
               SingletonDequeue(a)
             else
               FullDequeue(NonEmptyList(a, List.empty), 1, bl.toList.asInstanceOf[NonEmptyList[B]], bs - 1)
-          case (Some(f), Some(b)) =>
-            fl += f
+          case (Some(ff), Some(b)) =>
+            fl += ff
             bl += b
             FullDequeue(fl.toList.asInstanceOf[NonEmptyList[B]],
                         fs,

@@ -1,10 +1,10 @@
-addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.6.0")
+addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.6.1")
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.13.1")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh" % "0.4.8")
-addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.3.1")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.18.2")
-addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.8")
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.4.3")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.20.2")
+addSbtPlugin("org.scala-native" % "sbt-scala-native" % "0.5.9")
 addSbtPlugin("org.portable-scala" % "sbt-scala-native-crossproject" % "1.3.2")
-val sbtTypelevelVersion = "0.8.2"
+val sbtTypelevelVersion = "0.8.4"
 addSbtPlugin("org.typelevel" % "sbt-typelevel" % sbtTypelevelVersion)
 addSbtPlugin("org.typelevel" % "sbt-typelevel-site" % sbtTypelevelVersion)
