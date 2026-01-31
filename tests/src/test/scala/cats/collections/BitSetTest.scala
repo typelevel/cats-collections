@@ -185,7 +185,7 @@ object BitSetTest extends Properties("BitSet") {
       val lhs = x | y
       val rhs = y | x
       (lhs == rhs) :| s"$lhs == $rhs"
-    } catch { case (e: Throwable) => e.printStackTrace; throw e }
+    } catch { case e: Throwable => e.printStackTrace; throw e }
   }
 
   property("(x | y) | z = x | (y | z)") = forAll { (x: BitSet, y: BitSet, z: BitSet) =>
@@ -193,7 +193,7 @@ object BitSetTest extends Properties("BitSet") {
       val lhs = ((x | y) | z).compact
       val rhs = (x | (y | z)).compact
       (lhs == rhs) :| s"$lhs == $rhs"
-    } catch { case (e: Throwable) => e.printStackTrace; throw e }
+    } catch { case e: Throwable => e.printStackTrace; throw e }
   }
 
   property("(x | y)(z) == x(z) || y(z)") = forAll { (x: BitSet, y: BitSet, z: Int) =>
