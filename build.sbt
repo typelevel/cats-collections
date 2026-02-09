@@ -8,17 +8,21 @@ val algebraVersion = "2.13.0"
 
 val Scala212 = "2.12.21"
 val Scala213 = "2.13.18"
-val Scala3 = "3.3.7"
+val Scala3LTS = "3.3.7"
+val Scala3 = "3.8.1"
 
 ThisBuild / tlBaseVersion := "0.9"
 ThisBuild / startYear := Some(2015)
 
-ThisBuild / crossScalaVersions := Seq(Scala3, Scala213, Scala212)
+ThisBuild / crossScalaVersions := Seq(Scala3, Scala3LTS, Scala213, Scala212)
 ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
 ThisBuild / tlFatalWarnings := false
 ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / tlSitePublishBranch := Some("master")
 ThisBuild / githubWorkflowJavaVersions := Seq("8", "21").map(JavaSpec.temurin)
+ThisBuild / githubWorkflowBuildMatrixExclusions := Seq(
+  MatrixExclude(matching = Map("scala" -> Scala3, "java" -> "temurin@8"))
+)
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
     "coverage",
