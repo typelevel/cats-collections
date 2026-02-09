@@ -21,7 +21,9 @@ ThisBuild / tlCiReleaseBranches := Seq("master")
 ThisBuild / tlSitePublishBranch := Some("master")
 ThisBuild / githubWorkflowJavaVersions := Seq("8", "21").map(JavaSpec.temurin)
 ThisBuild / githubWorkflowBuildMatrixExclusions := Seq(
-  MatrixExclude(matching = Map("scala" -> Scala3, "java" -> "temurin@8"))
+  MatrixExclude( Map( "scala" -> Scala3, "java" -> "temurin@8")),
+  MatrixExclude( Map( "project" -> "rootJS", "java" -> "temurin@21")),
+  MatrixExclude( Map( "project" -> "rootNative", "java" -> "temurin@21"))
 )
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
