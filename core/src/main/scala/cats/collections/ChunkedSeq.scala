@@ -40,20 +40,32 @@ import cats.{
 import scala.annotation.tailrec
 
 /**
- * A sequence data structure combining O(1) concatenation with efficient iteration and indexed access.
+ * An immutable sequence backed by a balanced tree of contiguous array chunks.
  *
- * Internally represented as a tree of array chunks. Like [[cats.data.Chain]], ChunkedSeq provides O(1) prepend, append,
- * and concat operations. Unlike Chain, ChunkedSeq uses bounded-size array chunks for cache-friendly O(N) iteration and
- * provides indexed access.
+ * ChunkedSeq combines the O(1) prepend, append, and concatenation of [[cats.data.Chain]] with cache-friendly O(N)
+ * iteration and O(log N) indexed access. Internally, elements are stored in bounded-size array chunks (32 elements by
+ * default) at the leaves of a balanced binary tree.
  *
- * Key complexity:
- *   - prepend, append, concat: O(1)
- *   - uncons, unsnoc: O(log N) amortized, stack-safe
- *   - headOption, lastOption: O(log N), stack-safe
- *   - get, getUnsafe: O(log N) for balanced trees
- *   - foldLeft, strictFoldRight, toIterator: O(N), stack-safe
- *   - map, flatMap, filter: O(N), stack-safe
- *   - size, isEmpty: O(1)
+ * A consequence of the chunk-based representation is that sequential iteration visits contiguous memory, giving
+ * substantially better cache behavior than tree-only structures like Chain. Meanwhile, the balanced tree spine keeps
+ * indexed access, take, drop, splitAt, and updated all at O(log N).
+ *
+ * This data structure is useful when you need both efficient concatenation (which List and Vector lack) and efficient
+ * iteration and random access (which Chain lacks). It is particularly well-suited as a buffer that is built up via
+ * prepend/append/concat and then consumed via iteration or indexed lookup.
+ *
+ * All operations are stack-safe. The tree depth is at most O(log N), so naive recursion on the structure will not blow
+ * the stack. Where iterative algorithms are used, they operate on an explicit stack.
+ *
+ * Complexity summary:
+ *   - prepend (::), append (:+), concat (++): O(1)
+ *   - uncons, unsnoc: O(log N) amortized
+ *   - headOption, lastOption: O(log N)
+ *   - get, getUnsafe: O(log N)
+ *   - take, drop, splitAt, updated: O(log N)
+ *   - foldLeft, strictFoldRight, toIterator, toList: O(N)
+ *   - map, flatMap, filter, reverse: O(N)
+ *   - size, isEmpty, nonEmpty: O(1)
  */
 sealed abstract class ChunkedSeq[+A] {
 
@@ -95,7 +107,7 @@ sealed abstract class ChunkedSeq[+A] {
   final def :+[A1 >: A](a1: A1): ChunkedSeq[A1] = append(a1)
 
   /**
-   * Concatenate two ChunkedSeqs. O(1)
+   * Concatenate two ChunkedSeqs. O(1). Neither this nor that are copied; a new Concat node wraps both.
    */
   final def ++[A1 >: A](that: ChunkedSeq[A1]): ChunkedSeq[A1] =
     ChunkedSeq.concatSafe(this, that)
@@ -233,7 +245,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * A strict, left-to-right fold. O(N), stack-safe.
+   * A strict, left-to-right fold: O(N). Stack-safe: uses an explicit stack to walk the internal tree.
    */
   final def foldLeft[B](init: B)(fn: (B, A) => B): B = {
     var acc = init
@@ -258,7 +270,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * A strict, right-to-left fold. O(N), stack-safe.
+   * A strict, right-to-left fold: O(N). Stack-safe.
    *
    * Note: cats.Foldable defines foldRight to work on Eval; we use a different name here not to collide with cats
    * syntax.
@@ -292,7 +304,8 @@ sealed abstract class ChunkedSeq[+A] {
     foldLeft(B.empty)((b, a) => B.combine(b, fn(a)))
 
   /**
-   * Standard map. O(N), stack-safe. Returns a balanced ChunkedSeq.
+   * Standard map: O(N). Stack-safe. Since this rebuilds into a balanced tree, the result has optimal depth regardless
+   * of the shape of the input.
    */
   final def map[B](fn: A => B): ChunkedSeq[B] = {
     if (isEmpty) ChunkedSeq.empty
@@ -323,7 +336,8 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * Standard flatMap. O(result.size + this.size), stack-safe.
+   * Standard flatMap: O(result.size + this.size). Stack-safe. Each element is mapped, and the results are concatenated
+   * right-to-left using O(1) concat.
    */
   final def flatMap[B](fn: A => ChunkedSeq[B]): ChunkedSeq[B] = {
     @tailrec
@@ -336,7 +350,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * Keep only elements that match a predicate. O(N), stack-safe.
+   * Keep elements that match a predicate: O(N). If no elements are removed, returns this (sharing structure).
    */
   final def filter(fn: A => Boolean): ChunkedSeq[A] = {
     val it = toIterator
@@ -352,7 +366,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * Same as filter(!fn(_)). O(N), stack-safe.
+   * Same as filter(!fn(_)): O(N). Reimplemented rather than delegating to avoid an extra closure allocation.
    */
   final def filterNot(fn: A => Boolean): ChunkedSeq[A] = {
     val it = toIterator
@@ -368,12 +382,12 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * Get an iterator through the ChunkedSeq. O(N) total, stack-safe.
+   * Get an iterator through the ChunkedSeq. O(N) total, visiting contiguous array chunks for cache-friendly access.
    */
   final def toIterator: Iterator[A] = new ChunkedSeq.ChunkedSeqIterator(this)
 
   /**
-   * Get a reverse iterator through the ChunkedSeq. O(N) total, stack-safe.
+   * Get a reverse iterator. O(N) total. Visits chunks in reverse order, iterating each chunk from right to left.
    */
   final def toReverseIterator: Iterator[A] = new ChunkedSeq.ChunkedSeqReverseIterator(this)
 
@@ -388,7 +402,8 @@ sealed abstract class ChunkedSeq[+A] {
   final def toListReverse: List[A] = foldLeft(List.empty[A])((acc, a) => a :: acc)
 
   /**
-   * We can efficiently drop things off the front. O(log N) for balanced trees, stack-safe.
+   * Drop the first n elements: O(log N). Stack-safe. Only the spine nodes along the drop boundary are rebuilt; the rest
+   * of the tree is shared.
    */
   final def drop(n: Long): ChunkedSeq[A] = {
     if (n <= 0L) this
@@ -397,7 +412,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * Take the first n items. O(log N) for balanced trees, stack-safe.
+   * Take the first n items: O(log N). Stack-safe. Shares structure with the original for elements that are kept.
    */
   final def take(n: Long): ChunkedSeq[A] = {
     if (n <= 0L) ChunkedSeq.empty
@@ -406,7 +421,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * O(N) reversal.
+   * Reverse the sequence: O(N). Builds a new balanced tree from the reversed elements.
    */
   final def reverse: ChunkedSeq[A] = {
     val it = toIterator
@@ -416,7 +431,8 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * If the given index is in the sequence, update it, else return the current sequence. O(log N) for balanced trees.
+   * If the given index is in the sequence, update it, else return the current sequence with no change. O(log N). Only
+   * nodes along the path to the updated element are rebuilt.
    */
   final def updatedOrThis[A1 >: A](idx: Long, value: A1): ChunkedSeq[A1] = {
     if (idx < 0L || idx >= size) this
@@ -424,8 +440,7 @@ sealed abstract class ChunkedSeq[+A] {
   }
 
   /**
-   * If the given index is in the sequence, update and return Some(updated). Else return None. O(log N) for balanced
-   * trees.
+   * If the given index is in the sequence, update and return Some(updated). Else return None. O(log N).
    */
   final def updated[A1 >: A](idx: Long, value: A1): Option[ChunkedSeq[A1]] = {
     val up = updatedOrThis(idx, value)
@@ -466,10 +481,21 @@ sealed abstract class ChunkedSeq[+A] {
   private[collections] def depth: Int
 }
 
+/**
+ * Companion object for [[ChunkedSeq]]. Contains smart constructors, factory methods, and typeclass instances.
+ *
+ * Internally, a ChunkedSeq is one of three node types:
+ *   - '''EmptyNode''': the unique empty sequence
+ *   - '''Chunk''': a contiguous slice of an `Array[Any]`, holding up to `ChunkSize` (32) elements
+ *   - '''Concat''': a pair of left and right subtrees with a cached total size
+ *
+ * This encoding is similar to [[cats.data.Chain]], but with array-backed leaves for cache-friendly iteration.
+ */
 object ChunkedSeq extends ChunkedSeqInstances0 {
 
   /**
-   * Maximum number of elements per array chunk.
+   * Maximum number of elements per array chunk. 32 is chosen to balance between tree depth (fewer, larger chunks mean
+   * shallower trees) and copy cost (smaller chunks mean cheaper prepend/append to chunk boundaries).
    */
   private val ChunkSize = 32
 
@@ -525,11 +551,23 @@ object ChunkedSeq extends ChunkedSeqInstances0 {
 
   // ---- Factory methods ----
 
+  /**
+   * An extractor for non-empty ChunkedSeqs. Useful in pattern matching:
+   * {{{
+   *   seq match {
+   *     case ChunkedSeq.NonEmpty(head, tail) => ...
+   *     case _ => ... // empty
+   *   }
+   * }}}
+   */
   object NonEmpty {
     def apply[A](head: A, tail: ChunkedSeq[A]): ChunkedSeq[A] = head :: tail
     def unapply[A](fa: ChunkedSeq[A]): Option[(A, ChunkedSeq[A])] = fa.uncons
   }
 
+  /**
+   * Build a ChunkedSeq from a List. O(N). The resulting tree is balanced.
+   */
   def fromList[A](list: List[A]): ChunkedSeq[A] = {
     if (list.isEmpty) empty
     else {
@@ -545,6 +583,10 @@ object ChunkedSeq extends ChunkedSeqInstances0 {
     }
   }
 
+  /**
+   * Build a ChunkedSeq from a reversed List (the last element of the list becomes the first element of the sequence).
+   * O(N). The resulting tree is balanced.
+   */
   def fromListReverse[A](list: List[A]): ChunkedSeq[A] = {
     if (list.isEmpty) empty
     else {
@@ -560,6 +602,9 @@ object ChunkedSeq extends ChunkedSeqInstances0 {
     }
   }
 
+  /**
+   * Build a ChunkedSeq from any scala.collection.Seq. O(N). The resulting tree is balanced.
+   */
   def fromSeq[A](s: scala.collection.Seq[A]): ChunkedSeq[A] = {
     if (s.isEmpty) empty
     else {
@@ -570,6 +615,10 @@ object ChunkedSeq extends ChunkedSeqInstances0 {
     }
   }
 
+  /**
+   * Build a balanced ChunkedSeq from a contiguous region of an Array[Any]. The array is split recursively at the
+   * midpoint, producing Chunk leaves of at most ChunkSize elements. This guarantees O(log N) depth.
+   */
   private[collections] def buildBalanced[A](arr: Array[Any], from: Int, until: Int): ChunkedSeq[A] = {
     val len = until - from
     if (len <= 0) empty
