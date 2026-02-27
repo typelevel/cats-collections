@@ -1,0 +1,815 @@
+[info] welcome to sbt 1.12.4 (Homebrew Java 25.0.2)
+[info] loading settings for project cats-collections-build from plugins.sbt...
+[info] loading project definition from /Users/krrish/Documents/cats-collections/project
+[info] loading settings for project root from build.sbt, mima.sbt...
+[info] resolving key references (18540 settings) ...
+[info] set scmInfo to https://github.com/typelevel/cats-collections
+[info] set current project to root (in build file:/Users/krrish/Documents/cats-collections/)
+[info] compiling 19 Scala sources to /Users/krrish/Documents/cats-collections/tests/.jvm/target/scala-2.12/test-classes ...
+[info] done compiling
+[32mcats.collections.PredicateSuite:[0m
+[32m  + [0m[32mMonoid[Predicate[Int]]: serializable.can serialize and deserialize[0m [90m0.011s[0m
+[32m  + [0m[32mMonoidK[Predicate]: serializable.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mSerializable[ContravariantMonoidal[Predicate]]: serializable.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariant composition[0m [90m0.015s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariant identity[0m [90m0.004s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariantMonoidal contramap2 compatible contramap left[0m [90m0.027s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariantMonoidal contramap2 compatible contramap right[0m [90m0.007s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariantMonoidal left unit[0m [90m0.004s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariantMonoidal right unit[0m [90m0.004s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.contravariantSemigroupal contramap2 delta associates[0m [90m0.006s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.invariant composition[0m [90m0.007s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.invariant identity[0m [90m0.004s[0m
+[32m  + [0m[32mContravariantMonoidal[Predicate]: contravariantMonoidal.semigroupal associativity[0m [90m0.007s[0m
+[32m  + [0m[32mintersection works[0m [90m0.006s[0m
+[32m  + [0m[32munion works[0m [90m0.005s[0m
+[32m  + [0m[32mdifference works[0m [90m0.005s[0m
+[32m  + [0m[32mnegation works[0m [90m0.006s[0m
+[32mcats.collections.DisjointSetsSuite:[0m
+[32m  + [0m[32munion-find operations using state/stator monad[0m [90m0.272s[0m
+[32m  + [0m[32mbuild unions with disjoint sets as if a set of sets were used[0m [90m0.051s[0m
+[32mcats.collections.MapShowSuite:[0m
+[32m  + [0m[32mshow empty[0m [90m0.001s[0m
+[32m  + [0m[32mshow mappings[0m [90m0.0s[0m
+[32mcats.collections.MapSuite:[0m
+[32m  + [0m[32mwe can add things to a Map, then find them[0m [90m0.25s[0m
+[32m  + [0m[32mwe can add things to a Map, then remove them[0m [90m0.029s[0m
+[32m  + [0m[32mwe can remove things from a Map with alter[0m [90m0.024s[0m
+[32m  + [0m[32mwe can combine maps[0m [90m0.038s[0m
+[32m  + [0m[32mmap works[0m [90m0.015s[0m
+[32m  + [0m[32mflatMap works[0m [90m0.037s[0m
+[32mcats.collections.DiscreteSuite:[0m
+[32m  + [0m[32msucc[0m [90m0.006s[0m
+[32m  + [0m[32mpred[0m [90m0.003s[0m
+[32m  + [0m[32madj[0m [90m0.003s[0m
+[32m  + [0m[32mnon adj[0m [90m0.004s[0m
+[32m  + [0m[32minverse succ[0m [90m0.002s[0m
+[32m  + [0m[32minverse pred[0m [90m0.009s[0m
+[32m  + [0m[32minverse adj[0m [90m0.003s[0m
+[32m  + [0m[32minverse non adj[0m [90m0.003s[0m
+[32mcats.collections.SetSuite:[0m
+[32m  + [0m[32mset is always sorted[0m [90m0.041s[0m
+[32m  + [0m[32miterator works[0m [90m0.005s[0m
+[32m  + [0m[32mequality[0m [90m0.004s[0m
+[32m  + [0m[32minequality[0m [90m0.003s[0m
+[32m  + [0m[32mset is always balanced[0m [90m0.005s[0m
+[32m  + [0m[32mset can delete[0m [90m0.005s[0m
+[32m  + [0m[32mcontains works[0m [90m0.003s[0m
+[32m  + [0m[32mfind works[0m [90m0.004s[0m
+[32m  + [0m[32mintersect is correct[0m [90m0.028s[0m
+[32m  + [0m[32munion is correct[0m [90m0.023s[0m
+[32m  + [0m[32mwe can take the difference of sets[0m [90m0.021s[0m
+[32m  + [0m[32mmap works[0m [90m0.007s[0m
+[32m  + [0m[32mfromFoldable works[0m [90m0.006s[0m
+[32m  + [0m[32mShow instance is consistent with toString[0m [90m0.012s[0m
+[32mcats.collections.MapLawsSuite:[0m
+[32m  + [0m[32mMap[String,A]: flatMap.apply composition[0m [90m0.011s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.covariant composition[0m [90m0.011s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.covariant identity[0m [90m0.006s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.flatMap associativity[0m [90m0.295s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.flatMap consistent apply[0m [90m0.026s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.flatMap from tailRecM consistency[0m [90m0.036s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.invariant composition[0m [90m0.019s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.invariant identity[0m [90m0.005s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.map2/map2Eval consistency[0m [90m0.011s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.map2/product-map consistency[0m [90m0.008s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.mapOrKeepToMapEquivalence[0m [90m0.022s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.mproduct consistent flatMap[0m [90m0.03s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.productL consistent map2[0m [90m0.007s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.productR consistent map2[0m [90m0.009s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.semigroupal associativity[0m [90m0.012s[0m
+[32m  + [0m[32mMap[String,A]: flatMap.tailRecM consistent flatMap[0m [90m0.056s[0m
+[32mcats.collections.PairingHeapDisciplineSuite:[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.add increases size[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.add is consisten with foldMap[0m [90m0.01s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.add to empty is singleton[0m [90m0.009s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.addAll + toSortedList same as sorting[0m [90m0.151s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.addAll matches default impl[0m [90m0.02s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.addAllLargest matches default impl[0m [90m0.007s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.addIfLarger matches default impl[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.build matches default impl[0m [90m0.003s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.compare[0m [90m0.008s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.contains all elements from itself[0m [90m0.004s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.contains consistent with exists[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.contains consistent with forall[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.contains matches toSortedList[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.empty is Monoid.empty[0m [90m0.0s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.exists is lazy[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.forall consistent with exists[0m [90m0.004s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.forall is lazy[0m [90m0.003s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.forall true if empty[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.max[0m [90m0.007s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.min[0m [90m0.009s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.minimumOption is the min[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.nonEmpty reference[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.pop matches default impl[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.remove decreases size[0m [90m0.003s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.remove min never decreases min[0m [90m0.003s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.size matches unorderedFoldMap[0m [90m0.008s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.sortedFoldLeft matches default impl[0m [90m0.014s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.takeLargest matches default impl[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.toSortedList matches default impl[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.totality[0m [90m0.005s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.unadd matches default impl[0m [90m0.004s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.unorderedFold consistent with unorderedFoldMap[0m [90m0.004s[0m
+[32m  + [0m[32mPartiallyOrderedSet[PairingHeap]: partiallyOrderedSet.unorderedFoldMapA identity[0m [90m0.008s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.antisymmetry[0m [90m0.009s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.antisymmetry eq[0m [90m0.006s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.compare[0m [90m0.008s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.gt[0m [90m0.007s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.gteqv[0m [90m0.007s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.lt[0m [90m0.009s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.max[0m [90m0.009s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.min[0m [90m0.007s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.partialCompare[0m [90m0.01s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.pmax[0m [90m0.008s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.pmin[0m [90m0.009s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.reflexivity eq[0m [90m0.004s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.reflexivity gt[0m [90m0.004s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.reflexivity lt[0m [90m0.004s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.symmetry eq[0m [90m0.007s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.totality[0m [90m0.006s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.transitivity[0m [90m0.01s[0m
+[32m  + [0m[32mOrder[PairingHeap[Int]]: order.transitivity eq[0m [90m0.008s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.associative[0m [90m0.012s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.collect0[0m [90m0.001s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.combine all[0m [90m0.01s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.combineAllOption[0m [90m0.012s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.commutative[0m [90m0.008s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.intercalateCombineAllOption[0m [90m0.015s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.intercalateIntercalates[0m [90m0.009s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.intercalateRepeat1[0m [90m0.009s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.intercalateRepeat2[0m [90m0.005s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.is id[0m [90m0.004s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.left identity[0m [90m0.003s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.repeat0[0m [90m0.005s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.repeat1[0m [90m0.005s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.repeat2[0m [90m0.005s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.reverseCombineAllOption[0m [90m0.013s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.reverseRepeat1[0m [90m0.006s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.reverseRepeat2[0m [90m0.009s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.reverseReverses[0m [90m0.012s[0m
+[32m  + [0m[32mPairingHeap[Int]: commutativeMonoid.right identity[0m [90m0.019s[0m
+[32mcats.collections.HashMapSuite:[0m
+[32m  + [0m[32mHashMap[Int, String]: hash.antisymmetry eq[0m [90m0.039s[0m
+[32m  + [0m[32mHashMap[Int, String]: hash.hash compatibility[0m [90m0.016s[0m
+[32m  + [0m[32mHashMap[Int, String]: hash.reflexivity eq[0m [90m0.006s[0m
+[32m  + [0m[32mHashMap[Int, String]: hash.symmetry eq[0m [90m0.018s[0m
+[32m  + [0m[32mHashMap[Int, String]: hash.transitivity eq[0m [90m0.019s[0m
+[32m  + [0m[32mHash[HashMap[Int, String]]: serializable.can serialize and deserialize[0m [90m0.003s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.contains all elements from itself[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.contains consistent with exists[0m [90m0.006s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.contains consistent with forall[0m [90m0.02s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.exists is lazy[0m [90m0.005s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.forall consistent with exists[0m [90m0.006s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.forall is lazy[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.forall true if empty[0m [90m0.01s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.nonEmpty reference[0m [90m0.016s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.unordered traverse consistent with sequence[0m [90m0.016s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.unordered traverse parallel composition[0m [90m0.012s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.unordered traverse sequential composition[0m [90m0.02s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.unorderedFold consistent with unorderedFoldMap[0m [90m0.009s[0m
+[32m  + [0m[32mHashMap[Int, Int] with Option: unorderedTraverse.unorderedFoldMapA identity[0m [90m0.017s[0m
+[32m  + [0m[32mUnorderedTraverse[HashMap[Int, *]]: serializable.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.associative[0m [90m0.023s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.collect0[0m [90m0.001s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.combine all[0m [90m0.012s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.combineAllOption[0m [90m0.013s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.commutative[0m [90m0.016s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.intercalateCombineAllOption[0m [90m0.035s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.intercalateIntercalates[0m [90m0.023s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.intercalateRepeat1[0m [90m0.013s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.intercalateRepeat2[0m [90m0.01s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.is id[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.left identity[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.repeat0[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.repeat1[0m [90m0.007s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.repeat2[0m [90m0.006s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.reverseCombineAllOption[0m [90m0.014s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.reverseRepeat1[0m [90m0.008s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.reverseRepeat2[0m [90m0.006s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.reverseReverses[0m [90m0.015s[0m
+[32m  + [0m[32mHashMap[Int, String]: commutativeMonoid.right identity[0m [90m0.006s[0m
+[32m  + [0m[32mCommutativeMonoid[HashMap[Int, Int]]: serializable.can serialize and deserialize[0m [90m0.002s[0m
+[32m  + [0m[32mshow[0m [90m0.003s[0m
+[32m  + [0m[32misEmpty and nonEmpty[0m [90m0.006s[0m
+[32m  + [0m[32m===[0m [90m0.019s[0m
+[32m  + [0m[32msize[0m [90m0.026s[0m
+[32m  + [0m[32mget[0m [90m0.007s[0m
+[32m  + [0m[32mupdated[0m [90m0.014s[0m
+[32m  + [0m[32mremoved[0m [90m0.012s[0m
+[32m  + [0m[32mremoved with collision[0m [90m0.001s[0m
+[32m  + [0m[32mconcat[0m [90m0.016s[0m
+[32m  + [0m[32mfromSeq consistent with contains[0m [90m0.005s[0m
+[32m  + [0m[32mfromIterableOnce consistent with contains[0m [90m0.005s[0m
+[32m  + [0m[32mfromFoldable consistent with contains[0m [90m0.004s[0m
+[32m  + [0m[32miterator consistent with contains[0m [90m0.009s[0m
+[32m  + [0m[32mforeach consistent with contains[0m [90m0.015s[0m
+[32m  + [0m[32mforeach and iterator consistent[0m [90m0.007s[0m
+[32m  + [0m[32msize consistent with iterator[0m [90m0.015s[0m
+[32m  + [0m[32msize consistent with foreach[0m [90m0.044s[0m
+[32m  + [0m[32mshow consistent with ===[0m [90m0.015s[0m
+[32m  + [0m[32mtoString consistent with equals[0m [90m0.017s[0m
+[32m  + [0m[32mtoMap consistent with fromIterableOnce[0m [90m0.021s[0m
+[32m  + [0m[32mtransform is equivalent to unorderedTransformA with Id[0m [90m0.013s[0m
+[32m  + [0m[32mtransform is same as the standard transform[0m [90m0.008s[0m
+[32mcats.collections.DequeueSuite:[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.coflatMap associativity[0m [90m0.051s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.coflatMap identity[0m [90m0.005s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.coflatten coherence[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.coflatten throughMap[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.covariant composition[0m [90m0.005s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.covariant identity[0m [90m0.003s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.invariant composition[0m [90m0.008s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.invariant identity[0m [90m0.003s[0m
+[32m  + [0m[32mDequeue[Int]: coflatMap.mapOrKeepToMapEquivalence[0m [90m0.005s[0m
+[32m  + [0m[32mCoflatMap[Dequeue]: serializable.can serialize and deserialize[0m [90m0.002s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.collectFirst reference[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.collectFirstSome reference[0m [90m0.005s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.contains all elements from itself[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.contains consistent with exists[0m [90m0.005s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.contains consistent with forall[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.covariant composition[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.covariant identity[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.dropWhile_ reference[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.exists consistent with find[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.exists is lazy[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.filter_ reference[0m [90m0.011s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.fold reference[0m [90m0.014s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.foldLeft consistent with foldMap[0m [90m0.033s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.foldM identity[0m [90m0.008s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.foldRight consistent with foldMap[0m [90m0.016s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.foldRight is lazy[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.foldRightDefer consistency[0m [90m0.008s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.forall consistent with exists[0m [90m0.01s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.forall is lazy[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.forall true if empty[0m [90m0.008s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.get reference[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.invariant composition[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.invariant identity[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.mapOrKeepToMapEquivalence[0m [90m0.011s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.nonEmpty reference[0m [90m0.019s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.ordered consistency[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.reduceLeftOption consistent with reduceLeftToOption[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.reduceRightOption consistent with reduceRightToOption[0m [90m0.041s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.takeWhile_ reference[0m [90m0.017s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.toList reference[0m [90m0.005s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse derive foldMap[0m [90m0.014s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse identity[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse order consistency[0m [90m0.044s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse parallel composition[0m [90m0.018s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref mapAccumulate[0m [90m0.016s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref mapWithIndex[0m [90m0.011s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref mapWithLongIndex[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref traverseWithIndexM[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref traverseWithLongIndexM[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref updated[0m [90m0.008s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref zipWithIndex[0m [90m0.009s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse ref zipWithLongIndex[0m [90m0.007s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse sequential composition[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.traverse traverseTap[0m [90m0.004s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.unordered traverse consistent with sequence[0m [90m0.002s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.unordered traverse parallel composition[0m [90m0.01s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.unordered traverse sequential composition[0m [90m0.017s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.unorderedFold consistent with unorderedFoldMap[0m [90m0.006s[0m
+[32m  + [0m[32mDequeue[Int] with Option: traverse.unorderedFoldMapA identity[0m [90m0.018s[0m
+[32m  + [0m[32mTraverse[Dequeue]: serializable.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32menqueue onto an empty q can be fetched from either end[0m [90m0.0s[0m
+[32m  + [0m[32mcons and then uncons[0m [90m0.013s[0m
+[32m  + [0m[32msnoc and then unsnoc[0m [90m0.014s[0m
+[32m  + [0m[32mcons and then unsnoc[0m [90m0.01s[0m
+[32m  + [0m[32msnoc and then uncons[0m [90m0.002s[0m
+[32m  + [0m[32mfoldLeft[0m [90m0.003s[0m
+[32m  + [0m[32mfoldRight[0m [90m0.002s[0m
+[32m  + [0m[32mtoList[0m [90m0.003s[0m
+[32m  + [0m[32mtoList/reverse[0m [90m0.002s[0m
+[32m  + [0m[32mtoList/append[0m [90m0.005s[0m
+[32m  + [0m[32mtoList/Foldable consistency[0m [90m0.004s[0m
+[32m  + [0m[32mtoList/toStream consistency[0m [90m0.005s[0m
+[32m  + [0m[32mequality[0m [90m0.003s[0m
+[32m  + [0m[32minequality[0m [90m0.002s[0m
+[info] + PairingHeap.takeLargest is the same as sort.reverse.take: OK, passed 10000 tests.
+[32mcats.collections.RangeSuite:[0m
+[32m  + [0m[32mcontains(x): returns true for x within [start, end][0m [90m0.06s[0m
+[32m  + [0m[32mcontains(x): returns false for x < start[0m [90m0.033s[0m
+[32m  + [0m[32mcontains(x): returns false for x > end[0m [90m0.012s[0m
+[32m  + [0m[32mcontains(Range): returns true if the passed range is within this range[0m [90m0.02s[0m
+[32m  + [0m[32mcontains(Range): returns false if the passed range's start < this range's start[0m [90m0.14s[0m
+[32m  + [0m[32mcontains(Range): returns false if the passed range's end > this range's end[0m [90m0.061s[0m
+[32m  + [0m[32mcontains(Range): returns false if the passed range is a super-range of this one[0m [90m0.083s[0m
+[32m  + [0m[32moverlaps(Range): returns true if the start of the first range is contained in the passed range[0m [90m0.093s[0m
+[32m  + [0m[32moverlaps(Range): returns true if the end of the first range is contained in the passed range[0m [90m0.052s[0m
+[32m  + [0m[32moverlaps(Range): returns true if the passed range is a super-range of the first range[0m [90m0.142s[0m
+[32m  + [0m[32moverlaps(Range): returns false if the first range stops before the passed range starts[0m [90m0.026s[0m
+[32m  + [0m[32moverlaps(Range): behavior should be consistent with & method[0m [90m0.013s[0m
+[32m  + [0m[32mforeach: enumerates all values of a range[0m [90m0.038s[0m
+[32m  + [0m[32mmap: returns a mapped range[0m [90m0.033s[0m
+[32m  + [0m[32mfoldLeft: folds range values from start to end[0m [90m0.485s[0m
+[32m  + [0m[32mfoldRight: folds range values from end to start[0m [90m0.131s[0m
+[32m  + [0m[32mdiff(-): returns None if the passed range completely covers this one[0m [90m0.009s[0m
+[32m  + [0m[32mdiff(-): returns this range if it does not overlap the passed one[0m [90m0.018s[0m
+[32m  + [0m[32mdiff(-): returns a single range if the passed range partially overlaps this one on the left[0m [90m0.005s[0m
+[32m  + [0m[32mdiff(-): returns a single range if the passed range partially overlaps this one on the right[0m [90m0.005s[0m
+[32m  + [0m[32mdiff(-): returns two ranges if the passed range fully fits in the middle of this one[0m [90m0.189s[0m
+[32m  + [0m[32madd(+): returns a single range if one of the ranges is a subrange of the other[0m [90m0.033s[0m
+[32m  + [0m[32madd(+): returns a single range if two passed ranges are connected or patrially overlapping[0m [90m0.012s[0m
+[32m  + [0m[32madd(+): returns both passed ranges if there is a gap between them[0m [90m0.004s[0m
+[32m  + [0m[32mintersect(&): returns a smaller range if one of the ranges is subrange of the other[0m [90m0.008s[0m
+[32m  + [0m[32mintersect(&): returns None for non-overlapping ranged[0m [90m0.031s[0m
+[32m  + [0m[32mtoInterator/toList: converts a range to Iterator/List[0m [90m0.021s[0m
+[32m  + [0m[32mreverse: inverses a range[0m [90m0.001s[0m
+[32m  + [0m[32mshow: renders a math representation of a range[0m [90m0.014s[0m
+[info] + PairingHeap.fromIterable is sorted: OK, passed 10000 tests.
+[info] + PairingHeap.PairingHeap.empty is less than nonEmpty: OK, passed 10000 tests.
+[32mcats.collections.HashSetSuite:[0m
+[32m  + [0m[32mHashSet[Int]: hash.antisymmetry eq[0m [90m0.039s[0m
+[32m  + [0m[32mHashSet[Int]: hash.hash compatibility[0m [90m0.019s[0m
+[32m  + [0m[32mHashSet[Int]: hash.reflexivity eq[0m [90m0.027s[0m
+[32m  + [0m[32mHashSet[Int]: hash.symmetry eq[0m [90m0.057s[0m
+[32m  + [0m[32mHashSet[Int]: hash.transitivity eq[0m [90m0.054s[0m
+[32m  + [0m[32mHash[HashSet[Int]]: serializable.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.contains all elements from itself[0m [90m0.006s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.contains consistent with exists[0m [90m0.01s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.contains consistent with forall[0m [90m0.019s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.exists is lazy[0m [90m0.037s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.forall consistent with exists[0m [90m0.056s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.forall is lazy[0m [90m0.017s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.forall true if empty[0m [90m0.019s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.nonEmpty reference[0m [90m0.01s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.unorderedFold consistent with unorderedFoldMap[0m [90m0.014s[0m
+[32m  + [0m[32mHashSet[Int]: unorderedFoldable.unorderedFoldMapA identity[0m [90m0.009s[0m
+[32m  + [0m[32mUnorderedFoldable[HashSet]: serializable.can serialize and deserialize[0m [90m0.003s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.associative[0m [90m0.255s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.collect0[0m [90m0.012s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.combine all[0m [90m0.029s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.combineAllOption[0m [90m0.03s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.commutative[0m [90m0.06s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.intercalateCombineAllOption[0m [90m0.081s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.intercalateIntercalates[0m [90m0.204s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.intercalateRepeat1[0m [90m0.027s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.intercalateRepeat2[0m [90m0.028s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.is id[0m [90m0.012s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.left identity[0m [90m0.012s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.repeat0[0m [90m0.008s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.repeat1[0m [90m0.005s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.repeat2[0m [90m0.004s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.reverseCombineAllOption[0m [90m0.045s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.reverseRepeat1[0m [90m0.043s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.reverseRepeat2[0m [90m0.006s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.reverseReverses[0m [90m0.059s[0m
+[32m  + [0m[32mHashSet[String]: commutativeMonoid.right identity[0m [90m0.011s[0m
+[32m  + [0m[32mCommutativeMonoid[HashSet[String]]: serializable.can serialize and deserialize[0m [90m0.007s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.associativity[0m [90m0.115s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.can serialize and deserialize[0m [90m0.052s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.combineAllOption[0m [90m0.007s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.combineN(a, 1) == a[0m [90m0.005s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.combineN(a, 2) == a |+| a[0m [90m0.006s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.commutative[0m [90m0.029s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.idempotence[0m [90m0.006s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.join:semilattice.isIdempotent[0m [90m0.001s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.associativity[0m [90m0.041s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.can serialize and deserialize[0m [90m0.009s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.combineAllOption[0m [90m0.019s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.combineN(a, 1) == a[0m [90m0.019s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.combineN(a, 2) == a |+| a[0m [90m0.025s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.commutative[0m [90m0.036s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.idempotence[0m [90m0.01s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.meet:semilattice.isIdempotent[0m [90m0.006s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.absorption[0m [90m0.03s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mHashSet[String]: distributiveLattice.distributive[0m [90m0.046s[0m
+[32m  + [0m[32mDistributiveLattice[HashSet[String]]: serializable.can serialize and deserialize[0m [90m0.006s[0m
+[32m  + [0m[32mshow[0m [90m0.01s[0m
+[32m  + [0m[32misEmpty and nonEmpty[0m [90m0.028s[0m
+[32m  + [0m[32m===[0m [90m0.021s[0m
+[32m  + [0m[32msize[0m [90m0.132s[0m
+[32m  + [0m[32munion[0m [90m0.015s[0m
+[32m  + [0m[32madd[0m [90m0.007s[0m
+[32m  + [0m[32mremove[0m [90m0.015s[0m
+[32m  + [0m[32mfromSeq consistent with contains[0m [90m0.002s[0m
+[32m  + [0m[32mfromIterableOnce consistent with contains[0m [90m0.002s[0m
+[32m  + [0m[32mfromFoldable consistent with contains[0m [90m0.001s[0m
+[32m  + [0m[32miterator consistent with contains[0m [90m0.004s[0m
+[32m  + [0m[32mforeach consistent with contains[0m [90m0.005s[0m
+[32m  + [0m[32mforeach and iterator consistent[0m [90m0.007s[0m
+[32m  + [0m[32msize consistent with iterator[0m [90m0.006s[0m
+[32m  + [0m[32msize consistent with foreach[0m [90m0.005s[0m
+[32m  + [0m[32mshow consistent with ===[0m [90m0.019s[0m
+[32m  + [0m[32mtoSet consistent with fromIterableOnce[0m [90m0.04s[0m
+[32m  + [0m[32munion consistent with Scala Set union[0m [90m0.004s[0m
+[32m  + [0m[32mdiff consistent with Scala Set diff[0m [90m0.004s[0m
+[32m  + [0m[32mintersect consistent with Scala Set intersect[0m [90m0.002s[0m
+[32m  + [0m[32mfilter consistent with Scala Set filter[0m [90m0.023s[0m
+[32m  + [0m[32mfilterNot consistent with Scala Set filterNot[0m [90m0.026s[0m
+[32mcats.collections.TreeListSuite:[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.collectFirst reference[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.collectFirstSome reference[0m [90m0.005s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.contains all elements from itself[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.contains consistent with exists[0m [90m0.003s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.contains consistent with forall[0m [90m0.005s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.covariant composition[0m [90m0.037s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.covariant identity[0m [90m0.008s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.dropWhile_ reference[0m [90m0.004s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.exists consistent with find[0m [90m0.002s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.exists is lazy[0m [90m0.004s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.filter_ reference[0m [90m0.011s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.fold reference[0m [90m0.002s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.foldLeft consistent with foldMap[0m [90m0.014s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.foldM identity[0m [90m0.053s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.foldRight consistent with foldMap[0m [90m0.021s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.foldRight is lazy[0m [90m0.036s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.foldRightDefer consistency[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.forall consistent with exists[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.forall is lazy[0m [90m0.013s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.forall true if empty[0m [90m0.005s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.get reference[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.invariant composition[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.invariant identity[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.mapOrKeepToMapEquivalence[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.nonEmpty reference[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.ordered consistency[0m [90m0.008s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.reduceLeftOption consistent with reduceLeftToOption[0m [90m0.021s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.reduceRightOption consistent with reduceRightToOption[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.takeWhile_ reference[0m [90m0.064s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.toList reference[0m [90m0.008s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse derive foldMap[0m [90m0.022s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse identity[0m [90m0.004s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse order consistency[0m [90m0.017s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse parallel composition[0m [90m0.052s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref mapAccumulate[0m [90m0.009s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref mapWithIndex[0m [90m0.01s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref mapWithLongIndex[0m [90m0.01s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref traverseWithIndexM[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref traverseWithLongIndexM[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref updated[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref zipWithIndex[0m [90m0.011s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse ref zipWithLongIndex[0m [90m0.006s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse sequential composition[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.traverse traverseTap[0m [90m0.003s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.unordered traverse consistent with sequence[0m [90m0.003s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.unordered traverse parallel composition[0m [90m0.004s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.unordered traverse sequential composition[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.unorderedFold consistent with unorderedFoldMap[0m [90m0.007s[0m
+[32m  + [0m[32mTraverse[TreeList]: traverse.unorderedFoldMapA identity[0m [90m0.012s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.ap consistent with product + map[0m [90m0.013s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.appendK consistent with pure and combineK[0m [90m0.032s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.applicative homomorphism[0m [90m0.004s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.applicative identity[0m [90m0.002s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.applicative interchange[0m [90m0.004s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.applicative map[0m [90m0.001s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.applicative unit[0m [90m0.002s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.apply composition[0m [90m0.011s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.covariant composition[0m [90m0.003s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.covariant identity[0m [90m0.001s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.fromIterableOnce[0m [90m0.004s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.invariant composition[0m [90m0.003s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.invariant identity[0m [90m0.001s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.left distributivity[0m [90m0.004s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.map2/map2Eval consistency[0m [90m0.005s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.map2/product-map consistency[0m [90m0.016s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.mapOrKeepToMapEquivalence[0m [90m0.018s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.monoidK left identity[0m [90m0.014s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.monoidK right identity[0m [90m0.014s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.monoidal left identity[0m [90m0.008s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.monoidal right identity[0m [90m0.007s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.prependK consistent with pure and combineK[0m [90m0.013s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.productL consistent map2[0m [90m0.011s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.productR consistent map2[0m [90m0.014s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.replicateA_ consistent with replicateA.void[0m [90m0.041s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.right absorption[0m [90m0.009s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.right distributivity[0m [90m0.015s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.semigroupK associative[0m [90m0.015s[0m
+[32m  + [0m[32mAlternative[TreeList]: alternative.semigroupal associativity[0m [90m0.04s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.collect mapFilter consistency[0m [90m0.043s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.filter mapFilter consistency[0m [90m0.054s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.filterNot mapFilter consistency[0m [90m0.001s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.flattenOption mapFilter consistency[0m [90m0.002s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.mapFilter composition[0m [90m0.002s[0m
+[32m  + [0m[32mFunctorFilter[TreeList]: functorFilter.mapFilter map consistency[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.ap consistent with product + map[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.applicative homomorphism[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.applicative identity[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.applicative interchange[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.applicative map[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.applicative unit[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.apply composition[0m [90m0.012s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.covariant composition[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.covariant identity[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.flatMap associativity[0m [90m0.01s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.flatMap consistent apply[0m [90m0.003s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.flatMap from tailRecM consistency[0m [90m0.004s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.flatMapOrKeep flatMap coherence[0m [90m0.003s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.invariant composition[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.invariant identity[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.map flatMap coherence[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.map2/map2Eval consistency[0m [90m0.003s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.map2/product-map consistency[0m [90m0.004s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.mapOrKeepToMapEquivalence[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.monad left identity[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.monad right identity[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.monoidal left identity[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.monoidal right identity[0m [90m0.001s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.mproduct consistent flatMap[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.productL consistent map2[0m [90m0.002s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.productR consistent map2[0m [90m0.004s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.replicateA_ consistent with replicateA.void[0m [90m0.012s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.semigroupal associativity[0m [90m0.013s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.tailRecM consistent flatMap[0m [90m0.019s[0m
+[32m  + [0m[32mMonad[TreeList]: monad.tailRecM stack safety[0m [90m0.186s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.coflatMap associativity[0m [90m0.028s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.coflatMap identity[0m [90m0.002s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.coflatten coherence[0m [90m0.003s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.coflatten throughMap[0m [90m0.002s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.covariant composition[0m [90m0.002s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.covariant identity[0m [90m0.001s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.invariant composition[0m [90m0.001s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.invariant identity[0m [90m0.001s[0m
+[32m  + [0m[32mCoflatMap[TreeList]: coflatMap.mapOrKeepToMapEquivalence[0m [90m0.001s[0m
+[32m  + [0m[32mTraverse[TreeList]: serializable.can serialize and deserialize[0m [90m0.002s[0m
+[32m  + [0m[32miterator works[0m [90m0.0s[0m
+[32m  + [0m[32m++ works[0m [90m0.002s[0m
+[32m  + [0m[32mdrop/take work[0m [90m0.002s[0m
+[32m  + [0m[32mlastOption works[0m [90m0.011s[0m
+[32m  + [0m[32mtoReverseIterator works[0m [90m0.002s[0m
+[32m  + [0m[32mreverse works[0m [90m0.001s[0m
+[32m  + [0m[32mstrictFoldRight works[0m [90m0.001s[0m
+[32m  + [0m[32mfromList/toList works[0m [90m0.001s[0m
+[32m  + [0m[32msize works[0m [90m0.001s[0m
+[32m  + [0m[32msplit combined is identity[0m [90m0.0s[0m
+[32m  + [0m[32msplit produces a full left tree[0m [90m0.001s[0m
+[32m  + [0m[32mpattern matching works[0m [90m0.001s[0m
+[32m  + [0m[32mmaxDepth <= 2 log_2 N + 1[0m [90m0.001s[0m
+[32m  + [0m[32mEq[TreeList[A]] works[0m [90m0.004s[0m
+[32m  + [0m[32mOrder[TreeList[A]] works[0m [90m0.002s[0m
+[32m  + [0m[32mPartialOrder[TreeList[A]] works[0m [90m0.01s[0m
+[32m  + [0m[32mMonoid[TreeList[A]].combine works[0m [90m0.01s[0m
+[32m  + [0m[32mMonoid[TreeList[A]].empty works[0m [90m0.0s[0m
+[32m  + [0m[32mtoString is as expected[0m [90m0.021s[0m
+[32m  + [0m[32mTreeList.get works[0m [90m0.009s[0m
+[32m  + [0m[32mtoIterator throws the same type of exception as List on empty[0m [90m0.002s[0m
+[32m  + [0m[32mtoReverseIterator throws the same type of exception as List on empty[0m [90m0.001s[0m
+[32m  + [0m[32mTreeList.NonEmpty.apply/unapply are inverses[0m [90m0.001s[0m
+[32m  + [0m[32mTreeList.traverse_/traverse consistency[0m [90m0.003s[0m
+[32m  + [0m[32mTreeList.sequence_/sequence consistency[0m [90m0.002s[0m
+[32m  + [0m[32mShow matches toString[0m [90m0.001s[0m
+[32m  + [0m[32mlastOption matches get(size - 1L)[0m [90m0.001s[0m
+[32m  + [0m[32mtoListReverse == toList.reverse[0m [90m0.001s[0m
+[32m  + [0m[32mupdated works[0m [90m0.004s[0m
+[32m  + [0m[32mwe don't stack overflow on large sequences[0m [90m0.421s[0m
+[32m  + [0m[32mfilter/filterNot consistency[0m [90m0.009s[0m
+[info] + PairingHeap.PairingHeap.combineAll (remove) does < log_2 N + 8 work: OK, passed 10000 tests.
+[info] + PairingHeap.pop returns the minimum element: OK, passed 10000 tests.
+[32mcats.collections.HeapSuite:[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.add increases size[0m [90m0.125s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.add is consisten with foldMap[0m [90m0.443s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.add to empty is singleton[0m [90m0.012s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.addAll + toSortedList same as sorting[0m [90m0.02s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.addAll matches default impl[0m [90m0.082s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.addAllLargest matches default impl[0m [90m0.148s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.addIfLarger matches default impl[0m [90m0.131s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.build matches default impl[0m [90m0.022s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.compare[0m [90m0.059s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.contains all elements from itself[0m [90m0.03s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.contains consistent with exists[0m [90m0.054s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.contains consistent with forall[0m [90m0.024s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.contains matches toSortedList[0m [90m0.027s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.empty is Monoid.empty[0m [90m0.006s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.exists is lazy[0m [90m0.039s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.forall consistent with exists[0m [90m0.063s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.forall is lazy[0m [90m0.041s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.forall true if empty[0m [90m0.082s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.max[0m [90m0.104s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.min[0m [90m0.028s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.minimumOption is the min[0m [90m0.016s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.nonEmpty reference[0m [90m0.015s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.pop matches default impl[0m [90m0.024s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.remove decreases size[0m [90m0.011s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.remove min never decreases min[0m [90m0.024s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.size matches unorderedFoldMap[0m [90m0.026s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.sortedFoldLeft matches default impl[0m [90m0.063s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.takeLargest matches default impl[0m [90m0.04s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.toSortedList matches default impl[0m [90m0.046s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.totality[0m [90m0.061s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.unadd matches default impl[0m [90m0.025s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.unorderedFold consistent with unorderedFoldMap[0m [90m0.021s[0m
+[32m  + [0m[32mPartiallyOrderedSet[Heap]: partiallyOrderedSet.unorderedFoldMapA identity[0m [90m0.023s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.antisymmetry[0m [90m0.018s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.antisymmetry eq[0m [90m0.023s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.compare[0m [90m0.015s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.gt[0m [90m0.021s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.gteqv[0m [90m0.021s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.lt[0m [90m0.02s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.max[0m [90m0.021s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.min[0m [90m0.022s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.partialCompare[0m [90m0.021s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.pmax[0m [90m0.043s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.pmin[0m [90m0.08s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.reflexivity eq[0m [90m0.036s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.reflexivity gt[0m [90m0.036s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.reflexivity lt[0m [90m0.043s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.symmetry eq[0m [90m0.066s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.totality[0m [90m0.083s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.transitivity[0m [90m0.038s[0m
+[32m  + [0m[32mOrder[Heap[Int]]: order.transitivity eq[0m [90m0.029s[0m
+[32m  + [0m[32msorted[0m [90m0.006s[0m
+[32m  + [0m[32mheapify is sorted[0m [90m0.008s[0m
+[32m  + [0m[32madding increases size[0m [90m0.011s[0m
+[32m  + [0m[32madd is the same as +[0m [90m0.015s[0m
+[32m  + [0m[32maddAll is the same as ++[0m [90m0.015s[0m
+[32m  + [0m[32maddAll is the same as folding with add[0m [90m0.015s[0m
+[32m  + [0m[32mremove decreases size[0m [90m0.013s[0m
+[32m  + [0m[32mpop and remove return the same heap[0m [90m0.013s[0m
+[32m  + [0m[32mpop returns the minimum element[0m [90m0.012s[0m
+[32m  + [0m[32msize is consistent with isEmpty/nonEmpty[0m [90m0.009s[0m
+[32m  + [0m[32mheight is <= log_2 N + 1 for all heaps[0m [90m0.006s[0m
+[32m  + [0m[32mheapify is the same as adding[0m [90m0.008s[0m
+[32m  + [0m[32mminimumOption after removing one is >= before[0m [90m0.025s[0m
+[32m  + [0m[32mHeap.minimumOption is the real minimum[0m [90m0.0s[0m
+[32m  + [0m[32mHeap.foldLeft is consistent with toList.foldLeft[0m [90m0.02s[0m
+[32m  + [0m[32mShow[Heap[Int]] works like toList.mkString[0m [90m0.013s[0m
+[32m  + [0m[32mOrder[Heap[Int]] works like List[Int][0m [90m0.016s[0m
+[32m  + [0m[32mHeap.exists is correct[0m [90m0.014s[0m
+[32m  + [0m[32mHeap.forall is correct[0m [90m0.011s[0m
+[32m  + [0m[32mHeap.empty is less than nonEmpty[0m [90m0.014s[0m
+[32m  + [0m[32mtakeLargest is the same as sort.reverse.take[0m [90m0.008s[0m
+[32m  + [0m[32mHeap.toPairingHeap.toList == Heap.toList[0m [90m0.02s[0m
+[32m  + [0m[32mHeap property is always maintained[0m [90m0.024s[0m
+[info] + PairingHeap.size is consistent with isEmpty/nonEmpty: OK, passed 10000 tests.
+[info] + PairingHeap.pop and remove return the same heap: OK, passed 10000 tests.
+[info] + PairingHeap.fromIterable is the same as adding: OK, passed 10000 tests.
+[info] + PairingHeap.PairingHeap satisfies the heap property: OK, passed 10000 tests.
+[info] + PairingHeap.PairingHeap.exists is correct: OK, passed 10000 tests.
+[info] + BitSet.!x.isEmpty == x.nonEmpty: OK, passed 1000 tests.
+[info] + PairingHeap.sorted: OK, passed 10000 tests.
+[info] + BitSet.!(x - a)(a): OK, passed 1000 tests.
+[info] + PairingHeap.minimumOption after removing one is >= before: OK, passed 10000 tests.
+[info] + BitSet.x.isEmpty = (x.size = 0): OK, passed 1000 tests.
+[info] + BitSet.limit/height consistency: OK, passed 1000 tests.
+[info] + PairingHeap.Show[PairingHeap[Int]] works like toList.mkString: OK, passed 10000 tests.
+[info] + BitSet.x | x = x: OK, passed 1000 tests.
+[info] + BitSet.test order: OK, passed 1000 tests.
+[info] + BitSet.x.compact = x: OK, passed 1000 tests.
+[info] + BitSet.x + a + a = x + a: OK, passed 1000 tests.
+[info] + BitSet.x.toSet - a == (x - a).toSet: OK, passed 1000 tests.
+[info] + BitSet.x & Empty = Empty: OK, passed 1000 tests.
+[info] + BitSet.x.isEmpty == (x.compact eq BitSet.Empty): OK, passed 1000 tests.
+[info] + BitSet.(x & (y | z) = (x & y) | (x & z): OK, passed 1000 tests.
+[info] + PairingHeap.PairingHeap.forall is correct: OK, passed 10000 tests.
+[info] + BitSet.BitSet(set: _*).toSet = set: OK, passed 1000 tests.
+[info] + BitSet.(x & y) & z = x & (y & z): OK, passed 1000 tests.
+[info] + BitSet.BitSet.empty contains nothing: OK, passed 1000 tests.
+[info] + BitSet.test ordering: OK, passed 1000 tests.
+[info] + BitSet.(x + a)(a): OK, passed 1000 tests.
+[info] + BitSet.x & y = y & x: OK, passed 1000 tests.
+[info] + BitSet.+ is commutative: OK, passed 1000 tests.
+[info] + BitSet.(x intersects y) = (y intersects x): OK, passed 1000 tests.
+[info] + BitSet.(x ^ 0) = x: OK, passed 1000 tests.
+[info] + BitSet.(x ^ y) = (y ^ x): OK, passed 1000 tests.
+[info] + BitSet.(x ^ x) = 0: OK, passed 1000 tests.
+[info] + BitSet.x & x = x: OK, passed 1000 tests.
+[info] + BitSet.x + a - a == x - a: OK, passed 1000 tests.
+[info] + BitSet.0 -- x = 0: OK, passed 1000 tests.
+[info] + BitSet.(x ^ y) = ((x -- (x & y)) | (y -- (x & y))): OK, passed 1000 tests.
+[info] + BitSet.x -- x = 0: OK, passed 1000 tests.
+[info] + BitSet.(x & y)(z) == x(z) && y(z): OK, passed 1000 tests.
+[info] + BitSet.x -- 0 = x: OK, passed 1000 tests.
+[info] + BitSet.(x ^ y)(n) = x(n) ^ y(n): OK, passed 1000 tests.
+[info] + BitSet.((x ^ y) ^ z) = (x ^ (y ^ z)): OK, passed 1000 tests.
+[info] + BitSet.x.toSet == x.iterator.toSet: OK, passed 1000 tests.
+[info] + BitSet.- is commutative: OK, passed 1000 tests.
+[info] + BitSet.BitSet(x.toSet: _*) = x: OK, passed 1000 tests.
+[info] + PairingHeap.PairingHeap.foldLeft is consistent with toList.foldLeft: OK, passed 10000 tests.
+[info] + BitSet.(x = y) = (x.toSet = y.toSet): OK, passed 1000 tests.
+[info] + BitSet.x.toSet + a == (x + a).toSet: OK, passed 1000 tests.
+[info] + BitSet.x | Empty = x: OK, passed 1000 tests.
+[info] + BitSet.(x -- y).toSet = (x.toSet -- y.toSet): OK, passed 1000 tests.
+[info] + BitSet.(x intersects y) = (x & y).nonEmpty: OK, passed 1000 tests.
+[info] + PairingHeap.Order[PairingHeap[Int]] works like List[Int]: OK, passed 10000 tests.
+[info] + BitSet.x -- BitSet(n) = x - n: OK, passed 1000 tests.
+[info] + BitSet.x.iterator.size = x.size: OK, passed 1000 tests.
+[info] + BitSet.(x | y)(z) == x(z) || y(z): OK, passed 1000 tests.
+[info] + BitSet.(x | y) | z = x | (y | z): OK, passed 1000 tests.
+[info] + BitSet.x - a - a = x - a: OK, passed 1000 tests.
+[info] + BitSet.x.iterator.forall(x(_)): OK, passed 1000 tests.
+[info] + BitSet.(x -- y)(n) = x(n) && (!y(n)): OK, passed 1000 tests.
+[info] + BitSet.x -- y -- y = x -- y: OK, passed 1000 tests.
+[info] + PairingHeap.PairingHeap.minimumOption is the real minimum: OK, passed 10000 tests.
+[info] + BitSet.x.iterator.toList.reverse = x.reverseIterator.toList: OK, passed 1000 tests.
+[info] + BitSet.x | y = y | x: OK, passed 1000 tests.
+[info] + BitSet.we never mutate the original item on |, &, ^, --: OK, passed 1000 tests.
+[info] + BitSet.Bitset.fromScalaRange consistent with BitSet(...): OK, passed 1000 tests.
+[32mcats.collections.AnotherDietSuite:[0m
+[32m  + [0m[32mfoldLeft[0m [90m1.167s[0m
+[32m  + [0m[32mfoldLeft/toList[0m [90m0.887s[0m
+[32m  + [0m[32mfoldRight[0m [90m0.065s[0m
+[32m  + [0m[32mfoldRight/toList[0m [90m0.114s[0m
+[32m  + [0m[32mnot be modified when inserting existing item[0m [90m4.396s[0m
+[32m  + [0m[32m--[0m [90m0.048s[0m
+[32m  + [0m[32mtoIterator/toList[0m [90m0.008s[0m
+[32mcats.collections.DietSuite:[0m
+[32m  + [0m[32mshown empty[0m [90m0.009s[0m
+[32m  + [0m[32mshown all intervals[0m [90m0.0s[0m
+[32m  + [0m[32mremove side ranges[0m [90m0.002s[0m
+[32m  + [0m[32mreturn empty when removing from empty[0m [90m0.001s[0m
+[32m  + [0m[32mdiet eq[0m [90m0.008s[0m
+[32m  + [0m[32msame ranges define the same diet[0m [90m0.87s[0m
+[32m  + [0m[32mreshaping results on the same diet[0m [90m0.306s[0m
+[32m  + [0m[32mdifferent set of ranges ==> different diets[0m [90m0.867s[0m
+[32m  + [0m[32mremove inner range[0m [90m0.001s[0m
+[32m  + [0m[32minsert/remove[0m [90m0.875s[0m
+[32m  + [0m[32mdistinct[0m [90m0.261s[0m
+[32m  + [0m[32mmin[0m [90m0.324s[0m
+[32m  + [0m[32mmax[0m [90m0.415s[0m
+[32m  + [0m[32mmin/max empty[0m [90m0.001s[0m
+[32m  + [0m[32mmerge[0m [90m1.042s[0m
+[32m  + [0m[32mintersection range[0m [90m0.073s[0m
+[32m  + [0m[32mintersection diet[0m [90m0.681s[0m
+[32m  + [0m[32mjoin disjoint range[0m [90m0.0s[0m
+[32m  + [0m[32mcontains[0m [90m0.396s[0m
+[32m  + [0m[32mnot contains[0m [90m0.146s[0m
+[32m  + [0m[32mnot be modified when removing non-existent item[0m [90m0.033s[0m
+[32m  + [0m[32minvariant regression[0m [90m0.002s[0m
+[32m  + [0m[32minvariant[0m [90m0.065s[0m
+[32m  + [0m[32mone and fromRange are consistent[0m [90m0.01s[0m
+[32m  + [0m[32mfromRange contains consistent with Range contains[0m [90m0.038s[0m
+[32m  + [0m[32mone and contains are consistent[0m [90m0.025s[0m
+[32m  + [0m[32mone toList[0m [90m0.016s[0m
+[32m  + [0m[32mrange toList[0m [90m0.102s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.associative[0m [90m0.066s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.collect0[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.combine all[0m [90m0.083s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.combineAllOption[0m [90m0.017s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.commutative[0m [90m0.024s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.intercalateCombineAllOption[0m [90m0.058s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.intercalateIntercalates[0m [90m0.038s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.intercalateRepeat1[0m [90m0.027s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.intercalateRepeat2[0m [90m0.018s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.is id[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.left identity[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.repeat0[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.repeat1[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.repeat2[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.reverseCombineAllOption[0m [90m0.017s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.reverseRepeat1[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.reverseRepeat2[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.reverseReverses[0m [90m0.01s[0m
+[32m  + [0m[32mDiet[Int]: commutativeMonoid.right identity[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.associativity[0m [90m0.018s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.can serialize and deserialize[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineAll[0m [90m0.02s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineAll(Nil) == id[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineAllOption[0m [90m0.017s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineN(a, 0) == id[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineN(a, 1) == a[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.combineN(a, 2) == a |+| a[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.commutative[0m [90m0.011s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.isEmpty[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.leftIdentity[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.base:commutative monoid.rightIdentity[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.sum(Nil) == zero[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.sumN(a, 0) == zero[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.sumN(a, 1) == a[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: semiring.additive:additive commutative monoid.sumN(a, 2) == a + a[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.base:semigroup.associativity[0m [90m0.018s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.base:semigroup.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.base:semigroup.combineAllOption[0m [90m0.014s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.base:semigroup.combineN(a, 1) == a[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.base:semigroup.combineN(a, 2) == a |+| a[0m [90m0.011s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.pow(a, 1) == a[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: semiring.multiplicative:multiplicative semigroup.pow(a, 2) == a * a[0m [90m0.007s[0m
+[32m  + [0m[32mDiet[Int]: semiring.distributive[0m [90m0.02s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.associativity[0m [90m0.01s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineAll[0m [90m0.012s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineAll(Nil) == id[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineAllOption[0m [90m0.015s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineN(a, 0) == id[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineN(a, 1) == a[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.combineN(a, 2) == a |+| a[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.commutative[0m [90m0.009s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.idempotence[0m [90m0.003s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.isEmpty[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.isIdempotent[0m [90m0.0s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.leftIdentity[0m [90m0.006s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.join:boundedSemilattice.rightIdentity[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.associativity[0m [90m0.01s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.combineAllOption[0m [90m0.011s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.combineN(a, 1) == a[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.combineN(a, 2) == a |+| a[0m [90m0.004s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.commutative[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.idempotence[0m [90m0.005s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.meet:semilattice.isIdempotent[0m [90m0.0s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.absorption[0m [90m0.008s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.can serialize and deserialize[0m [90m0.001s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.lattice:lowerBoundedDistributiveLattice.distributive[0m [90m0.016s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.x\\y ∧ y = 0[0m [90m0.01s[0m
+[32m  + [0m[32mDiet[Int]: generalized bool.x\\y ∨ y = x ∨ y[0m [90m0.008s[0m
+[info] + BitSet.we never mutate the original item on +/-: OK, passed 1000 tests.
+[info] + BitSet.(x = y) = (x.## = y.##): OK, passed 1000 tests.
+[info] ScalaCheck
+[info] Passed: Total 71, Failed 0, Errors 0, Passed 71
+[info] Passed: Total 786, Failed 0, Errors 0, Passed 786
+[success] Total time: 14 s, completed 27 Feb 2026, 1:40:07 am
