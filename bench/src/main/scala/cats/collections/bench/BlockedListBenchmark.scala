@@ -1,6 +1,28 @@
+/*
+ * Copyright (c) 2015 Typelevel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package cats.collections.bench
 
-import cats.collections.{BlockedList, BlockedListCopy}
+import cats.collections.{BlockedList, FastBlockedList}
 import org.openjdk.jmh.annotations.*
 
 import java.util.concurrent.TimeUnit
@@ -14,8 +36,8 @@ class BlockedListBenchmark {
   @Param(Array("4", "8", "16", "32", "64"))
   var blockSize: Int = _
 
-  var preparedList: BlockedList[Int] = _
-  var preparedListCopy: BlockedListCopy[Int] = _
+  var preparedBlockedList: BlockedList[Int] = _
+  var preparedFastBlockedList: FastBlockedList[Int] = _
   var preparedScalaList: List[Int] = _
 
   /** Number of elements used in all benchmarks. */
@@ -23,8 +45,8 @@ class BlockedListBenchmark {
 
   @Setup(Level.Trial)
   def setup(): Unit = {
-    preparedList = BlockedList[Int](List.range(1, 10000))(blockSize)
-    preparedListCopy = BlockedListCopy[Int](List.range(1, 10000))(blockSize)
+    preparedBlockedList = BlockedList[Int](List.range(1, 10000))(blockSize)
+    preparedFastBlockedList = FastBlockedList[Int](List.range(1, 10000))(blockSize)
     preparedScalaList = List.range(1, 10000)
 
   }
@@ -43,7 +65,7 @@ class BlockedListBenchmark {
 
   @Benchmark
   def copyOnWriteUncons(): Unit = {
-    var result = preparedList.uncons
+    var result = preparedBlockedList.uncons
     while (result.isDefined) {
       result = result.get._2.uncons
     }
@@ -52,21 +74,21 @@ class BlockedListBenchmark {
   @Benchmark
   def copyOnWriteForEach(): Long = {
     var sum = 0L
-    preparedList.forEach((a: Int) => sum += a)
+    preparedBlockedList.forEach((a: Int) => sum += a)
     sum
   }
 
   @Benchmark
   def copyOnWriteFoldLeft(): Long = {
-    preparedList.foldLeft(0L)((acc, elem) => acc + elem)
+    preparedBlockedList.foldLeft(0L)((acc, elem) => acc + elem)
 
   }
 
   //  //////////////////////////////////////////////////////////////////////////////////////////////
   // //////////////////////// no copy ////////////////////////
   @Benchmark
-  def noCopyPrepend(): BlockedListCopy[Int] = {
-    var list = BlockedListCopy.empty[Int](blockSize)
+  def noCopyPrepend(): FastBlockedList[Int] = {
+    var list = FastBlockedList.empty[Int](blockSize)
     var i = 1
     while (i <= ListSize) {
       list = list.prepend(i)
@@ -77,7 +99,7 @@ class BlockedListBenchmark {
 
   @Benchmark
   def noCopyWriteUncons(): Unit = {
-    var result = preparedListCopy.uncons
+    var result = preparedFastBlockedList.uncons
     while (result.isDefined) {
       result = result.get._2.uncons
     }
@@ -86,13 +108,13 @@ class BlockedListBenchmark {
   @Benchmark
   def noCopyWriteForEach(): Long = {
     var sum = 0L
-    preparedListCopy.forEach((a: Int) => sum += a)
+    preparedFastBlockedList.forEach((a: Int) => sum += a)
     sum
   }
 
   @Benchmark
   def noCopyFoldLeft(): Long = {
-    preparedListCopy.foldLeft(0L)((acc, elem: Int) => acc + elem)
+    preparedFastBlockedList.foldLeft(0L)((acc, elem: Int) => acc + elem)
   }
   //  /////////////////////////////////////////////////////////////
 
