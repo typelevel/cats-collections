@@ -21,7 +21,7 @@
 
 package cats.collections
 
-trait BlockedList[+T]{
+trait BlockedList[+T] {
   def uncons[A >: T]: Option[(A, BlockedList[A])]
   def prepend[A >: T](a: A): BlockedList[A]
   def forEach[U](f: T => U): Unit
@@ -31,7 +31,6 @@ trait BlockedList[+T]{
 
 object BlockedList {
 
-
   def apply[A](elements: A*)(BlockSize: Int): BlockedList[A] = {
     elements.foldRight(empty[A](BlockSize))((elem, acc) => acc.prepend(elem))
   }
@@ -40,13 +39,12 @@ object BlockedList {
   }
   def empty[A](BlockSize: Int): BlockedList[A] = Empty(BlockSize)
 
-
   private case class Empty(BlockSize: Int) extends BlockedList[Nothing] {
 
     override def uncons[A >: Nothing]: Option[(A, BlockedList[A])] = None
 
     override def prepend[A >: Nothing](a: A): BlockedList[A] = {
-      val arrayBlock =  new Array[Any](BlockSize)
+      val arrayBlock = new Array[Any](BlockSize)
       val offset = BlockSize - 1
       arrayBlock(offset) = a
       Impl(offset, arrayBlock, this, BlockSize)
@@ -59,7 +57,8 @@ object BlockedList {
     override def foldLeft[B](start: B)(f: (B, Nothing) => B): B = start
   }
 
-  private case class Impl[+T](offset: Int, block: Array[Any], tail: BlockedList[T], BlockSize: Int) extends BlockedList[T] {
+  private case class Impl[+T](offset: Int, block: Array[Any], tail: BlockedList[T], BlockSize: Int)
+      extends BlockedList[T] {
     @inline
     override def uncons[A >: T]: Option[(A, BlockedList[A])] = {
       val next = if (offset + 1 < BlockSize) {
@@ -67,7 +66,7 @@ object BlockedList {
       } else {
         tail
       }
-      Some( (block(offset).asInstanceOf[A], next) )
+      Some((block(offset).asInstanceOf[A], next))
     }
 
     override def prepend[A >: T](a: A): BlockedList[A] = {
@@ -80,7 +79,7 @@ object BlockedList {
       } else {
         val newOffset = BlockSize - 1
         newArray(newOffset) = a
-        Impl(newOffset, newArray,  this, BlockSize)
+        Impl(newOffset, newArray, this, BlockSize)
       }
     }
 
@@ -88,7 +87,7 @@ object BlockedList {
 
     override def forEach[U](f: T => U): Unit = {
       var i = offset
-      while (i < BlockSize){
+      while (i < BlockSize) {
         f(block(i).asInstanceOf[T])
         i += 1
       }
@@ -98,7 +97,7 @@ object BlockedList {
     override def foldLeft[B](start: B)(f: (B, T) => B): B = {
       var acc = start
       var i = offset
-      while(i < BlockSize){
+      while (i < BlockSize) {
         acc = f(acc, block(i).asInstanceOf[T])
         i += 1
       }

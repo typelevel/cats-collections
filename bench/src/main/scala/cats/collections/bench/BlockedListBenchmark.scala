@@ -31,7 +31,9 @@ import java.util.concurrent.TimeUnit
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 class BlockedListBenchmark {
 
-  /** Block size under test. Stored per-node in both implementations. */
+  /**
+   * Block size under test. Stored per-node in both implementations.
+   */
   @Param(Array("4", "8", "16", "32", "64"))
   var blockSize: Int = _
 
@@ -39,7 +41,9 @@ class BlockedListBenchmark {
   var preparedFastBlockedList: FastBlockedList[Int] = _
   var preparedScalaList: List[Int] = _
 
-  /** Number of elements used in all benchmarks. */
+  /**
+   * Number of elements used in all benchmarks.
+   */
   final val ListSize = 10000
 
   @Setup(Level.Trial)
@@ -169,7 +173,7 @@ class BlockedListBenchmark {
 //    while (list.uncons(blockSize).isDefined) {
 //      list = list.uncons(blockSize).get._2
 //    }
- // }
+  // }
 
 //
 //  @Benchmark
