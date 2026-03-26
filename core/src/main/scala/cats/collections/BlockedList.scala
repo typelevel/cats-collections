@@ -26,6 +26,8 @@ trait BlockedList[+T] {
   def prepend[A >: T](a: A): BlockedList[A]
   def forEach[U](f: T => U): Unit
   def foldLeft[B](start: B)(f: (B, T) => B): B
+  def map[B](f: T => B): BlockedList[B]
+  def map2expirement[B](f: T => B): BlockedList[B]
   def isEmpty: Boolean
 }
 
@@ -55,6 +57,10 @@ object BlockedList {
     override def forEach[U](f: Nothing => U): Unit = ()
 
     override def foldLeft[B](start: B)(f: (B, Nothing) => B): B = start
+
+    override def map[B](f: Nothing => B): BlockedList[B] = this
+
+    override def map2expirement[B](f: Nothing => B): BlockedList[B] = this
   }
 
   private case class Impl[+T](offset: Int, block: Array[Any], tail: BlockedList[T], BlockSize: Int)
@@ -102,6 +108,20 @@ object BlockedList {
         i += 1
       }
       tail.foldLeft(acc)(f)
+    }
+
+    override def map[B](f: T => B): BlockedList[B] = {
+      val arrayCopy = new Array[Any](BlockSize)
+      var i = offset
+      while (i < BlockSize) {
+        arrayCopy(i) = f(block(i).asInstanceOf[T])
+        i += 1
+      }
+      Impl(offset, arrayCopy, tail.map(f), BlockSize)
+    }
+
+    def map2expirement[B](f: T => B): BlockedList[B] = {
+      this.foldLeft(empty[B](BlockSize))((acc, element) => acc.prepend(f(element)))
     }
 
   }

@@ -154,6 +154,18 @@ class BlockedListBenchmark {
     sum
   }
 
+  //  Map
+
+  @Benchmark
+  def blockedListMap(): BlockedList[Int] = {
+    preparedBlockedList.map(_ + 1)
+  }
+
+  @Benchmark
+  def scalaListMap(): List[Int] = {
+    preparedScalaList.map(_ + 1)
+  }
+
 //I
 //  @Benchmark
 //  def copyPrepend(): BlockedList[Int] = {
