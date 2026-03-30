@@ -38,7 +38,7 @@ class BlockedListBenchmark {
   var blockSize: Int = _
 
   var preparedBlockedList: BlockedList[Int] = _
-  var preparedFastBlockedList: FastBlockedList[Int] = _
+  //  var preparedFastBlockedList: FastBlockedList[Int] = _
   var preparedScalaList: List[Int] = _
 
   /**
@@ -49,12 +49,17 @@ class BlockedListBenchmark {
   @Setup(Level.Trial)
   def setup(): Unit = {
     preparedBlockedList = BlockedList[Int](List.range(1, 10000))(blockSize)
-    preparedFastBlockedList = FastBlockedList[Int](List.range(1, 10000))(blockSize)
+    //    preparedFastBlockedList = FastBlockedList[Int](List.range(1, 10000))(blockSize)
     preparedScalaList = List.range(1, 10000)
 
   }
 
-  // ////////////////////////////////copy on write ///////////////////////////////
+  def listUncons[A](lst: List[A]): Option[(A, List[A])] = lst match {
+    case ::(head, next) => Some((head, next))
+    case Nil            => None
+  }
+
+  // ----------------------------------------------- Prepend -----------------------------
   @Benchmark
   def copyOnWritePrepend(): BlockedList[Int] = {
     var list = BlockedList.empty[Int](blockSize)
@@ -67,63 +72,6 @@ class BlockedListBenchmark {
   }
 
   @Benchmark
-  def copyOnWriteUncons(): Unit = {
-    var result = preparedBlockedList.uncons
-    while (result.isDefined) {
-      result = result.get._2.uncons
-    }
-  }
-
-  @Benchmark
-  def copyOnWriteForEach(): Long = {
-    var sum = 0L
-    preparedBlockedList.forEach((a: Int) => sum += a)
-    sum
-  }
-
-  @Benchmark
-  def copyOnWriteFoldLeft(): Long = {
-    preparedBlockedList.foldLeft(0L)((acc, elem) => acc + elem)
-
-  }
-
-  //  //////////////////////////////////////////////////////////////////////////////////////////////
-  // //////////////////////// no copy ////////////////////////
-  @Benchmark
-  def noCopyPrepend(): FastBlockedList[Int] = {
-    var list = FastBlockedList.empty[Int](blockSize)
-    var i = 1
-    while (i <= ListSize) {
-      list = list.prepend(i)
-      i += 1
-    }
-    list
-  }
-
-  @Benchmark
-  def noCopyWriteUncons(): Unit = {
-    var result = preparedFastBlockedList.uncons
-    while (result.isDefined) {
-      result = result.get._2.uncons
-    }
-  }
-
-  @Benchmark
-  def noCopyWriteForEach(): Long = {
-    var sum = 0L
-    preparedFastBlockedList.forEach((a: Int) => sum += a)
-    sum
-  }
-
-  @Benchmark
-  def noCopyFoldLeft(): Long = {
-    preparedFastBlockedList.foldLeft(0L)((acc, elem: Int) => acc + elem)
-  }
-  //  /////////////////////////////////////////////////////////////
-
-  // //////////////////////////// Naive List //////////////////////
-
-  @Benchmark
   def scalaListPrepend(): List[Int] = {
     var list = List.empty[Int]
     var i = 1
@@ -134,17 +82,48 @@ class BlockedListBenchmark {
     list
   }
 
+  // ---------------------------------------------- unCons ------------------------------------------------
   @Benchmark
-  def scalaListUncons(): Unit = {
-    var list = preparedScalaList
-    while (list.nonEmpty) {
-      list = list.tail
+  def copyOnWriteUncons(): Unit = {
+    var result = preparedBlockedList.uncons
+    while (result.isDefined) {
+      result = result.get._2.uncons
     }
   }
 
   @Benchmark
-  def scalaListFoldLeft(): Long = {
-    preparedScalaList.foldLeft(0L)((acc, a) => acc + a)
+  def scalaListUncons(): Unit = {
+    var result = listUncons(preparedScalaList)
+    while (result.isDefined) {
+      result = listUncons(result.get._2)
+    }
+  }
+
+  // ---------------------------------------------- tail ------------------------------------------------
+
+  @Benchmark
+  def copyOnTail(): Unit = {
+    var result = preparedBlockedList.tailE
+    while (!result.isEmpty) {
+      result = result.tailE
+    }
+  }
+
+  @Benchmark
+  def scalaListTail(): Unit = {
+    var result = preparedScalaList
+    while (result.nonEmpty) {
+      result = result.tail
+    }
+  }
+
+  //  -------------------------- ForeEach -------------------------------
+
+  @Benchmark
+  def copyOnWriteForEach(): Long = {
+    var sum = 0L
+    preparedBlockedList.forEach((a: Int) => sum += a)
+    sum
   }
 
   @Benchmark
@@ -154,7 +133,20 @@ class BlockedListBenchmark {
     sum
   }
 
-  //  Map
+  // -----------------------------------  FoldLeft ---------------------------------
+
+  @Benchmark
+  def copyOnWriteFoldLeft(): Long = {
+    preparedBlockedList.foldLeft(0L)((acc, elem) => acc + elem)
+
+  }
+
+  @Benchmark
+  def scalaListFoldLeft(): Long = {
+    preparedScalaList.foldLeft(0L)((acc, a) => acc + a)
+  }
+
+  //  -----------------------------------  Map ---------------------------------
 
   @Benchmark
   def blockedListMap(): BlockedList[Int] = {
@@ -162,53 +154,14 @@ class BlockedListBenchmark {
   }
 
   @Benchmark
+  def blockedListMap2expirement(): BlockedList[Int] = {
+    preparedBlockedList.map2expirement(_ + 1)
+  }
+
+  @Benchmark
   def scalaListMap(): List[Int] = {
     preparedScalaList.map(_ + 1)
   }
-
-//I
-//  @Benchmark
-//  def copyPrepend(): BlockedList[Int] = {
-//    // This runs in a loop; you want to measure the cost of a single prepend
-//    // Usually you'd have a baseline and a measured operation
-//    var list = BlockedList.empty[Int]
-//    for (i <- 1 to 1000) {
-//      list = list.prepend(i)(blockSize)
-//    }
-//    list
-//  }
-//
-//  @Benchmark
-//  def copyUncons(): Unit = {
-//    // Build a large list first, then uncons all elements
-//    var list = BlockedList[Int](List.range(1, 10000))(blockSize)
-//    while (list.uncons(blockSize).isDefined) {
-//      list = list.uncons(blockSize).get._2
-//    }
-  // }
-
-//
-//  @Benchmark
-//  def scalaListPrepend1000(): List[Int] = {
-//    var list = List.empty[Int]
-//    var i = 0
-//    while (i < 1000) {
-//      list = i :: list
-//      i += 1
-//    }
-//    list
-//  }
-//
-//  // Compare with Scala's Vector prepend
-//  @Benchmark
-//  def scalaVectorPrepend1000(): Vector[Int] = {
-//    var vec = Vector.empty[Int]
-//    var i = 0
-//    while (i < 1000) {
-//      vec = i +: vec
-//      i += 1
-//    }
-//    vec
-//  }
-
 }
+
+//  -----------------------------------  ----------------------------  ---------------------------------

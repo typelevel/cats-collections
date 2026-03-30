@@ -23,16 +23,18 @@ package cats.collections
 
 import cats.Eval
 
+import java.util.NoSuchElementException
 import scala.annotation.tailrec
 
 sealed trait BlockedList[+T] {
   def uncons[A >: T]: Option[(A, BlockedList[A])]
   def prepend[A >: T](a: A): BlockedList[A]
+  def tailE: BlockedList[T]
   def forEach[U](f: T => U): Unit
   def foldLeft[B](start: B)(f: (B, T) => B): B
   def map[B](f: T => B): BlockedList[B]
-  def map2expirement[B](f: T => B): BlockedList[B]
   def reverse: BlockedList[T]
+  def map2expirement[B](f: T => B): BlockedList[B]
   def isEmpty: Boolean
 }
 
@@ -46,7 +48,7 @@ object BlockedList {
   }
   def empty[A](BlockSize: Int): BlockedList[A] = Empty(BlockSize)
 
-  private case class Empty(BlockSize: Int) extends BlockedList[Nothing] {
+  final case class Empty(BlockSize: Int) extends BlockedList[Nothing] {
 
     override def uncons[A >: Nothing]: Option[(A, BlockedList[A])] = None
 
@@ -68,9 +70,11 @@ object BlockedList {
     override def map2expirement[B](f: Nothing => B): BlockedList[B] = this
 
     override def reverse: BlockedList[Nothing] = this
+
+    override def tailE: BlockedList[Nothing] = throw new NoSuchElementException()
   }
 
-  private case class Impl[+T](offset: Int, block: Array[Any], tail: BlockedList[T], BlockSize: Int)
+  final case class Impl[+T](offset: Int, block: Array[Any], tail: BlockedList[T], BlockSize: Int)
       extends BlockedList[T] {
     @inline
     override def uncons[A >: T]: Option[(A, BlockedList[A])] = {
@@ -102,14 +106,15 @@ object BlockedList {
       @tailrec
       def helper(acc: BlockedList[T]): Unit = {
         acc match {
-          case Empty(BlockSize)                     => ()
-          case Impl(offset, block, tail, BlockSize) =>
+          case Impl(offset, block, tail, bs) =>
             var i = offset
-            while (i < BlockSize) {
+            while (i < bs) {
               f(block(i).asInstanceOf[T])
               i += 1
             }
             helper(tail)
+
+          case Empty(bs) => ()
         }
       }
       helper(this)
@@ -120,15 +125,17 @@ object BlockedList {
       @tailrec
       def helper(finalAcc: B, remainList: BlockedList[T]): B = {
         remainList match {
-          case Empty(BlockSize)                     => finalAcc
-          case Impl(offset, block, tail, BlockSize) =>
+
+          case Impl(offset, block, tail, bs) =>
             var acc = finalAcc
             var i = offset
-            while (i < BlockSize) {
+            while (i < bs) {
               acc = f(acc, block(i).asInstanceOf[T])
               i += 1
             }
             helper(acc, tail)
+
+          case Empty(bs) => finalAcc
         }
       }
       helper(start, this)
@@ -139,15 +146,17 @@ object BlockedList {
       @tailrec
       def helper(curent: BlockedList[T], acc: BlockedList[B]): BlockedList[B] = {
         curent match {
-          case Empty(BlockSize)                     => acc
-          case Impl(offset, block, tail, BlockSize) =>
+
+          case Impl(offset, block, tail, bs) =>
             val arrayCopy = new Array[Any](BlockSize)
             var i = offset
-            while (i < BlockSize) {
+            while (i < bs) {
               arrayCopy(i) = f(block(i).asInstanceOf[T])
               i += 1
             }
-            helper(tail, Impl(offset, arrayCopy, acc, BlockSize))
+            helper(tail, Impl(offset, arrayCopy, acc, bs))
+
+          case Empty(bs) => acc
         }
       }
 
@@ -155,35 +164,62 @@ object BlockedList {
 
     }
 
-    def map2expirement[B](f: T => B): BlockedList[B] = {
-      def helper(curent: BlockedList[T], acc: BlockedList[B] => BlockedList[B]): BlockedList[B] = {
-        curent match {
-          case Empty(BlockSize) => acc(empty(BlockSize))
+    override def map2expirement[B](f: T => B): BlockedList[B] = {
+      def helper(blocks: List[(Int, Array[Any])], acc: BlockedList[T]): BlockedList[B] = acc match {
+        case Impl(offset, block, tail, bs) =>
+          val arrayCopy = new Array[Any](bs)
+          var i = offset
+          while (i < bs) {
+            arrayCopy(i) = f(block(i).asInstanceOf[T])
+            i += 1
+          }
+          helper((offset, arrayCopy) :: blocks, tail)
 
-          case Impl(offset, block, tail, BlockSize) =>
-            val arrayCopy = new Array[Any](BlockSize)
-            var i = offset
-            while (i < BlockSize) {
-              arrayCopy(i) = f(block(i).asInstanceOf[T])
-              i += 1
-            }
-            helper(tail, (rest: BlockedList[B]) => acc(Impl(offset, arrayCopy, rest, BlockSize)))
-        }
+        case Empty(bs) =>
+          blocks.foldLeft(BlockedList.empty(bs)) { case (blockListAcc, (perNodeOffset, arrayBlock)) =>
+            Impl(perNodeOffset, arrayBlock, blockListAcc, bs)
+          }
       }
-      helper(this, identity)
+      helper(Nil, this)
     }
+
+    //     def map2expirement[B](f: T => B): BlockedList[B] = {
+    //       def helper(curent: BlockedList[T], acc: BlockedList[B] => BlockedList[B]): BlockedList[B] = {
+    //         curent match {
+    //           case Impl(offset, block, tail, bs) =>
+    //             val arrayCopy = new Array[Any](BlockSize)
+    //             var i = offset
+    //             while(i < bs) {
+    //               arrayCopy(i) = f( block(i).asInstanceOf[T] )
+    //               i += 1
+    //             }
+    //             helper(tail, ( (rest: BlockedList[B]) => acc(Impl(offset, arrayCopy, rest, bs)) ))
+    //
+    //           case Empty(bs) => acc(empty(bs))
+    //         }
+    //       }
+    //       helper(this, identity)
+    //     }
 
     override def reverse: BlockedList[T] = {
       @tailrec
       def helper(curent: BlockedList[T], acc: BlockedList[T]): BlockedList[T] = {
         curent match {
-          case Empty(BlockSize)                     => acc
-          case Impl(offset, block, tail, BlockSize) =>
-            helper(tail, Impl(offset, block, acc, BlockSize))
+          case Impl(offset, block, tail, bs) =>
+            helper(tail, Impl(offset, block, acc, bs))
+
+          case Empty(bs) => acc
         }
       }
       helper(this, Empty(BlockSize))
     }
 
+    override def tailE: BlockedList[T] = {
+      if (offset + 1 < BlockSize) {
+        Impl(offset + 1, block, tail, BlockSize)
+      } else {
+        tail
+      }
+    }
   }
 }
