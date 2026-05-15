@@ -324,6 +324,7 @@ sealed trait DequeueInstances {
     override def combine(l: Dequeue[A], r: Dequeue[A]) = l ++ r
   }
 
+  
   implicit val dequeueInstance: Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] = new Traverse[Dequeue]
     with MonoidK[Dequeue]
     with CoflatMap[Dequeue] {

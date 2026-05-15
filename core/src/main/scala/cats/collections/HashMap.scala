@@ -1429,7 +1429,9 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
 }
 
 sealed abstract private[collections] class HashMapInstances extends HashMapInstances1 {
-  implicit def catsCollectionsUnorderedTraverseForHashMap [K] (implicit @unused ev: Hash[K]): UnorderedTraverse[HashMap[K, *]] =
+  implicit def catsCollectionsUnorderedTraverseForHashMap[K](implicit
+    @unused ev: Hash[K]
+  ): UnorderedTraverse[HashMap[K, *]] =
     new UnorderedTraverse[HashMap[K, *]] {
       override def nonEmpty[A](fa: HashMap[K, A]): Boolean = fa.nonEmpty
 
