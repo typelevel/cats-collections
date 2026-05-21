@@ -273,12 +273,12 @@ final class HashSet[A] private (private val rootNode: HashSet.Node[A])(implicit 
   /**
    * Typesafe equality operator.
    *
-   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashSet]] values of the same
-   * element type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather than
-   * using the universal equality provided by [[java.lang.Object#equals]].
+   * This method is similar to [[scala.Any#==]] except that it only allows two [[HashSet]] values of the same element
+   * type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather than using
+   * the universal equality provided by [[java.lang.Object#equals]].
    *
    * @param that
-   *   the [[cats.data.HashSet]] to check for equality with this set.
+   *   the [[HashSet]] to check for equality with this set.
    * @return
    *   `true` if this set and `that` are equal, `false` otherwise.
    */
@@ -319,38 +319,38 @@ object HashSet extends compat.HashSetCompatCompanion {
     scala.util.hashing.byteswap32(hash)
 
   /**
-   * Creates a new empty [[cats.data.HashSet]] which uses `hash` for hashing.
+   * Creates a new empty [[HashSet]] which uses `hash` for hashing.
    *
    * @param hash
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new empty [[cats.data.HashSet]].
+   *   a new empty [[HashSet]].
    */
   final def empty[A](implicit hash: Hash[A]): HashSet[A] =
     new HashSet(Node.empty[A])
 
   /**
-   * Creates a new [[cats.data.HashSet]] which contains all elements of `as`.
+   * Creates a new [[HashSet]] which contains all elements of `as`.
    *
    * @param as
-   *   the elements to add to the [[cats.data.HashSet]].
+   *   the elements to add to the [[HashSet]].
    * @param hash
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashSet]] which contains all elements of `as`.
+   *   a new [[HashSet]] which contains all elements of `as`.
    */
   final def apply[A](as: A*)(implicit hash: Hash[A]) =
     fromSeq(as)
 
   /**
-   * Creates a new [[cats.data.HashSet]] which contains all elements of `seq`.
+   * Creates a new [[HashSet]] which contains all elements of `seq`.
    *
    * @param seq
-   *   the sequence of elements to add to the [[cats.data.HashSet]].
+   *   the sequence of elements to add to the [[HashSet]].
    * @param hash
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashSet]] which contains all elements of `seq`.
+   *   a new [[HashSet]] which contains all elements of `seq`.
    */
   final def fromSeq[A](seq: Seq[A])(implicit hash: Hash[A]): HashSet[A] = {
     val rootNode = seq.foldLeft(Node.empty[A]) { case (node, a) =>
@@ -360,14 +360,14 @@ object HashSet extends compat.HashSetCompatCompanion {
   }
 
   /**
-   * Creates a new [[cats.data.HashSet]] which contains all elements of `iterable`.
+   * Creates a new [[HashSet]] which contains all elements of `iterable`.
    *
    * @param seq
-   *   the iterable source of elements to add to the [[cats.data.HashSet]].
+   *   the iterable source of elements to add to the [[HashSet]].
    * @param hash
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashSet]] which contains all elements of `iterable`.
+   *   a new [[HashSet]] which contains all elements of `iterable`.
    */
   final def fromIterableOnce[A](iterable: IterableOnce[A])(implicit hash: Hash[A]): HashSet[A] = {
     iterable match {
@@ -382,16 +382,16 @@ object HashSet extends compat.HashSetCompatCompanion {
   }
 
   /**
-   * Creates a new [[cats.data.HashSet]] which contains all elements of `fkv`.
+   * Creates a new [[HashSet]] which contains all elements of `fkv`.
    *
    * @param fa
-   *   the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashSet]].
+   *   the [[cats.Foldable]] structure of elements to add to the [[HashSet]].
    * @param F
    *   the [[cats.Foldable]] instance used for folding the structure.
    * @param hash
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashSet]] which contains all elements of `fa`.
+   *   a new [[HashSet]] which contains all elements of `fa`.
    */
   final def fromFoldable[F[_], A](fa: F[A])(implicit F: Foldable[F], hash: Hash[A]): HashSet[A] = {
     val rootNode = F.foldLeft(fa, Node.empty[A]) { case (node, a) =>
