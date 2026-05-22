@@ -130,8 +130,8 @@ class DequeueSuite extends DisciplineSuite {
     assertEquals(q.toList, Foldable[Dequeue].toList(q))
   })
 
-  property("toList/toStream consistency")(forAll { (q: Dequeue[Int]) =>
-    assertEquals(q.toList, q.to[Stream, Int].toList)
+  property("toList/toVector consistency")(forAll { (q: Dequeue[Int]) =>
+    assertEquals(q.toList, q.to[Vector, Int].toList)
   })
 
   property("equality")(forAll { (xs: List[Int]) =>

@@ -40,6 +40,7 @@ import cats.{
 
 import cats.implicits._
 import scala.annotation.tailrec
+import org.typelevel.scalaccompat.annotation._
 
 /**
  * Implementation of "Purely Functional Random Access Lists" by Chris Okasaki. This gives O(1) cons and uncons, and 2
@@ -791,6 +792,9 @@ object TreeList extends TreeListInstances0 {
       ts.toIterator.map(sa.show(_)).mkString("TreeList(", ", ", ")")
     }
 
+  @nowarn213(
+    "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
+  )
   implicit val catsCollectionTreeListInstances: Traverse[TreeList]
     with Alternative[TreeList]
     with Monad[TreeList]

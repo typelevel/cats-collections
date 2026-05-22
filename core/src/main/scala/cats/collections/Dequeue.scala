@@ -27,6 +27,7 @@ import cats.data.NonEmptyList
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 import cats.collections.compat.Factory
+import org.typelevel.scalaccompat.annotation._
 
 /**
  * Dequeue - A Double Ended Queue
@@ -324,25 +325,28 @@ sealed trait DequeueInstances {
     override def combine(l: Dequeue[A], r: Dequeue[A]) = l ++ r
   }
 
-  implicit val dequeueInstance: Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] = new Traverse[Dequeue]
-    with MonoidK[Dequeue]
-    with CoflatMap[Dequeue] {
-    override def empty[A]: Dequeue[A] = Dequeue.empty
+  @nowarn213(
+    "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
+  )
+  implicit val dequeueInstance: Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] =
+    new Traverse[Dequeue] with MonoidK[Dequeue] with CoflatMap[Dequeue] {
+      override def empty[A]: Dequeue[A] = Dequeue.empty
 
-    override def combineK[A](l: Dequeue[A], r: Dequeue[A]): Dequeue[A] = l ++ r
+      override def combineK[A](l: Dequeue[A], r: Dequeue[A]): Dequeue[A] = l ++ r
 
-    override def map[A, B](fa: Dequeue[A])(f: A => B) = fa.map(f)
+      override def map[A, B](fa: Dequeue[A])(f: A => B) = fa.map(f)
 
-    override def coflatMap[A, B](fa: Dequeue[A])(f: Dequeue[A] => B): Dequeue[B] = fa.coflatMap(f)
+      override def coflatMap[A, B](fa: Dequeue[A])(f: Dequeue[A] => B): Dequeue[B] = fa.coflatMap(f)
 
-    override def foldLeft[A, B](fa: Dequeue[A], b: B)(f: (B, A) => B): B =
-      fa.foldLeft(b)(f)
+      override def foldLeft[A, B](fa: Dequeue[A], b: B)(f: (B, A) => B): B =
+        fa.foldLeft(b)(f)
 
-    override def foldRight[A, B](fa: Dequeue[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = fa.foldRight(lb)(f)
+      override def foldRight[A, B](fa: Dequeue[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+        fa.foldRight(lb)(f)
 
-    override def traverse[G[_], A, B](fa: Dequeue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Dequeue[B]] = {
-      val gba = G.pure(EmptyDequeue[B]())
-      fa.foldLeft(gba)((bs, a) => G.map2(bs, f(a))(_ :+ _))
+      override def traverse[G[_], A, B](fa: Dequeue[A])(f: A => G[B])(implicit G: Applicative[G]): G[Dequeue[B]] = {
+        val gba = G.pure(EmptyDequeue[B]())
+        fa.foldLeft(gba)((bs, a) => G.map2(bs, f(a))(_ :+ _))
+      }
     }
-  }
 }

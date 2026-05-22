@@ -56,6 +56,8 @@ import cats.kernel.Monoid
 import cats.kernel.compat.scalaVersionSpecific._
 import cats.syntax.eq._
 
+import org.typelevel.scalaccompat.annotation.unused
+
 import java.util.Arrays
 
 import HashMap.improve
@@ -216,12 +218,12 @@ final class HashMap[K, +V] private[collections] (private[collections] val rootNo
   /**
    * Typesafe equality operator.
    *
-   * This method is similar to [[scala.Any#==]] except that it only allows two [[cats.data.HashMap]] values of the same
-   * key-value type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather
-   * than using the universal equality provided by [[java.lang.Object#equals]].
+   * This method is similar to [[scala.Any#==]] except that it only allows two [[HashMap]] values of the same key-value
+   * type to be compared to each other, and uses equality provided by [[cats.kernel.Eq]] instances, rather than using
+   * the universal equality provided by [[java.lang.Object#equals]].
    *
    * @param that
-   *   the [[cats.data.HashMap]] to check for equality with this map.
+   *   the [[HashMap]] to check for equality with this map.
    * @param eqValue
    *   the [[cats.kernel.Eq]] instance to use for comparing values.
    * @return
@@ -309,38 +311,38 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
     scala.util.hashing.byteswap32(hash)
 
   /**
-   * Creates a new empty [[cats.data.HashMap]] which uses `hashKey` for hashing.
+   * Creates a new empty [[HashMap]] which uses `hashKey` for hashing.
    *
    * @param hashKey
    *   the [[cats.kernel.Hash]] instance used for hashing keys.
    * @return
-   *   a new empty [[cats.data.HashMap]].
+   *   a new empty [[HashMap]].
    */
   final def empty[K, V](implicit hashKey: Hash[K]): HashMap[K, V] =
     new HashMap[K, V](Node.empty[K, V])
 
   /**
-   * Creates a new [[cats.data.HashMap]] which contains all elements of `kvs`.
+   * Creates a new [[HashMap]] which contains all elements of `kvs`.
    *
    * @param kvs
-   *   the key-value pairs to add to the [[cats.data.HashMap]].
+   *   the key-value pairs to add to the [[HashMap]].
    * @param hashKey
    *   the [[cats.kernel.Hash]] instance used for hashing keys.
    * @return
-   *   a new [[cats.data.HashMap]] which contains all elements of `kvs`.
+   *   a new [[HashMap]] which contains all elements of `kvs`.
    */
   final def apply[K, V](kvs: (K, V)*)(implicit hashKey: Hash[K]) =
     fromSeq(kvs)
 
   /**
-   * Creates a new [[cats.data.HashMap]] which contains all elements of `seq`.
+   * Creates a new [[HashMap]] which contains all elements of `seq`.
    *
    * @param seq
-   *   the sequence of elements to add to the [[cats.data.HashMap]].
+   *   the sequence of elements to add to the [[HashMap]].
    * @param hashKey
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashMap]] which contains all elements of `seq`.
+   *   a new [[HashMap]] which contains all elements of `seq`.
    */
   final def fromSeq[K, V](seq: Seq[(K, V)])(implicit hashKey: Hash[K]): HashMap[K, V] = {
     val rootNode = seq.foldLeft(Node.empty[K, V]) { case (node, (k, v)) =>
@@ -350,14 +352,14 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-   * Creates a new [[cats.data.HashMap]] which contains all elements of `iterable`.
+   * Creates a new [[HashMap]] which contains all elements of `iterable`.
    *
    * @param iterable
-   *   the iterable source of elements to add to the [[cats.data.HashMap]].
+   *   the iterable source of elements to add to the [[HashMap]].
    * @param hashKey
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashMap]] which contains all elements of `iterable`.
+   *   a new [[HashMap]] which contains all elements of `iterable`.
    */
   final def fromIterableOnce[K, V](iterable: IterableOnce[(K, V)])(implicit hashKey: Hash[K]): HashMap[K, V] = {
     iterable match {
@@ -372,16 +374,16 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
   }
 
   /**
-   * Creates a new [[cats.data.HashMap]] which contains all elements of `fkv`.
+   * Creates a new [[HashMap]] which contains all elements of `fkv`.
    *
    * @param fkv
-   *   the [[cats.Foldable]] structure of elements to add to the [[cats.data.HashMap]].
+   *   the [[cats.Foldable]] structure of elements to add to the [[HashMap]].
    * @param F
    *   the [[cats.Foldable]] instance used for folding the structure.
    * @param hashKey
    *   the [[cats.kernel.Hash]] instance used for hashing values.
    * @return
-   *   a new [[cats.data.HashMap]] which contains all elements of `fkv`.
+   *   a new [[HashMap]] which contains all elements of `fkv`.
    */
   final def fromFoldable[F[_], K, V](fkv: F[(K, V)])(implicit F: Foldable[F], hashKey: Hash[K]): HashMap[K, V] = {
     val rootNode = F.foldLeft(fkv, Node.empty[K, V]) { case (node, (k, v)) =>
@@ -527,7 +529,7 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
      * rather than using the universal equality provided by [[java.lang.Object#equals]].
      *
      * @param that
-     *   the [[cats.data.HashMap.Node]] to check for equality with this node.
+     *   the [[HashMap.Node]] to check for equality with this node.
      * @param eqValue
      *   the [[cats.kernel.Eq]] instance to use for comparing values.
      * @return
@@ -1427,7 +1429,9 @@ object HashMap extends HashMapInstances with compat.HashMapCompatCompanion {
 }
 
 sealed abstract private[collections] class HashMapInstances extends HashMapInstances1 {
-  implicit def catsCollectionsUnorderedTraverseForHashMap[K: Hash]: UnorderedTraverse[HashMap[K, *]] =
+  implicit def catsCollectionsUnorderedTraverseForHashMap[K](implicit
+    @unused ev: Hash[K]
+  ): UnorderedTraverse[HashMap[K, *]] =
     new UnorderedTraverse[HashMap[K, *]] {
       override def nonEmpty[A](fa: HashMap[K, A]): Boolean = fa.nonEmpty
 
