@@ -15,8 +15,6 @@ ThisBuild / startYear := Some(2015)
 
 ThisBuild / crossScalaVersions := Seq(Scala3, Scala213, Scala212)
 ThisBuild / tlVersionIntroduced := Map("3" -> "0.9.3")
-ThisBuild / tlCiReleaseBranches := Seq("master")
-ThisBuild / tlSitePublishBranch := Some("master")
 ThisBuild / githubWorkflowJavaVersions := Seq("8", "21").map(JavaSpec.temurin)
 ThisBuild / githubWorkflowAddedJobs +=
   WorkflowJob(
