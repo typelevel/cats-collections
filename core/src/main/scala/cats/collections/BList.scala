@@ -124,11 +124,11 @@ object BList {
       }
     }
     def getUnsafe(idx: Long): A = {
-      if (idx < 0) {
+      if (idx < 0)
         throw new IndexOutOfBoundsException
-      } else {
-        @tailrec
-        def go(idx: Long, l: BList[A]): A = {
+
+      @tailrec
+      def go(idx: Long, l: BList[A]): A = {
           l match {
             case Empty                     => throw new NoSuchElementException("invalid index")
             case Impl(offset, block, tail) =>
