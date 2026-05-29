@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2015 Typelevel
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 import scala.annotation.tailrec
 
 sealed abstract class BList[+A] {
@@ -12,8 +33,15 @@ sealed abstract class BList[+A] {
   def map[B](fn: A => B): BList[B]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def drop(n: Long): BList[A]
-  // def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
-  // def combineK
+  def combineK [B >: A](l2: BList[B]): BList[B]
+  def toList: List[A]
+  //def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
+  //final def take(n: Long): TreeList[A] =
+
+  final def ::[B >: A](a: B): BList[B] = prepend(a)
+
+  final def ++[B >: A](l2: BList[B]): BList[B] = combineK(l2)
+  
 
   override def toString: String = { // go back and optimize with blocks
     val strb = new java.lang.StringBuilder
@@ -39,7 +67,7 @@ object BList {
   case object Empty extends BList[Nothing] {
     def uncons = None
     def prepend[A](a: A): BList[A] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
-      val ary = (new Array[Any](BlockSize)).asInstanceOf[Array[A]]
+      val ary = new Array[Any](BlockSize)
       val offset = BlockSize - 1
       ary(offset) = a
       Impl(offset, ary, Empty)
@@ -53,6 +81,8 @@ object BList {
     def map[B](fn: Nothing => B): BList[B] = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def drop(n: Long): BList[Nothing] = Empty
+    def combineK[B](l2: BList[B]): BList[B] = l2
+    def toList: List[Nothing] = Nil
     // def strictFoldRight[B](acc: B)(fn: (Nothing, B) => B): B = acc
 
   }
@@ -64,6 +94,8 @@ object BList {
   }
 
   private object Impl {
+    def apply[A](offset: Int, block: Array[A], tail: BList[A]): Impl[A] =
+      new Impl(offset, block, tail)
     def apply[A](offset: Int, block: Array[Any], tail: BList[A]): Impl[A] =
       new Impl(offset, block.asInstanceOf[Array[A]], tail)
 
@@ -80,13 +112,12 @@ object BList {
 
       if (offset > 0) {
         // copy the right side
-        val ary = block.clone() // replaced with copyof method to prevent having to zero out the memory first
+        val ary = block.clone().asInstanceOf[Array[B]] // replaced with copyof method to prevent having to zero out the memory first
         val nextOffset = offset - 1
-        ary(nextOffset) =
-          a.asInstanceOf[A] // dont know if i like as instance of. because a is a B here, but ary:Array[A]
+        ary(nextOffset) = a 
         Impl(nextOffset, ary, tail)
       } else {
-        val ary = new Array[Any](BlockSize)
+        val ary = block.clone().asInstanceOf[Array[B]]
         val offset = BlockSize - 1
         ary(offset) = a
         Impl(offset, ary, this)
@@ -129,18 +160,17 @@ object BList {
 
       @tailrec
       def go(idx: Long, l: BList[A]): A = {
-          l match {
-            case Empty                     => throw new NoSuchElementException("invalid index")
-            case Impl(offset, block, tail) =>
-              if (idx < BlockSize - offset) {
-                block(offset + idx.toInt).asInstanceOf[A]
-              } else {
-                go(idx - (BlockSize - offset), tail)
-              }
-          }
+        l match {
+          case Empty                     => throw new NoSuchElementException("invalid index")
+          case Impl(offset, block, tail) =>
+            if (idx < BlockSize - offset) {
+              block(offset + idx.toInt).asInstanceOf[A]
+            } else {
+              go(idx - (BlockSize - offset), tail)
+            }
         }
-        go(idx, this)
       }
+      go(idx, this)
     }
     def lastOption: Option[A] = {
       @tailrec
@@ -165,12 +195,11 @@ object BList {
       }
       loop(this, 0L)
     }
-    def map[B](fn: A => B): BList[B] = {
-      val ary = new Array[Any](BlockSize)
-      System.arraycopy(block, offset, ary, offset, BlockSize - offset)
+    def map[B](fn: A => B): BList[B] = { 
+      val ary = block.clone().asInstanceOf[Array[B]]
       var i = 0
       while (i < ary.length) {
-        ary(i) = fn(ary(i).asInstanceOf[A])
+        ary(i) = fn(block(i))
         i += 1
       }
       Impl(offset, ary, tail.map(fn))
@@ -202,14 +231,47 @@ object BList {
               go(n - (BlockSize - offset), tail)
             } else {
               val m: Int = math.max(n.toInt, 0) // drop < 0 is the same as drop 0
-              val ary = (new Array[Any](BlockSize)).asInstanceOf[Array[A]]
-              System.arraycopy(block, offset + m, ary, offset + m, BlockSize - (offset + m))
+              val ary = block
+                .clone() // clone and new offset should do the trick because api doesnt expose the arrays so you can only access after offset
               Impl(offset + m, ary, tail)
             }
         }
       }
       go(n, this)
     }
+    def combineK[B >: A](l2: BList[B]): BList[B] = 
+  {
+    // TODO add special cases for if the block is a certain amount empty to shuffle things over
+    // maybe use benchmarking to find out optimal number here??
+
+    // copy l1/this and have it's tail be replaced with l2
+    //@tailrec   !!! not tail rec rn !!!
+    def go(l: BList[A]): BList[B] = {
+      l.asInstanceOf[Impl[A]] match {
+        case Impl(offset, block, tail) =>
+          tail match {
+            case Empty         => l2 
+            case Impl(_, _, _) => 
+              val ary =  block.clone().asInstanceOf[Array[B]]
+              Impl(offset, ary, go(tail))
+          }
+      }
+    }
+
+    // for now only check if both are empty
+    (this, l2) match {
+      case (_, Empty) => this
+      case (_,_) => go(this)
+
+    }
+  }
+
+  def toList: List[A] = {
+    // TODO OBVIOUSLY NOT NIL
+    Nil
+
+  }
+  
     /*
     def strictFoldRight[B](acc: B)(fn: (A, B) => B): B = {
       // TODO
