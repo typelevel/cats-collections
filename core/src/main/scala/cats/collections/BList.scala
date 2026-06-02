@@ -72,8 +72,8 @@ object BList {
       ary(offset) = a
       Impl(offset, ary, Empty)
     }
-    def headOption: Option[Nothing] = None
-    def tailOption: Option[Nothing] = None
+    def headOption: None.type = None
+    def tailOption: None.type = None
     def get(idx: Long): Option[Nothing] = None
     def getUnsafe(idx: Long): Nothing = throw new NoSuchElementException("invalid index")
     def lastOption: Option[Nothing] = None
