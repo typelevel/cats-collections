@@ -23,7 +23,7 @@ import scala.annotation.tailrec
 
 sealed abstract class BList[+A] {
   def uncons: Option[(A, BList[A])]
-  def prepend[B >: A](a: B): BList[B]
+  def prepend[B >: A](a: B): BList.NonEmpty[B]
   def headOption: Option[A]
   def tailOption: Option[BList[A]]
   def get(idx: Long): Option[A]
