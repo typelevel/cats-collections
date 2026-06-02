@@ -22,8 +22,10 @@
 package cats.collections
 
 import munit.DisciplineSuite
+import org.scalacheck.Test
 
-class BListSuite extends DiscipineSuite{
+class BListSuite extends DisciplineSuite {
+  override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
 
 }

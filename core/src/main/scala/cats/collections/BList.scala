@@ -33,15 +33,14 @@ sealed abstract class BList[+A] {
   def map[B](fn: A => B): BList[B]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def drop(n: Long): BList[A]
-  def combineK [B >: A](l2: BList[B]): BList[B]
+  def combineK[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
-  //def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
-  //final def take(n: Long): TreeList[A] =
+  // def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
+  // final def take(n: Long): TreeList[A] =
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
 
   final def ++[B >: A](l2: BList[B]): BList[B] = combineK(l2)
-  
 
   override def toString: String = { // go back and optimize with blocks
     val strb = new java.lang.StringBuilder
@@ -66,7 +65,7 @@ object BList {
   private val BlockSize = 4 // test with different values
   case object Empty extends BList[Nothing] {
     def uncons = None
-    def prepend[A](a: A): BList[A] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
+    def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
       val ary = new Array[Any](BlockSize)
       val offset = BlockSize - 1
       ary(offset) = a
@@ -74,15 +73,15 @@ object BList {
     }
     def headOption: None.type = None
     def tailOption: None.type = None
-    def get(idx: Long): Option[Nothing] = None
+    def get(idx: Long): None.type = None
     def getUnsafe(idx: Long): Nothing = throw new NoSuchElementException("invalid index")
-    def lastOption: Option[Nothing] = None
+    def lastOption: None.type = None
     def size: Long = 0
     def map[B](fn: Nothing => B): BList[B] = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def drop(n: Long): BList[Nothing] = Empty
     def combineK[B](l2: BList[B]): BList[B] = l2
-    def toList: List[Nothing] = Nil
+    override def toList: List[Nothing] = Nil
     // def strictFoldRight[B](acc: B)(fn: (Nothing, B) => B): B = acc
 
   }
@@ -108,13 +107,15 @@ object BList {
       val next = if (nextOffset == block.length) tail else Impl(nextOffset, block, tail)
       Some((block(offset).asInstanceOf[A], next))
     }
-    def prepend[B >: A](a: B): BList[B] = {
+    def prepend[B >: A](a: B): BList.NonEmpty[B] = {
 
       if (offset > 0) {
         // copy the right side
-        val ary = block.clone().asInstanceOf[Array[B]] // replaced with copyof method to prevent having to zero out the memory first
+        val ary = block
+          .clone()
+          .asInstanceOf[Array[B]] // replaced with copyof method to prevent having to zero out the memory first
         val nextOffset = offset - 1
-        ary(nextOffset) = a 
+        ary(nextOffset) = a
         Impl(nextOffset, ary, tail)
       } else {
         val ary = block.clone().asInstanceOf[Array[B]]
@@ -195,9 +196,9 @@ object BList {
       }
       loop(this, 0L)
     }
-    def map[B](fn: A => B): BList[B] = { 
+    def map[B](fn: A => B): BList[B] = {
       val ary = block.clone().asInstanceOf[Array[B]]
-      var i = 0
+      var i = offset
       while (i < ary.length) {
         ary(i) = fn(block(i))
         i += 1
@@ -231,47 +232,59 @@ object BList {
               go(n - (BlockSize - offset), tail)
             } else {
               val m: Int = math.max(n.toInt, 0) // drop < 0 is the same as drop 0
-              val ary = block
-                .clone() // clone and new offset should do the trick because api doesnt expose the arrays so you can only access after offset
-              Impl(offset + m, ary, tail)
+              if (m == 0) { // no copy needs to happen
+                Impl(offset, block, tail)
+              } else {
+                val ary = new Array[Any](BlockSize)
+                System.arraycopy(block, offset + m, ary, offset + m, BlockSize - (offset + m))
+                Impl(offset + m, ary, tail)
+              }
             }
         }
       }
       go(n, this)
     }
-    def combineK[B >: A](l2: BList[B]): BList[B] = 
-  {
-    // TODO add special cases for if the block is a certain amount empty to shuffle things over
-    // maybe use benchmarking to find out optimal number here??
+    def combineK[B >: A](l2: BList[B]): BList[B] = {
+      // TODO add special cases for if the block is a certain amount empty to shuffle things over
+      // maybe use benchmarking to find out optimal number here??
 
-    // copy l1/this and have it's tail be replaced with l2
-    //@tailrec   !!! not tail rec rn !!!
-    def go(l: BList[A]): BList[B] = {
-      l.asInstanceOf[Impl[A]] match {
-        case Impl(offset, block, tail) =>
-          tail match {
-            case Empty         => l2 
-            case Impl(_, _, _) => 
-              val ary =  block.clone().asInstanceOf[Array[B]]
-              Impl(offset, ary, go(tail))
-          }
+      // @tailrec   !!! not tail rec rn, could use cps but maybe ask first !!!
+      def go(l: BList[A]): BList[B] = {
+        l.asInstanceOf[Impl[A]] match {
+          case Impl(offset, block, tail) =>
+            tail match {
+              case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
+              case Impl(_,
+                        _,
+                        _
+                  ) => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
+                Impl(offset, block.asInstanceOf[Array[B]], go(tail))
+            }
+        }
+      }
+
+      // for now only optimization is checking if either are empty
+      (this, l2) match {
+        case (_, Empty) => this
+        case (_, _)     => go(this)
+
       }
     }
 
-    // for now only check if both are empty
-    (this, l2) match {
-      case (_, Empty) => this
-      case (_,_) => go(this)
-
+    override def toList: List[A] = {
+      val builder = List.newBuilder[A]
+      @tailrec
+      def loop(l: BList[A]): List[A] =
+        l match {
+          case Empty                     => builder.result()
+          case Impl(offset, block, tail) =>
+            // append valid things in the block to acc
+            builder ++= block.slice(offset, BlockSize).toList
+            loop(tail)
+        }
+      loop(this)
     }
-  }
 
-  def toList: List[A] = {
-    // TODO OBVIOUSLY NOT NIL
-    Nil
-
-  }
-  
     /*
     def strictFoldRight[B](acc: B)(fn: (A, B) => B): B = {
       // TODO
