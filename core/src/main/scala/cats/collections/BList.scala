@@ -88,8 +88,13 @@ object BList {
   sealed abstract class NonEmpty[+A] extends BList[A] {
     // TODO can put methods in here that are only safe for nonempty (ex. head, reduce)
     def head: A
-    // def tail:BList[A]
+    def tail: BList[A]
     // def reduce
+  }
+
+  object NonEmpty {
+    def apply[A](h: A, t: BList[A]): NonEmpty[A] = t.prepend(h)
+    def unapply[A](l: BList[A]): Option[(A, BList[A])] = l.uncons
   }
 
   private object Impl {
@@ -97,7 +102,6 @@ object BList {
       new Impl(offset, block, tailBList)
     def apply[A](offset: Int, block: Array[Any], tailBList: BList[A]): Impl[A] =
       new Impl(offset, block.asInstanceOf[Array[A]], tailBList)
-
   }
 
   // (maybe impl will be covariant or not)
@@ -123,15 +127,18 @@ object BList {
     def head: A = {
       block(offset)
     }
+    def tail: BList[A] = {
+      if (offset < BlockSize - 1) {
+        Impl(offset + 1, block, tailBList)
+      } else {
+        tailBList
+      }
+    }
     def headOption: Option[A] = {
       Some(block(offset))
     }
     def tailOption: Option[BList[A]] = {
-      if (offset < BlockSize - 1) {
-        Some(Impl(offset + 1, block, tailBList))
-      } else {
-        Some(tailBList)
-      }
+      Some(tail)
     }
     def get(idx: Long): Option[A] = {
       if (idx < 0) { None }
@@ -139,7 +146,7 @@ object BList {
         @tailrec
         def go(idx: Long, l: BList[A]): Option[A] = {
           l match {
-            case Empty                     => None
+            case Empty                          => None
             case Impl(offset, block, tailBList) =>
               if (idx < BlockSize - offset) {
                 Some(block(offset + idx.toInt))
@@ -158,7 +165,7 @@ object BList {
       @tailrec
       def go(idx: Long, l: BList[A]): A = {
         l match {
-          case Empty                     => throw new NoSuchElementException("invalid index")
+          case Empty                          => throw new NoSuchElementException("invalid index")
           case Impl(offset, block, tailBList) =>
             if (idx < BlockSize - offset) {
               block(offset + idx.toInt)
@@ -186,7 +193,7 @@ object BList {
       @tailrec
       def loop(l: BList[A], acc: Long): Long = {
         l match {
-          case Empty                 => acc
+          case Empty                      => acc
           case Impl(offset, _, tailBList) => loop(tailBList, acc + (BlockSize - offset))
         }
       }
@@ -205,7 +212,7 @@ object BList {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
         l match {
-          case Empty                     => acc
+          case Empty                          => acc
           case Impl(offset, block, tailBList) =>
             var newacc = acc
             var i = offset
@@ -272,10 +279,12 @@ object BList {
       @tailrec
       def loop(l: BList[A]): List[A] =
         l match {
-          case Empty                     => builder.result()
+          case Empty                          => builder.result()
           case Impl(offset, block, tailBList) =>
             // append valid things in the block to acc
-            builder ++= block.slice(offset, BlockSize).toList
+            for (i <- offset until BlockSize) {
+              builder += block(i)
+            }
             loop(tailBList)
         }
       loop(this)
@@ -303,5 +312,4 @@ object BList {
   }
 
   def empty[A]: BList[A] = Empty
-  def unapply[A](l: BList[A]): Option[(A, BList[A])] = l.uncons
 }
