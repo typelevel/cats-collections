@@ -93,32 +93,28 @@ object BList {
   }
 
   private object Impl {
-    def apply[A](offset: Int, block: Array[A], tail: BList[A]): Impl[A] =
-      new Impl(offset, block, tail)
-    def apply[A](offset: Int, block: Array[Any], tail: BList[A]): Impl[A] =
-      new Impl(offset, block.asInstanceOf[Array[A]], tail)
+    def apply[A](offset: Int, block: Array[A], tailBList: BList[A]): Impl[A] =
+      new Impl(offset, block, tailBList)
+    def apply[A](offset: Int, block: Array[Any], tailBList: BList[A]): Impl[A] =
+      new Impl(offset, block.asInstanceOf[Array[A]], tailBList)
 
   }
 
   // (maybe impl will be covariant or not)
-  private case class Impl[A](offset: Int, block: Array[A], tail: BList[A]) extends NonEmpty[A] {
+  private case class Impl[A](offset: Int, block: Array[A], tailBList: BList[A]) extends NonEmpty[A] {
     def uncons = {
       val nextOffset = offset + 1
-      val next = if (nextOffset == block.length) tail else Impl(nextOffset, block, tail)
-      Some((block(offset).asInstanceOf[A], next))
+      val next = if (nextOffset == block.length) tailBList else Impl(nextOffset, block, tailBList)
+      Some((block(offset), next))
     }
     def prepend[B >: A](a: B): BList.NonEmpty[B] = {
-
       if (offset > 0) {
-        // copy the right side
-        val ary = block
-          .clone()
-          .asInstanceOf[Array[B]] // replaced with copyof method to prevent having to zero out the memory first
+        val ary = block.clone().asInstanceOf[Array[B]]
         val nextOffset = offset - 1
         ary(nextOffset) = a
-        Impl(nextOffset, ary, tail)
+        Impl(nextOffset, ary, tailBList)
       } else {
-        val ary = block.clone().asInstanceOf[Array[B]]
+        val ary = new Array[Any](BlockSize) // need a blank one for a new block
         val offset = BlockSize - 1
         ary(offset) = a
         Impl(offset, ary, this)
@@ -132,9 +128,9 @@ object BList {
     }
     def tailOption: Option[BList[A]] = {
       if (offset < BlockSize - 1) {
-        Some(Impl(offset + 1, block, tail))
+        Some(Impl(offset + 1, block, tailBList))
       } else {
-        Some(tail)
+        Some(tailBList)
       }
     }
     def get(idx: Long): Option[A] = {
@@ -144,11 +140,11 @@ object BList {
         def go(idx: Long, l: BList[A]): Option[A] = {
           l match {
             case Empty                     => None
-            case Impl(offset, block, tail) =>
+            case Impl(offset, block, tailBList) =>
               if (idx < BlockSize - offset) {
-                Some(block(offset + idx.toInt).asInstanceOf[A])
+                Some(block(offset + idx.toInt))
               } else {
-                go(idx - (BlockSize - offset), tail)
+                go(idx - (BlockSize - offset), tailBList)
               }
           }
         }
@@ -163,11 +159,11 @@ object BList {
       def go(idx: Long, l: BList[A]): A = {
         l match {
           case Empty                     => throw new NoSuchElementException("invalid index")
-          case Impl(offset, block, tail) =>
+          case Impl(offset, block, tailBList) =>
             if (idx < BlockSize - offset) {
-              block(offset + idx.toInt).asInstanceOf[A]
+              block(offset + idx.toInt)
             } else {
-              go(idx - (BlockSize - offset), tail)
+              go(idx - (BlockSize - offset), tailBList)
             }
         }
       }
@@ -177,10 +173,10 @@ object BList {
       @tailrec
       def go(l: BList[A]): Option[A] = {
         l.asInstanceOf[Impl[A]] match {
-          case Impl(_, block, tail) =>
-            tail match {
-              case Empty         => Some(block(BlockSize - 1).asInstanceOf[A])
-              case Impl(_, _, _) => go(tail)
+          case Impl(_, block, tailBList) =>
+            tailBList match {
+              case Empty         => Some(block(BlockSize - 1))
+              case Impl(_, _, _) => go(tailBList)
             }
         }
       }
@@ -191,7 +187,7 @@ object BList {
       def loop(l: BList[A], acc: Long): Long = {
         l match {
           case Empty                 => acc
-          case Impl(offset, _, tail) => loop(tail, acc + (BlockSize - offset))
+          case Impl(offset, _, tailBList) => loop(tailBList, acc + (BlockSize - offset))
         }
       }
       loop(this, 0L)
@@ -203,21 +199,21 @@ object BList {
         ary(i) = fn(block(i))
         i += 1
       }
-      Impl(offset, ary, tail.map(fn))
+      Impl(offset, ary, tailBList.map(fn))
     }
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
         l match {
           case Empty                     => acc
-          case Impl(offset, block, tail) =>
+          case Impl(offset, block, tailBList) =>
             var newacc = acc
             var i = offset
             while (i < block.length) {
-              newacc = fn(newacc, block(i).asInstanceOf[A])
+              newacc = fn(newacc, block(i))
               i += 1
             }
-            loop(newacc, tail)
+            loop(newacc, tailBList)
         }
       loop(acc, this)
     }
@@ -227,17 +223,17 @@ object BList {
         l match {
           case Empty =>
             Empty
-          case Impl(offset, block, tail) =>
+          case Impl(offset, block, tailBList) =>
             if (n >= BlockSize - offset) {
-              go(n - (BlockSize - offset), tail)
+              go(n - (BlockSize - offset), tailBList)
             } else {
               val m: Int = math.max(n.toInt, 0) // drop < 0 is the same as drop 0
               if (m == 0) { // no copy needs to happen
-                Impl(offset, block, tail)
+                l
               } else {
                 val ary = new Array[Any](BlockSize)
                 System.arraycopy(block, offset + m, ary, offset + m, BlockSize - (offset + m))
-                Impl(offset + m, ary, tail)
+                Impl(offset + m, ary, tailBList)
               }
             }
         }
@@ -248,17 +244,17 @@ object BList {
       // TODO add special cases for if the block is a certain amount empty to shuffle things over
       // maybe use benchmarking to find out optimal number here??
 
-      // @tailrec   !!! not tail rec rn, could use cps but maybe ask first !!!
+      // @tailrec   !!! not tailBListrec rn, could use cps but maybe ask first !!!
       def go(l: BList[A]): BList[B] = {
         l.asInstanceOf[Impl[A]] match {
-          case Impl(offset, block, tail) =>
-            tail match {
+          case Impl(offset, block, tailBList) =>
+            tailBList match {
               case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
               case Impl(_,
                         _,
                         _
                   ) => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
-                Impl(offset, block.asInstanceOf[Array[B]], go(tail))
+                Impl(offset, block.asInstanceOf[Array[B]], go(tailBList))
             }
         }
       }
@@ -277,10 +273,10 @@ object BList {
       def loop(l: BList[A]): List[A] =
         l match {
           case Empty                     => builder.result()
-          case Impl(offset, block, tail) =>
+          case Impl(offset, block, tailBList) =>
             // append valid things in the block to acc
             builder ++= block.slice(offset, BlockSize).toList
-            loop(tail)
+            loop(tailBList)
         }
       loop(this)
     }
@@ -297,7 +293,7 @@ object BList {
       def go(l:BList[A],acc: B,fnblock: (Array[Any], Int, B) => B): B = {
         l match {
           case Empty => acc
-          case Impl(offset,block, tail)=> fnblock(block,offset, go(tail, acc, fnblock))
+          case Impl(offset,block, tailBList)=> fnblock(block,offset, go(tailBList, acc, fnblock))
         }
       }
       go(this, acc, fnblock)
