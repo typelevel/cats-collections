@@ -19,6 +19,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+package cats.collections
+
 import scala.annotation.tailrec
 
 sealed abstract class BList[+A] {
@@ -36,7 +38,9 @@ sealed abstract class BList[+A] {
   def combineK[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
   // def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
-  // final def take(n: Long): TreeList[A] =
+
+  // for development and testing
+  def toStringInBlocks: String
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
 
@@ -59,10 +63,12 @@ sealed abstract class BList[+A] {
     strb.append(")")
     strb.toString
   }
+
 }
 
 object BList {
   private val BlockSize = 4 // test with different values
+
   case object Empty extends BList[Nothing] {
     def uncons = None
     def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
@@ -74,7 +80,7 @@ object BList {
     def headOption: None.type = None
     def tailOption: None.type = None
     def get(idx: Long): None.type = None
-    def getUnsafe(idx: Long): Nothing = throw new NoSuchElementException("invalid index")
+    def getUnsafe(idx: Long): Nothing = throw new IndexOutOfBoundsException
     def lastOption: None.type = None
     def size: Long = 0
     def map[B](fn: Nothing => B): BList[B] = Empty
@@ -82,6 +88,7 @@ object BList {
     def drop(n: Long): BList[Nothing] = Empty
     def combineK[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
+    def toStringInBlocks: String = "Empty"
     // def strictFoldRight[B](acc: B)(fn: (Nothing, B) => B): B = acc
 
   }
@@ -93,7 +100,8 @@ object BList {
   }
 
   object NonEmpty {
-    def apply[A](h: A, t: BList[A]): NonEmpty[A] = t.prepend(h)
+    def apply[A](h: A, t: BList[A]): NonEmpty[A] =
+      t.prepend(h) // maybe make this take arbitary number of args of same type and make a list out of them?
     def unapply[A](l: BList[A]): Option[(A, BList[A])] = l.uncons
   }
 
@@ -165,7 +173,7 @@ object BList {
       @tailrec
       def go(idx: Long, l: BList[A]): A = {
         l match {
-          case Empty                          => throw new NoSuchElementException("invalid index")
+          case Empty                          => throw new IndexOutOfBoundsException
           case Impl(offset, block, tailBList) =>
             if (idx < BlockSize - offset) {
               block(offset + idx.toInt)
@@ -200,7 +208,7 @@ object BList {
       loop(this, 0L)
     }
     def map[B](fn: A => B): BList[B] = {
-      val ary = block.clone().asInstanceOf[Array[B]]
+      val ary = new Array[Any](BlockSize)
       var i = offset
       while (i < ary.length) {
         ary(i) = fn(block(i))
@@ -227,22 +235,23 @@ object BList {
     def drop(n: Long): BList[A] = {
       @tailrec
       def go(n: Long, l: BList[A]): BList[A] = {
-        l match {
-          case Empty =>
-            Empty
-          case Impl(offset, block, tailBList) =>
-            if (n >= BlockSize - offset) {
-              go(n - (BlockSize - offset), tailBList)
-            } else {
-              val m: Int = math.max(n.toInt, 0) // drop < 0 is the same as drop 0
-              if (m == 0) { // no copy needs to happen
-                l
+        if (n <= 0) {
+          l
+        } else {
+          l match {
+            case Empty =>
+              Empty
+            case Impl(offset, block, tailBList) =>
+              if (n >= BlockSize - offset) {
+                go(n - (BlockSize - offset), tailBList)
               } else {
                 val ary = new Array[Any](BlockSize)
-                System.arraycopy(block, offset + m, ary, offset + m, BlockSize - (offset + m))
-                Impl(offset + m, ary, tailBList)
+                val newOffset: Int = offset + n.asInstanceOf[Int] // type conversion safe because 0<n<BlockSize
+                System.arraycopy(block, newOffset, ary, newOffset, BlockSize - newOffset)
+                Impl(newOffset, ary, tailBList)
               }
-            }
+
+          }
         }
       }
       go(n, this)
@@ -288,6 +297,31 @@ object BList {
             loop(tailBList)
         }
       loop(this)
+    }
+
+    def toStringInBlocks: String = {
+      val strb = new java.lang.StringBuilder
+      strb.append("BList(")
+      @tailrec
+      def loop(first: Boolean, l: BList[A]): Unit = {
+        if (!first) strb.append(", ")
+        l match {
+          case Empty                          => strb.append("Empty"): Unit
+          case Impl(offset, block, tailBList) =>
+            strb.append("Block(")
+            strb.append(block(offset).toString)
+            for (i <- offset + 1 until BlockSize) {
+              strb.append(", ")
+              strb.append(block(i).toString)
+            }
+            strb.append(")")
+            loop(false, tailBList)
+        }
+      }
+
+      loop(true, this)
+      strb.append(")")
+      strb.toString
     }
 
     /*
