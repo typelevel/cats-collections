@@ -40,8 +40,8 @@ class BListSuite extends DisciplineSuite {
     val l2 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2)
     val m2 = BList.empty[Int].prepend(1).prepend(0).prepend(-1).prepend(-2)
 
-    val n1 = m1.combineK(l1)
-    val n2 = m2.combineK(l2)
+    val n1 = m1.concat(l1)
+    val n2 = m2.concat(l2)
 
     assertEquals(n1.toString, n2.toString)
   }
@@ -50,7 +50,7 @@ class BListSuite extends DisciplineSuite {
     val l = BList.empty[Int].prepend(4).prepend(3).prepend(2).prepend(1)
     val m = BList.empty[Int].prepend(0)
 
-    val n = m.combineK(l)
+    val n = m.concat(l)
 
     n.uncons match {
       case None         => fail("should not be empty")
@@ -94,7 +94,7 @@ class BListSuite extends DisciplineSuite {
     var m = BList.empty[Int]
     for (i <- (0 until global.BlockSize).reverse) {
       l = l.prepend(i)
-      m = l.combineK(m)
+      m = l.concat(m)
     }
     assertEquals(m.getUnsafe((global.BlockSize + (global.BlockSize - 1)).toLong), 2)
     assertEquals(m.get((global.BlockSize + (global.BlockSize - 1)).toLong), Some(2))
@@ -114,7 +114,7 @@ class BListSuite extends DisciplineSuite {
     var m = BList.empty[Int]
     for (i <- (0 until global.BlockSize).reverse) {
       l = l.prepend(i)
-      m = l.combineK(m)
+      m = l.concat(m)
     }
     // size is triangle numbers in blocksize. size should be  n(n+1)/2 where n is blocksize
     // so blocksize ** 2 + 1 will always be out of bounds
@@ -127,7 +127,7 @@ class BListSuite extends DisciplineSuite {
     var m = BList.empty[Int]
     for (i <- (0 until global.BlockSize).reverse) {
       l = l.prepend(i)
-      m = l.combineK(m)
+      m = l.concat(m)
     }
 
     // last should be blocksize-1
@@ -142,7 +142,7 @@ class BListSuite extends DisciplineSuite {
     var m = BList.empty[Int]
     for (i <- (0 until global.BlockSize).reverse) {
       l = l.prepend(i)
-      m = l.combineK(m)
+      m = l.concat(m)
     }
     // size is triangle numbers in blocksize. formula: n(n+1)/2
     val expected: Long = (global.BlockSize * (global.BlockSize + 1)).toLong / 2L

@@ -35,7 +35,7 @@ sealed abstract class BList[+A] {
   def map[B](fn: A => B): BList[B]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def drop(n: Long): BList[A]
-  def combineK[B >: A](l2: BList[B]): BList[B]
+  def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
   // def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
 
@@ -44,7 +44,7 @@ sealed abstract class BList[+A] {
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
 
-  final def ++[B >: A](l2: BList[B]): BList[B] = combineK(l2)
+  final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
   override def toString: String = { // go back and optimize with blocks
     val strb = new java.lang.StringBuilder
@@ -86,7 +86,7 @@ object BList {
     def map[B](fn: Nothing => B): BList[B] = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def drop(n: Long): BList[Nothing] = Empty
-    def combineK[B](l2: BList[B]): BList[B] = l2
+    def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
     def toStringInBlocks: String = "Empty"
     // def strictFoldRight[B](acc: B)(fn: (Nothing, B) => B): B = acc
@@ -94,9 +94,15 @@ object BList {
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
     // TODO can put methods in here that are only safe for nonempty (ex. head, reduce)
+    def uncons: Some[(A, BList[A])]
     def head: A
     def tail: BList[A]
-    // def reduce
+    def headOption: Some[A]
+    def tailOption: Some[BList[A]]
+    def lastOption: Some[A]
+    def map[B](fn: A => B): BList.NonEmpty[B]
+    def concat[B >: A](l2: BList[B]): BList.NonEmpty[B]
+
   }
 
   object NonEmpty {
@@ -114,7 +120,7 @@ object BList {
 
   // (maybe impl will be covariant or not)
   private case class Impl[A](offset: Int, block: Array[A], tailBList: BList[A]) extends NonEmpty[A] {
-    def uncons = {
+    def uncons: Some[(A, BList[A])] = {
       val nextOffset = offset + 1
       val next = if (nextOffset == block.length) tailBList else Impl(nextOffset, block, tailBList)
       Some((block(offset), next))
@@ -142,10 +148,10 @@ object BList {
         tailBList
       }
     }
-    def headOption: Option[A] = {
+    def headOption: Some[A] = {
       Some(block(offset))
     }
-    def tailOption: Option[BList[A]] = {
+    def tailOption: Some[BList[A]] = {
       Some(tail)
     }
     def get(idx: Long): Option[A] = {
@@ -184,9 +190,9 @@ object BList {
       }
       go(idx, this)
     }
-    def lastOption: Option[A] = {
+    def lastOption: Some[A] = {
       @tailrec
-      def go(l: BList[A]): Option[A] = {
+      def go(l: BList[A]): Some[A] = {
         l.asInstanceOf[Impl[A]] match {
           case Impl(_, block, tailBList) =>
             tailBList match {
@@ -207,7 +213,7 @@ object BList {
       }
       loop(this, 0L)
     }
-    def map[B](fn: A => B): BList[B] = {
+    def map[B](fn: A => B): BList.NonEmpty[B] = {
       val ary = new Array[Any](BlockSize)
       var i = offset
       while (i < ary.length) {
@@ -256,12 +262,12 @@ object BList {
       }
       go(n, this)
     }
-    def combineK[B >: A](l2: BList[B]): BList[B] = {
+    def concat[B >: A](l2: BList[B]): BList.NonEmpty[B] = {
       // TODO add special cases for if the block is a certain amount empty to shuffle things over
       // maybe use benchmarking to find out optimal number here??
 
       // @tailrec   !!! not tailBListrec rn, could use cps but maybe ask first !!!
-      def go(l: BList[A]): BList[B] = {
+      def go(l: BList[A]): BList.NonEmpty[B] = {
         l.asInstanceOf[Impl[A]] match {
           case Impl(offset, block, tailBList) =>
             tailBList match {
@@ -304,7 +310,7 @@ object BList {
       strb.append("BList(")
       @tailrec
       def loop(first: Boolean, l: BList[A]): Unit = {
-        if (!first) strb.append(", ")
+        if (!first) strb.append(", "): Unit
         l match {
           case Empty                          => strb.append("Empty"): Unit
           case Impl(offset, block, tailBList) =>
