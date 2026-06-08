@@ -94,12 +94,8 @@ object BList {
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
     // TODO can put methods in here that are only safe for nonempty (ex. head, reduce)
-    def uncons: Some[(A, BList[A])]
     def head: A
     def tail: BList[A]
-    def headOption: Some[A]
-    def tailOption: Some[BList[A]]
-    def lastOption: Some[A]
     def map[B](fn: A => B): BList.NonEmpty[B]
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B]
 
@@ -120,7 +116,7 @@ object BList {
 
   // (maybe impl will be covariant or not)
   private case class Impl[A](offset: Int, block: Array[A], tailBList: BList[A]) extends NonEmpty[A] {
-    def uncons: Some[(A, BList[A])] = {
+    def uncons: Option[(A, BList[A])] = {
       val nextOffset = offset + 1
       val next = if (nextOffset == block.length) tailBList else Impl(nextOffset, block, tailBList)
       Some((block(offset), next))
@@ -148,10 +144,10 @@ object BList {
         tailBList
       }
     }
-    def headOption: Some[A] = {
+    def headOption: Option[A] = {
       Some(block(offset))
     }
-    def tailOption: Some[BList[A]] = {
+    def tailOption: Option[BList[A]] = {
       Some(tail)
     }
     def get(idx: Long): Option[A] = {
