@@ -153,13 +153,91 @@ class BListSuite extends DisciplineSuite {
     assertEquals(l.size, 0L)
   }
 
-  // list of all the specific things i want to test
-  /*
-  prepend/uncons are inverses ?
-  map  - ??
-  foldleft-??
-  drop -
-  toList - Blist with many blocks
-   */
+  test("prepend and uncons are inverses") {
+    val l = BList.empty[Int].prepend(4).prepend(3).prepend(2).prepend(1)
+    val m = l.prepend(0)
 
+    m.uncons match {
+      case None         => fail("should not be empty")
+      case Some((h, t)) =>
+        assertEquals(h, 0)
+        assertEquals(t.toString, l.toString)
+    }
+  }
+
+  test("simple map") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 10).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+
+    val mapped = m.map(_ + 10)
+    assertEquals(mapped.getUnsafe(20L), m.getUnsafe(20L) + 10)
+    assertEquals(mapped.getUnsafe(25L), m.getUnsafe(25L) + 10)
+  }
+  test("map to a different type") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 10).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+
+    val mapped = m.map(_ >= 3)
+    assertEquals(mapped.getUnsafe(20L), m.getUnsafe(20L) >= 3)
+    assertEquals(mapped.getUnsafe(25L), m.getUnsafe(25L) >= 3)
+  }
+
+  test("map on empty") {
+    val l = BList.empty[Int]
+    assertEquals(l.map(_ + 100), l)
+  }
+
+  test("foldleft with subtraction") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 10).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+    assertEquals(m.foldLeft(m.foldLeft(0)((acc: Int, x: Int) => acc + x))((acc: Int, x: Int) => acc - x), 0)
+  }
+
+  test("drop on fragmented list") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 10).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+    assertEquals(m.drop(10).getUnsafe(15), m.getUnsafe(25))
+    assertEquals(m.drop(10).getUnsafe(20), m.getUnsafe(30))
+    assertEquals(m.drop(20).getUnsafe(5), m.getUnsafe(25))
+  }
+
+  test("drop everything") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 4).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+    assertEquals(m.drop(10).toString, BList.empty[Int].toString)
+    assertEquals(m.drop(20).toString, BList.empty[Int].toString)
+    assertEquals(m.drop(1000).toString, BList.empty[Int].toString)
+  }
+  test("drop nothing") {
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+    for (i <- (0 until 4).reverse) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+
+    assertEquals(m.drop(0).toString, m.toString)
+    assertEquals(m.drop(-10).toString, m.toString)
+    assertEquals(m.drop(-200).toString, m.toString)
+  }
 }
