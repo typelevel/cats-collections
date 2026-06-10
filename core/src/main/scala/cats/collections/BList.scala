@@ -190,8 +190,8 @@ object BList {
       @tailrec
       def go(self: Impl[A]): Some[A] = {
         self.tailBList match {
-              case Empty         => Some(block(BlockSize - 1))
-              case next :Impl[A] => go(next)
+          case Empty         => Some(block(BlockSize - 1))
+          case next: Impl[A] => go(next)
         }
       }
       go(this)
@@ -262,9 +262,9 @@ object BList {
       // @tailrec   !!! not tailBListrec rn, could use cps but maybe ask first !!!
       def go(self: Impl[A]): BList.NonEmpty[B] = {
         self.tailBList match {
-              case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
-              case next: Impl[A] => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
-                Impl(offset, block.asInstanceOf[Array[B]], go(next))
+          case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
+          case next: Impl[A] => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
+            Impl(offset, block.asInstanceOf[Array[B]], go(next))
         }
       }
 
