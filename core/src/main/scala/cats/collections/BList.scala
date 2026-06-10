@@ -98,13 +98,15 @@ object BList {
     def tail: BList[A]
     def map[B](fn: A => B): BList.NonEmpty[B]
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B]
+    def uncons: Some[(A, BList[A])]
 
   }
 
   object NonEmpty {
     def apply[A](h: A, t: BList[A]): NonEmpty[A] =
       t.prepend(h) // maybe make this take arbitary number of args of same type and make a list out of them?
-    def unapply[A](l: BList[A]): Option[(A, BList[A])] = l.uncons
+    def unapply[A](l: NonEmpty[A]): Some[(A, BList[A])] =
+      l.uncons // can i put somethign to garuntee this still be Some
   }
 
   private object Impl {
@@ -116,7 +118,7 @@ object BList {
 
   // (maybe impl will be covariant or not)
   private case class Impl[A](offset: Int, block: Array[A], tailBList: BList[A]) extends NonEmpty[A] {
-    def uncons: Option[(A, BList[A])] = {
+    def uncons: Some[(A, BList[A])] = {
       val nextOffset = offset + 1
       val next = if (nextOffset == block.length) tailBList else Impl(nextOffset, block, tailBList)
       Some((block(offset), next))
@@ -190,7 +192,7 @@ object BList {
       @tailrec
       def go(self: Impl[A]): Some[A] = {
         self.tailBList match {
-          case Empty         => Some(block(BlockSize - 1))
+          case Empty         => Some(self.block(BlockSize - 1))
           case next: Impl[A] => go(next)
         }
       }
@@ -259,12 +261,12 @@ object BList {
       // TODO add special cases for if the block is a certain amount empty to shuffle things over
       // maybe use benchmarking to find out optimal number here??
 
-      // @tailrec   !!! not tailBListrec rn, could use cps but maybe ask first !!!
+      // @tailrec   !!! not tailBListrec rn, could use cps !!!
       def go(self: Impl[A]): BList.NonEmpty[B] = {
         self.tailBList match {
-          case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
-          case next: Impl[A] => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
-            Impl(offset, block.asInstanceOf[Array[B]], go(next))
+          case Empty         => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
+          case next: Impl[A] =>
+            Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
         }
       }
 
@@ -336,6 +338,18 @@ object BList {
     }
      */
 
+  }
+  def fromList[A](l: List[A]): BList[A] =
+    fromListReverse(l.reverse)
+  def fromListReverse[A](l: List[A]): BList[A] = {
+    @tailrec
+    def go(l: List[A], acc: BList[A]): BList[A] = {
+      l match {
+        case Nil    => acc
+        case h :: t => go(t, acc.prepend(h))
+      }
+    }
+    go(l, empty)
   }
 
   def empty[A]: BList[A] = Empty
