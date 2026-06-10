@@ -188,13 +188,10 @@ object BList {
     }
     def lastOption: Some[A] = {
       @tailrec
-      def go(l: BList[A]): Some[A] = {
-        l.asInstanceOf[Impl[A]] match {
-          case Impl(_, block, tailBList) =>
-            tailBList match {
+      def go(self: Impl[A]): Some[A] = {
+        self.tailBList match {
               case Empty         => Some(block(BlockSize - 1))
-              case Impl(_, _, _) => go(tailBList)
-            }
+              case next :Impl[A] => go(next)
         }
       }
       go(this)
@@ -263,17 +260,11 @@ object BList {
       // maybe use benchmarking to find out optimal number here??
 
       // @tailrec   !!! not tailBListrec rn, could use cps but maybe ask first !!!
-      def go(l: BList[A]): BList.NonEmpty[B] = {
-        l.asInstanceOf[Impl[A]] match {
-          case Impl(offset, block, tailBList) =>
-            tailBList match {
+      def go(self: Impl[A]): BList.NonEmpty[B] = {
+        self.tailBList match {
               case Empty => Impl(offset, block.asInstanceOf[Array[B]], l2) // and the current block!!!
-              case Impl(_,
-                        _,
-                        _
-                  ) => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
-                Impl(offset, block.asInstanceOf[Array[B]], go(tailBList))
-            }
+              case next: Impl[A] => // maybe i shouldnt copy the block because no changes are occuring. any operation that needs to change blocks will copy, so realistically two lists can share an array if they both never mutate it
+                Impl(offset, block.asInstanceOf[Array[B]], go(next))
         }
       }
 
