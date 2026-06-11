@@ -37,10 +37,9 @@ sealed abstract class BList[+A] {
   def drop(n: Long): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
-  // def strictFoldRight[B](fin: B)(fn: (A, B) => B): B
 
   // for development and testing
-  def toStringInBlocks: String
+  private[collections] def toStringInBlocks: String
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
 
@@ -67,9 +66,10 @@ sealed abstract class BList[+A] {
 }
 
 object BList {
-  private[collections] final val BlockSize = 4 // test with different values
+  final private[collections] val BlockSize = 4 // test with different values
 
   case object Empty extends BList[Nothing] {
+    def unapply[A](l: Empty.type): None.type = None
     def uncons = None
     def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
       val ary = new Array[Any](BlockSize)
@@ -88,8 +88,7 @@ object BList {
     def drop(n: Long): BList[Nothing] = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
-    def toStringInBlocks: String = "Empty"
-    // def strictFoldRight[B](acc: B)(fn: (Nothing, B) => B): B = acc
+    private[collections] def toStringInBlocks: String = "Empty"
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
@@ -104,9 +103,9 @@ object BList {
 
   object NonEmpty {
     def apply[A](h: A, t: BList[A]): NonEmpty[A] =
-      t.prepend(h) // maybe make this take arbitary number of args of same type and make a list out of them?
+      t.prepend(h)
     def unapply[A](l: NonEmpty[A]): Some[(A, BList[A])] =
-      l.uncons // can i put somethign to garuntee this still be Some
+      l.uncons
   }
 
   private object Impl {
@@ -192,8 +191,8 @@ object BList {
       @tailrec
       def go(self: Impl[A]): Some[A] = {
         self.tailBList match {
-          case Empty         => Some(self.block(BlockSize - 1))
-          case next: Impl[A] => go(next)
+          case Empty                    => Some(self.block(BlockSize - 1))
+          case next: Impl[A] @unchecked => go(next)
         }
       }
       go(this)
@@ -258,15 +257,11 @@ object BList {
       go(n, this)
     }
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B] = {
-      // TODO add special cases for if the block is a certain amount empty to shuffle things over
-      // maybe use benchmarking to find out optimal number here??
-
-      // @tailrec   !!! not tailBListrec rn, could use cps !!!
+      // not tail rec
       def go(self: Impl[A]): BList.NonEmpty[B] = {
         self.tailBList match {
-          case Empty         => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
-          case next: Impl[A] =>
-            Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
+          case Empty                    => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
+          case next: Impl[A] @unchecked => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
         }
       }
 
@@ -274,7 +269,6 @@ object BList {
       (this, l2) match {
         case (_, Empty) => this
         case (_, _)     => go(this)
-
       }
     }
 
@@ -294,7 +288,7 @@ object BList {
       loop(this)
     }
 
-    def toStringInBlocks: String = {
+    private[collections] def toStringInBlocks: String = {
       val strb = new java.lang.StringBuilder
       strb.append("BList(")
       @tailrec
@@ -313,34 +307,15 @@ object BList {
             loop(false, tailBList)
         }
       }
-
       loop(true, this)
       strb.append(")")
       strb.toString
     }
-
-    /*
-    def strictFoldRight[B](acc: B)(fn: (A, B) => B): B = {
-      // TODO
-      val fnblock = (block:Array[Any],offset:Int,acc1:B ) => {
-          // get only the useful part of the block
-          val ary : Array[A] = block.drop(offset).map(_.asInstanceOf[A])
-          ary.foldRight(acc1)(fn) //fold right on the block to produce new accumulator
-        }
-      
-      def go(l:BList[A],acc: B,fnblock: (Array[Any], Int, B) => B): B = {
-        l match {
-          case Empty => acc
-          case Impl(offset,block, tailBList)=> fnblock(block,offset, go(tailBList, acc, fnblock))
-        }
-      }
-      go(this, acc, fnblock)
-    }
-     */
-
   }
+
   def fromList[A](l: List[A]): BList[A] =
     fromListReverse(l.reverse)
+
   def fromListReverse[A](l: List[A]): BList[A] = {
     @tailrec
     def go(l: List[A], acc: BList[A]): BList[A] = {

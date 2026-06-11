@@ -21,12 +21,41 @@
 
 package cats.collections.arbitrary
 
-trait AllArbitrary
-    extends ArbitrarySet
-    with ArbitraryHashSet
-    with ArbitraryMap
-    with ArbitraryHashMap
-    with ArbitraryPredicate
-    with ArbitraryTreeList
-    with ArbitraryBList
-    with CogenInstances
+import cats.collections.BList
+import org.scalacheck.Arbitrary
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Cogen
+import org.scalacheck.Gen
+
+trait ArbitraryBList {
+  def bListGen[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Gen[BList[A]] = {
+    // implicit lazy val arbBList: Arbitrary[BList[A]] = arbitraryBList[A]
+
+    Gen.oneOf(
+      // empty
+      Gen.const(BList.empty),
+      // from List
+      // arbitrary[List[A]].map(BList.fromList(_)),
+      // prepend
+      Gen.delay(for {
+        hs <- arbitrary[BList[A]]
+        a <- arbitrary[A]
+      } yield hs.prepend(a)),
+      // concat
+      Gen.delay(for {
+        ls <- arbitrary[BList[A]]
+        xs <- arbitrary[BList[A]]
+      } yield ls.concat(xs)),
+      // map
+      Gen.delay(for {
+        l <- arbitrary[BList[A]]
+        fn <- arbitrary[A => A]
+      } yield l.map(fn))
+    )
+  }
+
+  implicit def arbitraryBList[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Arbitrary[BList[A]] =
+    Arbitrary(bListGen(arb, cogen))
+}
+
+object ArbitraryBList extends ArbitraryBList
