@@ -69,7 +69,7 @@ object BList {
   final private[collections] val BlockSize = 4 // test with different values
 
   case object Empty extends BList[Nothing] {
-    //def unapply[A](l: Empty.type): None.type = None
+    // def unapply[A](l: Empty.type): None.type = None
     def uncons = None
     def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
       val ary = new Array[Any](BlockSize)
