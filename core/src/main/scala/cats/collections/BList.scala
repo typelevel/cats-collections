@@ -67,7 +67,7 @@ sealed abstract class BList[+A] {
 }
 
 object BList {
-  private val BlockSize = 4 // test with different values
+  private[collections] final val BlockSize = 4 // test with different values
 
   case object Empty extends BList[Nothing] {
     def uncons = None
