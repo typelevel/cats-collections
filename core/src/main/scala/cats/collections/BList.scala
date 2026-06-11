@@ -262,6 +262,7 @@ object BList {
         self.tailBList match {
           case Empty                    => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
           case next: Impl[A] @unchecked => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
+          // case Impl(_,_,_) => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(self.tailBList.asInstanceOf[Impl[A]]))
         }
       }
 

@@ -29,29 +29,28 @@ import org.scalacheck.Gen
 
 trait ArbitraryBList {
   def bListGen[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Gen[BList[A]] = {
-    // implicit lazy val arbBList: Arbitrary[BList[A]] = arbitraryBList[A]
-
-    Gen.oneOf(
-      // empty
-      Gen.const(BList.empty),
-      // from List
-      // arbitrary[List[A]].map(BList.fromList(_)),
-      // prepend
-      Gen.delay(for {
-        hs <- arbitrary[BList[A]]
-        a <- arbitrary[A]
-      } yield hs.prepend(a)),
-      // concat
-      Gen.delay(for {
-        ls <- arbitrary[BList[A]]
-        xs <- arbitrary[BList[A]]
-      } yield ls.concat(xs)),
-      // map
-      Gen.delay(for {
-        l <- arbitrary[BList[A]]
-        fn <- arbitrary[A => A]
-      } yield l.map(fn))
-    )
+    Gen.sized {
+      case 0 => Gen.const(BList.empty)
+      case n =>
+        Gen.oneOf(
+          // empty
+          Gen.const(BList.empty),
+          // prepend
+          for {
+            hs <- Gen.resize(n / 2, bListGen[A])
+            a <- arbitrary[A]
+          } yield hs.prepend(a),
+          // concat
+          for {
+            xs <- Gen.resize(n / 4, bListGen[A])
+            ys <- Gen.resize(n / 4, bListGen[A])
+          } yield xs.concat(ys),
+          // map
+          Gen.resize(n / 2, bListGen[A]).flatMap { l =>
+            arbitrary[A => A].map(fn => l.map(fn))
+          }
+        )
+    }
   }
 
   implicit def arbitraryBList[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Arbitrary[BList[A]] =

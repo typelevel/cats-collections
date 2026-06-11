@@ -32,6 +32,7 @@ import org.scalacheck.Test
 import scala.math.pow
 
 class BListSuite extends DisciplineSuite {
+  // override def scalaCheckInitialSeed = "kueY5dMKVWrkQrfGXwqy_Wh4bK4-qnfvz_2D0-LrwPI="
 
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
@@ -254,6 +255,7 @@ class BListSuite extends DisciplineSuite {
   property("last is the same as get(size-1)")(forAll { (xs: BList[Int]) =>
     assertEquals(xs.lastOption, xs.get(xs.size - 1L))
   })
+
   property("concat works")(forAll { (xs: BList[Int], ys: BList[Int]) =>
     testHomomorphism(xs)({ l => l.concat(ys).toList }, { _ ++ ys.toList })
   })
