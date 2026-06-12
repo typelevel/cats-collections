@@ -98,6 +98,8 @@ object BList {
     def map[B](fn: A => B): BList.NonEmpty[B]
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B]
     def uncons: Some[(A, BList[A])]
+    def headOption: Some[A]
+    def tailOption: Some[BList[A]]
 
   }
 
@@ -118,9 +120,7 @@ object BList {
   // (maybe impl will be covariant or not)
   private case class Impl[A](offset: Int, block: Array[A], tailBList: BList[A]) extends NonEmpty[A] {
     def uncons: Some[(A, BList[A])] = {
-      val nextOffset = offset + 1
-      val next = if (nextOffset == block.length) tailBList else Impl(nextOffset, block, tailBList)
-      Some((block(offset), next))
+      Some((block(offset), this.tail))
     }
     def prepend[B >: A](a: B): BList.NonEmpty[B] = {
       if (offset > 0) {
@@ -140,15 +140,17 @@ object BList {
     }
     def tail: BList[A] = {
       if (offset < BlockSize - 1) {
-        Impl(offset + 1, block, tailBList)
+        val ary = new Array[Any](BlockSize)
+        System.arraycopy(block, offset + 1, ary, offset + 1, BlockSize - (offset + 1))
+        Impl(offset + 1, ary, tailBList)
       } else {
         tailBList
       }
     }
-    def headOption: Option[A] = {
+    def headOption: Some[A] = {
       Some(block(offset))
     }
-    def tailOption: Option[BList[A]] = {
+    def tailOption: Some[BList[A]] = {
       Some(tail)
     }
     def get(idx: Long): Option[A] = {

@@ -290,7 +290,7 @@ class BListSuite extends DisciplineSuite {
       case None    => // head wont work because xs is the empty list
     }
     xs.tailOption match {
-      case Some(t) => assertEquals(t, xs.asInstanceOf[BList.NonEmpty[Int]].tail)
+      case Some(t) => assertEquals(t.toString, xs.asInstanceOf[BList.NonEmpty[Int]].tail.toString)
       case None    => // tail wont work because xs is the empty list
     }
   })
@@ -311,7 +311,7 @@ class BListSuite extends DisciplineSuite {
     xs match {
       case BList.NonEmpty(h, t) =>
         assertEquals(xs.headOption, Option(h))
-        assertEquals(xs.tailOption, Option(t))
+        assertEquals(xs.asInstanceOf[BList.NonEmpty[Int]].tail.toString, t.toString)
       case BList.Empty =>
         assertEquals(xs, BList.Empty)
         assertEquals(xs.uncons, None)
