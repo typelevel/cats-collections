@@ -30,7 +30,7 @@ sealed abstract class BList[+A] {
   def tailOption: Option[BList[A]]
   def get(idx: Long): Option[A]
   def getUnsafe(idx: Long): A
-  def lastOption: Option[A] // a bit more efficient than get(size-1)
+  def lastOption: Option[A]
   def size: Long
   def map[B](fn: A => B): BList[B]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
@@ -46,7 +46,7 @@ sealed abstract class BList[+A] {
 
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
-  override def toString: String = { // go back and optimize with blocks
+  override def toString: String = {
     val strb = new java.lang.StringBuilder
     strb.append("BList(")
     @tailrec
@@ -70,9 +70,8 @@ object BList {
   final private[collections] val BlockSize = 4 // test with different values
 
   case object Empty extends BList[Nothing] {
-    // def unapply[A](l: Empty.type): None.type = None
     def uncons = None
-    def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = { // why would we put the element at the end of a block? dont we want to fill from start out. in this case we would want head and tail pointer
+    def prepend[B >: Nothing](a: B): BList.NonEmpty[B] = {
       val ary = new Array[Any](BlockSize)
       val offset = BlockSize - 1
       ary(offset) = a
@@ -94,7 +93,6 @@ object BList {
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
-    // TODO can put methods in here that are only safe for nonempty (ex. head, reduce)
     def head: A
     def tail: BList[A]
     def map[B](fn: A => B): BList.NonEmpty[B]
@@ -102,7 +100,6 @@ object BList {
     def uncons: Some[(A, BList[A])]
     def headOption: Some[A]
     def tailOption: Some[BList[A]]
-
   }
 
   object NonEmpty {
@@ -121,7 +118,6 @@ object BList {
       Some((l.offset, l.block, l.tailBList))
   }
 
-  // (maybe impl will be covariant or not)
   private class Impl[A](val offset: Int, val block: Array[A], val tailBList: BList[A]) extends NonEmpty[A] {
 
     override def equals(other: Any): Boolean = {
@@ -130,18 +126,17 @@ object BList {
         if (curoffset < BlockSize - 1) {
           Some((node.block(curoffset + 1), node, curoffset + 1))
         } else {
-          // we need to see if the tail is empty and try to take an element from it
           node.tailBList match {
             case Empty                    => None
             case tail: Impl[B] @unchecked => // there will be at least one element in every block
-              Some((tail.block(tail.offset), tail, tail.offset + 1))
+              Some((tail.block(tail.offset), tail, tail.offset))
           }
         }
       }
 
       other match {
         case that: Impl[_] =>
-          // 3-tuple has structure: current element, current node (nonempty), current offset in to curnode's block
+          // 3-tuple has structure: element, node where it is found, offset at which it was found
           @tailrec
           def loop[B](list1: (A, Impl[A], Int), list2: (B, Impl[B], Int)): Boolean = {
             if (list1._1 != list2._1) {
@@ -169,7 +164,7 @@ object BList {
     }
 
     override def hashCode(): Int = {
-      // determined by only the valid elements in the first block
+      // uses only the valid elements in the first block
       var res = 31
       for (i <- this.offset until BlockSize) {
         res = res * 31 + this.block(i).hashCode()
@@ -187,7 +182,7 @@ object BList {
         ary(nextOffset) = a
         Impl(nextOffset, ary, tailBList)
       } else {
-        val ary = new Array[Any](BlockSize) // need a blank one for a new block
+        val ary = new Array[Any](BlockSize)
         val offset = BlockSize - 1
         ary(offset) = a
         Impl(offset, ary, this)
@@ -322,11 +317,10 @@ object BList {
         self.tailBList match {
           case Empty                    => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
           case next: Impl[A] @unchecked => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
-          // case Impl(_,_,_) => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(self.tailBList.asInstanceOf[Impl[A]]))
         }
       }
 
-      // for now only optimization is checking if either are empty
+      // for now, the only optimization is checking if either are empty
       (this, l2) match {
         case (_, Empty) => this
         case (_, _)     => go(this)

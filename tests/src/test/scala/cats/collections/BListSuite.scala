@@ -32,7 +32,6 @@ import org.scalacheck.Test
 import scala.math.pow
 
 class BListSuite extends DisciplineSuite {
-  // override def scalaCheckInitialSeed = "kueY5dMKVWrkQrfGXwqy_Wh4bK4-qnfvz_2D0-LrwPI="
 
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
@@ -244,6 +243,22 @@ class BListSuite extends DisciplineSuite {
     assertEquals(m.drop(-200), m)
   }
 
+  test("blocks don't matter for equality") {
+    // todo
+    val l1 = BList.empty[Int].prepend(3).prepend(2).prepend(1)
+    val m1 = BList.empty[Int].prepend(0).prepend(-1).prepend(-2)
+
+    val l2 = BList.empty[Int].prepend(3).prepend(2)
+    val m2 = BList.empty[Int].prepend(1).prepend(0).prepend(-1).prepend(-2)
+
+    val n1 = m1.concat(l1)
+    val n2 = m2.concat(l2)
+    println(n1.toStringInBlocks)
+    println(n2.toStringInBlocks)
+    assertEquals(n1, n2)
+
+  }
+
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
     val la = as.toList
     assert(Eq[B].eqv(fn(as), gn(la)))
@@ -331,5 +346,16 @@ class BListSuite extends DisciplineSuite {
 
   property("fromListReverse == .reverse fromList")(forAll { (xs: List[Int]) =>
     assertEquals(BList.fromListReverse(xs), BList.fromList(xs.reverse))
+  })
+
+  property("concat is associative")(forAll { (xs: BList[Int], ys: BList[Int], zs: BList[Int]) =>
+    val l1 = xs.concat(ys).concat(zs)
+    val l2 = xs.concat(ys.concat(zs))
+    assertEquals(l1, l2)
+  })
+  property("== implies same toString for int lists")(forAll { (xs: BList[Int], ys: BList[Int]) =>
+    if (xs.toString == ys.toString) {
+      assertEquals(xs, ys)
+    }
   })
 }
