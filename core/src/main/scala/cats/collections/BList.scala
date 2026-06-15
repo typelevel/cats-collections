@@ -132,9 +132,9 @@ object BList {
         } else {
           // we need to see if the tail is empty and try to take an element from it
           node.tailBList match {
-            case Empty                          => None
-            case Impl(tailoffset, tailblock, _) => // there will be at least one element in every block
-              Some((tailblock(tailoffset), node.tailBList.asInstanceOf[Impl[B]], tailoffset + 1))
+            case Empty                    => None
+            case tail: Impl[B] @unchecked => // there will be at least one element in every block
+              Some((tail.block(tail.offset), tail, tail.offset + 1))
           }
         }
       }
@@ -144,14 +144,19 @@ object BList {
           // 3-tuple has structure: current element, current node (nonempty), current offset in to curnode's block
           @tailrec
           def loop[B](list1: (A, Impl[A], Int), list2: (B, Impl[B], Int)): Boolean = {
-            if (list1._1 != list2._1) false
+            if (list1._1 != list2._1) {
+              false
+            } else {
 
-            (next(list1._2, list1._3), next(list2._2, list2._3)) match {
-              case (None, None)                         => true
-              case (None, _) | (_, None)                => false
-              case (Some(list1_tail), Some(list2_tail)) =>
-                loop(list1_tail, list2_tail)
+              (next(list1._2, list1._3), next(list2._2, list2._3)) match {
+                case (None, None)                         => true
+                case (None, _) | (_, None)                => false
+                case (Some(list1_tail), Some(list2_tail)) =>
+                  loop(list1_tail, list2_tail)
+              }
+
             }
+
           }
 
           loop(
@@ -212,12 +217,12 @@ object BList {
         @tailrec
         def go(idx: Long, l: BList[A]): Option[A] = {
           l match {
-            case Empty                             => None
-            case Impl(offset1, block1, tailBList1) =>
-              if (idx < BlockSize - offset1) {
-                Some(block1(offset1 + idx.toInt))
+            case Empty                    => None
+            case impl: Impl[A] @unchecked =>
+              if (idx < BlockSize - impl.offset) {
+                Some(impl.block(impl.offset + idx.toInt))
               } else {
-                go(idx - (BlockSize - offset1), tailBList1)
+                go(idx - (BlockSize - impl.offset), impl.tailBList)
               }
           }
         }
@@ -231,12 +236,12 @@ object BList {
       @tailrec
       def go(idx: Long, l: BList[A]): A = {
         l match {
-          case Empty                             => throw new IndexOutOfBoundsException
-          case Impl(offset1, block1, tailBList1) =>
-            if (idx < BlockSize - offset1) {
-              block1(offset1 + idx.toInt)
+          case Empty                    => throw new IndexOutOfBoundsException
+          case impl: Impl[A] @unchecked =>
+            if (idx < BlockSize - impl.offset) {
+              impl.block(impl.offset + idx.toInt)
             } else {
-              go(idx - (BlockSize - offset1), tailBList1)
+              go(idx - (BlockSize - impl.offset), impl.tailBList)
             }
         }
       }
@@ -256,8 +261,8 @@ object BList {
       @tailrec
       def loop(l: BList[A], acc: Long): Long = {
         l match {
-          case Empty                        => acc
-          case Impl(offset1, _, tailBList1) => loop(tailBList1, acc + (BlockSize - offset1))
+          case Empty                    => acc
+          case impl: Impl[A] @unchecked => loop(impl.tailBList, acc + (BlockSize - impl.offset))
         }
       }
       loop(this, 0L)
@@ -275,15 +280,15 @@ object BList {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
         l match {
-          case Empty                             => acc
-          case Impl(offset1, block1, tailBList1) =>
+          case Empty                    => acc
+          case impl: Impl[A] @unchecked =>
             var newacc = acc
-            var i = offset1
-            while (i < block1.length) {
-              newacc = fn(newacc, block1(i))
+            var i = impl.offset
+            while (i < impl.block.length) {
+              newacc = fn(newacc, impl.block(i))
               i += 1
             }
-            loop(newacc, tailBList1)
+            loop(newacc, impl.tailBList)
         }
       loop(acc, this)
     }
@@ -296,14 +301,14 @@ object BList {
           l match {
             case Empty =>
               Empty
-            case Impl(offset1, block1, tailBList1) =>
-              if (n >= BlockSize - offset1) {
-                go(n - (BlockSize - offset1), tailBList1)
+            case impl: Impl[A] @unchecked =>
+              if (n >= BlockSize - impl.offset) {
+                go(n - (BlockSize - impl.offset), impl.tailBList)
               } else {
                 val ary = new Array[Any](BlockSize)
-                val newOffset: Int = offset1 + n.asInstanceOf[Int] // type conversion safe because 0<n<BlockSize
-                System.arraycopy(block1, newOffset, ary, newOffset, BlockSize - newOffset)
-                Impl(newOffset, ary, tailBList1)
+                val newOffset: Int = impl.offset + n.asInstanceOf[Int] // type conversion safe because 0<n<BlockSize
+                System.arraycopy(impl.block, newOffset, ary, newOffset, BlockSize - newOffset)
+                Impl(newOffset, ary, impl.tailBList)
               }
 
           }
@@ -333,13 +338,13 @@ object BList {
       @tailrec
       def loop(l: BList[A]): List[A] =
         l match {
-          case Empty                             => builder.result()
-          case Impl(offset1, block1, tailBList1) =>
+          case Empty                    => builder.result()
+          case impl: Impl[A] @unchecked =>
             // append valid things in the block to acc
-            for (i <- offset1 until BlockSize) {
-              builder += block1(i)
+            for (i <- impl.offset until BlockSize) {
+              builder += impl.block(i)
             }
-            loop(tailBList1)
+            loop(impl.tailBList)
         }
       loop(this)
     }
@@ -352,16 +357,16 @@ object BList {
       def loop(first: Boolean, l: BList[A]): Unit = {
         if (!first) strb.append(", "): Unit
         l match {
-          case Empty                             => strb.append("Empty"): Unit
-          case Impl(offset1, block1, tailBList1) =>
+          case Empty                    => strb.append("Empty"): Unit
+          case impl: Impl[A] @unchecked =>
             strb.append("Block(")
-            strb.append(block1(offset1).toString)
-            for (i <- offset1 + 1 until BlockSize) {
+            strb.append(impl.block(impl.offset).toString)
+            for (i <- impl.offset + 1 until BlockSize) {
               strb.append(", ")
-              strb.append(block1(i).toString)
+              strb.append(impl.block(i).toString)
             }
             strb.append(")")
-            loop(false, tailBList1)
+            loop(false, impl.tailBList)
         }
       }
       loop(true, this)
