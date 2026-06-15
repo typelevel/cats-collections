@@ -47,7 +47,7 @@ class BListSuite extends DisciplineSuite {
     val n1 = m1.concat(l1)
     val n2 = m2.concat(l2)
 
-    assertEquals(n1.toString, n2.toString)
+    assertEquals(n1, n2)
   }
 
   test("uncons when tail is a new node") {
@@ -60,7 +60,7 @@ class BListSuite extends DisciplineSuite {
       // case None         => fail("should not be empty")
       case Some((h, t)) =>
         assertEquals(h, m.head)
-        assertEquals(t.toString, l.toString)
+        assertEquals(t, l)
     }
   }
 
@@ -165,7 +165,7 @@ class BListSuite extends DisciplineSuite {
       // case None         => fail("should not be empty")
       case Some((h, t)) =>
         assertEquals(h, 0)
-        assertEquals(t.toString, l.toString)
+        assertEquals(t, l)
     }
   }
 
@@ -227,9 +227,9 @@ class BListSuite extends DisciplineSuite {
       l = l.prepend(i)
       m = l.concat(m)
     }
-    assertEquals(m.drop(10).toString, BList.empty[Int].toString)
-    assertEquals(m.drop(20).toString, BList.empty[Int].toString)
-    assertEquals(m.drop(1000).toString, BList.empty[Int].toString)
+    assertEquals(m.drop(10), BList.empty[Int])
+    assertEquals(m.drop(20), BList.empty[Int])
+    assertEquals(m.drop(1000), BList.empty[Int])
   }
   test("drop nothing") {
     var l = BList.empty[Int]
@@ -239,9 +239,9 @@ class BListSuite extends DisciplineSuite {
       m = l.concat(m)
     }
 
-    assertEquals(m.drop(0).toString, m.toString)
-    assertEquals(m.drop(-10).toString, m.toString)
-    assertEquals(m.drop(-200).toString, m.toString)
+    assertEquals(m.drop(0), m)
+    assertEquals(m.drop(-10), m)
+    assertEquals(m.drop(-200), m)
   }
 
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
@@ -277,8 +277,8 @@ class BListSuite extends DisciplineSuite {
     xs.headOption match {
       case Some(h) =>
         xs.tailOption match {
-          case Some(t) => assertEquals(t.prepend(h).toString, xs.toString)
-          case None    => assertEquals(BList.empty.prepend(h).toString, xs.toString)
+          case Some(t) => assertEquals(t.prepend(h), xs)
+          case None    => assertEquals(BList.empty.prepend(h), xs)
         }
       case None => assertEquals(xs, BList.empty)
     }
@@ -290,7 +290,7 @@ class BListSuite extends DisciplineSuite {
       case None    => // head wont work because xs is the empty list
     }
     xs.tailOption match {
-      case Some(t) => assertEquals(t.toString, xs.asInstanceOf[BList.NonEmpty[Int]].tail.toString)
+      case Some(t) => assertEquals(t, xs.asInstanceOf[BList.NonEmpty[Int]].tail)
       case None    => // tail wont work because xs is the empty list
     }
   })
@@ -304,14 +304,14 @@ class BListSuite extends DisciplineSuite {
   })
 
   property("toList inverse of fromList")(forAll { (xs: BList[Int]) =>
-    assertEquals(xs.toString, BList.fromList(xs.toList).toString)
+    assertEquals(xs, BList.fromList(xs.toList))
   })
 
   property("pattern matching works")(forAll { (xs: BList[Int]) =>
     xs match {
       case BList.NonEmpty(h, t) =>
         assertEquals(xs.headOption, Option(h))
-        assertEquals(xs.asInstanceOf[BList.NonEmpty[Int]].tail.toString, t.toString)
+        assertEquals(xs.asInstanceOf[BList.NonEmpty[Int]].tail, t)
       case BList.Empty =>
         assertEquals(xs, BList.Empty)
         assertEquals(xs.uncons, None)
@@ -325,11 +325,11 @@ class BListSuite extends DisciplineSuite {
     BList.NonEmpty(head, tail) match {
       case BList.NonEmpty(h, t) =>
         assertEquals(h, head)
-        assertEquals(t.toString, tail.toString)
+        assertEquals(t, tail)
     }
   })
 
   property("fromListReverse == .reverse fromList")(forAll { (xs: List[Int]) =>
-    assertEquals(BList.fromListReverse(xs).toString, BList.fromList(xs.reverse).toString)
+    assertEquals(BList.fromListReverse(xs), BList.fromList(xs.reverse))
   })
 }

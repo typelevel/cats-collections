@@ -37,6 +37,7 @@ sealed abstract class BList[+A] {
   def drop(n: Long): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
+  def isEmpty: Boolean
 
   // for development and testing
   private[collections] def toStringInBlocks: String
@@ -88,6 +89,7 @@ object BList {
     def drop(n: Long): BList[Nothing] = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
+    def isEmpty: Boolean = true
     private[collections] def toStringInBlocks: String = "Empty"
 
   }
@@ -115,16 +117,61 @@ object BList {
       new Impl(offset, block, tailBList)
     def apply[A](offset: Int, block: Array[Any], tailBList: BList[A]): Impl[A] =
       new Impl(offset, block.asInstanceOf[Array[A]], tailBList)
-    def unapply[A] (l:Impl[A]): Some[(Int, Array[A], BList[A])] =
-      Some((l.offset,l.block,l.tailBList))
+    def unapply[A](l: Impl[A]): Some[(Int, Array[A], BList[A])] =
+      Some((l.offset, l.block, l.tailBList))
   }
 
   // (maybe impl will be covariant or not)
   private class Impl[A](val offset: Int, val block: Array[A], val tailBList: BList[A]) extends NonEmpty[A] {
-   // override def equals(that: Any): Boolean =
-      //todo
-    //override def hashCode(): Int = 
-      //todo
+
+    override def equals(other: Any): Boolean = {
+      // helper to get next element of BList
+      def next[B](node: Impl[B], curoffset: Int): Option[(B, Impl[B], Int)] = {
+        if (curoffset < BlockSize - 1) {
+          Some((node.block(curoffset + 1), node, curoffset + 1))
+        } else {
+          // we need to see if the tail is empty and try to take an element from it
+          node.tailBList match {
+            case Empty                          => None
+            case Impl(tailoffset, tailblock, _) => // there will be at least one element in every block
+              Some((tailblock(tailoffset), node.tailBList.asInstanceOf[Impl[B]], tailoffset + 1))
+          }
+        }
+      }
+
+      other match {
+        case that: Impl[_] =>
+          // 3-tuple has structure: current element, current node (nonempty), current offset in to curnode's block
+          @tailrec
+          def loop[B](list1: (A, Impl[A], Int), list2: (B, Impl[B], Int)): Boolean = {
+            if (list1._1 != list2._1) false
+
+            (next(list1._2, list1._3), next(list2._2, list2._3)) match {
+              case (None, None)                         => true
+              case (None, _) | (_, None)                => false
+              case (Some(list1_tail), Some(list2_tail)) =>
+                loop(list1_tail, list2_tail)
+            }
+          }
+
+          loop(
+            (this.block(this.offset), this, this.offset), // list1
+            (that.block(that.offset), that, that.offset) // list2
+          )
+
+        case _ => false
+      }
+    }
+
+    override def hashCode(): Int = {
+      // determined by only the valid elements in the first block
+      var res = 31
+      for (i <- this.offset until BlockSize) {
+        res = res * 31 + this.block(i).hashCode()
+      }
+      res
+    }
+
     def uncons: Some[(A, BList[A])] = {
       Some((block(offset), this.tail))
     }
@@ -165,7 +212,7 @@ object BList {
         @tailrec
         def go(idx: Long, l: BList[A]): Option[A] = {
           l match {
-            case Empty                          => None
+            case Empty                             => None
             case Impl(offset1, block1, tailBList1) =>
               if (idx < BlockSize - offset1) {
                 Some(block1(offset1 + idx.toInt))
@@ -184,7 +231,7 @@ object BList {
       @tailrec
       def go(idx: Long, l: BList[A]): A = {
         l match {
-          case Empty                          => throw new IndexOutOfBoundsException
+          case Empty                             => throw new IndexOutOfBoundsException
           case Impl(offset1, block1, tailBList1) =>
             if (idx < BlockSize - offset1) {
               block1(offset1 + idx.toInt)
@@ -209,7 +256,7 @@ object BList {
       @tailrec
       def loop(l: BList[A], acc: Long): Long = {
         l match {
-          case Empty                      => acc
+          case Empty                        => acc
           case Impl(offset1, _, tailBList1) => loop(tailBList1, acc + (BlockSize - offset1))
         }
       }
@@ -228,7 +275,7 @@ object BList {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
         l match {
-          case Empty                          => acc
+          case Empty                             => acc
           case Impl(offset1, block1, tailBList1) =>
             var newacc = acc
             var i = offset1
@@ -286,7 +333,7 @@ object BList {
       @tailrec
       def loop(l: BList[A]): List[A] =
         l match {
-          case Empty                          => builder.result()
+          case Empty                             => builder.result()
           case Impl(offset1, block1, tailBList1) =>
             // append valid things in the block to acc
             for (i <- offset1 until BlockSize) {
@@ -296,6 +343,7 @@ object BList {
         }
       loop(this)
     }
+    def isEmpty: Boolean = false
 
     private[collections] def toStringInBlocks: String = {
       val strb = new java.lang.StringBuilder
@@ -304,7 +352,7 @@ object BList {
       def loop(first: Boolean, l: BList[A]): Unit = {
         if (!first) strb.append(", "): Unit
         l match {
-          case Empty                          => strb.append("Empty"): Unit
+          case Empty                             => strb.append("Empty"): Unit
           case Impl(offset1, block1, tailBList1) =>
             strb.append("Block(")
             strb.append(block1(offset1).toString)
