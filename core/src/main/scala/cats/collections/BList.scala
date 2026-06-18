@@ -119,17 +119,18 @@ object BList {
       Some((l.offset, l.block, l.tailBList))
   }
 
-  private class Impl[+A](val offset: Int, val block: Array[A @uncheckedVariance], val tailBList: BList[A]) extends NonEmpty[A] {
-    
-    //equals version 2
+  private class Impl[+A](val offset: Int, val block: Array[A @uncheckedVariance], val tailBList: BList[A])
+      extends NonEmpty[A] {
+
+    // equals version 2
     override def equals(other: Any): Boolean = {
       // Helper recursive class-level function. start inclusive, end exclusive
       // ary1 will be shorter or equal length to ary2
-      def arrayEqualsPrefix(ary1: Array[_], ary2: Array[_], ary1start: Int, ary2start:Int): Boolean = {
-        //compare from ary1start until BlockSize with other ary from ary2start 
+      def arrayEqualsPrefix(ary1: Array[_], ary2: Array[_], ary1start: Int, ary2start: Int): Boolean = {
+        // compare from ary1start until BlockSize with other ary from ary2start
         var i = 0
-        while ( i+ary1start < BlockSize) {
-          if (ary1(i+ary1start) != ary2(i+ary2start)) return false
+        while (i + ary1start < BlockSize) {
+          if (ary1(i + ary1start) != ary2(i + ary2start)) return false
           i += 1
         }
         true
@@ -137,15 +138,16 @@ object BList {
 
       other match {
         case that: Impl[_] =>
-          // we know both lists are Impl here. 
-          var list1:Impl[_] = this
-          var list2:Impl[_] = that
+          // we know both lists are Impl here.
+          var list1: Impl[_] = this
+          var list2: Impl[_] = that
           var list1idx = list1.offset
           var list2idx = list2.offset
 
-          while (!list1.isEmpty && !list2.isEmpty){
-            if (list1idx == list2idx){
-              if (!arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx)) return false // TODO if this is false return false
+          while (!list1.isEmpty && !list2.isEmpty) {
+            if (list1idx == list2idx) {
+              if (!arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx))
+                return false // TODO if this is false return false
               if (list1.tailBList.isEmpty || list2.tailBList.isEmpty) {
                 return list1.tailBList.isEmpty && list2.tailBList.isEmpty
               }
@@ -153,18 +155,20 @@ object BList {
               list2 = list2.tailBList.asInstanceOf[Impl[_]]
               list1idx = list1.offset
               list2idx = list2.offset
-            } else if (list1idx > list2idx){
-              if ((list1.tailBList.isEmpty) || !arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx) ) return false
+            } else if (list1idx > list2idx) {
+              if ((list1.tailBList.isEmpty) || !arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx))
+                return false
               list2idx = list2idx + (BlockSize - list1idx)
               list1 = list1.tailBList.asInstanceOf[Impl[_]]
               list1idx = list1.offset
             } else { // (list1idx < list2idx)
-              if ((list2.tailBList.isEmpty) || ! arrayEqualsPrefix(list2.block, list1.block, list2idx, list1idx)) return false
+              if ((list2.tailBList.isEmpty) || !arrayEqualsPrefix(list2.block, list1.block, list2idx, list1idx))
+                return false
               list1idx = list1idx + (BlockSize - list2idx)
               list2 = list2.tailBList.asInstanceOf[Impl[_]]
               list2idx = list2.offset
             }
-            
+
           }
           true
 
@@ -211,7 +215,7 @@ object BList {
         case _ => false
       }
     }
-    */
+     */
     override def hashCode(): Int = {
       // uses only the valid elements in the first block
       var res = 31
