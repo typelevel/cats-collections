@@ -45,7 +45,8 @@ class BListSuite extends DisciplineSuite {
 
     val n1 = m1.concat(l1)
     val n2 = m2.concat(l2)
-
+    println(n1.toStringInBlocks)
+    println(n2.toStringInBlocks)
     assertEquals(n1, n2)
   }
 

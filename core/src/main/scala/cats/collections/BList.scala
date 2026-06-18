@@ -22,6 +22,7 @@
 package cats.collections
 
 import scala.annotation.tailrec
+import scala.annotation.unchecked.uncheckedVariance
 
 sealed abstract class BList[+A] {
   def uncons: Option[(A, BList[A])]
@@ -118,8 +119,60 @@ object BList {
       Some((l.offset, l.block, l.tailBList))
   }
 
-  private class Impl[A](val offset: Int, val block: Array[A], val tailBList: BList[A]) extends NonEmpty[A] {
+  private class Impl[+A](val offset: Int, val block: Array[A @uncheckedVariance], val tailBList: BList[A]) extends NonEmpty[A] {
+    
+    //equals version 2
+    override def equals(other: Any): Boolean = {
+      // Helper recursive class-level function. start inclusive, end exclusive
+      // ary1 will be shorter or equal length to ary2
+      def arrayEqualsPrefix(ary1: Array[_], ary2: Array[_], ary1start: Int, ary2start:Int): Boolean = {
+        //compare from ary1start until BlockSize with other ary from ary2start 
+        var i = 0
+        while ( i+ary1start < BlockSize) {
+          if (ary1(i+ary1start) != ary2(i+ary2start)) return false
+          i += 1
+        }
+        true
+      }
 
+      other match {
+        case that: Impl[_] =>
+          // we know both lists are Impl here. 
+          var list1:Impl[_] = this
+          var list2:Impl[_] = that
+          var list1idx = list1.offset
+          var list2idx = list2.offset
+
+          while (!list1.isEmpty && !list2.isEmpty){
+            if (list1idx == list2idx){
+              if (!arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx)) return false // TODO if this is false return false
+              if (list1.tailBList.isEmpty || list2.tailBList.isEmpty) {
+                return list1.tailBList.isEmpty && list2.tailBList.isEmpty
+              }
+              list1 = list1.tailBList.asInstanceOf[Impl[_]]
+              list2 = list2.tailBList.asInstanceOf[Impl[_]]
+              list1idx = list1.offset
+              list2idx = list2.offset
+            } else if (list1idx > list2idx){
+              if ((list1.tailBList.isEmpty) || !arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx) ) return false
+              list2idx = list2idx + (BlockSize - list1idx)
+              list1 = list1.tailBList.asInstanceOf[Impl[_]]
+              list1idx = list1.offset
+            } else { // (list1idx < list2idx)
+              if ((list2.tailBList.isEmpty) || ! arrayEqualsPrefix(list2.block, list1.block, list2idx, list1idx)) return false
+              list1idx = list1idx + (BlockSize - list2idx)
+              list2 = list2.tailBList.asInstanceOf[Impl[_]]
+              list2idx = list2.offset
+            }
+            
+          }
+          true
+
+        case _ => false
+      }
+    }
+    /*
+    //equals version 1 - i think i will try to test the performance of the two versions against each other
     override def equals(other: Any): Boolean = {
       // helper to get next element of BList
       def next[B](node: Impl[B], curoffset: Int): Option[(B, Impl[B], Int)] = {
@@ -127,7 +180,7 @@ object BList {
           Some((node.block(curoffset + 1), node, curoffset + 1))
         } else {
           node.tailBList match {
-            case Empty                    => None
+            case _: Empty.type                   => None
             case tail: Impl[B] @unchecked => // there will be at least one element in every block
               Some((tail.block(tail.offset), tail, tail.offset))
           }
@@ -139,19 +192,15 @@ object BList {
           // 3-tuple has structure: element, node where it is found, offset at which it was found
           @tailrec
           def loop[B](list1: (A, Impl[A], Int), list2: (B, Impl[B], Int)): Boolean = {
-            if (list1._1 != list2._1) {
-              false
-            } else {
+            if (list1._1 != list2._1) return false
 
-              (next(list1._2, list1._3), next(list2._2, list2._3)) match {
-                case (None, None)                         => true
-                case (None, _) | (_, None)                => false
-                case (Some(list1_tail), Some(list2_tail)) =>
-                  loop(list1_tail, list2_tail)
-              }
-
+            (next(list1._2, list1._3), next(list2._2, list2._3)) match {
+              case (None, None)                         => true
+              case (None, _) | (_, None)                => false
+              case (Some(list1_tail), Some(list2_tail)) =>
+                loop(list1_tail, list2_tail)
             }
-
+            
           }
 
           loop(
@@ -162,7 +211,7 @@ object BList {
         case _ => false
       }
     }
-
+    */
     override def hashCode(): Int = {
       // uses only the valid elements in the first block
       var res = 31
