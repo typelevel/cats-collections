@@ -23,6 +23,7 @@ package cats.collections
 
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
+import scala.util.hashing.MurmurHash3.seqSeed
 
 sealed abstract class BList[+A] {
   def uncons: Option[(A, BList[A])]
@@ -40,12 +41,11 @@ sealed abstract class BList[+A] {
   def toList: List[A]
   def isEmpty: Boolean
 
+  final def ::[B >: A](a: B): BList[B] = prepend(a)
+  final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
+
   // for development and testing
   private[collections] def toStringInBlocks: String
-
-  final def ::[B >: A](a: B): BList[B] = prepend(a)
-
-  final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
   override def toString: String = {
     val strb = new java.lang.StringBuilder
@@ -65,6 +65,8 @@ sealed abstract class BList[+A] {
     strb.toString
   }
 
+  def equals(other: Any): Boolean
+  def hashCode(): Int
 }
 
 object BList {
@@ -91,6 +93,13 @@ object BList {
     override def toList: List[Nothing] = Nil
     def isEmpty: Boolean = true
     private[collections] def toStringInBlocks: String = "Empty"
+
+    override def equals(other: Any): Boolean = other match {
+      case _: Empty.type => true
+      case _             => false
+    }
+
+    override def hashCode(): Int = finalizeHash(seqSeed, 0)
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
@@ -216,13 +225,53 @@ object BList {
       }
     }
      */
+
+    /*
+     * HashCode computation for BList is adapted from https://github.com/scala/scala/blob/e48c7888a0ae08b8d273f03bfc62452fc2ed886d/src/library/scala/util/hashing/MurmurHash3.scala
+     * such that BList hashcodes are consistent with other list-like datatypes in the Scala standard library.
+     */
     override def hashCode(): Int = {
-      // uses only the valid elements in the first block
-      var res = 31
-      for (i <- this.offset until BlockSize) {
-        res = res * 31 + this.block(i).hashCode()
+      var n = 0
+      var h = seqSeed
+      var rangeState = 0 // 0 = no data, 1 = first elem read, 2 = has valid diff, 3 = invalid
+      var rangeDiff = 0
+      var prev = 0
+      var initial = 0
+      var curoffset = this.offset
+      var elems: Impl[_] = this
+
+      var elemsIsNotEmpty = true
+      while (elemsIsNotEmpty) { // change this check to be later i think
+        val head = elems.block(curoffset)
+        val hash = head.##
+        h = mix(h, hash)
+        rangeState match {
+          case 0 =>
+            initial = hash
+            rangeState = 1
+          case 1 =>
+            rangeDiff = hash - prev
+            rangeState = 2
+          case 2 =>
+            if (rangeDiff != hash - prev) rangeState = 3
+          case _ =>
+        }
+        prev = hash
+        n += 1
+        curoffset += 1
+
+        // logic for proceeding to next block
+        if (curoffset >= BlockSize) {
+          elems.tailBList match {
+            case Empty                         => elemsIsNotEmpty = false // break loop
+            case nextBlock: Impl[_] @unchecked =>
+              elems = nextBlock
+              curoffset = nextBlock.offset
+          }
+        }
       }
-      res
+      if (rangeState == 2) rangeHash(initial, rangeDiff, prev, seqSeed)
+      else finalizeHash(h, n)
     }
 
     def uncons: Some[(A, BList[A])] = {
@@ -437,4 +486,38 @@ object BList {
   }
 
   def empty[A]: BList[A] = Empty
+
+  /*
+   * The following five methods are copied from https://github.com/scala/scala/blob/e48c7888a0ae08b8d273f03bfc62452fc2ed886d/src/library/scala/util/hashing/MurmurHash3.scala
+   * They are helper functions for computing a hashcode for BList that is consistent with that of other
+   * list-like datatypes in the Scala standard library (List, Vector, Range etc.)
+   */
+  final private def finalizeHash(hash: Int, length: Int): Int = avalanche(hash ^ length)
+  final private def avalanche(hash: Int): Int = {
+    var h = hash
+    h ^= h >>> 16
+    h *= 0x85ebca6b
+    h ^= h >>> 13
+    h *= 0xc2b2ae35
+    h ^= h >>> 16
+    h
+  }
+  final private def mixLast(hash: Int, data: Int): Int = {
+    var k = data
+
+    k *= 0xcc9e2d51
+    k = java.lang.Integer.rotateLeft(k, 15)
+    k *= 0x1b873593
+
+    hash ^ k
+  }
+  final private def mix(hash: Int, data: Int): Int = {
+    var h = mixLast(hash, data)
+    h = java.lang.Integer.rotateLeft(h, 13)
+    h * 5 + 0xe6546b64
+  }
+  // this one isn't available in scala 2.12, so it is included in this file
+  final private def rangeHash(start: Int, step: Int, last: Int, seed: Int): Int =
+    avalanche(mix(mix(mix(seed, start), step), last))
+
 }
