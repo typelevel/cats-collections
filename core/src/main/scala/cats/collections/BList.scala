@@ -24,6 +24,8 @@ package cats.collections
 import cats.{Eq, Eval, Foldable, Functor, SemigroupK}
 
 import scala.annotation.tailrec
+import scala.annotation.unchecked.uncheckedVariance
+import scala.util.hashing.MurmurHash3.seqSeed
 //import cats.syntax.all._
 
 sealed abstract class BList[+A] {
@@ -42,12 +44,11 @@ sealed abstract class BList[+A] {
   def toList: List[A]
   def isEmpty: Boolean
 
+  final def ::[B >: A](a: B): BList[B] = prepend(a)
+  final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
+
   // for development and testing
   private[collections] def toStringInBlocks: String
-
-  final def ::[B >: A](a: B): BList[B] = prepend(a)
-
-  final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
   override def toString: String = {
     val strb = new java.lang.StringBuilder
@@ -67,6 +68,8 @@ sealed abstract class BList[+A] {
     strb.toString
   }
 
+  def equals(other: Any): Boolean
+  def hashCode(): Int
 }
 
 object BList {
@@ -93,6 +96,13 @@ object BList {
     override def toList: List[Nothing] = Nil
     def isEmpty: Boolean = true
     private[collections] def toStringInBlocks: String = "Empty"
+
+    override def equals(other: Any): Boolean = other match {
+      case _: Empty.type => true
+      case _             => false
+    }
+
+    override def hashCode(): Int = finalizeHash(seqSeed, 0)
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
@@ -121,8 +131,64 @@ object BList {
       Some((l.offset, l.block, l.tailBList))
   }
 
-  private class Impl[A](val offset: Int, val block: Array[A], val tailBList: BList[A]) extends NonEmpty[A] {
+  private class Impl[+A](val offset: Int, val block: Array[A @uncheckedVariance], val tailBList: BList[A])
+      extends NonEmpty[A] {
 
+    // equals version 2
+    override def equals(other: Any): Boolean = {
+      // Helper recursive class-level function. start inclusive, end exclusive
+      // ary1 will be shorter or equal length to ary2
+      def arrayEqualsPrefix(ary1: Array[_], ary2: Array[_], ary1start: Int, ary2start: Int): Boolean = {
+        // compare from ary1start until BlockSize with other ary from ary2start
+        var i = 0
+        while (i + ary1start < BlockSize) {
+          if (ary1(i + ary1start) != ary2(i + ary2start)) return false
+          i += 1
+        }
+        true
+      }
+
+      other match {
+        case that: Impl[_] =>
+          // we know both lists are Impl here.
+          var list1: Impl[_] = this
+          var list2: Impl[_] = that
+          var list1idx = list1.offset
+          var list2idx = list2.offset
+
+          while (!list1.isEmpty && !list2.isEmpty) {
+            if (list1idx == list2idx) {
+              if (!arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx))
+                return false // TODO if this is false return false
+              if (list1.tailBList.isEmpty || list2.tailBList.isEmpty) {
+                return list1.tailBList.isEmpty && list2.tailBList.isEmpty
+              }
+              list1 = list1.tailBList.asInstanceOf[Impl[_]]
+              list2 = list2.tailBList.asInstanceOf[Impl[_]]
+              list1idx = list1.offset
+              list2idx = list2.offset
+            } else if (list1idx > list2idx) {
+              if ((list1.tailBList.isEmpty) || !arrayEqualsPrefix(list1.block, list2.block, list1idx, list2idx))
+                return false
+              list2idx = list2idx + (BlockSize - list1idx)
+              list1 = list1.tailBList.asInstanceOf[Impl[_]]
+              list1idx = list1.offset
+            } else { // (list1idx < list2idx)
+              if ((list2.tailBList.isEmpty) || !arrayEqualsPrefix(list2.block, list1.block, list2idx, list1idx))
+                return false
+              list1idx = list1idx + (BlockSize - list2idx)
+              list2 = list2.tailBList.asInstanceOf[Impl[_]]
+              list2idx = list2.offset
+            }
+
+          }
+          true
+
+        case _ => false
+      }
+    }
+    /*
+    //equals version 1 - i think i will try to test the performance of the two versions against each other
     override def equals(other: Any): Boolean = {
       // helper to get next element of BList
       def next[B](node: Impl[B], curoffset: Int): Option[(B, Impl[B], Int)] = {
@@ -130,7 +196,7 @@ object BList {
           Some((node.block(curoffset + 1), node, curoffset + 1))
         } else {
           node.tailBList match {
-            case Empty                    => None
+            case _: Empty.type                   => None
             case tail: Impl[B] @unchecked => // there will be at least one element in every block
               Some((tail.block(tail.offset), tail, tail.offset))
           }
@@ -142,19 +208,15 @@ object BList {
           // 3-tuple has structure: element, node where it is found, offset at which it was found
           @tailrec
           def loop[B](list1: (A, Impl[A], Int), list2: (B, Impl[B], Int)): Boolean = {
-            if (list1._1 != list2._1) {
-              false
-            } else {
+            if (list1._1 != list2._1) return false
 
-              (next(list1._2, list1._3), next(list2._2, list2._3)) match {
-                case (None, None)                         => true
-                case (None, _) | (_, None)                => false
-                case (Some(list1_tail), Some(list2_tail)) =>
-                  loop(list1_tail, list2_tail)
-              }
-
+            (next(list1._2, list1._3), next(list2._2, list2._3)) match {
+              case (None, None)                         => true
+              case (None, _) | (_, None)                => false
+              case (Some(list1_tail), Some(list2_tail)) =>
+                loop(list1_tail, list2_tail)
             }
-
+            
           }
 
           loop(
@@ -165,14 +227,54 @@ object BList {
         case _ => false
       }
     }
+     */
 
+    /*
+     * HashCode computation for BList is adapted from https://github.com/scala/scala/blob/e48c7888a0ae08b8d273f03bfc62452fc2ed886d/src/library/scala/util/hashing/MurmurHash3.scala
+     * such that BList hashcodes are consistent with other list-like datatypes in the Scala standard library.
+     */
     override def hashCode(): Int = {
-      // uses only the valid elements in the first block
-      var res = 31
-      for (i <- this.offset until BlockSize) {
-        res = res * 31 + this.block(i).hashCode()
+      var n = 0
+      var h = seqSeed
+      var rangeState = 0 // 0 = no data, 1 = first elem read, 2 = has valid diff, 3 = invalid
+      var rangeDiff = 0
+      var prev = 0
+      var initial = 0
+      var curoffset = this.offset
+      var elems: Impl[_] = this
+
+      var elemsIsNotEmpty = true
+      while (elemsIsNotEmpty) { // change this check to be later i think
+        val head = elems.block(curoffset)
+        val hash = head.##
+        h = mix(h, hash)
+        rangeState match {
+          case 0 =>
+            initial = hash
+            rangeState = 1
+          case 1 =>
+            rangeDiff = hash - prev
+            rangeState = 2
+          case 2 =>
+            if (rangeDiff != hash - prev) rangeState = 3
+          case _ =>
+        }
+        prev = hash
+        n += 1
+        curoffset += 1
+
+        // logic for proceeding to next block
+        if (curoffset >= BlockSize) {
+          elems.tailBList match {
+            case Empty                         => elemsIsNotEmpty = false // break loop
+            case nextBlock: Impl[_] @unchecked =>
+              elems = nextBlock
+              curoffset = nextBlock.offset
+          }
+        }
       }
-      res
+      if (rangeState == 2) rangeHash(initial, rangeDiff, prev, seqSeed)
+      else finalizeHash(h, n)
     }
 
     def uncons: Some[(A, BList[A])] = {
@@ -387,6 +489,40 @@ object BList {
   }
 
   def empty[A]: BList[A] = Empty
+
+  /*
+   * The following five methods are copied from https://github.com/scala/scala/blob/e48c7888a0ae08b8d273f03bfc62452fc2ed886d/src/library/scala/util/hashing/MurmurHash3.scala
+   * They are helper functions for computing a hashcode for BList that is consistent with that of other
+   * list-like datatypes in the Scala standard library (List, Vector, Range etc.)
+   */
+  final private def finalizeHash(hash: Int, length: Int): Int = avalanche(hash ^ length)
+  final private def avalanche(hash: Int): Int = {
+    var h = hash
+    h ^= h >>> 16
+    h *= 0x85ebca6b
+    h ^= h >>> 13
+    h *= 0xc2b2ae35
+    h ^= h >>> 16
+    h
+  }
+  final private def mixLast(hash: Int, data: Int): Int = {
+    var k = data
+
+    k *= 0xcc9e2d51
+    k = java.lang.Integer.rotateLeft(k, 15)
+    k *= 0x1b873593
+
+    hash ^ k
+  }
+  final private def mix(hash: Int, data: Int): Int = {
+    var h = mixLast(hash, data)
+    h = java.lang.Integer.rotateLeft(h, 13)
+    h * 5 + 0xe6546b64
+  }
+  // this one isn't available in scala 2.12, so it is included in this file
+  final private def rangeHash(start: Int, step: Int, last: Int, seed: Int): Int =
+    avalanche(mix(mix(mix(seed, start), step), last))
+
 
   // typeclasses stuff
   implicit def eqBList[A: Eq]: Eq[BList[A]] =
