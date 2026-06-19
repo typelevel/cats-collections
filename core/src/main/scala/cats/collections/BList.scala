@@ -21,7 +21,10 @@
 
 package cats.collections
 
+import cats.{Eq, Eval, Foldable, Functor, SemigroupK}
+
 import scala.annotation.tailrec
+//import cats.syntax.all._
 
 sealed abstract class BList[+A] {
   def uncons: Option[(A, BList[A])]
@@ -279,7 +282,7 @@ object BList {
           case impl: Impl[A] @unchecked =>
             var newacc = acc
             var i = impl.offset
-            while (i < impl.block.length) {
+            while (i < BlockSize) {
               newacc = fn(newacc, impl.block(i))
               i += 1
             }
@@ -384,4 +387,36 @@ object BList {
   }
 
   def empty[A]: BList[A] = Empty
+
+  // typeclasses stuff
+  implicit def eqBList[A: Eq]: Eq[BList[A]] =
+    new Eq[BList[A]] {
+      def eqv(xs: BList[A], ys: BList[A]): Boolean = xs == ys
+    }
+  implicit def catsCollectionBListFunctor[A]: Functor[BList] =
+    new Functor[BList] {
+      override def map[A, B](a: BList[A])(f: A => B): BList[B] = a.map(f)
+    }
+  implicit def catsCollectionBListSemigroupK[A]: SemigroupK[BList] =
+    new SemigroupK[BList] {
+      override def combineK[A](x: BList[A], y: BList[A]): BList[A] = x.concat(y)
+    }
+  implicit val catsCollectionsBListFoldable: Foldable[BList] =
+    new Foldable[BList] {
+      def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
+        xs.foldLeft(init)(f)
+      def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = xs match {
+        case Empty                    => init
+        case impl: Impl[A] @unchecked =>
+          def loop(idx: Int): Eval[B] =
+            if (idx >= BlockSize) Eval.defer(foldRight(impl.tailBList, init)(f))
+            else Eval.defer(f(impl.block(idx), loop(idx + 1)))
+          loop(impl.offset)
+      }
+      override def isEmpty[A](xs: BList[A]): Boolean = xs.isEmpty
+
+      override def nonEmpty[A](xs: BList[A]): Boolean = !xs.isEmpty
+
+      override def size[A](xs: BList[A]): Long = xs.size
+    }
 }

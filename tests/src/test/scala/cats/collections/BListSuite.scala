@@ -23,18 +23,21 @@ package cats.collections
 
 //import cats.syntax.all._
 import cats.collections.arbitrary.blist._
-//import cats.laws.discipline._
+import cats.laws.discipline._
 import cats.Eq
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
-import org.scalacheck.Test
-//import org.scalacheck.{Arbitrary, Cogen, Gen, Test}
+import org.scalacheck.{Arbitrary, Test}
 import scala.math.pow
 
 class BListSuite extends DisciplineSuite {
 
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
+
+  checkAll("BList.FunctorLaws", FunctorTests[BList].functor[Int, Int, String])
+  checkAll("BList.SemigroupKLaws", SemigroupKTests[BList].semigroupK[Int])
+  checkAll("BList.FoldableLaws", FoldableTests[BList].foldable[Int, Long])
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
@@ -253,8 +256,6 @@ class BListSuite extends DisciplineSuite {
 
     val n1 = m1.concat(l1)
     val n2 = m2.concat(l2)
-    println(n1.toStringInBlocks)
-    println(n2.toStringInBlocks)
     assertEquals(n1, n2)
 
   }
