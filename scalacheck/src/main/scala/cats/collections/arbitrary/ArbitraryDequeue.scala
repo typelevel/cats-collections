@@ -20,16 +20,21 @@
  */
 
 package cats.collections
+package arbitrary
 
-package object arbitrary {
-  object all extends AllArbitrary
+import org.scalacheck.{Arbitrary, Gen}
 
-  object set extends ArbitrarySet
-  object hashset extends ArbitraryHashSet
-  object map extends ArbitraryMap
-  object hashmap extends ArbitraryHashMap
-  object predicate extends ArbitraryPredicate
-  object treelist extends ArbitraryTreeList
-  object dequeue extends ArbitraryDequeue
-  object cogen extends CogenInstances
+trait ArbitraryDequeue {
+  implicit def arbitraryDequeue[A](implicit A: Arbitrary[A]): Arbitrary[Dequeue[A]] =
+    Arbitrary(
+      for {
+        left <- Gen.listOf(A.arbitrary)
+        right <- Gen.listOf(A.arbitrary)
+      } yield {
+        val withLeft = left.foldLeft(Dequeue.empty[A])((q, a) => q.cons(a))
+        right.foldLeft(withLeft)((q, a) => q.snoc(a))
+      }
+    )
 }
+
+object ArbitraryDequeue extends ArbitraryDequeue
