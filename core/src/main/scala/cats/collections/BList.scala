@@ -26,9 +26,7 @@ import cats.{Alternative, Applicative, Eq, Eval, Foldable, Functor, Monad, Monoi
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
 import scala.util.hashing.MurmurHash3
-import scala.util.hashing.MurmurHash3.seqSeed
 import org.typelevel.scalaccompat.annotation._
-//import cats.syntax.all._
 
 sealed abstract class BList[+A] {
   def uncons: Option[(A, BList[A])]
