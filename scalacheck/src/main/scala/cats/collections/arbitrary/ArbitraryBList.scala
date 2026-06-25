@@ -24,10 +24,11 @@ package cats.collections.arbitrary
 import cats.collections.BList
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Cogen
 import org.scalacheck.Gen
 
 trait ArbitraryBList {
-  def bListGen[A](implicit arb: Arbitrary[A]): Gen[BList[A]] = {
+  def bListGen[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Gen[BList[A]] = {
     Gen.sized {
       case 0 => Gen.const(BList.empty)
       case n =>
@@ -45,15 +46,15 @@ trait ArbitraryBList {
             ys <- Gen.resize(n / 4, bListGen[A])
           } yield xs.concat(ys),
           // map
-          Gen.resize(n / 2, bListGen[A]).map { l =>
-            l.map(identity)
+          Gen.resize(n / 2, bListGen[A]).flatMap { l =>
+            arbitrary[A => A].map(fn => l.map(fn))
           }
         )
     }
   }
 
-  implicit def arbitraryBList[A](implicit arb: Arbitrary[A]): Arbitrary[BList[A]] =
-    Arbitrary(bListGen(arb))
+  implicit def arbitraryBList[A](implicit arb: Arbitrary[A], cogen: Cogen[A]): Arbitrary[BList[A]] =
+    Arbitrary(bListGen(arb, cogen))
 }
 
 object ArbitraryBList extends ArbitraryBList
