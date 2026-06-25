@@ -430,19 +430,19 @@ object BList {
     }
 
     override def toList: List[A] = {
+      val builder = List.newBuilder[A]
       @tailrec
-      def loop(l: BList[A], acc: List[A]): List[A] =
+      def loop(l: BList[A]): List[A] =
         l match {
-          case Empty                    => acc
+          case Empty                    => builder.result()
           case impl: Impl[A] @unchecked =>
-            var newstuff: List[A] = List()
             // append valid things in the block to acc
             for (i <- impl.offset until BlockSize) {
-              newstuff = newstuff :+ impl.block(i)
+              builder += impl.block(i)
             }
-            loop(impl.tailBList, acc ++ newstuff)
+            loop(impl.tailBList)
         }
-      loop(this, List[A]())
+      loop(this)
     }
     def isEmpty: Boolean = false
 
