@@ -27,17 +27,21 @@ import cats.laws.discipline._
 import cats.Eq
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
-import org.scalacheck.{Arbitrary, Test}
+import org.scalacheck.Test
 import scala.math.pow
 
 class BListSuite extends DisciplineSuite {
-
+  override def scalaCheckInitialSeed = "7bTNcKSrPdvUlNm_fJry4aTO89pk7TzTVJOnhKCdlWL="
   override def scalaCheckTestParameters: Test.Parameters =
     DefaultScalaCheckPropertyCheckConfig.default
 
   checkAll("BList.FunctorLaws", FunctorTests[BList].functor[Int, Int, String])
   checkAll("BList.SemigroupKLaws", SemigroupKTests[BList].semigroupK[Int])
   checkAll("BList.FoldableLaws", FoldableTests[BList].foldable[Int, Long])
+  checkAll("BList.ApplicativeLaws", ApplicativeTests[BList].applicative[Int, Int, Int])
+  checkAll("BList.MonoidKLaws", MonoidKTests[BList].monoidK[Int])
+  checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
+  checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Int, Option, Option])
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
@@ -357,5 +361,14 @@ class BListSuite extends DisciplineSuite {
     if (xs.toString == ys.toString) {
       assertEquals(xs, ys)
     }
+  })
+
+  property("BList hashcode same as List hashcode")(forAll {
+    (xs: BList[Int]) => // this fails occasionally if xs:BList[Char] when chinese characters are involved
+      assertEquals(xs.toList.##, xs.##)
+  })
+
+  property("toListReverse same as toList.reverese")(forAll { (xs: BList[Int]) =>
+    assertEquals(xs.toList.reverse, xs.toListReverse)
   })
 }

@@ -21,11 +21,12 @@
 
 package cats.collections
 
-import cats.{Eq, Eval, Foldable, Functor, SemigroupK}
+import cats.{Alternative, Applicative, Eq, Eval, Foldable, Functor, Monad, MonoidK, SemigroupK, Traverse}
 
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
 import scala.util.hashing.MurmurHash3.seqSeed
+import org.typelevel.scalaccompat.annotation._
 //import cats.syntax.all._
 
 sealed abstract class BList[+A] {
@@ -42,7 +43,9 @@ sealed abstract class BList[+A] {
   def drop(n: Long): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
+  def toListReverse: List[A]
   def isEmpty: Boolean
+  def flatMap[B](fn: A => BList[B]): BList[B]
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
@@ -94,7 +97,10 @@ object BList {
     def drop(n: Long): BList[Nothing] = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
+    override def toListReverse: List[Nothing] = Nil
     def isEmpty: Boolean = true
+    def flatMap[B](fn: Nothing => BList[B]): BList[B] = Empty
+
     private[collections] def toStringInBlocks: String = "Empty"
 
     override def equals(other: Any): Boolean = other match {
@@ -370,7 +376,7 @@ object BList {
     def map[B](fn: A => B): BList.NonEmpty[B] = {
       val ary = new Array[Any](BlockSize)
       var i = offset
-      while (i < ary.length) {
+      while (i < BlockSize) {
         ary(i) = fn(block(i))
         i += 1
       }
@@ -432,7 +438,7 @@ object BList {
       }
     }
 
-    override def toList: List[A] = {
+   override def toList: List[A] = {
       val builder = List.newBuilder[A]
       @tailrec
       def loop(l: BList[A]): List[A] =
@@ -447,7 +453,31 @@ object BList {
         }
       loop(this)
     }
+
+    override def toListReverse: List[A] = {
+      @tailrec
+      def loop(xs: BList[A], acc: List[A]): List[A] =
+        xs match {
+          case Empty =>
+            acc
+          case impl: Impl[A] @unchecked =>
+            loop(impl.tailBList, impl.block.slice(impl.offset, BlockSize).reverse.toList ::: acc)
+        }
+      loop(this, Nil)
+    }
+
     def isEmpty: Boolean = false
+
+    def flatMap[B](fn: A => BList[B]): BList[B] = {
+      @tailrec
+      def loop(rev: List[A], acc: BList[B]): BList[B] =
+        rev match {
+          case Nil       => acc
+          case h :: tail =>
+            loop(tail, fn(h) ++ acc)
+        }
+      loop(this.toListReverse, BList.empty)
+    }
 
     private[collections] def toStringInBlocks: String = {
       val strb = new java.lang.StringBuilder
@@ -472,6 +502,7 @@ object BList {
       strb.append(")")
       strb.toString
     }
+
   }
 
   def fromList[A](l: List[A]): BList[A] =
@@ -485,7 +516,7 @@ object BList {
         case h :: t => go(t, acc.prepend(h))
       }
     }
-    go(l, empty)
+    go(l, BList.empty)
   }
 
   def empty[A]: BList[A] = Empty
@@ -523,19 +554,18 @@ object BList {
   final private def rangeHash(start: Int, step: Int, last: Int, seed: Int): Int =
     avalanche(mix(mix(mix(seed, start), step), last))
 
-
   // typeclasses stuff
-  implicit def eqBList[A: Eq]: Eq[BList[A]] =
-    new Eq[BList[A]] {
-      def eqv(xs: BList[A], ys: BList[A]): Boolean = xs == ys
+  implicit def eqBList[B]: Eq[BList[B]] =
+    new Eq[BList[B]] {
+      def eqv(xs: BList[B], ys: BList[B]): Boolean = xs.equals(ys)
     }
-  implicit def catsCollectionBListFunctor[A]: Functor[BList] =
+  implicit def catsCollectionBListFunctor: Functor[BList] =
     new Functor[BList] {
-      override def map[A, B](a: BList[A])(f: A => B): BList[B] = a.map(f)
+      override def map[B, C](a: BList[B])(f: B => C): BList[C] = a.map(f)
     }
-  implicit def catsCollectionBListSemigroupK[A]: SemigroupK[BList] =
+  implicit def catsCollectionBListSemigroupK: SemigroupK[BList] =
     new SemigroupK[BList] {
-      override def combineK[A](x: BList[A], y: BList[A]): BList[A] = x.concat(y)
+      override def combineK[B](x: BList[B], y: BList[B]): BList[B] = x.concat(y)
     }
   implicit val catsCollectionsBListFoldable: Foldable[BList] =
     new Foldable[BList] {
@@ -555,4 +585,81 @@ object BList {
 
       override def size[A](xs: BList[A]): Long = xs.size
     }
+  implicit def catsCollectionBListApplicative: Applicative[BList] =
+    new Applicative[BList] {
+      // cartesian product
+      def ap[A, B](ff: BList[(A) => B])(xs: BList[A]): BList[B] =
+        ff.flatMap(f => xs.map(a => f(a)))
+      def pure[A](x: A): BList[A] = Empty.prepend(x)
+    }
+  implicit def catsCollectionBListMonoidK: MonoidK[BList] =
+    new MonoidK[BList] {
+      def combineK[A](x: BList[A], y: BList[A]): BList[A] = catsCollectionBListSemigroupK.combineK(x, y)
+      def empty[A]: BList[A] = Empty
+    }
+
+  @nowarn213(
+    "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
+  )
+  implicit val catsCollectionBListInstances: Traverse[BList] with Alternative[BList]
+  // with Monad[BList]
+  =
+    new Traverse[BList]
+      with Alternative[BList]
+      // with Monad[BList]
+      {
+      override def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
+        catsCollectionsBListFoldable.foldLeft(xs, init)(f)
+      override def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+        catsCollectionsBListFoldable.foldRight(xs, init)(f)
+
+      override def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] = {
+        def traverseArray(fa: Array[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[Array[Any]] = {
+          fa.foldLeft(arg0.pure(Array[Any]())) { (arrEffect, head) =>
+            arg0.map2(arrEffect, f(head)) { (arr, b) =>
+              arr :+ b
+            }
+          }
+        }
+        fa match {
+          case Empty         => arg0.pure(BList.empty)
+          case impl: Impl[A] =>
+            arg0.map2(
+              traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
+              traverse(impl.tailBList)(f)
+            ) { (arrayB, tailBList) =>
+              Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailBList)
+            }
+        }
+      }
+      override def ap[A, B](ff: BList[(A) => B])(fa: BList[A]): BList[B] =
+        catsCollectionBListApplicative.ap(ff)(fa)
+      override def empty[A]: BList[A] = catsCollectionBListMonoidK.empty
+      override def pure[A](x: A): BList[A] = catsCollectionBListApplicative.pure(x)
+      override def combineK[A](x: BList[A], y: BList[A]): BList[A] = catsCollectionBListSemigroupK.combineK(x, y)
+      // override def flatMap[A, B](fa: BList[A])(f: (A) => BList[B]): BList[B] =
+      // TODO I already have a flatmap implementation !!!!
+      //   fa match {
+      //     case Empty => BList.empty
+      //     case impl: Impl[_] =>
+      //       //make a new block with impl.block f applied to all of it
+      //       val ary = new Array[Any](BlockSize)
+      //       //loop over block
+      //       for (i <- impl.offset until BlockSize) {
+      //         ary(i) = f (impl.block(i))
+      //       }
+      //       Impl(impl.offset, ary, flatMap(impl.tailBList)(f))
+
+      //   }
+
+      // override def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] =
+      //   f(a) match {
+      //     case Empty => Empty
+      //     case impl : Impl[_] =>
+
+      //     // todo maybe i have to check element wise??? check tree list's implementation
+      //   }
+
+    }
+
 }
