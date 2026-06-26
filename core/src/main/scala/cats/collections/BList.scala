@@ -468,13 +468,8 @@ object BList {
   @nowarn213(
     "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
   )
-  implicit val catsCollectionBListInstances: Traverse[BList] with Alternative[BList]
-  // with Monad[BList]
-  =
-    new Traverse[BList]
-      with Alternative[BList]
-      // with Monad[BList]
-      {
+  implicit val catsCollectionBListInstances: Traverse[BList] with Alternative[BList] with Monad[BList] =
+    new Traverse[BList] with Alternative[BList] with Monad[BList]{
       override def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
         catsCollectionsBListFoldable.foldLeft(xs, init)(f)
       override def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
@@ -504,28 +499,37 @@ object BList {
       override def empty[A]: BList[A] = catsCollectionBListMonoidK.empty
       override def pure[A](x: A): BList[A] = catsCollectionBListApplicative.pure(x)
       override def combineK[A](x: BList[A], y: BList[A]): BList[A] = catsCollectionBListSemigroupK.combineK(x, y)
-      // override def flatMap[A, B](fa: BList[A])(f: (A) => BList[B]): BList[B] =
-      // TODO I already have a flatmap implementation !!!!
-      //   fa match {
-      //     case Empty => BList.empty
-      //     case impl: Impl[_] =>
-      //       //make a new block with impl.block f applied to all of it
-      //       val ary = new Array[Any](BlockSize)
-      //       //loop over block
-      //       for (i <- impl.offset until BlockSize) {
-      //         ary(i) = f (impl.block(i))
-      //       }
-      //       Impl(impl.offset, ary, flatMap(impl.tailBList)(f))
+      override def flatMap[A, B](fa: BList[A])(f: (A) => BList[B]): BList[B] = fa.flatMap(f)
+      // adapted from the implementation of tailRecM for ListInstances 
+      // https://github.com/typelevel/cats/blob/v0.7.0/core/src/main/scala/cats/instances/list.scala#L29
+      override def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] = {
+        // start by building a list then at the end up to fromList
+        val buf = List.newBuilder[B]
 
-      //   }
-
-      // override def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] =
-      //   f(a) match {
-      //     case Empty => Empty
-      //     case impl : Impl[_] =>
-
-      //     // todo maybe i have to check element wise??? check tree list's implementation
-      //   }
+        //@tailrec 
+        def go(lists: List[BList[Either[A, B]]]): Unit = lists match {
+          case Empty :: tail => go(tail)
+          case (impl:Impl[Either[A, B]]) :: tail  => 
+            //@tailrec
+            // todo need to write this as a while loop since scala cant tail call optimization for mutual recursion
+            def loopoverblock(offset:Int, block:Array[Either[A, B]], tailBList:BList[Either[A, B]]):Unit = {
+              if (offset >= BlockSize) return go(tailBList :: tail)
+              block(offset) match {
+                case Right(b) => buf += b; loopoverblock(offset +1, block, tailBList)
+                case Left(a_prime) => 
+                  if ( offset >= BlockSize-1){
+                    go((f(a_prime)) :: tailBList :: tail)
+                  } else {
+                    go((f(a_prime)) :: Impl(offset+1, block, tailBList ) :: tail)
+                  }
+              }
+            }
+            loopoverblock(impl.offset, impl.block, impl.tailBList)
+          case Nil => ()
+        }
+        go(f(a) :: Nil)
+        BList.fromList(buf.result())
+      }
 
     }
 

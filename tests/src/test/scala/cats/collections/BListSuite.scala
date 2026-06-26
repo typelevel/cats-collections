@@ -42,6 +42,7 @@ class BListSuite extends DisciplineSuite {
   checkAll("BList.MonoidKLaws", MonoidKTests[BList].monoidK[Int])
   checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
   checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Int, Option, Option])
+  checkAll("BList.MonadLaws", MonadTests[BList].monad[Int, Int, Int])
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
