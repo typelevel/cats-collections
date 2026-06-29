@@ -40,7 +40,7 @@ sealed abstract class BList[+A] {
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
   def isEmpty: Boolean
-  def toIterator: Iterator[A]
+  def iterator: Iterator[A]
 
   final def ::[B >: A](a: B): BList[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
@@ -93,7 +93,7 @@ object BList {
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
     def isEmpty: Boolean = true
-    def toIterator: Iterator[Nothing] = Iterator.empty
+    def iterator: Iterator[Nothing] = Iterator.empty
     private[collections] def toStringInBlocks: String = "Empty"
 
     override def equals(other: Any): Boolean = other match {
@@ -101,7 +101,7 @@ object BList {
       case _             => false
     }
 
-    override def hashCode(): Int = Empty.toIterator.##
+    override def hashCode(): Int = Empty.iterator.##
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
@@ -136,19 +136,12 @@ object BList {
     override def equals(other: Any): Boolean =
       other match {
         case o: Impl[_] =>
-          val iterX = this.toIterator
-          val iterY = o.toIterator
-          while (iterX.hasNext && iterY.hasNext) {
-            if (iterX.next() != iterY.next()) { // not sure if i could be comparing with != here...
-              return false
-            }
-          }
-          iterX.hasNext == iterY.hasNext
+          this.iterator.sameElements(o.iterator.asInstanceOf[Iterator[A]])
         case _ => false
       }
 
     override def hashCode: Int =
-      MurmurHash3.orderedHash(this.toIterator)
+      MurmurHash3.orderedHash(this.iterator)
 
     def uncons: Some[(A, BList[A])] = {
       Some((block(offset), this.tail))
@@ -322,7 +315,7 @@ object BList {
     }
 
     def isEmpty: Boolean = false
-    def toIterator: Iterator[A] = new BListIterator(this)
+    def iterator: Iterator[A] = new BListIterator(this)
 
     private[collections] def toStringInBlocks: String = {
       val strb = new java.lang.StringBuilder
@@ -347,6 +340,28 @@ object BList {
       strb.append(")")
       strb.toString
     }
+    final private class BListIterator(var curNode: Impl[A @uncheckedVariance]) extends Iterator[A] {
+      var curOffset: Int = curNode.offset
+
+      def hasNext: Boolean = curOffset < BlockSize
+      def next(): A =
+        if (curOffset >= BlockSize) {
+          throw new NoSuchElementException
+        } else {
+          val next_elmt = curNode.block(curOffset)
+          curOffset += 1
+          if (curOffset >= BlockSize) {
+            // try to advance to next block
+            curNode.tailBList match {
+              case impl: Impl[A] =>
+                curOffset = impl.offset
+                curNode = impl
+              case Empty => // nothing, keep offset at blocksize
+            }
+          }
+          next_elmt
+        }
+    }
   }
 
   def fromList[A](l: List[A]): BList[A] =
@@ -365,28 +380,4 @@ object BList {
 
   def empty[A]: BList[A] = Empty
 
-  final class BListIterator[A](from: BList[A]) extends Iterator[A] {
-    private var curNode: BList[A] = from
-    private var curOffset: Int = if (!from.isEmpty) curNode.asInstanceOf[Impl[A]].offset else BlockSize
-
-    def hasNext: Boolean = !curNode.isEmpty
-    def next(): A =
-      curNode match {
-        case Empty         => throw new NoSuchElementException
-        case impl: Impl[A] => {
-          val next = impl.block(curOffset)
-          curOffset += 1
-          if (curOffset >= BlockSize) {
-            // advance to next block
-            curNode = impl.tailBList
-            curOffset = curNode match {
-              case Empty               => BlockSize
-              case impl_prime: Impl[A] => impl_prime.offset
-            }
-          }
-          next
-        }
-      }
-
-  }
 }
