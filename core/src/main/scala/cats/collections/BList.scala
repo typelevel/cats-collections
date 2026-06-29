@@ -109,7 +109,7 @@ object BList {
       case _             => false
     }
 
-    override def hashCode(): Int = Empty.toIterator.##
+    override def hashCode(): Int = Nil.##
 
   }
   sealed abstract class NonEmpty[+A] extends BList[A] {
