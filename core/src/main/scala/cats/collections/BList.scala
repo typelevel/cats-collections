@@ -93,7 +93,7 @@ object BList {
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
     def isEmpty: Boolean = true
-    def toIterator: Iterator[Nothing] = new BListIterator(this)
+    def toIterator: Iterator[Nothing] = Iterator.empty
     private[collections] def toStringInBlocks: String = "Empty"
 
     override def equals(other: Any): Boolean = other match {
