@@ -51,6 +51,22 @@ sealed abstract class BList[+A] {
   final def ::[B >: A](a: B): BList[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
+  // version using iterator
+  def filterIter(fn: A => Boolean): BList[A] = {
+    val xs = this.iterator
+    var res = List.empty[A]
+    var changed = false
+    while (xs.hasNext) {
+      val a = xs.next()
+      if (fn(a)) {
+        res = a :: res
+      } else { changed = true }
+    }
+    if (changed)
+      BList.fromListReverse(res)
+    else this
+  }
+
   // for development and testing
   private[collections] def toStringInBlocks: String
 
@@ -252,9 +268,31 @@ object BList {
       }
       Impl(offset, ary, tailBList.map(fn))
     }
-    def filter(fn: A => Boolean): BList[A] = {
-      // todo
-      this
+    def filter(p: A => Boolean): BList[A] = {
+      // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
+
+      // optimization if block remains unchanged (this might not actually speed things up overall, but it skips allocations in this special case)
+      if (block.forall(p)) return Impl(offset, block, tailBList.filter(p))
+
+      var i = BlockSize - 1
+      var offset_in_newblock = BlockSize
+      val newblock = new Array[Any](
+        BlockSize
+      ) // there is at least one element removed, so we need to zero out arbitrarily bigger prefix
+      // iterate backwards
+      while (i >= offset) {
+        if (p(block(i))) {
+          offset_in_newblock -= 1
+          newblock(offset_in_newblock) = block(i)
+        }
+        i -= 1
+      }
+
+      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+        tailBList.filter(p)
+      } else {
+        Impl(offset_in_newblock, newblock, tailBList.filter(p))
+      }
     }
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
       @tailrec
@@ -528,10 +566,16 @@ object BList {
                     prefix = List.concat(List(f(a_prime)), List(impl.tailBList.asInstanceOf[BList[Either[A, B]]]))
                   } else {
                     // go(f(a_prime) :: Impl(curoffset+1, impl.block, impl.tailBList) :: tail)
-                    prefix = List.concat(List(f(a_prime)), List(Impl(curoffset + 1, impl.block.asInstanceOf[Array[Either[A, B]]], impl.tailBList.asInstanceOf[BList[Either[A, B]]])))
+                    prefix = List.concat(List(f(a_prime)),
+                                         List(
+                                           Impl(curoffset + 1,
+                                                impl.block.asInstanceOf[Array[Either[A, B]]],
+                                                impl.tailBList.asInstanceOf[BList[Either[A, B]]]
+                                           )
+                                         )
+                    )
                   }
                   curoffset = BlockSize // to break out of loop
-
               }
             }
             go(prefix ++ tail)

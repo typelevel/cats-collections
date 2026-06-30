@@ -377,4 +377,11 @@ class BListSuite extends DisciplineSuite {
     assertEquals(xs.flatMap(f).toList, xs.toList.flatMap((x: Int) => f(x).toList))
   })
 
+  property("filter and filterIter do the same thing")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.filter(p), xs.filterIter(p))
+  })
+  property("BList filter consistent with List filter")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.filter(p).toList, xs.toList.filter(p))
+  })
+
 }
