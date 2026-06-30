@@ -38,6 +38,7 @@ sealed abstract class BList[+A] {
   def lastOption: Option[A]
   def size: Long
   def map[B](fn: A => B): BList[B]
+  def filter(fn: A => Boolean): BList[A]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def drop(n: Long): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
@@ -93,6 +94,7 @@ object BList {
     def lastOption: None.type = None
     def size: Long = 0
     def map[B](fn: Nothing => B): BList[B] = Empty
+    def filter(fn: Nothing => Boolean): BList[Nothing] = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def drop(n: Long): BList[Nothing] = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
@@ -250,6 +252,10 @@ object BList {
       }
       Impl(offset, ary, tailBList.map(fn))
     }
+    def filter(fn: A => Boolean): BList[A] = {
+      // todo
+      this
+    }
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
@@ -306,7 +312,7 @@ object BList {
       }
     }
 
-   override def toList: List[A] = {
+    override def toList: List[A] = {
       val builder = List.newBuilder[A]
       @tailrec
       def loop(l: BList[A]): List[A] =
@@ -411,30 +417,6 @@ object BList {
 
   def empty[A]: BList[A] = Empty
 
-  final class BListIterator[A](from: BList[A]) extends Iterator[A] {
-    private var curNode: BList[A] = from
-    private var curOffset: Int = if (!from.isEmpty) curNode.asInstanceOf[Impl[A]].offset else BlockSize
-
-    def hasNext: Boolean = !curNode.isEmpty
-    def next(): A =
-      curNode match {
-        case Empty         => throw new NoSuchElementException
-        case impl: Impl[A] => {
-          val next = impl.block(curOffset)
-          curOffset += 1
-          if (curOffset >= BlockSize) {
-            // advance to next block
-            curNode = impl.tailBList
-            curOffset = curNode match {
-              case Empty               => BlockSize
-              case impl_prime: Impl[A] => impl_prime.offset
-            }
-          }
-          next
-        }
-      }
-
-  }
   // typeclasses stuff
   implicit def eqBList[B]: Eq[BList[B]] =
     new Eq[BList[B]] {
@@ -483,9 +465,10 @@ object BList {
     "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
   )
   implicit val catsCollectionBListInstances: Traverse[BList] with Alternative[BList] with Monad[BList] =
-    new Traverse[BList] with Alternative[BList] with Monad[BList]{
+    new Traverse[BList] with Alternative[BList] with Monad[BList] {
       override def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
         catsCollectionsBListFoldable.foldLeft(xs, init)(f)
+
       override def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         catsCollectionsBListFoldable.foldRight(xs, init)(f)
 
@@ -508,38 +491,52 @@ object BList {
             }
         }
       }
+
       override def ap[A, B](ff: BList[(A) => B])(fa: BList[A]): BList[B] =
         catsCollectionBListApplicative.ap(ff)(fa)
+
       override def empty[A]: BList[A] = catsCollectionBListMonoidK.empty
+
       override def pure[A](x: A): BList[A] = catsCollectionBListApplicative.pure(x)
+
       override def combineK[A](x: BList[A], y: BList[A]): BList[A] = catsCollectionBListSemigroupK.combineK(x, y)
+
       override def flatMap[A, B](fa: BList[A])(f: (A) => BList[B]): BList[B] = fa.flatMap(f)
-      // adapted from the implementation of tailRecM for ListInstances 
+
+      // adapted from the implementation of tailRecM for ListInstances
       // https://github.com/typelevel/cats/blob/v0.7.0/core/src/main/scala/cats/instances/list.scala#L29
       override def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] = {
-        // start by building a list then at the end up to fromList
         val buf = List.newBuilder[B]
-
-        //@tailrec 
+        @tailrec
         def go(lists: List[BList[Either[A, B]]]): Unit = lists match {
-          case Empty :: tail => go(tail)
-          case (impl:Impl[Either[A, B]]) :: tail  => 
-            //@tailrec
-            // todo need to write this as a while loop since scala cant tail call optimization for mutual recursion
-            def loopoverblock(offset:Int, block:Array[Either[A, B]], tailBList:BList[Either[A, B]]):Unit = {
-              if (offset >= BlockSize) return go(tailBList :: tail)
-              block(offset) match {
-                case Right(b) => buf += b; loopoverblock(offset +1, block, tailBList)
-                case Left(a_prime) => 
-                  if ( offset >= BlockSize-1){
-                    go((f(a_prime)) :: tailBList :: tail)
+          case (impl: Impl[_]) :: tail =>
+            // loop over block, progressing to next element when right is reached
+            var curoffset = impl.offset
+            var prefix: List[BList[Either[A, B]]] = List(
+              impl.tailBList.asInstanceOf[BList[Either[A, B]]]
+            ) // holds the prefix of the list that goes to the next rec call
+            while (curoffset < BlockSize) {
+              impl
+                .block(curoffset)
+                .asInstanceOf[Either[A, B]] match { // this is to prevent compiler warning about inexhuastive match
+                case Right(b) =>
+                  buf += b
+                  curoffset += 1
+                case Left(a_prime) =>
+                  if (curoffset >= BlockSize - 1) {
+                    // go(f(a_prime) :: impl.tailBList :: tail
+                    prefix = List.concat(List(f(a_prime)), List(impl.tailBList.asInstanceOf[BList[Either[A, B]]]))
                   } else {
-                    go((f(a_prime)) :: Impl(offset+1, block, tailBList ) :: tail)
+                    // go(f(a_prime) :: Impl(curoffset+1, impl.block, impl.tailBList) :: tail)
+                    prefix = List.concat(List(f(a_prime)), List(Impl(curoffset + 1, impl.block.asInstanceOf[Array[Either[A, B]]], impl.tailBList.asInstanceOf[BList[Either[A, B]]])))
                   }
+                  curoffset = BlockSize // to break out of loop
+
               }
             }
-            loopoverblock(impl.offset, impl.block, impl.tailBList)
-          case Nil => ()
+            go(prefix ++ tail)
+          case Empty :: tail => go(tail)
+          case Nil           => ()
         }
         go(f(a) :: Nil)
         BList.fromList(buf.result())
