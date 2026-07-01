@@ -21,7 +21,7 @@
 
 package cats.collections
 
-import cats.{Alternative, Applicative, Eq, Eval, Foldable, Functor, Monad, MonoidK, SemigroupK, Traverse}
+import cats.{Alternative, Applicative, Eq, Eval, Foldable, Functor, Monad, MonoidK, SemigroupK, Traverse, NonEmptyAlternative, NonEmptyTraverse, Apply }
 
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
@@ -35,11 +35,15 @@ sealed abstract class BList[+A] {
   def tailOption: Option[BList[A]]
   def get(idx: Long): Option[A]
   def getUnsafe(idx: Long): A
+  //def patch[B >: A](from: Long, patch: BList[B], num_elms_to_replace: Long): BList[B]
+  def splitAt(idx:Long):(BList[A], BList[A])
   def lastOption: Option[A]
   def size: Long
   def map[B](fn: A => B): BList[B]
   def filter(fn: A => Boolean): BList[A]
+  def filterNot(fn: A => Boolean): BList[A]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
+  def foldRight[B](init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] 
   def drop(n: Long): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
@@ -107,11 +111,14 @@ object BList {
     def tailOption: None.type = None
     def get(idx: Long): None.type = None
     def getUnsafe(idx: Long): Nothing = throw new IndexOutOfBoundsException
+    def splitAt(idx:Long):(BList[Nothing], BList[Nothing]) = (Empty,Empty)
     def lastOption: None.type = None
     def size: Long = 0
     def map[B](fn: Nothing => B): BList[B] = Empty
     def filter(fn: Nothing => Boolean): BList[Nothing] = Empty
+    def filterNot(fn: Nothing => Boolean): BList[Nothing] = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
+    def foldRight[B](init: Eval[B])(f: (Nothing, Eval[B]) => Eval[B]): Eval[B] = init
     def drop(n: Long): BList[Nothing] = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: List[Nothing] = Nil
@@ -138,6 +145,8 @@ object BList {
     def uncons: Some[(A, BList[A])]
     def headOption: Some[A]
     def tailOption: Some[BList[A]]
+    def flatMapNonEmpty[B](fn: A => NonEmpty[B]): NonEmpty[B]
+    final def ++[B >: A](l2: NonEmpty[B]):NonEmpty[B] = concat(l2)
   }
 
   object NonEmpty {
@@ -145,7 +154,60 @@ object BList {
       t.prepend(h)
     def unapply[A](l: NonEmpty[A]): Some[(A, BList[A])] =
       l.uncons
+
+    implicit def eqNonEmptyBList[B]: Eq[NonEmpty[B]] =
+      new Eq[NonEmpty[B]] {
+        def eqv(xs:NonEmpty[B], ys: NonEmpty[B]): Boolean = xs.equals(ys)
+      }
+    
+    @nowarn213(
+    "msg=Calls to parameterless method compose will be easy to mistake for calls to overloads which have a single implicit parameter list"
+    )
+    implicit val catsCollectionNonEmptyBListInstances: NonEmptyTraverse[NonEmpty] with NonEmptyAlternative[NonEmpty] with Apply[NonEmpty] =
+      new NonEmptyTraverse[NonEmpty] with NonEmptyAlternative[NonEmpty] with Apply[NonEmpty]  {
+        override def map[A, B](fa: NonEmpty[A])(f: (A) => B): NonEmpty[B] = fa.map(f)
+        override def ap[A, B](ff: NonEmpty[(A) => B])(xs: NonEmpty[A]): NonEmpty[B] =
+          ff.flatMapNonEmpty(f => xs.map(a => f(a)))
+        override def pure[A](x: A): NonEmpty[A] = Empty.prepend(x)
+        override def combineK[A](x: NonEmpty[A], y: NonEmpty[A]): NonEmpty[A] = x.concat(y)
+        override def foldLeft[A, B](xs: NonEmpty[A], init: B)(f: (B, A) => B): B =
+         xs.foldLeft(init)(f)
+        override def foldRight[A, B](xs: NonEmpty[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = 
+          xs.foldRight(init)(f)
+        override def nonEmptyTraverse[G[_], A, B](fa: NonEmpty[A])(f: (A) => G[B])(implicit arg0: Apply[G]): G[NonEmpty[B]] = {
+          def traverseArray(arr: Array[A])(f: (A) => G[B]): G[Array[Any]] = {
+            arr.tail.foldLeft(arg0.map(f(arr.head))(b => Array[Any](b))) { (arrEffect, head) =>
+              arg0.map2(arrEffect, f(head)) { (arr, b) =>
+                arr :+ b
+              }
+            }
+          }
+          fa match {
+            case impl: Impl[A] =>
+              impl.tailBList match {
+                case Empty =>
+                  arg0.map(traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]]) { arrayB =>
+                    Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, BList.empty)
+                  }
+                case nonemptytail: Impl[A] =>
+                  arg0.map2(
+                    traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
+                    nonEmptyTraverse(nonemptytail)(f)
+                  ) { (arrayB, tailB) =>
+                    Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailB)
+                  }
+              }
+          }
+        }
+        override def reduceLeftTo[A, B](fa: NonEmpty[A])(f: (A) => B)(g: (B, A) => B): B =
+          fa.tail.foldLeft(f(fa.head))(g)
+
+        override def reduceRightTo[A, B](fa: NonEmpty[A])(f: (A) => B)(g: (A, Eval[B]) => Eval[B]): Eval[B] =
+         fa.tail.foldRight(Eval.now(f(fa.head)))(g)
+      }
+      
   }
+  
 
   private object Impl {
     def apply[A](offset: Int, block: Array[A], tailBList: BList[A]): Impl[A] =
@@ -154,6 +216,7 @@ object BList {
       new Impl(offset, block.asInstanceOf[Array[A]], tailBList)
     def unapply[A](l: Impl[A]): Some[(Int, Array[A], BList[A])] =
       Some((l.offset, l.block, l.tailBList))
+    
   }
 
   private class Impl[+A](val offset: Int, val block: Array[A @uncheckedVariance], val tailBList: BList[A])
@@ -239,6 +302,36 @@ object BList {
       }
       go(idx, this)
     }
+    def splitAt(idx:Long):(BList[A], BList[A]) = {
+      val blocks_to_skip = Math.floorDiv(idx, BlockSize)
+      val idx_in_block : Int = (idx % BlockSize).toInt
+      def buildLists(i:Long, l:BList[A]) : (BList[A], BList[A])={
+        l match {
+          case Empty => 
+            (Empty, Empty)
+          case impl: Impl[A] @unchecked => 
+            if (i==0){ // we found the block we want to split at
+              if (idx_in_block == 0){ // split is on block boundary
+                (Empty, impl)
+              } 
+              else {
+                val ary1 = new Array[Any](BlockSize)
+                val ary2 = new Array[Any](BlockSize)
+                System.arraycopy(impl.block, impl.offset, ary1, BlockSize - idx_in_block , idx_in_block) 
+                System.arraycopy(impl.block, impl.offset+idx_in_block , ary2, impl.offset + idx_in_block, BlockSize-impl.offset-idx_in_block) 
+                val lastBlockl1 = Impl(BlockSize - idx_in_block, ary1, Empty)
+                val l2 =  Impl(impl.offset + idx_in_block, ary2, impl.tailBList)
+                (lastBlockl1, l2)
+              }
+            }
+            else { // split isn't in current block
+              val (l1_tail,l2) = buildLists(i-1L, impl.tailBList)
+              (Impl( impl.offset, impl.block, l1_tail), l2)
+            }
+        }
+      }
+      buildLists(blocks_to_skip, this)
+    }
     def lastOption: Some[A] = {
       @tailrec
       def go(self: Impl[A]): Some[A] = {
@@ -294,6 +387,28 @@ object BList {
         Impl(offset_in_newblock, newblock, tailBList.filter(p))
       }
     }
+    def filterNot(p: A => Boolean): BList[A] = {
+      // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
+      var i = BlockSize - 1
+      var offset_in_newblock = BlockSize
+      val newblock = new Array[Any](
+        BlockSize
+      ) // there is at least one element removed, so we need to zero out arbitrarily bigger prefix
+      // iterate backwards
+      while (i >= offset) {
+        if (!p(block(i))) {
+          offset_in_newblock -= 1
+          newblock(offset_in_newblock) = block(i)
+        }
+        i -= 1
+      }
+
+      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+        tailBList.filterNot(p)
+      } else {
+        Impl(offset_in_newblock, newblock, tailBList.filterNot(p))
+      }
+    }
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
@@ -309,6 +424,18 @@ object BList {
             loop(newacc, impl.tailBList)
         }
       loop(acc, this)
+    }
+    def foldRight[B](init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = {
+      def go(init: Eval[B], l: BList[A]): Eval[B]  =
+        l match {
+          case Empty                    => init
+          case impl: Impl[A] @unchecked =>
+            def loop(idx: Int): Eval[B] =
+              if (idx >= BlockSize) Eval.defer(go(init, impl.tailBList))
+              else Eval.defer(f(impl.block(idx), loop(idx + 1)))
+            loop(impl.offset)
+        }
+      go(init, this)
     }
     def drop(n: Long): BList[A] = {
       @tailrec
@@ -390,6 +517,18 @@ object BList {
         }
       loop(this.toListReverse, BList.empty)
     }
+    def flatMapNonEmpty[B](fn: A => NonEmpty[B]): NonEmpty[B] = {
+      @tailrec
+      def loop(rev: List[A], acc: NonEmpty[B]): NonEmpty[B] =
+        rev match {
+          case Nil       => acc
+          case h :: tail =>
+            loop(tail, fn(h) ++ acc)
+        }
+      val revList = this.toListReverse
+      loop(revList.tail, fn(revList.head))
+    }
+
     def iterator: Iterator[A] = new BListIterator(this)
 
     private[collections] def toStringInBlocks: String = {
@@ -472,14 +611,16 @@ object BList {
     new Foldable[BList] {
       def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
         xs.foldLeft(init)(f)
-      def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = xs match {
-        case Empty                    => init
-        case impl: Impl[A] @unchecked =>
-          def loop(idx: Int): Eval[B] =
-            if (idx >= BlockSize) Eval.defer(foldRight(impl.tailBList, init)(f))
-            else Eval.defer(f(impl.block(idx), loop(idx + 1)))
-          loop(impl.offset)
-      }
+      def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = 
+        xs.foldRight(init)(f)
+    // xs match {
+    //     case Empty                    => init
+    //     case impl: Impl[A] @unchecked =>
+    //       def loop(idx: Int): Eval[B] =
+    //         if (idx >= BlockSize) Eval.defer(foldRight(impl.tailBList, init)(f))
+    //         else Eval.defer(f(impl.block(idx), loop(idx + 1)))
+    //       loop(impl.offset)
+    //   }
       override def isEmpty[A](xs: BList[A]): Boolean = xs.isEmpty
 
       override def nonEmpty[A](xs: BList[A]): Boolean = !xs.isEmpty
@@ -511,7 +652,7 @@ object BList {
         catsCollectionsBListFoldable.foldRight(xs, init)(f)
 
       override def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] = {
-        def traverseArray(fa: Array[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[Array[Any]] = {
+        def traverseArray(fa: Array[A])(f: (A) => G[B]): G[Array[Any]] = {
           fa.foldLeft(arg0.pure(Array[Any]())) { (arrEffect, head) =>
             arg0.map2(arrEffect, f(head)) { (arr, b) =>
               arr :+ b

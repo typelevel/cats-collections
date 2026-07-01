@@ -43,6 +43,8 @@ class BListSuite extends DisciplineSuite {
   checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
   checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("BList.MonadLaws", MonadTests[BList].monad[Int, Int, Int])
+  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws", NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int])
+  checkAll("BList.NonEmpty.NonEmptyTraverseLaws", NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option])
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
@@ -380,8 +382,10 @@ class BListSuite extends DisciplineSuite {
   property("filter and filterIter do the same thing")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.filter(p), xs.filterIter(p))
   })
+  
   property("BList filter consistent with List filter")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.filter(p).toList, xs.toList.filter(p))
   })
+
 
 }
