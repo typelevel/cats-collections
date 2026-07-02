@@ -29,11 +29,13 @@ import munit.DisciplineSuite
 import org.scalacheck.Prop._
 import org.scalacheck.Test
 import scala.math.pow
+import scala.util.Random
 
 class BListSuite extends DisciplineSuite {
   override def scalaCheckInitialSeed = "7bTNcKSrPdvUlNm_fJry4aTO89pk7TzTVJOnhKCdlWL="
   override def scalaCheckTestParameters: Test.Parameters =
-    DefaultScalaCheckPropertyCheckConfig.default
+    // DefaultScalaCheckPropertyCheckConfig.default
+    super.scalaCheckTestParameters.withMaxSize(BList.BlockSize * 5)
 
   checkAll("BList.FunctorLaws", FunctorTests[BList].functor[Int, Int, String])
   checkAll("BList.SemigroupKLaws", SemigroupKTests[BList].semigroupK[Int])
@@ -43,8 +45,12 @@ class BListSuite extends DisciplineSuite {
   checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
   checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Int, Option, Option])
   checkAll("BList.MonadLaws", MonadTests[BList].monad[Int, Int, Int])
-  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws", NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int])
-  checkAll("BList.NonEmpty.NonEmptyTraverseLaws", NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option])
+  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws",
+           NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int]
+  )
+  checkAll("BList.NonEmpty.NonEmptyTraverseLaws",
+           NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+  )
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
@@ -382,10 +388,22 @@ class BListSuite extends DisciplineSuite {
   property("filter and filterIter do the same thing")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.filter(p), xs.filterIter(p))
   })
-  
+
   property("BList filter consistent with List filter")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.filter(p).toList, xs.toList.filter(p))
   })
 
+  property("BList splitAt consistent with List splitAt")(forAll { (xs: BList.NonEmpty[Int]) =>
+    val index = Random.nextInt(xs.size.toInt)
+    val (l1, l2) = xs.toList.splitAt(index)
+    val (b1, b2) = xs.splitAt(index.toLong)
+    assertEquals(b1.toList, l1)
+    assertEquals(b2.toList, l2)
+  })
+
+  // property("generator")(forAll { (xs: BList[Int]) =>
+  //   println(xs.size)
+  //   println(xs.toStringInBlocks)
+  // })
 
 }
