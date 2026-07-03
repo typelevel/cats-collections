@@ -58,9 +58,9 @@ sealed abstract class BList[+A] {
   def filterNot(fn: A => Boolean): BList[A]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def foldRight[B](init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
-  def drop(n: Long): BList[A]
+  def drop(n: Int): BList[A]
   def dropWhile(p: A => Boolean): BList[A]
-  def take(n: Long): BList[A]
+  def take(n: Int): BList[A]
   def takeWhile(p: A => Boolean): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
@@ -136,9 +136,9 @@ object BList {
     def filterNot(fn: Nothing => Boolean): Empty.type = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def foldRight[B](init: Eval[B])(f: (Nothing, Eval[B]) => Eval[B]): Eval[B] = init
-    def drop(n: Long): Empty.type = Empty
+    def drop(n: Int): Empty.type = Empty
     def dropWhile(p: Nothing => Boolean): Empty.type = Empty
-    def take(n: Long): Empty.type = Empty
+    def take(n: Int): Empty.type = Empty
     def takeWhile(p: Nothing => Boolean): Empty.type = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: Nil.type = Nil
@@ -468,9 +468,9 @@ object BList {
         }
       go(init, this)
     }
-    def drop(n: Long): BList[A] = {
+    def drop(n: Int): BList[A] = {
       @tailrec
-      def go(n: Long, l: BList[A]): BList[A] = {
+      def go(n: Int, l: BList[A]): BList[A] = {
         if (n <= 0) {
           l
         } else {
@@ -482,7 +482,7 @@ object BList {
                 go(n - (BlockSize - impl.offset), impl.tailBList)
               } else {
                 val ary = new Array[Any](BlockSize)
-                val newOffset: Int = impl.offset + n.asInstanceOf[Int] // type conversion safe because 0<n<BlockSize
+                val newOffset: Int = impl.offset + n
                 System.arraycopy(impl.block, newOffset, ary, newOffset, BlockSize - newOffset)
                 Impl(newOffset, ary, impl.tailBList)
               }
@@ -524,7 +524,7 @@ object BList {
       }
       go(this)
     }
-    def take(n: Long): BList[A] = {
+    def take(n: Int): BList[A] = {
       if (n <= 0) {
         return Empty
       }
@@ -533,8 +533,8 @@ object BList {
         Impl(offset, block, tailBList.take(n - (BlockSize - offset)))
       } else {
         val ary = new Array[Any](BlockSize)
-        System.arraycopy(block, offset, ary, BlockSize - n.toInt, n.toInt) // safe conversion because here 0<n<BlockSize
-        Impl(BlockSize - n.toInt, ary, Empty)
+        System.arraycopy(block, offset, ary, BlockSize - n, n) // safe conversion because here 0<n<BlockSize
+        Impl(BlockSize - n, ary, Empty)
       }
     }
     def takeWhile(p: A => Boolean): BList[A] = {

@@ -401,6 +401,17 @@ class BListSuite extends DisciplineSuite {
     assertEquals(b2.toList, l2)
   })
 
+  property("BList takeWhile consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.takeWhile(p).toList, xs.toList.takeWhile(p))
+  })
+  property("BList take consistent with List")(forAll { (xs: BList[Int]) =>
+    val n = Random.nextInt(xs.size.toInt + 10) - 5
+    assertEquals(xs.take(n).toList, xs.toList.take(n))
+  })
+  property("BList dropWhile consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.dropWhile(p).toList, xs.toList.dropWhile(p))
+  })
+
   // property("generator")(forAll { (xs: BList[Int]) =>
   //   println(xs.size)
   //   println(xs.toStringInBlocks)
