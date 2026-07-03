@@ -59,6 +59,9 @@ sealed abstract class BList[+A] {
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def foldRight[B](init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
   def drop(n: Long): BList[A]
+  def dropWhile(p: A => Boolean): BList[A]
+  def take(n: Long): BList[A]
+  def takeWhile(p: A => Boolean): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
   def toListReverse: List[A]
@@ -125,20 +128,23 @@ object BList {
     def tailOption: None.type = None
     def get(idx: Long): None.type = None
     def getUnsafe(idx: Long): Nothing = throw new IndexOutOfBoundsException
-    def splitAt(idx: Long): (BList[Nothing], BList[Nothing]) = (Empty, Empty)
+    def splitAt(idx: Long): (Empty.type, Empty.type) = (Empty, Empty)
     def lastOption: None.type = None
     def size: Long = 0
-    def map[B](fn: Nothing => B): BList[B] = Empty
-    def filter(fn: Nothing => Boolean): BList[Nothing] = Empty
-    def filterNot(fn: Nothing => Boolean): BList[Nothing] = Empty
+    def map[B](fn: Nothing => B): Empty.type = Empty
+    def filter(fn: Nothing => Boolean): Empty.type = Empty
+    def filterNot(fn: Nothing => Boolean): Empty.type = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def foldRight[B](init: Eval[B])(f: (Nothing, Eval[B]) => Eval[B]): Eval[B] = init
-    def drop(n: Long): BList[Nothing] = Empty
+    def drop(n: Long): Empty.type = Empty
+    def dropWhile(p: Nothing => Boolean): Empty.type = Empty
+    def take(n: Long): Empty.type = Empty
+    def takeWhile(p: Nothing => Boolean): Empty.type = Empty
     def concat[B](l2: BList[B]): BList[B] = l2
-    override def toList: List[Nothing] = Nil
-    override def toListReverse: List[Nothing] = Nil
+    override def toList: Nil.type = Nil
+    override def toListReverse: Nil.type = Nil
     def isEmpty: Boolean = true
-    def flatMap[B](fn: Nothing => BList[B]): BList[B] = Empty
+    def flatMap[B](fn: Nothing => BList[B]): Empty.type = Empty
 
     def iterator: Iterator[Nothing] = Iterator.empty
     private[collections] def toStringInBlocks: String = "Empty"
@@ -370,7 +376,6 @@ object BList {
       }
       loop(this, 0L)
     }
-
     // stack safe version
     def map[B](fn: A => B): BList.NonEmpty[B] = {
       val builder = List.newBuilder[B]
@@ -387,15 +392,6 @@ object BList {
       }
       fromList(loop(this)).asInstanceOf[NonEmpty[B]]
     }
-    // def map[B](fn: A => B): BList.NonEmpty[B] = {
-    //   val ary = new Array[Any](BlockSize)
-    //   var i = offset
-    //   while (i < BlockSize) {
-    //     ary(i) = fn(block(i))
-    //     i += 1
-    //   }
-    //   Impl(offset, ary, tailBList.map(fn))
-    // }
     def filter(p: A => Boolean): BList[A] = {
       // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
 
@@ -495,6 +491,72 @@ object BList {
         }
       }
       go(n, this)
+    }
+    def dropWhile(p: A => Boolean): BList[A] = {
+      @tailrec
+      def go(l: BList[A]): BList[A] = {
+        l match {
+          case Empty =>
+            Empty
+          case impl: Impl[A] @unchecked =>
+            var i = impl.offset
+            var cont = true
+
+            // search for first falsified index
+            while (i < BlockSize && cont) {
+              if (!p(impl.block(i))) {
+                // break loop
+                cont = false
+              } else i += 1
+            }
+
+            if (i == BlockSize) { // all elements satifsy predicate so continue looking at next block
+              go(impl.tailBList)
+            } else if (i > impl.offset) { // some elements sat pred, make new array and return the list from there
+              val ary = new Array[Any](BlockSize)
+              val newOffset: Int = i // first index where predicate was falsified
+              System.arraycopy(impl.block, newOffset, ary, newOffset, BlockSize - newOffset)
+              Impl(newOffset, ary, impl.tailBList)
+            } else { // i is offset and none of the elements satisfy predicate, so return the list starting here
+              impl
+            }
+        }
+      }
+      go(this)
+    }
+    def take(n: Long): BList[A] = {
+      if (n <= 0) {
+        return Empty
+      }
+
+      if (n >= BlockSize - offset) {
+        Impl(offset, block, tailBList.take(n - (BlockSize - offset)))
+      } else {
+        val ary = new Array[Any](BlockSize)
+        System.arraycopy(block, offset, ary, BlockSize - n.toInt, n.toInt) // safe conversion because here 0<n<BlockSize
+        Impl(BlockSize - n.toInt, ary, Empty)
+      }
+    }
+    def takeWhile(p: A => Boolean): BList[A] = {
+      var i = offset
+      var cont = true
+
+      // search for first falsified index
+      while (i < BlockSize && cont) {
+        if (!p(block(i))) {
+          cont = false // break loop
+        } else i += 1
+      }
+
+      if (i >= BlockSize) { // all elmts in block satisfied, keep taking
+        Impl(offset, block, tailBList.takeWhile(p))
+      } else if (i < offset) { // no elements in block satisfied
+        Empty
+      } else { // take some prefix of the block
+        val ary = new Array[Any](BlockSize)
+        System.arraycopy(block, offset, ary, BlockSize - (i - offset), i - offset)
+        Impl(BlockSize - (i - offset), ary, Empty)
+      }
     }
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B] = {
       // not tail rec
