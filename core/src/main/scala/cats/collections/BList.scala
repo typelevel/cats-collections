@@ -40,6 +40,8 @@ import cats.{
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
 import scala.util.hashing.MurmurHash3
+import scala.collection.immutable.LinearSeq
+//import scala.collection.immutable.ArraySeq
 import org.typelevel.scalaccompat.annotation._
 
 sealed abstract class BList[+A] {
@@ -49,13 +51,13 @@ sealed abstract class BList[+A] {
   def tailOption: Option[BList[A]]
   def get(idx: Long): Option[A]
   def getUnsafe(idx: Long): A
-  // def patch[B >: A](from: Long, patch: BList[B], num_elms_to_replace: Long): BList[B]
   def splitAt(idx: Long): (BList[A], BList[A])
   def lastOption: Option[A]
   def size: Long
   def map[B](fn: A => B): BList[B]
   def filter(fn: A => Boolean): BList[A]
   def filterNot(fn: A => Boolean): BList[A]
+  def collect[B](pf: PartialFunction[A, B]): BList[B]
   def foldLeft[B](init: B)(fn: (B, A) => B): B
   def foldRight[B](init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B]
   def drop(n: Int): BList[A]
@@ -65,6 +67,7 @@ sealed abstract class BList[+A] {
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
   def toListReverse: List[A]
+  def asSeq: LinearSeq[A]
   def isEmpty: Boolean
   def flatMap[B](fn: A => BList[B]): BList[B]
   def iterator: Iterator[A]
@@ -113,7 +116,7 @@ sealed abstract class BList[+A] {
   def hashCode(): Int
 }
 
-object BList {
+object BList extends compat.BListCompatCompanion {
   final private[collections] val BlockSize = 4 // test with different values
 
   case object Empty extends BList[Nothing] {
@@ -134,6 +137,7 @@ object BList {
     def map[B](fn: Nothing => B): Empty.type = Empty
     def filter(fn: Nothing => Boolean): Empty.type = Empty
     def filterNot(fn: Nothing => Boolean): Empty.type = Empty
+    def collect[B](pf: PartialFunction[Nothing, B]): Empty.type = Empty
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def foldRight[B](init: Eval[B])(f: (Nothing, Eval[B]) => Eval[B]): Eval[B] = init
     def drop(n: Int): Empty.type = Empty
@@ -143,6 +147,7 @@ object BList {
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: Nil.type = Nil
     override def toListReverse: Nil.type = Nil
+    def asSeq: LinearSeq[Nothing] = LinearSeq.empty
     def isEmpty: Boolean = true
     def flatMap[B](fn: Nothing => BList[B]): Empty.type = Empty
 
@@ -169,7 +174,7 @@ object BList {
     final def ++[B >: A](l2: NonEmpty[B]): NonEmpty[B] = concat(l2)
   }
 
-  object NonEmpty {
+  object NonEmpty extends compat.BListCompatCompanion {
     def apply[A](h: A, t: BList[A]): NonEmpty[A] =
       t.prepend(h)
     def unapply[A](l: NonEmpty[A]): Some[(A, BList[A])] =
@@ -440,6 +445,30 @@ object BList {
         Impl(offset_in_newblock, newblock, tailBList.filterNot(p))
       }
     }
+    // adapted from scala List's implementation of collect https://github.com/scala/scala/blob/2.13.x/src/library/scala/collection/immutable/List.scala#L250
+    private val partialNotApplied = new Function1[Any, Any] { def apply(x: Any): Any = this }
+    def collect[B](pf: PartialFunction[A, B]): BList[B] = {
+      var i = BlockSize - 1
+      var offset_in_newblock = BlockSize
+      val newblock = new Array[Any](BlockSize)
+      var x: Any = null
+      // iterate backwards, building new array
+      while (i >= offset) {
+        x = pf.applyOrElse(block(i), partialNotApplied)
+        if (x.asInstanceOf[AnyRef] ne partialNotApplied) {
+          offset_in_newblock -= 1
+          newblock(offset_in_newblock) = x.asInstanceOf[B]
+        }
+        i -= 1
+      }
+
+      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+        tailBList.collect(pf)
+      } else {
+        Impl(offset_in_newblock, newblock, tailBList.collect(pf))
+      }
+    }
+
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
       @tailrec
       def loop(acc: B, l: BList[A]): B =
@@ -601,6 +630,7 @@ object BList {
         }
       loop(this, Nil)
     }
+    def asSeq: LinearSeq[A] = new BListSeq(this)
 
     def isEmpty: Boolean = false
 
@@ -654,8 +684,8 @@ object BList {
     final private class BListIterator(var curNode: Impl[A @uncheckedVariance]) extends Iterator[A] {
       var curOffset: Int = curNode.offset
 
-      def hasNext: Boolean = curOffset < BlockSize
-      def next(): A =
+      override def hasNext: Boolean = curOffset < BlockSize
+      override def next(): A =
         if (curOffset >= BlockSize) {
           throw new NoSuchElementException
         } else {
@@ -673,6 +703,20 @@ object BList {
           next_elmt
         }
     }
+    final private class BListSeq(private val xs: Impl[A @uncheckedVariance]) extends LinearSeq[A] {
+      override def apply(i: Int): A = xs.getUnsafe(i.toLong)
+      override def iterator: Iterator[A] = new BListIterator(xs)
+      override def length: Int = xs.size.toInt // has to be an int so I cast
+      // override def iterableFactory : scala.collection.generic.SeqFactory[LinearSeq] = LinearSeq
+      override def head: A = xs.head
+      override def tail: LinearSeq[A] = {
+        xs.drop(1) match {
+          case Empty           => LinearSeq.empty
+          case tlimpl: Impl[A] => new BListSeq(tlimpl)
+        }
+      }
+      override def isEmpty: Boolean = false
+    }
   }
 
   def fromList[A](l: List[A]): BList[A] =
@@ -687,6 +731,58 @@ object BList {
       }
     }
     go(l, BList.empty)
+  }
+
+  // from is implemented in BListCommpatCompanion because 2.12 does not support IterableOnce
+  private[collections] def from_helper[A](iter: Iterator[A]): BList[A] = {
+    def go(): BList[A] =
+      if (iter.hasNext) {
+        val ary = new Array[Any](BlockSize)
+        var offset = 0
+        while (offset < BlockSize && iter.hasNext) {
+          ary(offset) = iter.next()
+          offset += 1
+        }
+        if (offset < BlockSize) { // not full final block
+          // need to copy to push to the end of array
+          System.arraycopy(ary, 0, ary, BlockSize - offset, offset)
+          Impl(BlockSize - offset, ary, go())
+        } else { // block is full
+          Impl(0, ary, go())
+        }
+      } else { // ran out of elmts
+        Empty
+      }
+    go()
+  }
+
+  def apply[A](elems: A*): BList[A] = {
+    BList.from(elems)
+    /*
+    // extract underlying array if present
+    elems match {
+      case arraySeq: ArraySeq[A] => // this might just be slower idk, plus it wont compile in 2.13 and 2.12.
+        val size = arraySeq.size
+        val rawArray: Array[Any] = arraySeq.unsafeArray.asInstanceOf[Array[Any]]
+        var i = size-1
+        var acc : BList[A] = Empty
+        // split raw array from end to start to build up BList (only possible non-full block will be head)
+        while (i >= BlockSize){
+          //take slice of BlockSize number of elements
+          val ary = rawArray.slice(i-BlockSize, i)
+          acc = Impl(0,ary,acc)
+          i -= BlockSize
+        }
+
+        // head
+        val ary = new Array[Any](BlockSize)
+        System.arraycopy(rawArray, 0, ary, BlockSize -i, i+1)
+        Impl(BlockSize -i,ary,acc)
+        
+      case _ => // in case we dont get the actual array because user passes some other list type
+        BList.from(elems)
+    }
+     */
   }
 
   def empty[A]: BList[A] = Empty

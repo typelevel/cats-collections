@@ -271,6 +271,11 @@ class BListSuite extends DisciplineSuite {
     assertEquals(n1, n2)
 
   }
+  test("BList constructor") {
+    val l1 = BList.empty[Int].prepend(7).prepend(6).prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
+    val l2 = BList(1, 2, 3, 4, 5, 6, 7)
+    assertEquals(l1, l2)
+  }
 
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
     val la = as.toList
@@ -372,11 +377,6 @@ class BListSuite extends DisciplineSuite {
     }
   })
 
-  // property("BList hashcode same as List hashcode")(forAll {
-  //   (xs: BList[Int]) => // this fails occasionally if xs:BList[Char] when chinese characters are involved
-  //     assertEquals(xs.toList.##, xs.##)
-  // })
-
   property("toListReverse same as toList.reverese")(forAll { (xs: BList[Int]) =>
     assertEquals(xs.toList.reverse, xs.toListReverse)
   })
@@ -408,8 +408,23 @@ class BListSuite extends DisciplineSuite {
     val n = Random.nextInt(xs.size.toInt + 10) - 5
     assertEquals(xs.take(n).toList, xs.toList.take(n))
   })
+
   property("BList dropWhile consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.dropWhile(p).toList, xs.toList.dropWhile(p))
+  })
+
+  property("BList filter consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.filter(p).toList, xs.toList.filter(p))
+  })
+  property("BList filterNot consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
+    assertEquals(xs.filterNot(p).toList, xs.toList.filterNot(p))
+  })
+  property("BList collect consistent with List")(forAll { (xs: BList[Int], pf: PartialFunction[Int, Int]) =>
+    assertEquals(xs.collect(pf).toList, xs.toList.collect(pf))
+  })
+
+  property("iterator works")(forAll { (xs: BList[Int]) =>
+    assertEquals(BList.fromList(xs.iterator.toList), xs)
   })
 
   // property("generator")(forAll { (xs: BList[Int]) =>
