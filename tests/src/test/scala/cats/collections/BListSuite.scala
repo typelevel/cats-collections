@@ -426,6 +426,14 @@ class BListSuite extends DisciplineSuite {
   property("iterator works")(forAll { (xs: BList[Int]) =>
     assertEquals(BList.fromList(xs.iterator.toList), xs)
   })
+  property("BList constructor can be iterated over as expected")(forAll { (xs: List[Int], p: Int => Boolean) =>
+    val l1 = BList.from(xs)
+    var l2: BList[Int] = BList.empty
+    for (elmt <- xs.reverseIterator) {
+      l2 = l2.prepend(elmt)
+    }
+    assertEquals(l1.filter(p), l2.filter(p)) // iteration over both might expose more errors...
+  })
 
   // property("generator")(forAll { (xs: BList[Int]) =>
   //   println(xs.size)

@@ -41,7 +41,6 @@ import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
 import scala.util.hashing.MurmurHash3
 import scala.collection.immutable.LinearSeq
-//import scala.collection.immutable.ArraySeq
 import org.typelevel.scalaccompat.annotation._
 
 sealed abstract class BList[+A] {
@@ -75,7 +74,7 @@ sealed abstract class BList[+A] {
   final def ::[B >: A](a: B): BList[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
-  // version using iterator
+  // version using iterator - benchmark against the other implementation!!
   def filterIter(fn: A => Boolean): BList[A] = {
     val xs = this.iterator
     var res = List.empty[A]
@@ -398,7 +397,8 @@ object BList extends compat.BListCompatCompanion {
       fromList(loop(this)).asInstanceOf[NonEmpty[B]]
     }
     def filter(p: A => Boolean): BList[A] = {
-      // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
+      // this implementation does not condense blocks
+      // maybe there could be a counter where if enough elements are dropped (proportion of total size/total number of nodes?) a condenser could be run on the resulting list
 
       // optimization if block remains unchanged (this might not actually speed things up overall, but it skips allocations in this special case)
       if (block.forall(p)) return Impl(offset, block, tailBList.filter(p))
@@ -707,7 +707,6 @@ object BList extends compat.BListCompatCompanion {
       override def apply(i: Int): A = xs.getUnsafe(i.toLong)
       override def iterator: Iterator[A] = new BListIterator(xs)
       override def length: Int = xs.size.toInt // has to be an int so I cast
-      // override def iterableFactory : scala.collection.generic.SeqFactory[LinearSeq] = LinearSeq
       override def head: A = xs.head
       override def tail: LinearSeq[A] = {
         xs.drop(1) match {

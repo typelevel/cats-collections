@@ -22,12 +22,9 @@
 package cats.collections
 package compat
 
-//import scala.collection.generic.SeqFactory
 import scala.collection.TraversableOnce
-//import scala.collection.immutable.LinearSeq
 
 private[collections] trait BListCompatCompanion {
-  // type LinearSeqFactoryAlias = scala.collection.generic.SeqFactory[LinearSeq]
   def from[A](source: TraversableOnce[A]): BList[A] = {
     val iter = source.toIterator
     BList.from_helper(iter)
