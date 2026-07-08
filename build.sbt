@@ -1,14 +1,14 @@
 import com.typesafe.tools.mima.core._
 
 val catsVersion = "2.13.0"
-val munitVersion = "1.3.0"
+val munitVersion = "1.3.3"
 val munitDisciplineVersion = "2.0.0"
 val scalacheckVersion = "1.19.0"
 val algebraVersion = "2.13.0"
 
 val Scala212 = "2.12.21"
 val Scala213 = "2.13.18"
-val Scala3 = "3.3.7"
+val Scala3 = "3.3.8"
 
 ThisBuild / tlBaseVersion := "0.9"
 ThisBuild / startYear := Some(2015)
@@ -123,7 +123,7 @@ lazy val bench = project
     coverageEnabled := false,
     run / fork := true,
     libraryDependencies += {
-      val scalazV = if (tlIsScala3.value) "7.4.0-M16" else "7.3.8"
+      val scalazV = if (tlIsScala3.value) "7.4.0-M16" else "7.3.9"
       "org.scalaz" %% "scalaz-core" % scalazV
     }
   )
