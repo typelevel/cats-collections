@@ -133,30 +133,27 @@ object BList extends compat.BListCompatCompanion {
     def splitAt(idx: Long): (Empty.type, Empty.type) = (Empty, Empty)
     def lastOption: None.type = None
     def size: Long = 0
-    def map[B](fn: Nothing => B): Empty.type = Empty
-    def filter(fn: Nothing => Boolean): Empty.type = Empty
-    def filterNot(fn: Nothing => Boolean): Empty.type = Empty
-    def collect[B](pf: PartialFunction[Nothing, B]): Empty.type = Empty
+    def map[B](fn: Nothing => B): Empty.type = this
+    def filter(fn: Nothing => Boolean): Empty.type = this
+    def filterNot(fn: Nothing => Boolean): Empty.type = this
+    def collect[B](pf: PartialFunction[Nothing, B]): Empty.type = this
     def foldLeft[B](acc: B)(fn: (B, Nothing) => B): B = acc
     def foldRight[B](init: Eval[B])(f: (Nothing, Eval[B]) => Eval[B]): Eval[B] = init
-    def drop(n: Int): Empty.type = Empty
-    def dropWhile(p: Nothing => Boolean): Empty.type = Empty
-    def take(n: Int): Empty.type = Empty
-    def takeWhile(p: Nothing => Boolean): Empty.type = Empty
+    def drop(n: Int): Empty.type = this
+    def dropWhile(p: Nothing => Boolean): Empty.type = this
+    def take(n: Int): Empty.type = this
+    def takeWhile(p: Nothing => Boolean): Empty.type = this
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: Nil.type = Nil
     override def toListReverse: Nil.type = Nil
     def asSeq: LinearSeq[Nothing] = LinearSeq.empty
     def isEmpty: Boolean = true
-    def flatMap[B](fn: Nothing => BList[B]): Empty.type = Empty
+    def flatMap[B](fn: Nothing => BList[B]): Empty.type = this
 
     def iterator: Iterator[Nothing] = Iterator.empty
     private[collections] def toStringInBlocks: String = "Empty"
 
-    override def equals(other: Any): Boolean = other match {
-      case _: Empty.type => true
-      case _             => false
-    }
+    override def equals(other: Any): Boolean = other.isInstanceOf[Empty.type]
 
     override def hashCode(): Int = Nil.##
 
@@ -835,25 +832,12 @@ object BList extends compat.BListCompatCompanion {
       override def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         catsCollectionsBListFoldable.foldRight(xs, init)(f)
 
-      override def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] = {
-        def traverseArray(fa: Array[A])(f: (A) => G[B]): G[Array[Any]] = {
-          fa.foldLeft(arg0.pure(Array[Any]())) { (arrEffect, head) =>
-            arg0.map2(arrEffect, f(head)) { (arr, b) =>
-              arr :+ b
-            }
-          }
-        }
+      override def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] =
         fa match {
           case Empty         => arg0.pure(BList.empty)
           case impl: Impl[A] =>
-            arg0.map2(
-              traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
-              traverse(impl.tailBList)(f)
-            ) { (arrayB, tailBList) =>
-              Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailBList)
-            }
+            NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverse(impl)(f)(arg0).asInstanceOf[G[BList[B]]]
         }
-      }
 
       override def ap[A, B](ff: BList[(A) => B])(fa: BList[A]): BList[B] =
         catsCollectionBListApplicative.ap(ff)(fa)
