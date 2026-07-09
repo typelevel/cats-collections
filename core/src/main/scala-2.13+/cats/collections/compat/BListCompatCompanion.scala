@@ -25,8 +25,8 @@ package compat
 import scala.collection.IterableOnce
 
 private[collections] trait BListCompatCompanion {
-    def from[A](source: IterableOnce[A]): BList[A] = {
-        val iter = source.iterator
-        BList.from_helper(iter)
+  def from[A](source: IterableOnce[A]): BList[A] = {
+    val iter = source.iterator
+    BList.from_helper(iter)
   }
 }
