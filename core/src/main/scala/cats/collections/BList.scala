@@ -71,7 +71,7 @@ sealed abstract class BList[+A] {
   def flatMap[B](fn: A => BList[B]): BList[B]
   def iterator: Iterator[A]
 
-  final def ::[B >: A](a: B): BList[B] = prepend(a)
+  final def ::[B >: A](a: B): BList.NonEmpty[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
 
   // version using iterator - benchmark against the other implementation!!
@@ -604,18 +604,22 @@ object BList extends compat.BListCompatCompanion {
       go(this, Empty)
     }
     def concat[B >: A](l2: BList[B]): BList.NonEmpty[B] = {
-      // not tail rec
-      def go(self: Impl[A]): BList.NonEmpty[B] = {
+      @tailrec
+      def go(self: Impl[A], acc:BList[(Int,Array[Any])]): BList.NonEmpty[B] = {
         self.tailBList match {
-          case Empty                    => Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
-          case next: Impl[A] @unchecked => Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
+          case Empty                    => 
+            //Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
+            nonEmptyRebuild((self.offset, self.block.asInstanceOf[Array[Any]])::acc, l2)
+          case next: Impl[A] @unchecked => 
+            //Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
+            go(next,(self.offset, self.block.asInstanceOf[Array[Any]])::acc)
         }
       }
 
       // for now, the only optimization is checking if either are empty
       (this, l2) match {
         case (_, Empty) => this
-        case (_, _)     => go(this)
+        case (_, _)     => go(this, Empty)
       }
     }
 
@@ -737,7 +741,8 @@ object BList extends compat.BListCompatCompanion {
   // helper to make methods stack safe
   private def rebuild[A](acc:BList[(Int, Array[Any])], tail: BList[A]): BList[A] = // maybe it should use a list
     acc.foldLeft(tail) { case (t, (offset, block)) => Impl(offset, block, t) }
-
+  private def nonEmptyRebuild[A](acc:NonEmpty[(Int, Array[Any])], tail: BList[A]): NonEmpty[A] = // maybe it should use a list
+    acc.foldLeft(tail) { case (t, (offset, block)) => Impl(offset, block, t) }.asInstanceOf[NonEmpty[A]]
 
 
   def fromList[A](l: List[A]): BList[A] =
