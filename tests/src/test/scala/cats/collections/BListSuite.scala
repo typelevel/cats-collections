@@ -396,7 +396,7 @@ class BListSuite extends DisciplineSuite {
   property("BList splitAt consistent with List splitAt")(forAll { (xs: BList.NonEmpty[Int]) =>
     val index = Random.nextInt(xs.size.toInt)
     val (l1, l2) = xs.toList.splitAt(index)
-    val (b1, b2) = xs.splitAt(index.toLong)
+    val (b1, b2) = xs.splitAt(index)
     assertEquals(b1.toList, l1)
     assertEquals(b2.toList, l2)
   })

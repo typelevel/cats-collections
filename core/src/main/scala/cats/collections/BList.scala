@@ -50,7 +50,7 @@ sealed abstract class BList[+A] {
   def tailOption: Option[BList[A]]
   def get(idx: Long): Option[A]
   def getUnsafe(idx: Long): A
-  def splitAt(idx: Long): (BList[A], BList[A])
+  def splitAt(idx: Int): (BList[A], BList[A])
   def lastOption: Option[A]
   def size: Long
   def map[B](fn: A => B): BList[B]
@@ -130,7 +130,7 @@ object BList extends compat.BListCompatCompanion {
     def tailOption: None.type = None
     def get(idx: Long): None.type = None
     def getUnsafe(idx: Long): Nothing = throw new IndexOutOfBoundsException
-    def splitAt(idx: Long): (Empty.type, Empty.type) = (Empty, Empty)
+    def splitAt(idx: Int): (Empty.type, Empty.type) = (Empty, Empty)
     def lastOption: None.type = None
     def size: Long = 0
     def map[B](fn: Nothing => B): Empty.type = this
@@ -326,36 +326,35 @@ object BList extends compat.BListCompatCompanion {
       }
       go(idx, this)
     }
-    def splitAt(idx: Long): (BList[A], BList[A]) = {
-      def buildLists(idx: Long, l: BList[A]): (BList[A], BList[A]) = {
+    def splitAt(idx: Int): (BList[A], BList[A]) = {
+      @tailrec
+      def buildLists(idx: Int, l: BList[A], l1acc:BList[(Int,Array[Any])]): (BList[A], BList[A]) = {
         l match {
           case Empty =>
-            (Empty, Empty)
+            (rebuild(l1acc, Empty), Empty)
           case impl: Impl[A] @unchecked =>
             if (idx < BlockSize - impl.offset) { // we found the block we want to split at
               if (idx <= 0) { // split is on block boundary
-                (Empty, impl)
+                (rebuild(l1acc, Empty), impl)
               } else {
                 val ary1 = new Array[Any](BlockSize)
                 val ary2 = new Array[Any](BlockSize)
-                System.arraycopy(impl.block, impl.offset, ary1, BlockSize - idx.toInt, idx.toInt)
+                System.arraycopy(impl.block, impl.offset, ary1, BlockSize - idx, idx)
                 System.arraycopy(impl.block,
-                                 impl.offset + idx.toInt,
+                                 impl.offset + idx,
                                  ary2,
-                                 impl.offset + idx.toInt,
-                                 (BlockSize - impl.offset) - idx.toInt
+                                 impl.offset + idx,
+                                 (BlockSize - impl.offset) - idx
                 )
-                val lastBlockl1 = Impl(BlockSize - idx.toInt, ary1, Empty)
-                val l2 = Impl(impl.offset + idx.toInt, ary2, impl.tailBList)
-                (lastBlockl1, l2)
+                val l2 = Impl(impl.offset + idx, ary2, impl.tailBList)
+                (rebuild((BlockSize - idx, ary1)::l1acc,Empty), l2)
               }
             } else { // split isn't in current block
-              val (l1_tail, l2) = buildLists(idx - (BlockSize - impl.offset), impl.tailBList)
-              (Impl(impl.offset, impl.block, l1_tail), l2)
+              buildLists(idx - (BlockSize - impl.offset), impl.tailBList, (impl.offset, impl.block.asInstanceOf[Array[Any]]) :: l1acc)
             }
         }
       }
-      buildLists(idx, this)
+      buildLists(idx, this, Empty)
     }
     def lastOption: Some[A] = {
       @tailrec
@@ -396,74 +395,88 @@ object BList extends compat.BListCompatCompanion {
     def filter(p: A => Boolean): BList[A] = {
       // this implementation does not condense blocks
       // maybe there could be a counter where if enough elements are dropped (proportion of total size/total number of nodes?) a condenser could be run on the resulting list
+      def go(l:BList[A], acc:BList[(Int,Array[Any])]) : BList[A] = l match {
+        case Empty => rebuild(acc, Empty)
+        case impl:Impl[A] => 
+          // "optimization" if block remains unchanged (this might not actually speed things up overall, but it skips allocations in this special case)
+          if (impl.block.forall(p)) {
+            return go(impl.tailBList, (impl.offset, impl.block.asInstanceOf[Array[Any]])::acc)
+          }
 
-      // optimization if block remains unchanged (this might not actually speed things up overall, but it skips allocations in this special case)
-      if (block.forall(p)) return Impl(offset, block, tailBList.filter(p))
+          var i = BlockSize - 1
+          var offset_in_newblock = BlockSize
+          val newblock = new Array[Any](BlockSize) // there is at least one element removed, so we need to zero out arbitrarily bigger prefix
+          // iterate backwards
+          while (i >= impl.offset) {
+            if (p(impl.block(i))) {
+              offset_in_newblock -= 1
+              newblock(offset_in_newblock) = impl.block(i)
+            }
+            i -= 1
+          }
 
-      var i = BlockSize - 1
-      var offset_in_newblock = BlockSize
-      val newblock = new Array[Any](
-        BlockSize
-      ) // there is at least one element removed, so we need to zero out arbitrarily bigger prefix
-      // iterate backwards
-      while (i >= offset) {
-        if (p(block(i))) {
-          offset_in_newblock -= 1
-          newblock(offset_in_newblock) = block(i)
-        }
-        i -= 1
+          if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+            go(impl.tailBList, acc)
+          } else {
+            go(impl.tailBList,(offset_in_newblock, newblock):: acc)
+          }
       }
-
-      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
-        tailBList.filter(p)
-      } else {
-        Impl(offset_in_newblock, newblock, tailBList.filter(p))
-      }
+      go(this,Empty)
     }
+    // this whole thing is just a copy paste of filter, maybe i should remove it
     def filterNot(p: A => Boolean): BList[A] = {
-      // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
-      var i = BlockSize - 1
-      var offset_in_newblock = BlockSize
-      val newblock = new Array[Any](
-        BlockSize
-      ) // there is at least one element removed, so we need to zero out arbitrarily bigger prefix
-      // iterate backwards
-      while (i >= offset) {
-        if (!p(block(i))) {
-          offset_in_newblock -= 1
-          newblock(offset_in_newblock) = block(i)
-        }
-        i -= 1
-      }
+      def go(l:BList[A], acc:BList[(Int,Array[Any])]) : BList[A] = l match {
+        case Empty => rebuild(acc, Empty)
+        case impl:Impl[A] => 
+          // i will not condense blocks. but maybe i could have a counter where if enough elements are dropped i could run a condenser on the resulting list automatically
+          var i = BlockSize - 1
+          var offset_in_newblock = BlockSize
+          val newblock = new Array[Any](BlockSize)
+          // iterate backwards
+          while (i >= impl.offset) {
+            if (!p(impl.block(i))) {
+              offset_in_newblock -= 1
+              newblock(offset_in_newblock) = impl.block(i)
+            }
+            i -= 1
+          }
 
-      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
-        tailBList.filterNot(p)
-      } else {
-        Impl(offset_in_newblock, newblock, tailBList.filterNot(p))
-      }
+          if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+            go(impl.tailBList, acc)
+          } else {
+            go(impl.tailBList, (offset_in_newblock, newblock)::acc)
+          }
+        }
+      go(this,Empty)
     }
     // adapted from scala List's implementation of collect https://github.com/scala/scala/blob/2.13.x/src/library/scala/collection/immutable/List.scala#L250
     private val partialNotApplied = new Function1[Any, Any] { def apply(x: Any): Any = this }
     def collect[B](pf: PartialFunction[A, B]): BList[B] = {
-      var i = BlockSize - 1
-      var offset_in_newblock = BlockSize
-      val newblock = new Array[Any](BlockSize)
-      var x: Any = null
-      // iterate backwards, building new array
-      while (i >= offset) {
-        x = pf.applyOrElse(block(i), partialNotApplied)
-        if (x.asInstanceOf[AnyRef] ne partialNotApplied) {
-          offset_in_newblock -= 1
-          newblock(offset_in_newblock) = x.asInstanceOf[B]
-        }
-        i -= 1
-      }
+      def go(l:BList[A], acc:BList[(Int,Array[Any])]):BList[B] = l match {
+        case Empty => rebuild(acc, Empty)
+        case impl:Impl[A] => 
+          var i = BlockSize - 1
+          var offset_in_newblock = BlockSize
+          val newblock = new Array[Any](BlockSize)
+          var x: Any = null
+          // iterate backwards, building new array
+          while (i >= impl.offset) {
+            x = pf.applyOrElse(impl.block(i), partialNotApplied)
+            if (x.asInstanceOf[AnyRef] ne partialNotApplied) {
+              offset_in_newblock -= 1
+              newblock(offset_in_newblock) = x.asInstanceOf[B]
+            }
+            i -= 1
+          }
 
-      if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
-        tailBList.collect(pf)
-      } else {
-        Impl(offset_in_newblock, newblock, tailBList.collect(pf))
+          if (offset_in_newblock == BlockSize) { // new block is empty so we skip it
+            go(impl.tailBList, acc)
+          } else {
+            go(impl.tailBList, (offset_in_newblock, newblock):: acc)
+          }
       }
+      go(this,Empty)
+      
     }
 
     def foldLeft[B](acc: B)(fn: (B, A) => B): B = {
@@ -561,13 +574,11 @@ object BList extends compat.BListCompatCompanion {
               rebuild(acc, Empty)
             }
             else if (n >= BlockSize - impl.offset) {
-              // Impl(offset, block, tailBList.take(n - (BlockSize - offset)))
               go(n - (BlockSize - impl.offset), impl.tailBList, (impl.offset, impl.block.asInstanceOf[Array[Any]])::acc)
             } 
             else {
               val ary = new Array[Any](BlockSize)
               System.arraycopy(impl.block, impl.offset, ary, BlockSize - n, n) // safe conversion because here 0<n<BlockSize
-              //Impl(BlockSize - n, ary, Empty)
               rebuild((BlockSize - n, ary)::acc, Empty)
             }
         }
@@ -590,14 +601,14 @@ object BList extends compat.BListCompatCompanion {
           }
 
           if (i >= BlockSize) { // all elmts in block satisfied, keep taking
-            //Impl(offset, block, tailBList.takeWhile(p))
             go(impl.tailBList, (impl.offset, impl.block.asInstanceOf[Array[Any]])::acc)
-          } else if (i < impl.offset) { // no elements in block satisfied
+          } 
+          else if (i < impl.offset) { // no elements in block satisfied
             rebuild(acc, Empty)
-          } else { // take some prefix of the block
+          } 
+          else { // take some prefix of the block
             val ary = new Array[Any](BlockSize)
             System.arraycopy(impl.block, impl.offset, ary, BlockSize - (i - impl.offset), i - impl.offset)
-            //Impl(BlockSize - (i - impl.offset), ary, Empty)
             rebuild((BlockSize - (i - impl.offset), ary)::acc, Empty)
           }
         }
@@ -608,10 +619,8 @@ object BList extends compat.BListCompatCompanion {
       def go(self: Impl[A], acc:BList[(Int,Array[Any])]): BList.NonEmpty[B] = {
         self.tailBList match {
           case Empty                    => 
-            //Impl(self.offset, self.block.asInstanceOf[Array[B]], l2)
             nonEmptyRebuild((self.offset, self.block.asInstanceOf[Array[Any]])::acc, l2)
           case next: Impl[A] @unchecked => 
-            //Impl(self.offset, self.block.asInstanceOf[Array[B]], go(next))
             go(next,(self.offset, self.block.asInstanceOf[Array[Any]])::acc)
         }
       }
@@ -761,7 +770,8 @@ object BList extends compat.BListCompatCompanion {
 
   // from is implemented in BListCommpatCompanion because 2.12 does not support IterableOnce
   private[collections] def from_helper[A](iter: Iterator[A]): BList[A] = {
-    def go(): BList[A] =
+    @tailrec
+    def go(acc:BList[(Int,Array[Any])]): BList[A] =
       if (iter.hasNext) {
         val ary = new Array[Any](BlockSize)
         var offset = 0
@@ -772,14 +782,14 @@ object BList extends compat.BListCompatCompanion {
         if (offset < BlockSize) { // not full final block
           // need to copy to push to the end of array
           System.arraycopy(ary, 0, ary, BlockSize - offset, offset)
-          Impl(BlockSize - offset, ary, go())
+          go((BlockSize - offset, ary)::acc)
         } else { // block is full
-          Impl(0, ary, go())
+          go((0, ary)::acc)
         }
       } else { // ran out of elmts
-        Empty
+        rebuild(acc, Empty)
       }
-    go()
+    go(Empty)
   }
 
   def apply[A](elems: A*): BList[A] = {

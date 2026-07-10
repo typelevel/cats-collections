@@ -38,7 +38,7 @@ trait ArbitraryBList {
           2 -> (for {
             a <- arbitrary[A]
             tl <- Gen.resize(n - 1, bListGen[A])
-            i <- Gen.choose(0L, tl.size)
+            i <- Gen.choose(0, tl.size.toInt)
           } yield {
             val (l1, l2) = tl.prepend(a).splitAt(i)
             l1 ++ l2.asInstanceOf[BList.NonEmpty[A]].tail
