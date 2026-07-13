@@ -24,7 +24,8 @@ package cats.collections
 //import cats.syntax.all._
 import cats.collections.arbitrary.blist._
 import cats.laws.discipline._
-import cats.Eq
+import cats.laws.discipline.arbitrary._
+import cats.{Eq, Eval}
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
 import org.scalacheck.Test
@@ -43,14 +44,11 @@ class BListSuite extends DisciplineSuite {
   checkAll("BList.ApplicativeLaws", ApplicativeTests[BList].applicative[Int, Int, Int])
   checkAll("BList.MonoidKLaws", MonoidKTests[BList].monoidK[Int])
   checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
-  checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Int, Option, Option])
+  checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Set[Int], Option, Option])
+  checkAll("BList.TraverseLaws with Stacksafe Monad", TraverseTests[BList].traverse[Int, Int, Int, Set[Int], Eval, Eval])
   checkAll("BList.MonadLaws", MonadTests[BList].monad[Int, Int, Int])
-  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws",
-           NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int]
-  )
-  checkAll("BList.NonEmpty.NonEmptyTraverseLaws",
-           NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
-  )
+  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws", NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int])
+  checkAll("BList.NonEmpty.NonEmptyTraverseLaws", NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option])
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)

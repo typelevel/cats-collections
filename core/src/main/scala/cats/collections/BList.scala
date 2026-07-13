@@ -38,6 +38,7 @@ import cats.{
   Traverse
 }
 
+import cats.data.Chain
 import scala.annotation.tailrec
 import scala.annotation.unchecked.uncheckedVariance
 import scala.util.hashing.MurmurHash3
@@ -219,13 +220,17 @@ object BList extends compat.BListCompatCompanion {
                 case nonemptytail: Impl[A] =>
                   arg0 match {
                     case x: StackSafeMonad[G] => // optimization described in issue #4480
-                      fa.iterator
-                        .foldLeft(x.pure(empty.asInstanceOf[BList[B]])) { case (accG, a) =>
+                      // could traverse it as a chain and then just convert that to BList through iterator idk
+                      // i wonder if this is faster because of all the conversions
+                      x.map(
+                        fa.iterator
+                        .foldLeft(x.pure(Chain.empty[B])) { case (accG, a) =>
                           x.map2(accG, f(a)) { case (acc, b) =>
-                            acc.prepend(b)
+                            acc :+ b 
                           }
                         }
-                        .asInstanceOf[G[NonEmpty[B]]]
+                      )( c => from(c.iterator)).asInstanceOf[G[NonEmpty[B]]]
+                      
                     case _ =>
                       arg0.map2(
                         traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
