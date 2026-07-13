@@ -34,6 +34,7 @@ import cats.{
   NonEmptyAlternative,
   NonEmptyTraverse,
   SemigroupK,
+  StackSafeMonad,
   Traverse
 }
 
@@ -206,6 +207,7 @@ object BList extends compat.BListCompatCompanion {
               }
             }
           }
+
           fa match {
             case impl: Impl[A] =>
               impl.tailBList match {
@@ -215,11 +217,22 @@ object BList extends compat.BListCompatCompanion {
                       Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, BList.empty)
                   }
                 case nonemptytail: Impl[A] =>
-                  arg0.map2(
-                    traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
-                    nonEmptyTraverse(nonemptytail)(f)
-                  ) { (arrayB, tailB) =>
-                    Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailB)
+                  arg0 match {
+                    case x: StackSafeMonad[G] => // optimization described in issue #4480
+                      fa.iterator
+                        .foldLeft(x.pure(empty.asInstanceOf[BList[B]])) { case (accG, a) =>
+                          x.map2(accG, f(a)) { case (acc, b) =>
+                            acc.prepend(b)
+                          }
+                        }
+                        .asInstanceOf[G[NonEmpty[B]]]
+                    case _ =>
+                      arg0.map2(
+                        traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
+                        nonEmptyTraverse(nonemptytail)(f)
+                      ) { (arrayB, tailB) =>
+                        Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailB)
+                      }
                   }
               }
           }
@@ -886,6 +899,7 @@ object BList extends compat.BListCompatCompanion {
         fa match {
           case Empty         => arg0.pure(BList.empty)
           case impl: Impl[A] =>
+            // otherwise we use the nonempty implementatoin
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverse(impl)(f)(arg0).asInstanceOf[G[BList[B]]]
         }
 
