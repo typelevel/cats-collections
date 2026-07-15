@@ -21,11 +21,11 @@
 
 package cats.collections
 
-//import cats.syntax.all._
+import cats.syntax.all._
 import cats.collections.arbitrary.blist._
 import cats.laws.discipline._
 import cats.laws.discipline.arbitrary._
-import cats.{Eq, Eval}
+import cats.{Eq, Eval, Traverse}
 import munit.DisciplineSuite
 import org.scalacheck.Prop._
 import org.scalacheck.Test
@@ -45,10 +45,18 @@ class BListSuite extends DisciplineSuite {
   checkAll("BList.MonoidKLaws", MonoidKTests[BList].monoidK[Int])
   checkAll("BList.AlternativeLaws", AlternativeTests[BList].alternative[Int, Int, Int])
   checkAll("BList.TraverseLaws", TraverseTests[BList].traverse[Int, Int, Int, Set[Int], Option, Option])
-  checkAll("BList.TraverseLaws with Stacksafe Monad", TraverseTests[BList].traverse[Int, Int, Int, Set[Int], Eval, Eval])
+  checkAll("BList.TraverseLaws with Stacksafe Monad",
+           TraverseTests[BList].traverse[Int, Int, Int, Set[Int], Eval, Eval]
+  )
   checkAll("BList.MonadLaws", MonadTests[BList].monad[Int, Int, Int])
-  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws", NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int])
-  checkAll("BList.NonEmpty.NonEmptyTraverseLaws", NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option])
+  checkAll("BList.NonEmpty.NonEmptyAlternativeLaws",
+           NonEmptyAlternativeTests[BList.NonEmpty].nonEmptyAlternative[Int, Int, Int]
+  )
+  checkAll("BList.NonEmpty.NonEmptyTraverseLaws",
+           NonEmptyTraverseTests[BList.NonEmpty].nonEmptyTraverse[Option, Int, Int, Int, Int, Option, Option]
+  )
+  checkAll("Traverse[TreeList]", SerializableTests.serializable(Traverse[BList]))
+
 
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
@@ -275,6 +283,36 @@ class BListSuite extends DisciplineSuite {
     assertEquals(l1, l2)
   }
 
+  test("stack safety") { // this test might be pretty slow so maybe we remove it
+    var l = BList.empty[Int]
+    var m = BList.empty[Int]
+
+    for (i <- (0 until 1000)) {
+      l = l.prepend(i)
+      m = l.concat(m)
+    }
+    m.filter(x=> x%2==0)
+    m.filterNot(x=> x%2==0)
+    m.splitAt(m.size.toInt - 2)
+    m.take(m.size.toInt - 2)
+    m.takeWhile(_<1001)
+    m.collect{case x if x < 1001 => x*2}
+    m.concat(BList(1,2,3))
+    m.get(m.size - 2L)
+    m.map(x=>x.toString)
+    m.foldLeft(0)((x,y)=> x+y)
+    m.drop(1000)
+    m.dropWhile(_<999)
+    m.toList
+    m.toListReverse
+    m.asSeq
+    m.flatMap(x=>BList(1,x,3))
+    m.iterator
+    m.toString
+    m.foldRight(Eval.now(0)) { (item, evalAcc) => evalAcc.map(_ + item)}
+    //m.traverse(x=> if (x<1001) Some(x.toString) else None) TRAVERSE IS NOT STACKSAFE RN
+  }
+
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
     val la = as.toList
     assert(Eq[B].eqv(fn(as), gn(la)))
@@ -431,6 +469,10 @@ class BListSuite extends DisciplineSuite {
       l2 = l2.prepend(elmt)
     }
     assertEquals(l1.filter(p), l2.filter(p)) // iteration over both might expose more errors...
+  })
+  
+  property("BList.traverse_/traverse consistency")(forAll { (xs: BList[Int], fn: Int => Option[String]) =>
+    assertEquals(xs.traverse(fn).void, xs.traverse_(fn))
   })
 
   // property("generator")(forAll { (xs: BList[Int]) =>

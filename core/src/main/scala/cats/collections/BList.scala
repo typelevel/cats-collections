@@ -201,7 +201,7 @@ object BList extends compat.BListCompatCompanion {
         override def nonEmptyTraverse[G[_], A, B](
           fa: NonEmpty[A]
         )(f: (A) => G[B])(implicit arg0: Apply[G]): G[NonEmpty[B]] = {
-          def traverseArray(arr: Array[A])(f: (A) => G[B]): G[Array[Any]] = {
+          def traverseArray(arr: Array[A]): G[Array[Any]] = {
             arr.tail.foldLeft(arg0.map(f(arr.head))(b => Array[Any](b))) { (arrEffect, head) =>
               arg0.map2(arrEffect, f(head)) { (arr, b) =>
                 arr :+ b
@@ -213,7 +213,7 @@ object BList extends compat.BListCompatCompanion {
             case impl: Impl[A] =>
               impl.tailBList match {
                 case Empty =>
-                  arg0.map(traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]]) {
+                  arg0.map(traverseArray(impl.block.slice(impl.offset, BlockSize)).asInstanceOf[G[Array[B]]]) {
                     arrayB =>
                       Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, BList.empty)
                   }
@@ -222,22 +222,25 @@ object BList extends compat.BListCompatCompanion {
                     case x: StackSafeMonad[G] => // optimization described in issue #4480
                       // could traverse it as a chain and then just convert that to BList through iterator idk
                       // i wonder if this is faster because of all the conversions
+                      // this implementation follows the one taken in #4498, building a Chain
                       x.map(
                         fa.iterator
-                        .foldLeft(x.pure(Chain.empty[B])) { case (accG, a) =>
-                          x.map2(accG, f(a)) { case (acc, b) =>
-                            acc :+ b 
+                          .foldLeft(x.pure(Chain.empty[B])) { case (accG, a) =>
+                            x.map2(accG, f(a)) { case (acc, b) =>
+                              acc :+ b
+                            }
                           }
-                        }
-                      )( c => from(c.iterator)).asInstanceOf[G[NonEmpty[B]]]
-                      
+                      )(c => from(c.iterator))
+                        .asInstanceOf[G[NonEmpty[B]]]
+
                     case _ =>
                       arg0.map2(
-                        traverseArray(impl.block.slice(impl.offset, BlockSize))(f).asInstanceOf[G[Array[B]]],
+                        traverseArray(impl.block.slice(impl.offset, BlockSize)).asInstanceOf[G[Array[B]]],
                         nonEmptyTraverse(nonemptytail)(f)
                       ) { (arrayB, tailB) =>
                         Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailB)
                       }
+                     // from(arg0.map(Chain.traverseViaChain(fa.toIndexedSeq)(f))(_.iterator))
                   }
               }
           }
@@ -614,6 +617,7 @@ object BList extends compat.BListCompatCompanion {
 
       go(m, this, Empty)
     }
+    
     def takeWhile(p: A => Boolean): BList[A] = {
       @tailrec
       def go(l: BList[A], acc: BList[(Int, Array[Any])]): BList[A] = l match {
@@ -894,19 +898,35 @@ object BList extends compat.BListCompatCompanion {
   )
   implicit val catsCollectionBListInstances: Traverse[BList] with Alternative[BList] with Monad[BList] =
     new Traverse[BList] with Alternative[BList] with Monad[BList] {
-      override def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
+      def foldLeft[A, B](xs: BList[A], init: B)(f: (B, A) => B): B =
         catsCollectionsBListFoldable.foldLeft(xs, init)(f)
 
-      override def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
+      def foldRight[A, B](xs: BList[A], init: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] =
         catsCollectionsBListFoldable.foldRight(xs, init)(f)
 
-      override def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] =
+      def traverse[G[_], A, B](fa: BList[A])(f: (A) => G[B])(implicit arg0: Applicative[G]): G[BList[B]] =
         fa match {
           case Empty         => arg0.pure(BList.empty)
           case impl: Impl[A] =>
             // otherwise we use the nonempty implementatoin
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverse(impl)(f)(arg0).asInstanceOf[G[BList[B]]]
         }
+      @tailrec
+      override def traverse_[G[_], A, B](fa: BList[A])(f: A => G[B])(implicit arg0: Applicative[G]): G[Unit] = {
+        def traverseBlockVoid(offset:Int, block: Array[A]): Unit = {
+            var i = offset
+            while (i< BlockSize){
+              f(block(i))
+              i+=1
+            }
+          }
+        fa match {
+          case Empty         => arg0.unit
+          case impl: Impl[A] =>
+            traverseBlockVoid(impl.offset, impl.block)
+            traverse_(impl.tailBList)(f)(arg0)
+        }
+      }
 
       override def ap[A, B](ff: BList[(A) => B])(fa: BList[A]): BList[B] =
         catsCollectionBListApplicative.ap(ff)(fa)
@@ -921,7 +941,7 @@ object BList extends compat.BListCompatCompanion {
 
       // adapted from the implementation of tailRecM for ListInstances
       // https://github.com/typelevel/cats/blob/v0.7.0/core/src/main/scala/cats/instances/list.scala#L29
-      override def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] = {
+      def tailRecM[A, B](a: A)(f: (A) => BList[Either[A, B]]): BList[B] = {
         val buf = List.newBuilder[B]
         @tailrec
         def go(lists: List[BList[Either[A, B]]]): Unit = lists match {
