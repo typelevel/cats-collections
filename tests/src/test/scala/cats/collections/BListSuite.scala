@@ -310,7 +310,8 @@ class BListSuite extends DisciplineSuite {
     m.iterator
     m.toString
     m.foldRight(Eval.now(0)) { (item, evalAcc) => evalAcc.map(_ + item)}
-    //m.traverse(x=> if (x<1001) Some(x.toString) else None) TRAVERSE IS NOT STACKSAFE RN
+    m.traverseVoid(x=> if (x<1001) Some(x.toString) else None)
+    m.traverse(x=> if (x<1001) Some(x.toString) else None)
   }
 
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
@@ -471,8 +472,12 @@ class BListSuite extends DisciplineSuite {
     assertEquals(l1.filter(p), l2.filter(p)) // iteration over both might expose more errors...
   })
   
-  property("BList.traverse_/traverse consistency")(forAll { (xs: BList[Int], fn: Int => Option[String]) =>
-    assertEquals(xs.traverse(fn).void, xs.traverse_(fn))
+  property("BList.traverseVoid/traverse consistency")(forAll { (xs: BList[Int], fn: Int => Option[String]) =>
+    assertEquals(xs.traverse(fn).void, xs.traverseVoid(fn))
+  })
+  property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency")(forAll { (xs:BList.NonEmpty[Int], fn: Int => Option[String]) =>
+    assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverseVoid(fn))
+    assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverse(fn).void)
   })
 
   // property("generator")(forAll { (xs: BList[Int]) =>
