@@ -58,7 +58,6 @@ class BListSuite extends DisciplineSuite {
   )
   checkAll("Traverse[TreeList]", SerializableTests.serializable(Traverse[BList]))
 
-
   test("concatenating to form same list") {
     val l1 = BList.empty[Int].prepend(5).prepend(4).prepend(3).prepend(2).prepend(1)
     val m1 = BList.empty[Int].prepend(0).prepend(-1).prepend(-2)
@@ -288,32 +287,31 @@ class BListSuite extends DisciplineSuite {
     var l = BList.empty[Int]
     var m = BList.empty[Int]
 
-    for (i <- (0 until 3000)) {
+    for (i <- 0 until 3000) {
       l = l.prepend(i)
       m = l.concat(m)
     }
-    m.filter(x=> x%2==0)
-    m.filterNot(x=> x%2==0)
+    m.filter(x => x % 2 == 0)
+    m.filterNot(x => x % 2 == 0)
     m.splitAt(m.size.toInt - 2)
     m.take(m.size.toInt - 2)
-    m.takeEval(m.size.toInt - 2) //remove later
-    m.takeWhile(_<1001)
-    m.collect{case x if x < 1001 => x*2}
-    m.concat(BList(1,2,3))
+    m.takeWhile(_ < 1001)
+    m.collect { case x if x < 1001 => x * 2 }
+    m.concat(BList(1, 2, 3))
     m.get(m.size - 2L)
-    m.map(x=>x.toString)
-    m.foldLeft(0)((x,y)=> x+y)
+    m.map(x => x.toString)
+    m.foldLeft(0)((x, y) => x + y)
     m.drop(1000)
-    m.dropWhile(_<999)
+    m.dropWhile(_ < 999)
     m.toList
     m.toListReverse
     m.asSeq
-    m.flatMap(x=>BList(1,x,3))
+    m.flatMap(x => BList(1, x, 3))
     m.iterator
     m.toString
-    m.foldRight(Eval.now(0)) { (item, evalAcc) => evalAcc.map(_ + item)}
-    m.traverseVoid(x=> if (x<1001) Some(x) else None)
-    m.traverse(x=> if (x<1001) Some(x) else None)
+    m.foldRight(Eval.now(0)) { (item, evalAcc) => evalAcc.map(_ + item) }
+    m.traverseVoid(x => if (x < 1001) Some(x) else None)
+    m.traverse(x => if (x < 1001) Some(x) else None)
   }
 
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
@@ -424,10 +422,6 @@ class BListSuite extends DisciplineSuite {
     assertEquals(xs.flatMap(f).toList, xs.toList.flatMap((x: Int) => f(x).toList))
   })
 
-  property("filter and filterIter do the same thing")(forAll { (xs: BList[Int], p: Int => Boolean) =>
-    assertEquals(xs.filter(p), xs.filterIter(p))
-  })
-
   property("BList filter consistent with List filter")(forAll { (xs: BList[Int], p: Int => Boolean) =>
     assertEquals(xs.filter(p).toList, xs.toList.filter(p))
   })
@@ -446,11 +440,6 @@ class BListSuite extends DisciplineSuite {
   property("BList take consistent with List")(forAll { (xs: BList[Int]) =>
     val n = Random.nextInt(xs.size.toInt + 10) - 5
     assertEquals(xs.take(n).toList, xs.toList.take(n))
-    assertEquals(xs.take(n), xs.takeEval(n))
-  })
-  property("take consistent with takeEval")(forAll { (xs: BList[Int]) =>
-    val n = Random.nextInt(xs.size.toInt + 10) - 5
-    assertEquals(xs.take(n), xs.takeEval(n))
   })
 
   property("BList dropWhile consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
@@ -478,38 +467,38 @@ class BListSuite extends DisciplineSuite {
     }
     assertEquals(l1.filter(p), l2.filter(p)) // iteration over both might expose more errors...
   })
-  
+
   property("BList.traverseVoid/traverse consistency")(forAll { (xs: BList[Int], fn: Int => Option[String]) =>
     assertEquals(xs.traverse(fn).void, xs.traverseVoid(fn))
   })
-  property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency")(forAll { (xs:BList.NonEmpty[Int], fn: Int => Option[String]) =>
-    assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverseVoid(fn))
-    assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverse(fn).void)
+  property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency")(forAll {
+    (xs: BList.NonEmpty[Int], fn: Int => Option[String]) =>
+      assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverseVoid(fn))
+      assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverse(fn).void)
   })
 
   property("traverseVoid matches standard traverse baseline")(forAll { (bList: BList[Int], f: Int => Option[String]) =>
-    assertEquals(bList.traverse(f).map(_ => ()),bList.traverseVoid(f))
+    assertEquals(bList.traverse(f).map(_ => ()), bList.traverseVoid(f))
   })
 
   // property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency and order")(
   //    forAll { (xs: BList.NonEmpty[Int]) =>
   //      val fn = (x: Int) => State.modify[List[Int]](log => log :+ x)
   //     val (logFromListTraverse, _)       = xs.toList.traverse(fn).void.run(Nil).value
-      //  val (logFromTraverseVoid, _)       = xs.traverseVoid(fn).run(Nil).value
-      //  val (logFromNonEmptyTraverseVoid, _) = xs.nonEmptyTraverseVoid(fn).run(Nil).value
+  //  val (logFromTraverseVoid, _)       = xs.traverseVoid(fn).run(Nil).value
+  //  val (logFromNonEmptyTraverseVoid, _) = xs.nonEmptyTraverseVoid(fn).run(Nil).value
   //     val (logFromNonEmptyTraverse, _)     = xs.nonEmptyTraverse(fn).void.run(Nil).value
 
-      // println(xs.toStringInBlocks)
-      // println(logFromListTraverse)
-      // println(logFromTraverseVoid)
-      // println(logFromNonEmptyTraverseVoid)
-      // println(logFromNonEmptyTraverse)
-      //assertEquals(logFromTraverseVoid, logFromNonEmptyTraverseVoid)
-      //assertEquals(logFromTraverseVoid, logFromNonEmptyTraverse)
+  // println(xs.toStringInBlocks)
+  // println(logFromListTraverse)
+  // println(logFromTraverseVoid)
+  // println(logFromNonEmptyTraverseVoid)
+  // println(logFromNonEmptyTraverse)
+  // assertEquals(logFromTraverseVoid, logFromNonEmptyTraverseVoid)
+  // assertEquals(logFromTraverseVoid, logFromNonEmptyTraverse)
   //    }
   //  )
 
-  
   // property("generator")(forAll { (xs: BList[Int]) =>
   //   println(xs.size)
   //   println(xs.toStringInBlocks)
