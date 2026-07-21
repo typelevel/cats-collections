@@ -31,6 +31,7 @@ import org.scalacheck.Prop._
 import org.scalacheck.Test
 import scala.math.pow
 import scala.util.Random
+import cats.data.State
 
 class BListSuite extends DisciplineSuite {
   override def scalaCheckInitialSeed = "7bTNcKSrPdvUlNm_fJry4aTO89pk7TzTVJOnhKCdlWL="
@@ -287,7 +288,7 @@ class BListSuite extends DisciplineSuite {
     var l = BList.empty[Int]
     var m = BList.empty[Int]
 
-    for (i <- (0 until 1000)) {
+    for (i <- (0 until 3000)) {
       l = l.prepend(i)
       m = l.concat(m)
     }
@@ -295,6 +296,7 @@ class BListSuite extends DisciplineSuite {
     m.filterNot(x=> x%2==0)
     m.splitAt(m.size.toInt - 2)
     m.take(m.size.toInt - 2)
+    m.takeEval(m.size.toInt - 2) //remove later
     m.takeWhile(_<1001)
     m.collect{case x if x < 1001 => x*2}
     m.concat(BList(1,2,3))
@@ -310,8 +312,8 @@ class BListSuite extends DisciplineSuite {
     m.iterator
     m.toString
     m.foldRight(Eval.now(0)) { (item, evalAcc) => evalAcc.map(_ + item)}
-    m.traverseVoid(x=> if (x<1001) Some(x.toString) else None)
-    m.traverse(x=> if (x<1001) Some(x.toString) else None)
+    m.traverseVoid(x=> if (x<1001) Some(x) else None)
+    m.traverse(x=> if (x<1001) Some(x) else None)
   }
 
   private def testHomomorphism[A, B: Eq](as: BList[A])(fn: BList[A] => B, gn: List[A] => B): Unit = {
@@ -444,6 +446,11 @@ class BListSuite extends DisciplineSuite {
   property("BList take consistent with List")(forAll { (xs: BList[Int]) =>
     val n = Random.nextInt(xs.size.toInt + 10) - 5
     assertEquals(xs.take(n).toList, xs.toList.take(n))
+    assertEquals(xs.take(n), xs.takeEval(n))
+  })
+  property("take consistent with takeEval")(forAll { (xs: BList[Int]) =>
+    val n = Random.nextInt(xs.size.toInt + 10) - 5
+    assertEquals(xs.take(n), xs.takeEval(n))
   })
 
   property("BList dropWhile consistent with List")(forAll { (xs: BList[Int], p: Int => Boolean) =>
@@ -480,6 +487,29 @@ class BListSuite extends DisciplineSuite {
     assertEquals(xs.traverseVoid(fn), xs.nonEmptyTraverse(fn).void)
   })
 
+  property("traverseVoid matches standard traverse baseline")(forAll { (bList: BList[Int], f: Int => Option[String]) =>
+    assertEquals(bList.traverse(f).map(_ => ()),bList.traverseVoid(f))
+  })
+
+  // property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency and order")(
+  //    forAll { (xs: BList.NonEmpty[Int]) =>
+  //      val fn = (x: Int) => State.modify[List[Int]](log => log :+ x)
+  //     val (logFromListTraverse, _)       = xs.toList.traverse(fn).void.run(Nil).value
+      //  val (logFromTraverseVoid, _)       = xs.traverseVoid(fn).run(Nil).value
+      //  val (logFromNonEmptyTraverseVoid, _) = xs.nonEmptyTraverseVoid(fn).run(Nil).value
+  //     val (logFromNonEmptyTraverse, _)     = xs.nonEmptyTraverse(fn).void.run(Nil).value
+
+      // println(xs.toStringInBlocks)
+      // println(logFromListTraverse)
+      // println(logFromTraverseVoid)
+      // println(logFromNonEmptyTraverseVoid)
+      // println(logFromNonEmptyTraverse)
+      //assertEquals(logFromTraverseVoid, logFromNonEmptyTraverseVoid)
+      //assertEquals(logFromTraverseVoid, logFromNonEmptyTraverse)
+  //    }
+  //  )
+
+  
   // property("generator")(forAll { (xs: BList[Int]) =>
   //   println(xs.size)
   //   println(xs.toStringInBlocks)

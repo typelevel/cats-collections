@@ -60,6 +60,7 @@ sealed abstract class BList[+A] {
   def drop(n: Int): BList[A]
   def dropWhile(p: A => Boolean): BList[A]
   def take(n: Int): BList[A]
+  def takeEval(n: Int): BList[A]
   def takeWhile(p: A => Boolean): BList[A]
   def concat[B >: A](l2: BList[B]): BList[B]
   def toList: List[A]
@@ -71,22 +72,6 @@ sealed abstract class BList[+A] {
 
   final def ::[B >: A](a: B): BList.NonEmpty[B] = prepend(a)
   final def ++[B >: A](l2: BList[B]): BList[B] = concat(l2)
-
-  // version using iterator - benchmark against the other implementation!!
-  def filterIter(fn: A => Boolean): BList[A] = {
-    val xs = this.iterator
-    var res = List.empty[A]
-    var changed = false
-    while (xs.hasNext) {
-      val a = xs.next()
-      if (fn(a)) {
-        res = a :: res
-      } else { changed = true }
-    }
-    if (changed)
-      BList.fromListReverse(res)
-    else this
-  }
 
   // for development and testing
   private[collections] def toStringInBlocks: String
@@ -115,7 +100,8 @@ sealed abstract class BList[+A] {
 
 object BList extends compat.BListCompatCompanion {
   //final private[collections] val     <- these are removed for benchmarking differnt blocksizes against eachother
-  var BlockSize = 4 // test with different values
+  final private[collections] val BlockSize = 16
+  //var BlockSize = 4
 
   case object Empty extends BList[Nothing] {
     def uncons = None
@@ -141,6 +127,7 @@ object BList extends compat.BListCompatCompanion {
     def drop(n: Int): Empty.type = this
     def dropWhile(p: Nothing => Boolean): Empty.type = this
     def take(n: Int): Empty.type = this
+    def takeEval(n: Int): Empty.type = this
     def takeWhile(p: Nothing => Boolean): Empty.type = this
     def concat[B](l2: BList[B]): BList[B] = l2
     override def toList: Nil.type = Nil
@@ -238,15 +225,6 @@ object BList extends compat.BListCompatCompanion {
                           }
 
                         }
-                        // arg0.map2(
-                        //   traverseArray(impl.block.slice(impl.offset, BlockSize)).asInstanceOf[G[Array[B]]],
-                        //   nonEmptyTraverse(nonemptytail)(f)
-                        // ) { (arrayB, tailB) =>
-                        //   Impl(impl.offset, new Array[Any](impl.offset) ++ arrayB, tailB)
-                        // }
-
-
-                      // from(arg0.map(Chain.traverseViaChain(fa.toIndexedSeq)(f))(_.iterator))
                     }
                 }
             }
@@ -641,17 +619,31 @@ object BList extends compat.BListCompatCompanion {
               )
             } else {
               val ary = new Array[Any](BlockSize)
-              System.arraycopy(impl.block,
-                               impl.offset,
-                               ary,
-                               BlockSize - n,
-                               n
-              ) // safe conversion because here 0<n<BlockSize
+              System.arraycopy(impl.block,impl.offset,ary,BlockSize - n, n) // safe conversion 0<n<BlockSize
               rebuild((BlockSize - n, ary) :: acc, Empty)
             }
         }
 
       go(m, this, Empty)
+    }
+    def takeEval(m: Int): BList[A] = {
+      def go(n: Int, l: BList[A]): Eval[BList[A]] =
+        l match {
+          case Empty         => Eval.now(Empty)
+          case impl: Impl[A] =>
+            if (n <= 0) {
+              Eval.now(Empty)
+            } else if (n >= BlockSize - impl.offset) {
+              //Impl(offset, block, tailBList.take(n - (BlockSize - offset)))
+              Eval.defer(go(n - (BlockSize - impl.offset), impl.tailBList)).map(Impl(impl.offset, impl.block, _))
+            } else {
+              val ary = new Array[Any](BlockSize)
+              System.arraycopy(impl.block,impl.offset,ary,BlockSize - n, n) // safe conversion 0<n<BlockSize
+              Eval.now(Impl(BlockSize - n, ary, Empty))
+            }
+        }
+
+      go(m, this).value
     }
     
     def takeWhile(p: A => Boolean): BList[A] = {
@@ -726,6 +718,8 @@ object BList extends compat.BListCompatCompanion {
         }
       loop(this, Nil)
     }
+    
+    
     def asSeq: LinearSeq[A] = new BListSeq(this)
 
     def isEmpty: Boolean = false
@@ -862,31 +856,6 @@ object BList extends compat.BListCompatCompanion {
 
   def apply[A](elems: A*): BList[A] = {
     BList.from(elems)
-    /*
-    // extract underlying array if present
-    elems match {
-      case arraySeq: ArraySeq[A] => // this might just be slower idk, plus it wont compile in 2.13 and 2.12.
-        val size = arraySeq.size
-        val rawArray: Array[Any] = arraySeq.unsafeArray.asInstanceOf[Array[Any]]
-        var i = size-1
-        var acc : BList[A] = Empty
-        // split raw array from end to start to build up BList (only possible non-full block will be head)
-        while (i >= BlockSize){
-          //take slice of BlockSize number of elements
-          val ary = rawArray.slice(i-BlockSize, i)
-          acc = Impl(0,ary,acc)
-          i -= BlockSize
-        }
-
-        // head
-        val ary = new Array[Any](BlockSize)
-        System.arraycopy(rawArray, 0, ary, BlockSize -i, i+1)
-        Impl(BlockSize -i,ary,acc)
-        
-      case _ => // in case we dont get the actual array because user passes some other list type
-        BList.from(elems)
-    }
-     */
   }
 
   def empty[A]: BList[A] = Empty
