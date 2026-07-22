@@ -234,14 +234,9 @@ object BList extends compat.BListCompatCompanion {
         override def nonEmptyTraverseVoid[G[_], A, B](
           fa: NonEmpty[A]
         )(f: (A) => G[B])(implicit arg0: Apply[G]): G[Unit] = {
-          def traverseBlockVoid(offset: Int, block: Array[A], ac: Option[G[Unit]]): G[Unit] = {
-            var i = offset
-            var acc = ac match {
-              case None =>
-                i += 1
-                arg0.map(f(block(offset))) { _ => () }
-              case Some(x) => x
-            }
+          def traverseBlockVoid(offset: Int, block: Array[A]): G[Unit] = {
+            var i = offset + 1
+            var acc = arg0.map(f(block(offset))) { _ => () }
 
             while (i < BlockSize) {
               acc = arg0.map2(acc, f(block(i)))((_, _) => ())
@@ -249,19 +244,22 @@ object BList extends compat.BListCompatCompanion {
             }
             acc
           }
-          def loop(l: NonEmpty[A], acc: Option[G[Unit]]): Eval[G[Unit]] = l match {
+          def loop(l: NonEmpty[A]): Eval[G[Unit]] = l match {
             case impl: Impl[A] =>
               impl.tailBList match {
-                case Empty => Eval.now(arg0.map(traverseBlockVoid(impl.offset, impl.block, acc)) { _ => () })
+                case Empty                 => Eval.now(traverseBlockVoid(impl.offset, impl.block))
                 case nonemptytail: Impl[A] =>
-                  val traversedBlock = traverseBlockVoid(impl.offset, impl.block, acc)
-                  Eval.defer(loop(nonemptytail, Some(traversedBlock))).map { traversedtail =>
-                    arg0.map2(traversedBlock, traversedtail)((_, _) => ())
+                  val traversedBlock = traverseBlockVoid(impl.offset, impl.block)
+                  Eval.defer(loop(nonemptytail)).map {
+                    arg0.map2(traversedBlock, _)((_, _) => ())
                   }
               }
           }
-          loop(fa, None).value
+          loop(fa).value
         }
+        override def nonEmptyTraverse_[G[_], A, B](fa: NonEmpty[A])(f: (A) => G[B])(implicit arg0: Apply[G]): G[Unit] =
+          nonEmptyTraverseVoid(fa)(f)(arg0)
+
         override def reduceLeftTo[A, B](fa: NonEmpty[A])(f: (A) => B)(g: (B, A) => B): B =
           fa.tail.foldLeft(f(fa.head))(g)
 
@@ -856,7 +854,6 @@ object BList extends compat.BListCompatCompanion {
             // otherwise we use the nonempty implementatoin
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverse(impl)(f)(arg0).asInstanceOf[G[BList[B]]]
         }
-
       override def traverseVoid[G[_], A, B](fa: BList[A])(f: A => G[B])(implicit arg0: Applicative[G]): G[Unit] = {
         fa match {
           case Empty         => arg0.unit
@@ -864,6 +861,8 @@ object BList extends compat.BListCompatCompanion {
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverseVoid(impl)(f)(arg0)
         }
       }
+      override def traverse_[G[_], A, B](fa: BList[A])(f: A => G[B])(implicit arg0: Applicative[G]): G[Unit] =
+        traverseVoid(fa)(f)(arg0)
 
       override def ap[A, B](ff: BList[(A) => B])(xs: BList[A]): BList[B] = ff.flatMap(f => xs.map(a => f(a)))
 

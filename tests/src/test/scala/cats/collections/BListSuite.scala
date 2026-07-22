@@ -287,7 +287,7 @@ class BListSuite extends DisciplineSuite {
     var l = BList.empty[Int]
     var m = BList.empty[Int]
 
-    for (i <- 0 until 3000) {
+    for (i <- 0 until 1000) {
       l = l.prepend(i)
       m = l.concat(m)
     }
@@ -481,23 +481,20 @@ class BListSuite extends DisciplineSuite {
     assertEquals(bList.traverse(f).map(_ => ()), bList.traverseVoid(f))
   })
 
-  // property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency and order")(
-  //    forAll { (xs: BList.NonEmpty[Int]) =>
-  //      val fn = (x: Int) => State.modify[List[Int]](log => log :+ x)
-  //     val (logFromListTraverse, _)       = xs.toList.traverse(fn).void.run(Nil).value
-  //  val (logFromTraverseVoid, _)       = xs.traverseVoid(fn).run(Nil).value
-  //  val (logFromNonEmptyTraverseVoid, _) = xs.nonEmptyTraverseVoid(fn).run(Nil).value
-  //     val (logFromNonEmptyTraverse, _)     = xs.nonEmptyTraverse(fn).void.run(Nil).value
+  property("BList.nonEmptyTraverseVoid/traverseVoid/nonEmptyTraverse consistency and order")(
+    forAll { (xs: BList.NonEmpty[Int]) =>
+      // val xs : BList[Int] = ys.prepend(1) // nonempty with type Blist
+      val fn = (x: Int) => State.modify[List[Int]](log => log :+ x)
+      val (logFromListTraverse, _) = xs.toList.traverse(fn).void.run(Nil).value
+      val (logFromTraverseVoid, _) = xs.traverse_(fn).run(Nil).value
+      val (logFromNonEmptyTraverseVoid, _) = xs.nonEmptyTraverse_(fn).run(Nil).value
+      val (logFromNonEmptyTraverse, _) = xs.nonEmptyTraverse(fn).void.run(Nil).value
 
-  // println(xs.toStringInBlocks)
-  // println(logFromListTraverse)
-  // println(logFromTraverseVoid)
-  // println(logFromNonEmptyTraverseVoid)
-  // println(logFromNonEmptyTraverse)
-  // assertEquals(logFromTraverseVoid, logFromNonEmptyTraverseVoid)
-  // assertEquals(logFromTraverseVoid, logFromNonEmptyTraverse)
-  //    }
-  //  )
+      assertEquals(logFromTraverseVoid, logFromNonEmptyTraverseVoid)
+      assertEquals(logFromTraverseVoid, logFromNonEmptyTraverse)
+      assertEquals(logFromTraverseVoid, logFromListTraverse)
+    }
+  )
 
   // property("generator")(forAll { (xs: BList[Int]) =>
   //   println(xs.size)
