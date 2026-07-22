@@ -851,13 +851,13 @@ object BList extends compat.BListCompatCompanion {
         fa match {
           case Empty         => arg0.pure(BList.empty)
           case impl: Impl[A] =>
-            // otherwise we use the nonempty implementatoin
+            // we use the nonempty implementatoin
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverse(impl)(f)(arg0).asInstanceOf[G[BList[B]]]
         }
       override def traverseVoid[G[_], A, B](fa: BList[A])(f: A => G[B])(implicit arg0: Applicative[G]): G[Unit] = {
         fa match {
           case Empty         => arg0.unit
-          case impl: Impl[_] =>
+          case impl: Impl[A] =>
             NonEmpty.catsCollectionNonEmptyBListInstances.nonEmptyTraverseVoid(impl)(f)(arg0)
         }
       }
