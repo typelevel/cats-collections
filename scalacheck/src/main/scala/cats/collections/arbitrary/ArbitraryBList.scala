@@ -31,29 +31,43 @@ trait ArbitraryBList {
     Gen.sized {
       case 0 => Gen.const(BList.empty)
       case n =>
-        Gen.oneOf(
+        Gen.frequency(
           // empty
-          Gen.const(BList.empty),
-          // prepend
-          for {
-            hs <- Gen.resize(n / 2, bListGen[A])
+          1 -> (Gen.const(BList.empty)),
+          // remove one element
+          2 -> (for {
             a <- arbitrary[A]
-          } yield hs.prepend(a),
+            tl <- Gen.resize(n - 1, bListGen[A])
+            i <- Gen.choose(0, tl.size.toInt)
+          } yield {
+            val (l1, l2) = tl.prepend(a).splitAt(i)
+            l1 ++ l2.asInstanceOf[BList.NonEmpty[A]].tail
+          }),
+          // prepend
+          10 -> (for {
+            hs <- Gen.resize(n - 1, bListGen[A])
+            a <- arbitrary[A]
+          } yield hs.prepend(a)),
           // concat
-          for {
-            xs <- Gen.resize(n / 4, bListGen[A])
-            ys <- Gen.resize(n / 4, bListGen[A])
-          } yield xs.concat(ys),
-          // map
-          Gen.resize(n / 2, bListGen[A]).map { l =>
-            l.map(identity)
-          }
+          8 -> (for {
+            s <- Gen.choose(0, n)
+            xs <- Gen.resize(s, bListGen[A])
+            ys <- Gen.resize(n - s, bListGen[A])
+          } yield xs.concat(ys))
         )
     }
   }
 
   implicit def arbitraryBList[A](implicit arb: Arbitrary[A]): Arbitrary[BList[A]] =
     Arbitrary(bListGen(arb))
+
+  implicit def arbBListNonEmpty[A](implicit A: Arbitrary[A]): Arbitrary[BList.NonEmpty[A]] =
+    Arbitrary {
+      for {
+        a <- arbitrary[A]
+        tl <- bListGen[A]
+      } yield tl.prepend(a)
+    }
 }
 
 object ArbitraryBList extends ArbitraryBList
