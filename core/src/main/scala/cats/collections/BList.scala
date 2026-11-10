@@ -341,9 +341,9 @@ object BList {
     }
     def tail: BList[A] = {
       if (offset < BlockSize - 1) {
-        val ary = new Array[Any](BlockSize)
-        System.arraycopy(block, offset + 1, ary, offset + 1, BlockSize - (offset + 1))
-        Impl(offset + 1, ary, tailBList)
+        val res = Impl(offset + 1, block, tailBList)
+        res.set(true)
+        res
       } else {
         tailBList
       }
