@@ -27,4 +27,6 @@ trait AllArbitrary
     with ArbitraryMap
     with ArbitraryHashMap
     with ArbitraryPredicate
+    with ArbitraryTreeList
+    with ArbitraryBList
     with CogenInstances
