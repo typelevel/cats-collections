@@ -29,5 +29,7 @@ package object arbitrary {
   object map extends ArbitraryMap
   object hashmap extends ArbitraryHashMap
   object predicate extends ArbitraryPredicate
+  object blist extends ArbitraryBList
   object cogen extends CogenInstances
+
 }
