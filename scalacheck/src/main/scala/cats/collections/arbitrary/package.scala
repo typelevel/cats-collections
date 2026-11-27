@@ -29,5 +29,7 @@ package object arbitrary {
   object map extends ArbitraryMap
   object hashmap extends ArbitraryHashMap
   object predicate extends ArbitraryPredicate
+  object treelist extends ArbitraryTreeList
+  object dequeue extends ArbitraryDequeue
   object cogen extends CogenInstances
 }
